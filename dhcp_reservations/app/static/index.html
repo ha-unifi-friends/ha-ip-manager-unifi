@@ -1,0 +1,1693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Clients &amp; Reservations</title>
+<style>
+/* Layout modelled on UniFi Network › Client Devices: filter sidebar | table | detail panel */
+:root{
+  --bg:#ffffff; --side:#f6f6f8; --panel:#f6f6f8; --card:#ffffff; --fg:#212327; --muted:#808893; --faint:#b6bbc3;
+  --line:#e8e9ec; --line-strong:#d6d8dd; --hover:#f4f5f6; --sel:#e9f2ff; --accent:#006fff; --accent-hover:#3d8bff;
+  --ok:#00a35a; --warn:#d28b00; --warn-bg:#fff4dc; --bad:#e5343d; --bad-bg:#fdeaeb; --info:#6b6ff0; --info-bg:#eeeefd;
+  --input:#ffffff; --chip:#eef0f3;
+  --sans:"UI Sans","Lato",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#1c1d20; --side:#1c1d20; --panel:#232427; --card:#2a2b2f; --fg:#f2f3f5; --muted:#8c929c; --faint:#5b6068;
+  --line:#2c2e33; --line-strong:#3a3d43; --hover:#25272b; --sel:#1f2b3d; --accent:#4797ff; --accent-hover:#6aabff;
+  --ok:#39c46b; --warn:#f5a623; --warn-bg:#3b2d14; --bad:#ff5a5f; --bad-bg:#3d1f22; --info:#9b9ef8; --info-bg:#2a2b4a;
+  --input:#2a2b2f; --chip:#2d2f34; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1c1d20; --side:#1c1d20; --panel:#232427; --card:#2a2b2f; --fg:#f2f3f5; --muted:#8c929c; --faint:#5b6068;
+  --line:#2c2e33; --line-strong:#3a3d43; --hover:#25272b; --sel:#1f2b3d; --accent:#4797ff; --accent-hover:#6aabff;
+  --ok:#39c46b; --warn:#f5a623; --warn-bg:#3b2d14; --bad:#ff5a5f; --bad-bg:#3d1f22; --info:#9b9ef8; --info-bg:#2a2b4a;
+  --input:#2a2b2f; --chip:#2d2f34; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--fg);font:13px/1.45 var(--sans);-webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit}
+input,select{font:inherit;color:var(--fg);background:var(--input);border:1px solid var(--line-strong);border-radius:6px;padding:6px 9px;outline:none}
+input:focus,select:focus{border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+svg{flex:none}
+.app{display:grid;grid-template-columns:272px minmax(0,1fr) auto;height:100%}
+
+/* ---------- sidebar ---------- */
+aside{background:var(--side);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.side-head{padding:14px 14px 10px max(14px,env(safe-area-inset-left))}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;margin-bottom:12px}
+.brand svg{color:var(--accent)}
+.search{position:relative}
+.search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.search input{width:100%;padding-left:31px;background:var(--card);border-color:transparent}
+.search input:focus{border-color:var(--accent)}
+.side-scroll{overflow:auto;flex:1;padding:0 14px 14px max(14px,env(safe-area-inset-left))}
+details{border-bottom:1px solid var(--line);padding:6px 0}
+summary{list-style:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:600;padding:6px 0;font-size:13px}
+summary::-webkit-details-marker{display:none}
+summary svg{color:var(--muted);transition:transform .15s}
+details:not([open]) summary svg{transform:rotate(180deg)}
+.opt{display:flex;align-items:center;gap:9px;padding:5px 0;cursor:pointer;color:var(--fg)}
+.opt input{appearance:none;width:16px;height:16px;border:1.5px solid var(--faint);border-radius:4px;margin:0;padding:0;background:transparent;display:grid;place-content:center;cursor:pointer}
+.opt input:checked{background:var(--accent);border-color:var(--accent)}
+.opt input:checked::after{content:"";width:8px;height:4px;border:2px solid #fff;border-top:0;border-right:0;transform:rotate(-45deg) translate(1px,-1px)}
+.opt .n{color:var(--muted)}
+.opt.zero{color:var(--muted)}
+.side-links{display:grid;gap:8px;padding:12px 0 4px}
+.link{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;text-align:left}
+.link:hover{color:var(--accent-hover)}
+.link:disabled{color:var(--faint);cursor:default}
+
+/* ---------- table ---------- */
+main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.banner{margin:10px 16px 0;padding:9px 12px;border-radius:6px;background:var(--bad-bg);color:var(--bad)}
+.tablewrap{flex:1;overflow:auto;min-height:0}
+table{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
+thead th{position:sticky;background:var(--bg);z-index:2;text-align:left;white-space:nowrap;font-weight:600}
+thead tr.h th{top:0;padding:0}
+thead tr.f th{top:38px;padding:2px 6px 8px;border-bottom:1px solid var(--line)}
+th .sort{all:unset;display:flex;align-items:center;gap:4px;padding:11px 10px 7px;cursor:pointer;color:var(--fg);font-size:13px}
+th .sort:hover{color:var(--accent)}
+thead tr.h th[data-k]{cursor:grab}
+th.col-dragging{opacity:.45}
+th.drop-before{box-shadow:inset 2px 0 0 var(--accent)}
+th.drop-after{box-shadow:inset -2px 0 0 var(--accent)}
+body.col-drag-active,body.col-drag-active *{cursor:grabbing!important;user-select:none}
+th[aria-sort] .sort{color:var(--accent)}
+th .sort .arr{font-size:9px;opacity:0}
+th[aria-sort] .sort .arr{opacity:1}
+thead tr.f input,thead tr.f select{width:100%;min-width:56px;padding:3px 7px;font-size:12px;background:transparent;border-color:var(--line)}
+thead tr.f input:focus,thead tr.f select:focus{border-color:var(--accent);background:var(--input)}
+tbody td{padding:0 10px;height:37px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:middle}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:var(--hover)}
+tbody tr.sel td{background:var(--sel)}
+td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--faint)}
+.dot.on{background:var(--ok)}
+.nm{display:flex;align-items:center;gap:9px}
+.dev{width:26px;height:20px;border-radius:4px;background:var(--chip);display:grid;place-items:center;color:var(--muted)}
+.nm .t{font-weight:500}
+.dev.ud{color:var(--accent)}
+.dev.pic,.big.pic{background:transparent}
+.dev img{width:24px;height:20px;object-fit:contain}
+.big img{width:46px;height:36px;object-fit:contain}
+.nm .h{color:var(--muted);margin-left:2px}
+.mono{font-family:var(--mono);font-size:12.5px}
+.muted{color:var(--muted)}
+.ctype{display:inline-flex;align-items:center;gap:6px}
+.ctype.teleport{color:var(--info)}
+.ctype.lockap{color:var(--accent)}
+.resip{font-family:var(--mono);font-size:12.5px;font-weight:600}
+.vl{color:var(--muted);margin-left:3px}
+.tag{display:inline-block;font-size:11px;line-height:18px;padding:0 6px;border-radius:4px;margin-right:4px}
+.tag.bad{background:var(--bad-bg);color:var(--bad)}
+.tag.warn{background:var(--warn-bg);color:var(--warn)}
+.tag.info{background:var(--info-bg);color:var(--info)}
+.note{max-width:200px;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.empty{padding:48px;text-align:center;color:var(--muted)}
+.topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));border-bottom:1px solid var(--line);color:var(--muted)}
+.topbar .sp{flex:1}
+.topbar .grp{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn.icon-btn{display:inline-flex;align-items:center;gap:6px}
+@media (max-width:1250px){.topbar .btn.icon-btn:not(.primary) .lbl{display:none}.topbar .btn.icon-btn:not(.primary){padding:6px 9px}}
+.ver-save .check{white-space:nowrap}
+.btn[aria-pressed="true"]{background:var(--sel);border-color:var(--accent);color:var(--accent)}
+input.ie{width:100%;min-width:120px;padding:4px 7px;font-size:13px;background:var(--input);border:1px solid var(--line-strong);border-radius:5px}
+input.ie.mono{font-family:var(--mono);font-size:12.5px;min-width:130px}
+input.ie:focus{border-color:var(--accent)}
+input.ie.saving{border-color:var(--warn)}
+input.ie.ok{border-color:var(--ok);box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 25%,transparent)}
+input.ie.err{border-color:var(--bad);box-shadow:0 0 0 2px color-mix(in srgb,var(--bad) 25%,transparent)}
+.nm input.ie{flex:1}
+body.inline-mode tbody tr{cursor:default}
+.viewsel{position:relative}
+.view-btn{display:inline-flex;align-items:center;gap:7px;font-weight:600;color:var(--fg)}
+.view-btn .mod{color:var(--accent);font-size:18px;line-height:14px;margin-left:-3px}
+.menu{position:absolute;top:calc(100% + 6px);left:0;z-index:30;min-width:260px;background:var(--card);border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:6px;display:grid;gap:1px}
+.menu .mi{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:6px;cursor:pointer;color:var(--fg);white-space:nowrap}
+.menu .mi:hover,.menu .mi:focus-visible{background:var(--hover)}
+.menu .mi[aria-disabled="true"]{color:var(--faint)!important;cursor:default;background:none}
+.menu .mi.danger{color:var(--bad)}
+.menu .mi .ck{width:14px;color:var(--accent)}
+.menu .mi .tag{margin-left:auto}
+.menu.right{left:auto;right:0}
+.menu .mi svg{color:var(--muted);flex:none}
+.menu .sep{height:1px;background:var(--line);margin:5px 4px}
+.menu .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:6px 10px 3px}
+dialog.small{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(420px,calc(100vw - 32px))}
+dialog#dlgHa{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog#dlgVer{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1200px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog#dlgVer > .imp > div{display:flex;flex-direction:column;min-height:0;max-height:calc(100vh - 50px)}
+dialog#dlgVer > .imp > div[hidden]{display:none}
+.ver-save{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.ver-save input{flex:1 1 280px;min-width:0}
+.vact{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.btn.sm{padding:3px 8px;font-size:12px}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.rst-scope{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+#cmpTitle{font-size:14px}
+dialog#dlgVer::backdrop,dialog#dlgHa::backdrop,dialog.small::backdrop,dialog#dlgSub::backdrop{background:rgba(8,10,14,.55)}
+dialog.small form{display:grid;gap:12px;padding:18px}
+dialog.small h2{margin:0;font-size:15px}
+dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1000px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+.sub-form{display:grid;grid-template-columns:1fr auto 1fr 1fr;gap:10px;align-items:end}
+.sub-form .arrow{padding-bottom:8px;color:var(--muted)}
+.sub-form .field select + input{margin-top:6px}
+.sub-form input::placeholder{color:var(--faint);font-style:italic}
+@media (max-width:760px){.sub-form{grid-template-columns:1fr}.sub-form .arrow{display:none}}
+.colpanel .opt{padding:7px 0;flex:1}
+.facet-select{width:100%;margin:2px 0 6px;font-size:12px;padding:4px 6px}
+.colrow{display:flex;align-items:center;gap:8px;border-radius:6px}
+.colrow.dragging{background:var(--card);box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.grip{background:none;border:0;color:var(--muted);cursor:grab;padding:6px 8px;border-radius:4px;touch-action:none}
+.grip:hover{color:var(--fg);background:var(--hover)}
+.colrow.dragging .grip{cursor:grabbing}
+.colpanel .d-body{gap:0}
+.colpanel .foot{display:flex;justify-content:space-between;padding:12px 16px max(12px,env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.btn{border:1px solid var(--line-strong);background:var(--card);border-radius:6px;padding:6px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-hover);color:#fff}
+.btn.outline-accent{border-color:var(--accent);color:var(--accent);background:transparent}
+.btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
+.btn.danger.armed{background:var(--bad);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ---------- detail panel ---------- */
+.detail{width:400px;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.d-head{display:flex;align-items:center;justify-content:center;position:relative;padding:14px 44px;font-weight:600;font-size:14px}
+.d-head .x{position:absolute;right:max(10px,env(safe-area-inset-right));top:9px;background:none;border:0;cursor:pointer;color:var(--muted);padding:6px;border-radius:6px}
+.d-head .x:hover{color:var(--fg);background:var(--hover)}
+.d-head span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:0 14px 12px;background:var(--bg);border-radius:8px;padding:3px}
+.tabs button{border:0;background:none;padding:7px;border-radius:6px;cursor:pointer;color:var(--muted);display:flex;gap:6px;align-items:center;justify-content:center}
+.tabs button[aria-selected="true"]{background:var(--card);color:var(--accent)}
+.d-body{overflow:auto;flex:1;padding:0 14px max(16px,env(safe-area-inset-bottom)) 14px;display:grid;gap:12px;align-content:start}
+.card{background:var(--card);border-radius:8px;padding:14px}
+.devcard{display:flex;gap:12px;align-items:center}
+.devcard .big{width:46px;height:36px;border-radius:6px;background:var(--chip);display:grid;place-items:center;color:var(--muted)}
+.devcard .v{font-weight:600}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:9px 12px}
+.kv dt{color:var(--fg)}
+.kv dd{margin:0;text-align:right;color:var(--fg);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.kv dd.mono{font-size:12.5px}
+.kv dd.acc{color:var(--accent)}
+.sec-title{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:2px 0 -4px}
+.form{display:grid;gap:12px}
+.field{display:grid;gap:5px}
+.field label{color:var(--muted);font-size:12px}
+.field input,.field select{width:100%}
+.switch{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+.switch input{appearance:none;width:34px;height:20px;border-radius:10px;background:var(--line-strong);position:relative;margin:0;padding:0;border:0;cursor:pointer;flex:none;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .15s}
+.switch input:checked{background:var(--accent)}
+.switch input:checked::after{left:16px}
+.hint{font-size:12px;color:var(--muted)}
+.hint a{color:var(--accent)}
+.err{color:var(--bad);background:var(--bad-bg);padding:8px 10px;border-radius:6px}
+.actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.danger-zone{display:grid;gap:10px}
+.danger-zone p{margin:0;font-size:12px;color:var(--muted)}
+
+/* ---------- CSV-Import ---------- */
+dialog#dlgImport{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
+.imp{display:flex;flex-direction:column;max-height:calc(100vh - 50px)}
+.imp-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
+.imp-head h2{margin:0;font-size:15px;flex:1}
+.imp-body{padding:16px 18px;overflow:auto;display:grid;gap:14px;min-height:0}
+.drop{border:1.5px dashed var(--line-strong);border-radius:8px;padding:26px;text-align:center;color:var(--muted);cursor:pointer;background:var(--card)}
+.drop.over{border-color:var(--accent);color:var(--accent)}
+.drop b{color:var(--fg)}
+.imp-help{font-size:12px;color:var(--muted);display:grid;gap:4px}
+#impCols{display:block;line-height:1.9}
+.imp-help code{font-family:var(--mono);background:var(--chip);padding:0 4px;border-radius:3px;color:var(--fg)}
+.sumrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pill{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--chip);color:var(--muted);cursor:pointer;border:1px solid transparent}
+.pill[aria-pressed="true"]{border-color:var(--accent);color:var(--fg)}
+.pill b{color:var(--fg)}
+.st{font-size:11px;padding:1px 7px;border-radius:4px;white-space:nowrap}
+.st.new{background:var(--info-bg);color:var(--info)}
+.st.chg{background:var(--sel);color:var(--accent)}
+.st.same,.st.skip{background:var(--chip);color:var(--muted)}
+.st.err{background:var(--bad-bg);color:var(--bad)}
+.st.ok{background:transparent;color:var(--ok)}
+.imp-table{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:52vh}
+.imp-table table td,.imp-table table th{padding:7px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top;white-space:normal}
+.imp-table thead th{position:sticky;top:0;background:var(--panel);font-weight:600;z-index:1}
+.imp-table tbody tr{cursor:default}
+.chg-list{display:grid;gap:2px;font-size:12px}
+.chg-list .from{color:var(--muted);text-decoration:line-through}
+.chg-list .to{color:var(--fg)}
+.chg-list .msg{color:var(--bad)}
+.imp-foot{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 18px;border-top:1px solid var(--line)}
+.imp-foot .sp{flex:1}
+.check{display:flex;gap:7px;align-items:center;color:var(--muted)}
+.imp-table .opt{padding:0}
+.prog{height:4px;background:var(--chip);border-radius:2px;overflow:hidden;flex:1;min-width:120px}
+.prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .15s}
+#toast{position:fixed;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+#toast.show{opacity:1}
+.menu-btn{display:none}
+@media (prefers-reduced-motion:reduce){.spin{animation:none}#toast,.switch input,.switch input::after,summary svg{transition:none}}
+@media (max-width:1100px){.detail{position:fixed;inset:0 0 0 auto;width:min(400px,100vw);z-index:15;box-shadow:-8px 0 24px rgba(0,0,0,.25)}}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  aside{position:fixed;inset:0 auto 0 0;width:min(300px,88vw);z-index:14;transform:translateX(-100%);transition:transform .2s}
+  aside.open{transform:none;box-shadow:8px 0 24px rgba(0,0,0,.3)}
+  .menu-btn{display:inline-block}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside id="side">
+    <div class="side-head">
+      <div class="brand"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg>Clients &amp; Reservations</div>
+      <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="q" placeholder="Search" aria-label="Search"></div>
+    </div>
+    <div class="side-scroll" id="facets"></div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <button class="btn menu-btn" id="btnMenu" type="button">Filters</button>
+      <div class="viewsel">
+        <button class="btn view-btn" id="btnView" type="button" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="viewName">All</span><span class="mod" id="viewMod" hidden title="Unsaved changes">•</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="menu" id="viewMenu" role="menu" hidden></div>
+      </div>
+      <span id="count"></span>
+      <span class="sp"></span>
+      <div class="grp">
+        <span id="stand"></span>
+        <button class="btn" id="btnReload" type="button">Refresh</button>
+        <button class="btn icon-btn" id="btnCols" type="button" aria-label="Customize columns" title="Columns"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg><span class="lbl">Columns</span></button>
+        <button class="btn icon-btn" id="btnVer" type="button" title="Save, compare and restore versions of the table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span class="lbl">Versions</span></button>
+        <button class="btn icon-btn" id="btnInline" type="button" aria-pressed="false" title="Edit name and fixed IP directly in the table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span class="lbl">Inline edit</span></button>
+        <div class="viewsel actsel">
+          <button class="btn icon-btn" id="btnActions" type="button" aria-haspopup="menu" aria-expanded="false" title="Actions"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span class="lbl">Actions</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
+          <div class="menu right" id="actMenu" role="menu" hidden>
+          <button class="mi" role="menuitem" id="btnHa" type="button" title="Take device names from Home Assistant"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 12 3l9 8M5 9.5V21h14V9.5M10 21v-6h4v6"/></svg><span>Names from Home Assistant…</span></button>
+          <button class="mi" role="menuitem" id="btnSub" type="button" title="Replace subnet"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg><span>Replace subnet…</span></button>
+          <button class="mi" role="menuitem" id="btnImp" type="button" title="Import CSV"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Import CSV…</span></button>
+          <button class="mi" role="menuitem" id="btnExp" type="button" title="Export CSV"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Export CSV</span></button>
+          </div>
+        </div>
+        <button class="btn primary icon-btn" id="btnNew" type="button" title="Add reservation"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">Add reservation</span></button>
+      </div>
+    </div>
+    <div id="banner" class="banner" hidden></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr class="h" id="headRow"></tr><tr class="f" id="filterRow"></tr></thead>
+        <tbody id="tbody"><tr><td class="empty" colspan="14"><span class="spin"></span> Loading data from the controller …</td></tr></tbody>
+      </table>
+    </div>
+  </main>
+
+  <section class="detail colpanel" id="colPanel" hidden aria-label="Customize columns">
+    <div class="d-head"><span>Customize Columns</span><button class="x" id="colClose" type="button" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="d-body" id="colList"></div>
+    <div class="foot"><button class="link" type="button" id="colRestore">Restore</button><button class="link" type="button" id="colDone">Done</button></div>
+  </section>
+
+  <section class="detail" id="detail" hidden aria-label="Client details">
+    <div class="d-head"><span id="dTitle"></span><button class="x" id="dClose" type="button" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" id="tabInfo" aria-selected="true" title="Overview"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>Overview</button>
+      <button type="button" role="tab" id="tabEdit" aria-selected="false" title="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
+    </div>
+    <div class="d-body" id="paneInfo"></div>
+    <div class="d-body" id="paneEdit" hidden>
+      <form class="form card" id="formEdit" novalidate>
+        <div class="field"><label for="fMac">MAC address</label><input id="fMac" class="mono" autocomplete="off" placeholder="aa:bb:cc:dd:ee:ff"></div>
+        <div class="field"><label for="fName">Name</label><input id="fName" autocomplete="off"></div>
+        <div class="field"><label for="fNote">Note</label><input id="fNote" autocomplete="off"></div>
+      </form>
+      <div class="form card">
+        <label class="switch" for="fFixed"><span>Fixed IP address</span><input type="checkbox" id="fFixed" form="formEdit"></label>
+        <div id="fixedFields" class="form">
+          <div class="field"><label for="fNet">Network</label><select id="fNet" form="formEdit"></select></div>
+          <div class="field"><label for="fIp">IP address</label><input id="fIp" class="mono" autocomplete="off" inputmode="decimal" form="formEdit"></div>
+          <div class="hint" id="ipHint"></div>
+        </div>
+      </div>
+      <div class="form card" id="apCard">
+        <label class="switch" for="fLock"><span>Lock to access point</span><input type="checkbox" id="fLock" form="formEdit"></label>
+        <div class="field" id="apField"><label for="fAp">Access Point</label><select id="fAp" form="formEdit"></select></div>
+      </div>
+      <div class="form card">
+        <label class="switch" for="fDnsOn"><span>Local DNS record</span><input type="checkbox" id="fDnsOn" form="formEdit"></label>
+        <div class="field" id="dnsField"><label for="fDns">Hostname</label><input id="fDns" autocomplete="off" placeholder="device.home" form="formEdit"></div>
+      </div>
+      <div class="err" id="editErr" hidden></div>
+      <div class="actions"><button class="btn primary" type="submit" form="formEdit" id="btnSave">Apply</button></div>
+      <div class="card danger-zone" id="dangerZone">
+        <div class="sec-title">Remove</div>
+        <button class="btn outline-accent" type="button" id="btnUnres">Remove reservation only</button>
+        <p id="unresText">Name and note are kept. The device gets an address from the DHCP pool again.</p>
+        <button class="btn danger" type="button" id="btnForget">Forget client</button>
+        <p>Removes name, note, reservation and history from the controller. This cannot be undone.</p>
+      </div>
+    </div>
+  </section>
+</div>
+<dialog id="dlgImport" aria-labelledby="impTitle">
+  <div class="imp">
+    <div class="imp-head"><h2 id="impTitle">Import CSV</h2><button class="btn" type="button" id="impTpl">Download template</button><button class="x link" type="button" id="impClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="imp-body">
+      <label class="drop" id="impDrop" for="impFile"><b>Drop a CSV file here</b> or click to choose<input type="file" id="impFile" accept=".csv,text/csv,text/plain" hidden></label>
+      <div class="imp-help" id="impHelp">
+        <div>Only the <code>MAC</code> column is required. Optional: <code>Name</code>, <code>Note</code>, <code>Fixed IP</code>, <code>Reservation VLAN</code> (name, VLAN ID, or empty = derived from the IP), <code>Reserved</code> (yes/no), <code>Locked to AP</code> (AP name, or “no” to unlock), <code>Local DNS</code>.</div>
+        <div>Empty cells leave a value unchanged. Separators <code>;</code> <code>,</code> or tab are detected. A file from “Export CSV” can be imported again as is; read-only columns (IP address, vendor …) are ignored.</div>
+      </div>
+      <div id="impPreview" hidden>
+        <div class="sumrow" id="impSum"></div>
+        <div class="imp-help" id="impCols"></div>
+        <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="impAll" aria-label="Select all"></label></th><th>Row</th><th>Status</th><th>MAC</th><th>Device</th><th>Changes</th></tr></thead><tbody id="impRows"></tbody></table></div>
+      </div>
+    </div>
+    <div class="imp-foot">
+      <span class="hint" id="impNote">Rows with errors or without changes are not applied.</span>
+      <div class="prog" id="impProg" hidden><i></i></div>
+      <span class="sp"></span>
+      <button class="btn" type="button" id="impCancel">Cancel</button>
+      <button class="btn primary" type="button" id="impApply" disabled>Apply</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="dlgName" class="small" aria-labelledby="nameTitle">
+  <form method="dialog" id="formName" novalidate>
+    <h2 id="nameTitle">Save view</h2>
+    <div class="field"><label for="fViewName">View name</label><input id="fViewName" maxlength="60" autocomplete="off"></div>
+    <div class="err" id="nameErr" hidden></div>
+    <div class="actions"><button class="btn" type="button" id="nameCancel">Cancel</button><button class="btn primary" type="submit">Save</button></div>
+  </form>
+</dialog>
+<dialog id="dlgSub" aria-labelledby="subTitle">
+  <div class="imp">
+    <div class="imp-head"><h2 id="subTitle">Replace subnet</h2><button class="x link" type="button" id="subClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="imp-body">
+      <div class="sub-form">
+        <div class="field"><label for="subFrom">From subnet</label><select id="subFromPick" aria-label="Pick a known source network"></select><input id="subFrom" class="mono" placeholder="e.g. 192.168.30.0/24" autocomplete="off"></div>
+        <div class="arrow">→</div>
+        <div class="field"><label for="subTo">To subnet</label><select id="subToPick" aria-label="Pick a known target network"></select><input id="subTo" class="mono" placeholder="e.g. 192.168.31.0/24" autocomplete="off"></div>
+        <div class="field"><label for="subNet">Target network</label><select id="subNet"></select></div>
+      </div>
+      <div class="imp-help">Moves every fixed IP in the source subnet to the same host address in the target subnet (e.g. 192.168.30.52 → 192.168.31.52). The target network must already exist in UniFi. Devices pick up the new address at their next DHCP renewal or reconnect.</div>
+      <div id="subPreview" hidden>
+        <div class="sumrow" id="subSum"></div>
+        <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="subAll" aria-label="Select all"></label></th><th>Device</th><th>MAC</th><th>Fixed IP</th><th>New IP</th><th>Network</th><th>Status</th></tr></thead><tbody id="subRows"></tbody></table></div>
+      </div>
+    </div>
+    <div class="imp-foot">
+      <span class="hint">Rows with errors are never applied.</span>
+      <div class="prog" id="subProg" hidden><i></i></div>
+      <span class="sp"></span>
+      <button class="btn" type="button" id="subCancel">Cancel</button>
+      <button class="btn primary" type="button" id="subApply" disabled>Move reservations</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="dlgHa" aria-labelledby="haTitle">
+  <div class="imp">
+    <div class="imp-head"><h2 id="haTitle">Update names from Home Assistant</h2><button class="x link" type="button" id="haClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="imp-body">
+      <div class="imp-help">Matches Home Assistant devices to UniFi clients by MAC address. The proposed name is the name you set in Home Assistant, otherwise the device name of its integration (devices known only through the UniFi integration are skipped, they already carry the UniFi name). “Near match” means the MAC differs only in the last byte, typical for devices with separate Wi-Fi and Ethernet MACs; those are not selected by default.</div>
+      <div class="err" id="haErr" hidden></div>
+      <div class="sumrow" id="haSum"></div>
+      <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="haAll" aria-label="Select all"></label></th><th>MAC</th><th>Current name</th><th>Name in Home Assistant</th><th>Integration · Area</th><th>Status</th></tr></thead><tbody id="haRows"></tbody></table></div>
+    </div>
+    <div class="imp-foot">
+      <span class="hint">Only the name changes; fixed IP, note and other settings stay as they are.</span>
+      <div class="prog" id="haProg" hidden><i></i></div>
+      <span class="sp"></span>
+      <button class="btn" type="button" id="haCancel">Cancel</button>
+      <button class="btn primary" type="button" id="haApply" disabled>Rename</button>
+    </div>
+  </div>
+</dialog>
+<dialog id="dlgVer" aria-labelledby="verTitle">
+  <div class="imp">
+    <div id="verList">
+      <div class="imp-head"><h2 id="verTitle">Versions</h2><button class="x link" type="button" id="verClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+      <div class="imp-body">
+        <div class="ver-save">
+          <input id="verLabel" placeholder="Name of the version (optional), e.g. before VLAN rework" maxlength="80" autocomplete="off">
+          <button class="btn primary" type="button" id="verSave">Save version</button>
+          <span class="hint" id="verDaily"></span>
+        </div>
+        <div class="imp-help">A version freezes the table: names, notes, fixed IPs, AP locks, DNS records and – for information – current IP, network and first/last seen. A version is also saved automatically before every bulk action (CSV import, replace subnet, names from HA, restore). Automatic versions (daily, before bulk actions) are kept <b id="verKeep">30</b> days; daily versions and the retention are set in the add-on configuration; manual and pinned versions and the baseline are kept until you delete them.</div>
+        <div class="imp-table"><table><thead><tr><th style="width:34px"></th><th>Saved</th><th>Name</th><th>Type</th><th>By</th><th>Devices</th><th>Fixed IPs</th><th></th></tr></thead><tbody id="verRows"></tbody></table></div>
+      </div>
+      <div class="imp-foot"><span class="hint">Tick two versions to compare them with each other.</span><span class="sp"></span><button class="btn" type="button" id="verCmp2" disabled>Select two versions to compare</button><button class="btn" type="button" id="verClose2">Close</button></div>
+    </div>
+    <div id="verCmp" hidden>
+      <div class="imp-head"><button class="btn sm" type="button" id="cmpBack">← Versions</button><h2 id="cmpTitle">Compare</h2><button class="btn sm" type="button" id="cmpCsv">Export CSV</button></div>
+      <div class="imp-body">
+        <div class="sumrow" id="cmpSum"></div>
+        <div class="imp-table"><table><thead><tr><th>Change</th><th>Device</th><th>Details</th><th></th></tr></thead><tbody id="cmpRows"></tbody></table></div>
+      </div>
+    </div>
+    <div id="verRestore" hidden>
+      <div class="imp-head"><button class="btn sm" type="button" id="rstBack">← Versions</button><h2 id="rstTitle">Restore</h2></div>
+      <div class="imp-body">
+        <div class="imp-help">Restore works like a CSV import from this version: you get a preview with a checkbox per row before anything changes, and a version of the current state is saved first. Devices that were added after this version are left untouched.</div>
+        <div class="rst-scope">
+          <label class="check"><input type="checkbox" id="rst_names" checked> Names</label>
+          <label class="check"><input type="checkbox" id="rst_res" checked> Fixed IPs (reservations)</label>
+          <label class="check"><input type="checkbox" id="rst_notes" checked> Notes</label>
+          <label class="check"><input type="checkbox" id="rst_ap" checked> Locked to AP</label>
+          <label class="check"><input type="checkbox" id="rst_dns" checked> Local DNS</label>
+          <label class="check"><input type="checkbox" id="rst_recreate" checked> Re-create clients that were forgotten since</label>
+        </div>
+        <div class="hint">Limitation: a name or note that was empty in the version does not clear the current one.</div>
+      </div>
+      <div class="imp-foot"><span class="sp"></span><button class="btn primary" type="button" id="rstPreview">Preview restore</button></div>
+    </div>
+  </div>
+</dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const ICON = {
+  ap: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/></svg>',
+  switch: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="10" rx="1.5"/><path d="M6 12h.01M9 12h.01M12 12h.01M15 12h.01M18 12h.01"/></svg>',
+  gateway: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 15h10M12 9v3"/></svg>',
+  device: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>',
+  grip: '<svg width="12" height="16" viewBox="0 0 12 16" fill="currentColor"><circle cx="3" cy="3" r="1.4"/><circle cx="9" cy="3" r="1.4"/><circle cx="3" cy="8" r="1.4"/><circle cx="9" cy="8" r="1.4"/><circle cx="3" cy="13" r="1.4"/><circle cx="9" cy="13" r="1.4"/></svg>',
+  lock: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  wifi: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 8.8a15 15 0 0 1 20 0M5 12.6a10 10 0 0 1 14 0M8.5 16.3a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".9" fill="currentColor"/></svg>',
+  wired: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="13" rx="1.5"/><path d="M9 17v3h6v-3M9 8v3M12 8v3M15 8v3"/></svg>',
+  teleport: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 4.5 3.4 8 8 9 4.6-1 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg>',
+};
+const devIcon = c => ICON[c.is_device ? c.device_kind : c.conn] || ICON.device;
+// Device picture from Ubiquiti's fingerprint catalogue (same source as the UniFi UI); falls back to the SVG icon offline.
+const iconHtml = (c, big) => {
+  const svg = big ? devIcon(c).replace(/width="14" height="14"/, 'width="22" height="22"') : devIcon(c);
+  if (!c.icon_id) return svg;
+  return `<img src="https://static.ubnt.com/fingerprint/0/${encodeURIComponent(c.icon_id)}_257x257.png" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.nextElementSibling.hidden=false;this.remove()"><span hidden>${svg}</span>`;
+};
+const KIND_LABEL = { ap: "Access point", switch: "Switch", gateway: "Gateway", device: "UniFi device" };
+const CONN_LABEL = { wifi: "WiFi", wired: "Wired", teleport: "Teleport" };
+const state = { clients: [], networks: [], netById: {}, aps: [], sort: { key: "name", dir: 1 }, hiddenCols: [], colOrder: [], colFilters: {}, facets: {}, q: "", sel: null, mode: null, fetchedAt: 0, loading: false };
+
+// ---------- helpers ----------
+const ipNum = ip => { if (!ip) return -1; const p = String(ip).split(".").map(Number); return p.length === 4 && p.every(n => Number.isInteger(n) && n >= 0 && n < 256) ? ((p[0] << 24) >>> 0) + (p[1] << 16) + (p[2] << 8) + p[3] : -1; };
+const inSubnet = (ip, cidr) => { if (ipNum(ip) < 0 || !cidr) return false; const [base, bits] = cidr.split("/"); const m = +bits === 0 ? 0 : (~0 << (32 - bits)) >>> 0; return ((ipNum(ip) & m) >>> 0) === ((ipNum(base) & m) >>> 0); };
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const net = id => state.netById[id];
+const netName = id => net(id)?.name || "";
+const netLabel = id => { const n = net(id); return n ? n.name + (n.vlan ? ` (${n.vlan})` : "") : ""; };
+const apName = mac => state.aps.find(a => a.mac === mac)?.name || mac;
+const isRandomMac = mac => /^[0-9a-f][26ae]/.test(mac || "");
+const keyOf = c => c.mac || c._key;
+const pad2 = n => String(n).padStart(2, "0");
+const isoDate = ts => { const d = new Date(ts * 1000); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+const isoDateTime = ts => { const d = new Date(ts * 1000); return `${isoDate(ts)} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
+const rel = ts => { if (!ts) return "Never"; const d = Date.now() / 1000 - ts; if (d < 120) return "just now"; if (d < 3600) return Math.round(d / 60) + " min ago"; if (d < 86400) return Math.round(d / 3600) + " h ago"; return isoDate(ts); };
+const store = { get(k, d) { try { const v = localStorage.getItem("dhcpres." + k); return v ? JSON.parse(v) : d; } catch { return d; } }, set(k, v) { try { localStorage.setItem("dhcpres." + k, JSON.stringify(v)); } catch {} } };
+const connText = c => c.conn === "teleport" ? "Teleport" : c.conn === "wired" ? (c.uplink ? c.uplink + (c.port ? " Port " + c.port : "") : "Wired") : (c.uplink || "WiFi");
+function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2600); }
+async function api(path, body) {
+  const res = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
+  let data = {}; try { data = await res.json(); } catch {}
+  if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+  return data;
+}
+
+// ---------- issues ----------
+function computeWarnings() {
+  const byIp = {};
+  for (const c of state.clients) if (c.use_fixedip && c.fixed_ip) (byIp[c.fixed_ip] ||= []).push(c);
+  state.clients.forEach((c, i) => {
+    c._key = c.mac || "tp" + i;
+    const w = [];
+    c._resNet = c.use_fixedip ? (c.fixed_network_id || state.networks.find(x => inSubnet(c.fixed_ip, x.subnet))?.id || "") : "";
+    if (c.use_fixedip) {
+      const n = net(c.fixed_network_id);
+      if (!c.fixed_ip) w.push(["bad", "IP missing"]);
+      else if (n && n.subnet && !inSubnet(c.fixed_ip, n.subnet)) w.push(["bad", "IP outside " + n.name]);
+      else if (!n && !c._resNet) w.push(["bad", "No matching network"]);
+      if (byIp[c.fixed_ip]?.length > 1) w.push(["bad", "Duplicate IP"]);
+      if (c.online && c.ip && c.fixed_ip && c.ip !== c.fixed_ip) w.push(["warn", "Has " + c.ip]);
+      const rn = net(c._resNet);
+      if (rn && rn.dhcp_start && rn.dhcp_stop && ipNum(c.fixed_ip) >= ipNum(rn.dhcp_start) && ipNum(c.fixed_ip) <= ipNum(rn.dhcp_stop)) w.push(["info", "In DHCP pool"]);
+    }
+    if (c.fixed_ap_enabled && c.online && c.ap_mac && c.ap_mac !== c.fixed_ap_mac) w.push(["warn", "Not on locked AP"]);
+    if (c.vno_id) w.push(["info", "VLAN override"]);
+    if (c.mac && !c.is_device && isRandomMac(c.mac)) w.push([c.use_fixedip ? "warn" : "info", "Random MAC"]);
+    c._warn = w; c._serious = w.some(x => x[0] !== "info");
+  });
+}
+
+// ---------- facets (sidebar) ----------
+const FACETS = [
+  { id: "status", title: "Status", get: c => c.online ? "on" : "off", opts: () => [["on", "Online"], ["off", "Offline"]] },
+  // "Changed since <version>" (new or changed devices) for the baseline + latest versions, max 5
+  { id: "base", title: "Baseline", emptyText: "Save a version to see which devices are new or changed since then.", ready: () => !!state.baseReady,
+    multi: c => !c.mac ? [] : (state.baseSets || []).filter(b => b.cats.has(c.mac)).map(b => "chg:" + b.id),
+    opts: () => (state.baseSets || []).map(b => ["chg:" + b.id, `Changed since ${b.isBaseline ? "★ " : ""}${isoDateTime(b.created)}${b.label ? " · " + b.label : ""}`]) },
+  { id: "kind", title: "Type", get: c => c.is_device ? "dev" : "client", opts: () => [["client", "Clients"], ["dev", "UniFi devices"]] },
+  { id: "conn", title: "Connection", get: c => c.conn, opts: () => [["wifi", "WiFi"], ["wired", "Wired"], ["teleport", "Teleport"]] },
+  { id: "res", title: "Reservation", get: c => c.use_fixedip ? "yes" : "no", opts: () => [["yes", "With fixed IP"], ["no", "Without fixed IP"]] },
+  { id: "hint", title: "Issues", multi: c => [c._serious ? "problem" : "", ...c._warn.map(w => w[1] === "Random MAC" ? "random" : w[1] === "In DHCP pool" ? "pool" : "")].filter(Boolean),
+    opts: () => [["problem", "Problems"], ["pool", "In DHCP pool"], ["random", "Random MAC"]] },
+  { id: "lock", title: "Locked to AP", get: c => c.fixed_ap_enabled ? c.fixed_ap_mac : (c.conn === "wifi" ? "none" : ""), opts: () => [...uniq(state.clients.filter(c => c.fixed_ap_enabled).map(c => c.fixed_ap_mac)).map(m => [m, apName(m)]), ["none", "Not locked"]] },
+  { id: "uplink", title: "Access Points / Switches", get: c => c.conn === "teleport" || c.device_kind === "gateway" ? "" : c.uplink, opts: () => uniq(state.clients.map(c => c.conn === "teleport" || c.device_kind === "gateway" ? "" : c.uplink)).map(v => [v, v]) },
+  { id: "ssid", title: "WiFi Broadcasts", get: c => c.essid, opts: () => uniq(state.clients.map(c => c.essid)).map(v => [v, v]) },
+  { id: "vlan", title: "VLANs", get: c => c.network_id, opts: () => state.networks.map(n => [n.id, n.name + (n.vlan ? ` (${n.vlan})` : "")]) },
+];
+const uniq = a => [...new Set(a.filter(Boolean))].sort((x, y) => x.localeCompare(y, "de"));
+const facetVals = (f, c) => f.multi ? f.multi(c) : [f.get(c)];
+const passFacet = (f, c, sel) => !sel?.length || (f.ready && !f.ready()) || facetVals(f, c).some(v => sel.includes(v));
+
+function renderFacets() {
+  const base = baseFiltered();
+  const html = FACETS.map(f => {
+    const others = base.filter(c => FACETS.every(g => g === f || passFacet(g, c, state.facets[g.id])));
+    const opts = f.opts();
+    if (!opts.length) return f.emptyText ? `<details open><summary>${f.title}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary><div class="hint" style="padding:4px 0 6px">${esc(f.emptyText)}</div></details>` : "";
+    const sel = state.facets[f.id] || [];
+    const extra = "";
+    return `<details open><summary>${f.title}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary>${extra}${opts.map(([v, l]) => {
+      const n = others.filter(c => facetVals(f, c).includes(v)).length;
+      return `<label class="opt ${n ? "" : "zero"}"><input type="checkbox" data-f="${f.id}" value="${esc(v)}" ${sel.includes(v) ? "checked" : ""}><span>${esc(l)} <span class="n">(${n})</span></span></label>`;
+    }).join("")}</details>`;
+  }).join("");
+  const any = Object.values(state.facets).some(a => a?.length) || Object.values(state.colFilters).some(Boolean) || state.q;
+  $("#facets").innerHTML = html + `<div class="side-links"><button class="link" type="button" id="lnkClear" ${any ? "" : "disabled"}>Clear filters</button><button class="link" type="button" id="lnkCols">Customize columns</button></div>`;
+  for (const cb of $("#facets").querySelectorAll("input[data-f]")) cb.addEventListener("change", () => {
+    const a = new Set(state.facets[cb.dataset.f] || []); cb.checked ? a.add(cb.value) : a.delete(cb.value);
+    state.facets[cb.dataset.f] = [...a]; persist(); renderAll();
+  });
+  $("#lnkClear").addEventListener("click", () => { state.facets = {}; state.colFilters = {}; state.q = ""; $("#q").value = ""; persist(); buildHead(); renderAll(); });
+  $("#lnkCols").addEventListener("click", openCols);
+}
+
+// ---------- columns ----------
+const COLS = [
+  { key: "online", label: "", filter: "none", val: c => c.online ? 0 : 1, td: c => `<span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span>` },
+  { key: "name", label: "Name", val: c => (c.name || c.hostname || c.mac || "").toLowerCase(), fval: c => [c.name, c.hostname].join(" "),
+    td: c => `<div class="nm"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span>${inlineOn(c) ? `<input class="ie" data-f="name" data-k="${esc(keyOf(c))}" value="${esc(c.name)}" placeholder="${esc(c.hostname || c.device_name || "Name")}" aria-label="Name of ${esc(c.mac)}">` : `<span class="t">${esc(c.name || c.hostname || "Unknown")}</span>`}${c.is_device ? `<span class="h">${esc(c.name && c.device_name && c.device_name.trim() !== c.name ? c.device_name + " · " : "")}${esc(c.device_model)}</span>` : !c.name && c.mac ? `<span class="h">${esc(c.mac.slice(-5))}</span>` : (c.name && c.hostname && c.hostname !== c.name ? `<span class="h">${esc(c.hostname)}</span>` : "")}</div>` },
+  { key: "mac", label: "MAC address", val: c => c.mac, td: c => `<span class="mono">${esc(c.mac || "–")}</span>` },
+  { key: "oui", label: "Vendor", val: c => (c.oui || "").toLowerCase(), td: c => esc(c.oui) },
+  { key: "conn", label: "Connection type", filter: "select", opts: [["", "All"], ["wifi", "WiFi"], ["wired", "Wired"], ["teleport", "Teleport"]], val: c => c.conn, fval: c => c.conn,
+    td: c => `<span class="ctype ${c.conn}">${ICON[c.conn]}${CONN_LABEL[c.conn]}</span>` },
+  { key: "uplink", label: "Connection", val: c => connText(c).toLowerCase(), fval: c => connText(c), td: c => esc(connText(c)) },
+  { key: "fixed_ap_mac", label: "Locked to AP", val: c => c.fixed_ap_enabled ? apName(c.fixed_ap_mac).toLowerCase() : "~", fval: c => c.fixed_ap_enabled ? apName(c.fixed_ap_mac) : "",
+    td: c => c.fixed_ap_enabled ? `<span class="ctype lockap">${ICON.lock}${esc(apName(c.fixed_ap_mac))}</span>` : `<span class="muted">-</span>` },
+  { key: "network_id", label: "Network", filter: "net", val: c => netLabel(c.network_id) || c.network_name, fval: c => c.network_id,
+    td: c => c.network_id && net(c.network_id) ? `${esc(netName(c.network_id))}${net(c.network_id).vlan ? `<span class="vl">(${net(c.network_id).vlan})</span>` : ""}` : esc(c.network_name || "") },
+  { key: "essid", label: "WiFi", val: c => (c.essid || "").toLowerCase(), td: c => c.essid ? esc(c.essid) : `<span class="muted">-</span>` },
+  { key: "fixed_ip", label: "Fixed IP", val: c => c.use_fixedip ? ipNum(c.fixed_ip) : 1e12, fval: c => c.use_fixedip ? c.fixed_ip : "",
+    td: c => inlineOn(c) ? `<input class="ie mono" data-f="ip" data-k="${esc(keyOf(c))}" value="${esc(c.use_fixedip ? c.fixed_ip : "")}" placeholder="${esc(c.ip && !c.use_fixedip ? c.ip : "none")}" inputmode="decimal" aria-label="Fixed IP of ${esc(c.mac)}">` : c.use_fixedip ? `<span class="resip">${esc(c.fixed_ip)}</span>` : `<span class="muted">-</span>` },
+  { key: "_resNet", label: "Reservation VLAN", filter: "net", val: c => netLabel(c._resNet), fval: c => c._resNet,
+    td: c => c._resNet ? `${esc(netName(c._resNet))}${net(c._resNet)?.vlan ? `<span class="vl">(${net(c._resNet).vlan})</span>` : ""}` : "" },
+  { key: "ip", label: "IP address", val: c => ipNum(c.ip), fval: c => c.ip, td: c => `<span class="mono ${c.ip_is_last ? "muted" : ""}" title="${c.ip_is_last ? "Last known IP" : ""}">${esc(c.ip)}</span>` },
+  { key: "_warn", label: "Issues", val: c => c._warn.length ? (c._serious ? 0 : 1) : 2, fval: c => c._warn.map(w => w[1]).join(" "), td: c => c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("") },
+  { key: "first_seen", label: "First seen", filter: "none", val: c => c.first_seen || 9e12, td: c => `<span class="muted" title="${c.first_seen ? isoDateTime(c.first_seen) : ""}">${c.first_seen ? isoDate(c.first_seen) : "–"}</span>` },
+  { key: "last_seen", label: "Last seen", filter: "none", val: c => c.online ? -9e12 : -(c.last_seen || -1), td: c => `<span class="muted" title="${c.last_seen ? isoDateTime(c.last_seen) : ""}">${c.online ? "Online" : rel(c.last_seen)}</span>` },
+  { key: "note", label: "Note", val: c => (c.note || "").toLowerCase(), td: c => `<div class="note" title="${esc(c.note)}">${esc(c.note)}</div>` },
+];
+
+const orderedCols = () => { const o = state.colOrder; return [...COLS].sort((a, b) => (o.indexOf(a.key) + 1 || 999) - (o.indexOf(b.key) + 1 || 999)); };
+const visCols = () => orderedCols().filter(c => !state.hiddenCols.includes(c.key));
+function buildHead() {
+  $("#headRow").innerHTML = visCols().map(col => `<th data-k="${col.key}">${col.label ? `<button class="sort" type="button">${col.label}<span class="arr">▲</span></button>` : ""}</th>`).join("");
+  $("#filterRow").innerHTML = visCols().map(col => {
+    const id = "flt_" + col.key;
+    if (col.filter === "none") return `<th></th>`;
+    if (col.filter === "select") return `<th><select id="${id}" data-k="${col.key}" aria-label="Filter ${col.label}">${col.opts.map(o => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select></th>`;
+    if (col.filter === "net") return `<th><select id="${id}" data-k="${col.key}" aria-label="Filter ${col.label}"><option value="">All</option>${state.networks.map(n => `<option value="${n.id}">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("")}<option value="__none">(empty)</option></select></th>`;
+    return `<th><input id="${id}" data-k="${col.key}" placeholder="Filter" aria-label="Filter ${col.label}"></th>`;
+  }).join("");
+  for (const el of $("#filterRow").querySelectorAll("input,select")) {
+    el.value = state.colFilters[el.dataset.k] || "";
+    el.addEventListener("input", () => { state.colFilters[el.dataset.k] = el.value; persist(); renderAll(); });
+  }
+  for (const th of $("#headRow").querySelectorAll("th[data-k] .sort")) th.addEventListener("click", () => {
+    if (headDrag.justDropped) return;
+    const k = th.parentElement.dataset.k; state.sort = state.sort.key === k ? { key: k, dir: -state.sort.dir } : { key: k, dir: 1 }; persist(); renderTable();
+  });
+  for (const th of $("#headRow").querySelectorAll("th[data-k]")) th.addEventListener("pointerdown", e => startHeadDrag(e, th));
+}
+
+// ---------- drag & drop column headers ----------
+const headDrag = { justDropped: false };
+function startHeadDrag(e, th) {
+  if (e.button !== 0) return;
+  const key = th.dataset.k, x0 = e.clientX, y0 = e.clientY;
+  let dragging = false, target = null, after = false;
+  const ths = () => [...$("#headRow").querySelectorAll("th[data-k]")];
+  const clear = () => ths().forEach(t => t.classList.remove("drop-before", "drop-after"));
+  const move = ev => {
+    if (!dragging) {
+      if (Math.abs(ev.clientX - x0) < 6 && Math.abs(ev.clientY - y0) < 6) return;
+      dragging = true; th.classList.add("col-dragging"); document.body.classList.add("col-drag-active");
+    }
+    ev.preventDefault(); clear();
+    const list = ths().filter(t => t !== th);
+    target = list.find(t => { const r = t.getBoundingClientRect(); return ev.clientX < r.left + r.width / 2; }) || null;
+    after = !target; if (after) target = list[list.length - 1];
+    if (target) target.classList.add(after ? "drop-after" : "drop-before");
+    const wrap = $(".tablewrap"), r = wrap.getBoundingClientRect();
+    if (ev.clientX > r.right - 40) wrap.scrollLeft += 18; else if (ev.clientX < r.left + 40) wrap.scrollLeft -= 18;
+  };
+  const up = () => {
+    window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up);
+    th.classList.remove("col-dragging"); document.body.classList.remove("col-drag-active"); clear();
+    if (!dragging || !target) return;
+    const order = orderedCols().map(c => c.key).filter(k => k !== key);
+    let i = order.indexOf(target.dataset.k); if (after) i++;
+    order.splice(i, 0, key); state.colOrder = order;
+    headDrag.justDropped = true; setTimeout(() => headDrag.justDropped = false, 0);
+    persist(); buildHead(); renderTable(); if (!$("#colPanel").hidden) renderCols();
+  };
+  window.addEventListener("pointermove", move); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
+}
+
+function baseFiltered() {
+  const q = state.q.trim().toLowerCase();
+  return state.clients.filter(c => {
+    if (q) {
+      const hay = [c.name, c.hostname, c.mac, c.oui, c.fixed_ip, c.ip, c.note, netLabel(c._resNet), netLabel(c.network_id), c.network_name, connText(c), c.essid, CONN_LABEL[c.conn]].join(" ").toLowerCase();
+      if (!q.split(/\s+/).every(t => hay.includes(t))) return false;
+    }
+    for (const col of COLS) {
+      const f = state.colFilters[col.key]; if (!f) continue;
+      const v = col.fval ? col.fval(c) : col.val(c);
+      if (col.filter === "net") { if (f === "__none" ? v : v !== f) return false; continue; }
+      if (col.filter === "select") { if (v !== f) return false; continue; }
+      if (!f.toLowerCase().split(/\s+/).every(t => String(v ?? "").toLowerCase().includes(t))) return false;
+    }
+    return true;
+  });
+}
+function rows() {
+  const list = baseFiltered().filter(c => FACETS.every(f => passFacet(f, c, state.facets[f.id])));
+  const col = COLS.find(c => c.key === state.sort.key) || COLS[1];
+  return list.sort((a, b) => { const x = col.val(a), y = col.val(b); return (x < y ? -1 : x > y ? 1 : 0) * state.sort.dir || (a.name || a.hostname || "").localeCompare(b.name || b.hostname || "", "de"); });
+}
+
+function renderTable() {
+  for (const th of $("#headRow").querySelectorAll("th[data-k]")) {
+    const on = th.dataset.k === state.sort.key;
+    on ? th.setAttribute("aria-sort", state.sort.dir > 0 ? "ascending" : "descending") : th.removeAttribute("aria-sort");
+    const a = th.querySelector(".arr"); if (a) a.textContent = state.sort.dir > 0 ? "▲" : "▼";
+  }
+  const list = rows(), tb = $("#tbody");
+  if (!state.clients.length) tb.innerHTML = `<tr><td class="empty" colspan="${visCols().length}">${state.loading ? '<span class="spin"></span> Loading data from the controller …' : "No clients found."}</td></tr>`;
+  else if (!list.length) tb.innerHTML = `<tr><td class="empty" colspan="${visCols().length}">No client matches the filters.</td></tr>`;
+  else tb.innerHTML = list.map(c => `<tr data-k="${esc(keyOf(c))}" class="${state.sel && keyOf(state.sel) === keyOf(c) ? "sel" : ""}">${visCols().map(col => `<td>${col.td(c)}</td>`).join("")}</tr>`).join("");
+  $("#count").textContent = list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`;
+  $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "";
+}
+function renderAll() { renderFacets(); renderTable(); }
+function persist() { store.set("view2", { sort: state.sort, colFilters: state.colFilters, facets: state.facets, hiddenCols: state.hiddenCols, colOrder: state.colOrder }); if (typeof renderViewBtn === "function") renderViewBtn(); }
+
+// ---------- customize columns ----------
+const colName = c => c.label || "Status";
+function renderCols() {
+  const allOn = !state.hiddenCols.length;
+  $("#colList").innerHTML = `<label class="opt"><input type="checkbox" id="colAll" ${allOn ? "checked" : ""}><span>All</span></label>` +
+    `<div id="colItems">` + orderedCols().map(c => `<div class="colrow" data-key="${c.key}"><label class="opt"><input type="checkbox" data-col="${c.key}" ${state.hiddenCols.includes(c.key) ? "" : "checked"} ${c.key === "name" ? "disabled" : ""}><span>${esc(colName(c))}</span></label><button type="button" class="grip" aria-label="Move ${esc(colName(c))} (drag, or use arrow keys)" title="Drag to reorder">${ICON.grip}</button></div>`).join("") + `</div>`;
+  wireGrips();
+  $("#colAll").indeterminate = !allOn && state.hiddenCols.length < COLS.length - 1;
+  $("#colAll").addEventListener("change", e => { state.hiddenCols = e.target.checked ? [] : COLS.filter(c => c.key !== "name").map(c => c.key); applyCols(); });
+  for (const cb of $("#colList").querySelectorAll("input[data-col]")) cb.addEventListener("change", () => {
+    const k = cb.dataset.col; state.hiddenCols = cb.checked ? state.hiddenCols.filter(x => x !== k) : [...state.hiddenCols, k]; applyCols();
+  });
+}
+function applyCols() {
+  for (const k of state.hiddenCols) if (state.colFilters[k]) delete state.colFilters[k];
+  persist(); buildHead(); renderAll(); renderCols();
+}
+function openCols() { if (!$("#detail").hidden) closePanel(); $("#side").classList.remove("open"); renderCols(); $("#colPanel").hidden = false; }
+function closeCols() { $("#colPanel").hidden = true; }
+$("#colClose").addEventListener("click", closeCols);
+$("#colDone").addEventListener("click", closeCols);
+$("#colRestore").addEventListener("click", () => { state.hiddenCols = []; state.colOrder = []; applyCols(); });
+function saveOrder() { state.colOrder = [...$("#colItems").children].map(el => el.dataset.key); persist(); buildHead(); renderTable(); }
+function wireGrips() {
+  const box = $("#colItems");
+  for (const g of box.querySelectorAll(".grip")) {
+    g.addEventListener("keydown", e => {
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+      e.preventDefault(); const row = g.closest(".colrow");
+      const sib = e.key === "ArrowUp" ? row.previousElementSibling : row.nextElementSibling; if (!sib) return;
+      e.key === "ArrowUp" ? box.insertBefore(row, sib) : box.insertBefore(sib, row); g.focus(); saveOrder();
+    });
+    g.addEventListener("pointerdown", e => {
+      e.preventDefault(); const row = g.closest(".colrow"); row.classList.add("dragging");
+      const move = ev => {
+        const others = [...box.children].filter(x => x !== row);
+        const after = others.find(x => { const r = x.getBoundingClientRect(); return ev.clientY < r.top + r.height / 2; });
+        after ? box.insertBefore(row, after) : box.appendChild(row);
+      };
+      // listen on window: moving the row in the DOM would drop pointer capture on the grip
+      const up = () => { window.removeEventListener("pointermove", move); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up); row.classList.remove("dragging"); saveOrder(); };
+      window.addEventListener("pointermove", move); window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up);
+    });
+  }
+}
+
+async function load() {
+  state.loading = true; const b = $("#btnReload"); b.disabled = true; b.innerHTML = '<span class="spin"></span> Loading';
+  try {
+    const d = await api("api/snapshot");
+    state.networks = d.networks; state.netById = Object.fromEntries(d.networks.map(n => [n.id, n]));
+    state.aps = d.aps || []; state.clients = d.clients; state.fetchedAt = d.fetched_at;
+    computeWarnings(); if (typeof computeBaseCats === "function") computeBaseCats(); buildHead(); $("#banner").hidden = true;
+    if (state.sel) { const again = state.clients.find(c => keyOf(c) === keyOf(state.sel)); again ? (state.sel = again, renderInfo()) : closePanel(); }
+  } catch (e) { $("#banner").textContent = "Could not load data: " + e.message; $("#banner").hidden = false; }
+  finally { state.loading = false; b.disabled = false; b.textContent = "Refresh"; renderAll(); }
+}
+
+// ---------- detail panel ----------
+function setTab(t) {
+  $("#tabInfo").setAttribute("aria-selected", String(t === "info")); $("#tabEdit").setAttribute("aria-selected", String(t === "edit"));
+  $("#paneInfo").hidden = t !== "info"; $("#paneEdit").hidden = t !== "edit";
+}
+function openPanel(c, tab) {
+  closeCols(); state.sel = c; $("#detail").hidden = false; $("#side").classList.remove("open");
+  $("#dTitle").textContent = c ? (c.name || c.hostname || c.mac || "Client") : "New reservation";
+  $("#tabInfo").hidden = !c; $("#tabs");
+  if (c) renderInfo();
+  fillForm(c);
+  setTab(c ? (tab || "info") : "edit");
+  renderTable();
+}
+function closePanel() { state.sel = null; $("#detail").hidden = true; renderTable(); }
+function renderInfo() {
+  const c = state.sel; if (!c) return;
+  const n = net(c.network_id), rn = net(c._resNet);
+  const kv = (k, v, cls = "") => v === "" || v == null ? "" : `<dt>${k}</dt><dd class="${cls}">${v}</dd>`;
+  $("#paneInfo").innerHTML = `
+    <div class="card devcard"><div class="big ${c.icon_id ? "pic" : ""}">${iconHtml(c, true)}</div><div><div class="v">${esc(c.is_device ? `${KIND_LABEL[c.device_kind]} · ${c.device_model}` : (c.oui || CONN_LABEL[c.conn]))}</div><div class="mono muted">${esc(c.mac || "no MAC")}</div></div></div>
+    ${c._warn.length ? `<div>${c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("")}</div>` : ""}
+    <div class="card"><dl class="kv" style="margin:0">
+      ${c.is_device ? kv("UniFi name", esc(c.device_name)) : ""}
+      ${kv("Status", c.online ? '<span style="color:var(--ok)">Online</span>' : "Offline · " + esc(c.last_seen ? rel(c.last_seen) : "never seen") + (c.last_seen ? ` <span class="muted">(${isoDateTime(c.last_seen)})</span>` : ""))}
+      ${kv("Connection type", `<span class="ctype ${c.conn}">${ICON[c.conn]}${CONN_LABEL[c.conn]}</span>`)}
+      ${kv(c.conn === "wifi" ? "AP" : "Uplink", c.conn === "teleport" ? "" : esc(connText(c)), "acc")}
+      ${kv("WiFi", esc(c.essid))}
+      ${c.conn === "wifi" ? kv("Locked to AP", c.fixed_ap_enabled ? `<span class="ctype lockap">${ICON.lock}${esc(apName(c.fixed_ap_mac))}</span>` : "Nein") : ""}
+      ${kv("Signal", c.signal ? c.signal + " dBm" : "")}
+      ${kv("IP address", esc(c.ip) + (c.ip_is_last ? ' <span class="muted">(last known)</span>' : ""), "mono")}
+      ${kv("Network", esc(n ? n.name : c.network_name))}
+      ${kv("VLAN ID", n?.vlan ?? "")}
+      ${kv("VLAN override", c.vno_id ? esc(netLabel(c.vno_id) || "active") : "")}
+      ${kv("Hostname", esc(c.hostname))}
+    </dl></div>
+    <div class="sec-title">DHCP reservation</div>
+    <div class="card"><dl class="kv" style="margin:0">
+      ${kv("Fixed IP", c.use_fixedip ? esc(c.fixed_ip) : "none", c.use_fixedip ? "mono" : "")}
+      ${kv("Network", rn ? esc(rn.name) + (rn.vlan ? ` (VLAN ${rn.vlan})` : "") : "")}
+      ${kv("Local DNS", c.local_dns_record_enabled ? esc(c.local_dns_record) : "")}
+      ${kv("Note", esc(c.note))}
+    </dl></div>
+    ${c.mac ? `<button class="btn primary" type="button" id="btnGoEdit">${c.use_fixedip ? "Edit reservation" : "Reserve fixed IP"}</button>` : `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>`}`;
+  $("#btnGoEdit")?.addEventListener("click", () => { if (!c.use_fixedip) { $("#fFixed").checked = true; syncToggles(); onNetChange(); } setTab("edit"); $("#fIp").focus(); });
+  $("#tabEdit").hidden = !c.mac;
+}
+
+function fillNetSelect(sel) { $("#fNet").innerHTML = `<option value="">– select –</option>` + state.networks.map(n => `<option value="${n.id}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join(""); $("#fNet").value = sel || ""; }
+function suggestIp(netId) {
+  const n = net(netId); if (!n || !n.subnet) return "";
+  const used = new Set(state.clients.flatMap(c => [c.use_fixedip ? c.fixed_ip : "", c.ip]).filter(Boolean));
+  const [base, bits] = n.subnet.split("/"); const start = ipNum(base) + 1, end = ipNum(base) + 2 ** (32 - bits) - 2;
+  const ps = n.dhcp_start ? ipNum(n.dhcp_start) : -1, pe = n.dhcp_stop ? ipNum(n.dhcp_stop) : -1, gw = ipNum(n.gateway);
+  const toIp = x => [x >>> 24, (x >>> 16) & 255, (x >>> 8) & 255, x & 255].join(".");
+  for (const allowPool of [false, true]) for (let x = start; x <= end; x++) { if (x === gw || (!allowPool && x >= ps && x <= pe)) continue; const ip = toIp(x); if (!used.has(ip)) return ip; }
+  return "";
+}
+function updateHint() {
+  const n = net($("#fNet").value), ip = $("#fIp").value.trim(); let h = "";
+  if (n) {
+    h = `Subnet ${n.subnet}` + (n.dhcp_start ? `, DHCP pool ${n.dhcp_start} – ${n.dhcp_stop}` : "");
+    if (ip && ipNum(ip) < 0) h += " · invalid IP";
+    else if (ip && !inSubnet(ip, n.subnet)) h += " · IP is not in this network";
+    else if (ip) { const me = state.sel?.mac || $("#fMac").value.trim().toLowerCase(); const other = state.clients.find(c => c.use_fixedip && c.fixed_ip === ip && c.mac !== me); if (other) h += ` · already reserved for ${esc(other.name || other.mac)}`; }
+    const sug = suggestIp(n.id); if (sug && sug !== ip) h += ` · <a href="#" id="useSug">Free: ${sug}</a>`;
+  }
+  $("#ipHint").innerHTML = h;
+  $("#useSug")?.addEventListener("click", e => { e.preventDefault(); $("#fIp").value = suggestIp($("#fNet").value); updateHint(); });
+}
+function syncToggles() { $("#apField").hidden = !$("#fLock").checked; $("#fixedFields").hidden = !$("#fFixed").checked; $("#dnsField").hidden = !$("#fDnsOn").checked; }
+function onNetChange() { const n = net($("#fNet").value); if (n && !inSubnet($("#fIp").value, n.subnet)) $("#fIp").value = suggestIp(n.id); updateHint(); }
+function fillForm(c) {
+  $("#fMac").value = c?.mac || ""; $("#fMac").readOnly = !!c;
+  $("#fName").value = c?.name || c?.hostname || ""; $("#fNote").value = c?.note || "";
+  $("#fFixed").checked = c ? c.use_fixedip : true;
+  fillNetSelect(c ? (c._resNet || c.network_id) : "");
+  $("#fIp").value = c ? (c.use_fixedip ? c.fixed_ip : c.ip) : "";
+  $("#apCard").hidden = !c || c.conn !== "wifi";
+  $("#fLock").checked = !!c?.fixed_ap_enabled;
+  $("#fAp").innerHTML = state.aps.map(a => `<option value="${a.mac}">${esc(a.name)}</option>`).join("");
+  $("#fAp").value = c?.fixed_ap_mac || c?.ap_mac || state.aps[0]?.mac || "";
+  $("#fDnsOn").checked = !!c?.local_dns_record_enabled; $("#fDns").value = c?.local_dns_record || "";
+  $("#editErr").hidden = true; $("#dangerZone").hidden = !c?.known;
+  $("#btnUnres").hidden = $("#unresText").hidden = !c?.use_fixedip;
+  disarm(); syncToggles(); updateHint();
+}
+$("#fFixed").addEventListener("change", () => { syncToggles(); if ($("#fFixed").checked) onNetChange(); });
+$("#fDnsOn").addEventListener("change", syncToggles);
+$("#fLock").addEventListener("change", syncToggles);
+$("#fNet").addEventListener("change", onNetChange);
+$("#fIp").addEventListener("input", updateHint);
+const showErr = msg => { $("#editErr").textContent = msg; $("#editErr").hidden = false; };
+$("#formEdit").addEventListener("submit", async e => {
+  e.preventDefault();
+  const body = { mac: $("#fMac").value.trim().toLowerCase(), name: $("#fName").value, note: $("#fNote").value, use_fixedip: $("#fFixed").checked, network_id: $("#fNet").value, fixed_ip: $("#fIp").value.trim(), local_dns_record_enabled: $("#fDnsOn").checked, local_dns_record: $("#fDns").value.trim() };
+  if (!$("#apCard").hidden) { body.fixed_ap_enabled = $("#fLock").checked; body.fixed_ap_mac = $("#fAp").value; if (body.fixed_ap_enabled && !body.fixed_ap_mac) return showErr("Please choose an access point."); }
+  if (!/^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/.test(body.mac)) return showErr("Please enter a valid MAC address (aa:bb:cc:dd:ee:ff).");
+  if (body.use_fixedip && !body.network_id) return showErr("Please choose a network.");
+  if (body.use_fixedip && ipNum(body.fixed_ip) < 0) return showErr("Please enter a valid IP address.");
+  const btn = $("#btnSave"); btn.disabled = true; btn.textContent = "Saving …";
+  try {
+    await api("api/client", body); toast("Saved");
+    state.sel = state.sel || { mac: body.mac }; await load();
+    const c = state.clients.find(x => x.mac === body.mac); if (c) openPanel(c, "info");
+  } catch (err) { showErr(err.message); }
+  finally { btn.disabled = false; btn.textContent = "Apply"; }
+});
+function disarm() { const b = $("#btnForget"); b.classList.remove("armed"); b.textContent = "Forget client"; delete b.dataset.armed; }
+async function doDel(path, btn, label, msg) {
+  btn.disabled = true; btn.textContent = "…";
+  try { await api(path, { mac: state.sel.mac }); toast(msg); await load(); }
+  catch (err) { showErr(err.message); }
+  finally { btn.disabled = false; btn.textContent = label; }
+}
+$("#btnUnres").addEventListener("click", e => doDel("api/unreserve", e.currentTarget, "Remove reservation only", "Reservation removed").then(() => state.sel && openPanel(state.sel, "info")));
+$("#btnForget").addEventListener("click", e => {
+  const b = e.currentTarget;
+  if (!b.dataset.armed) { b.dataset.armed = "1"; b.classList.add("armed"); b.textContent = "Really forget? Click again"; return; }
+  doDel("api/forget", b, "Forget client", "Forget client");
+});
+$("#tabInfo").addEventListener("click", () => setTab("info"));
+$("#tabEdit").addEventListener("click", () => setTab("edit"));
+$("#dClose").addEventListener("click", closePanel);
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (!$("#detail").hidden) closePanel(); else if (!$("#colPanel").hidden) closeCols(); });
+
+// ---------- CSV ----------
+function exportCsv() {
+  const head = ["Name", "Hostname", "MAC", "Vendor", "Connection type", "Connection", "Locked to AP", "Network", "WiFi", "Reserved", "Fixed IP", "Reservation VLAN", "IP address", "Online", "Last seen", "Issues", "Local DNS", "Note"];
+  const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const lines = rows().map(c => [c.name, c.hostname, c.mac, c.oui, CONN_LABEL[c.conn], connText(c), c.fixed_ap_enabled ? apName(c.fixed_ap_mac) : "", netLabel(c.network_id) || c.network_name, c.essid, c.use_fixedip ? "yes" : "no", c.fixed_ip, netLabel(c._resNet), c.ip, c.online ? "yes" : "no", c.last_seen ? isoDateTime(c.last_seen) : "", c._warn.map(w => w[1]).join("; "), c.local_dns_record_enabled ? c.local_dns_record : "", c.note].map(q).join(";"));
+    saveFile("dhcp-reservations.csv", [head.map(q).join(";"), ...lines].join("\r\n"));
+}
+function saveFile(name, text) {
+  const blob = new Blob(["\ufeff" + text], { type: "text/csv" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+// ---------- CSV import ----------
+const IMP = { plans: [], filter: "all", running: false, done: false, cols: [] };
+const COLMAP = {
+  mac: ["mac", "mac address", "macaddress", "mac-adresse", "mac adresse"],
+  name: ["name", "alias", "name (alias)"],
+  note: ["note", "notes", "notiz", "bemerkung"],
+  ip: ["fixed ip", "fixed_ip", "fixed ip address", "reserved ip", "reservierte ip", "feste ip"],
+  reserved: ["reserved", "use_fixedip", "fixed", "reserviert"],
+  net: ["reservation vlan", "reservation network", "network_id", "vlan reservierung", "netzwerk reservierung", "reservierungsnetz"],
+  ap: ["locked to ap", "lock to access point", "fixed ap", "ap lock", "fixiert auf ap"],
+  dns: ["local dns", "local dns record", "dns", "lokaler dns"],
+};
+const NO = /^(no|nein|false|0|-|off|aus)$/i, YES = /^(yes|ja|true|1|on|an|x)$/i;
+function parseCsv(text) {
+  text = text.replace(/^﻿/, "");
+  const first = (text.split(/\r?\n/)[0] || "").replace(/"[^"]*"/g, "");
+  const delim = [";", ",", "\t"].map(d => [d, first.split(d).length]).sort((a, b) => b[1] - a[1])[0][0];
+  const rows = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; continue; }
+    if (ch === '"') q = true;
+    else if (ch === delim) { row.push(cur); cur = ""; }
+    else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(cur); rows.push(row); row = []; cur = ""; }
+    else cur += ch;
+  }
+  if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(r => r.some(v => v.trim() !== ""));
+}
+function normMac(v) {
+  const h = String(v || "").toLowerCase().replace(/[^0-9a-f]/g, "");
+  return h.length === 12 ? h.match(/../g).join(":") : null;
+}
+function findNet(v) {
+  const s = v.trim().toLowerCase(); if (!s) return null;
+  return state.networks.find(n => n.id === v.trim()) ||
+    state.networks.find(n => n.name.toLowerCase() === s) ||
+    state.networks.find(n => netLabel(n.id).toLowerCase() === s) ||
+    state.networks.find(n => (n.name + (n.vlan ? " · " + n.vlan : "")).toLowerCase() === s) ||
+    (/^\d+$/.test(s) ? state.networks.find(n => String(n.vlan) === s) : null) || null;
+}
+function findAp(v) {
+  const s = v.trim().toLowerCase(), m = normMac(v);
+  return state.aps.find(a => a.name.toLowerCase() === s) || (m && state.aps.find(a => a.mac === m)) || null;
+}
+
+function buildPlans(rows) {
+  const head = rows[0].map(h => h.trim().toLowerCase().replace(/\s+/g, " "));
+  const idx = {}; const used = new Set();
+  for (const [k, names] of Object.entries(COLMAP)) { const i = head.findIndex(h => names.includes(h)); if (i >= 0) { idx[k] = i; used.add(i); } }
+  IMP.cols = { mapped: Object.values(idx).sort((a, b) => a - b).map(i => rows[0][i].trim()), ignored: rows[0].filter((h, i) => !used.has(i) && h.trim()) };
+  if (idx.mac == null) return { error: "No “MAC” column found. The first row must contain the column names." };
+  const seen = new Set(); const plans = [];
+  rows.slice(1).forEach((r, n) => {
+    const get = k => idx[k] == null ? "" : String(r[idx[k]] ?? "").trim();
+    const p = { line: n + 2, errs: [], changes: [], hasAp: false };
+    p.mac = normMac(get("mac"));
+    if (!get("mac")) { p.skip = "No MAC (e.g. Teleport), skipped"; plans.push(p); return; }
+    if (!p.mac) { p.errs.push(`Invalid MAC “${get("mac")}”`); plans.push(p); return; }
+    if (seen.has(p.mac)) { p.errs.push("MAC appears more than once in the file"); plans.push(p); return; }
+    seen.add(p.mac);
+    const c = state.clients.find(x => x.mac === p.mac); p.c = c;
+    const d = { name: c?.name || "", note: c?.note || "", use_fixedip: !!c?.use_fixedip, fixed_ip: c?.use_fixedip ? c.fixed_ip : "", network_id: c?.use_fixedip ? c._resNet : "",
+      fixed_ap_enabled: !!c?.fixed_ap_enabled, fixed_ap_mac: c?.fixed_ap_mac || "", local_dns_record_enabled: !!c?.local_dns_record_enabled, local_dns_record: c?.local_dns_record || "" };
+    if (get("name")) d.name = get("name");
+    if (get("note")) d.note = get("note");
+    const res = get("reserved"), ip = get("ip"), netv = get("net");
+    const errs0 = p.errs; p.errs = [];
+    if (res && NO.test(res)) { d.use_fixedip = false; d.fixed_ip = ""; d.network_id = ""; }
+    else {
+      if (res && YES.test(res) && !ip && !d.fixed_ip) p.errs.push("“Reserved = yes” but no IP given");
+      if (res && !YES.test(res)) p.errs.push(`Unknown value “${res}” for Reserved (yes/no)`);
+      if (ip) {
+        if (ipNum(ip) < 0) p.errs.push(`Invalid IP “${ip}”`);
+        else { d.use_fixedip = true; d.fixed_ip = ip; }
+      }
+      if (netv) { const nn = findNet(netv); if (!nn) p.errs.push(`Unknown network “${netv}”`); else d.network_id = nn.id; }
+      if (d.use_fixedip && ipNum(d.fixed_ip) >= 0) {
+        const cur = net(d.network_id);
+        if (!cur || (!netv && !inSubnet(d.fixed_ip, cur.subnet))) { const by = state.networks.find(x => inSubnet(d.fixed_ip, x.subnet)); if (by) d.network_id = by.id; }
+        const nn = net(d.network_id);
+        if (!nn) p.errs.push(`No network matches ${d.fixed_ip}`);
+        else if (!inSubnet(d.fixed_ip, nn.subnet)) p.errs.push(`${d.fixed_ip} is not in ${nn.name} (${nn.subnet})`);
+      }
+    }
+    // Reservation unchanged vs. controller → pre-existing issues are not import errors
+    p.resSame = !!c && c.use_fixedip === d.use_fixedip && (!d.use_fixedip || (c.fixed_ip === d.fixed_ip));
+    if (p.resSame) { if (c.use_fixedip) d.network_id = c._resNet; p.errs = errs0; } else p.errs = errs0.concat(p.errs);
+    const apv = get("ap");
+    if (apv) {
+      p.hasAp = true;
+      if (NO.test(apv)) d.fixed_ap_enabled = false;
+      else { const a = findAp(apv); if (!a) p.errs.push(`Unknown access point “${apv}”`); else { d.fixed_ap_enabled = true; d.fixed_ap_mac = a.mac; } }
+      if (c && c.conn !== "wifi" && d.fixed_ap_enabled) p.errs.push("AP lock is only possible for WiFi devices");
+    }
+    const dns = get("dns");
+    if (dns) { if (NO.test(dns)) { d.local_dns_record_enabled = false; d.local_dns_record = ""; } else { d.local_dns_record_enabled = true; d.local_dns_record = dns; } }
+    p.d = d;
+    // changes
+    const ch = (label, from, to) => { if ((from || "") !== (to || "")) p.changes.push([label, from || "", to || ""]); };
+    const resTxt = (on, ipx, nid) => on ? `${ipx} · ${netLabel(nid) || "?"}` : "none";
+    ch("Name", c?.name, d.name); ch("Note", c?.note, d.note);
+    ch("Fixed IP", resTxt(!!c?.use_fixedip, c?.fixed_ip, c?._resNet), resTxt(d.use_fixedip, d.fixed_ip, d.network_id));
+    if (p.hasAp) ch("Locked to AP", c?.fixed_ap_enabled ? apName(c.fixed_ap_mac) : "no", d.fixed_ap_enabled ? apName(d.fixed_ap_mac) : "no");
+    ch("Local DNS", c?.local_dns_record_enabled ? c.local_dns_record : "", d.local_dns_record_enabled ? d.local_dns_record : "");
+    plans.push(p);
+  });
+  // duplicate IPs: existing reservations + file
+  const owner = {};
+  for (const c of state.clients) if (c.use_fixedip && c.fixed_ip) owner[c.fixed_ip] = c.mac;
+  for (const p of plans) if (p.d && !p.resSame) { for (const ip in owner) if (owner[ip] === p.mac) delete owner[ip]; }
+  for (const p of plans) if (p.d?.use_fixedip && !p.errs.length && !p.resSame) {
+    const o = owner[p.d.fixed_ip];
+    if (o && o !== p.mac) { const oc = state.clients.find(c => c.mac === o); p.errs.push(`${p.d.fixed_ip} is already reserved for ${oc?.name || o}`); }
+    else owner[p.d.fixed_ip] = p.mac;
+  }
+  for (const p of plans) { p.status = p.skip ? "skip" : p.errs.length ? "err" : !p.c ? "new" : p.changes.length ? "chg" : "same"; p.sel = p.status === "new" || p.status === "chg"; }
+  return { plans };
+}
+
+const ST_LABEL = { skip: "Skipped", new: "New", chg: "Change", same: "Unchanged", err: "Error", ok: "✓ Applied", fail: "Failed" };
+function renderImport() {
+  const ps = IMP.plans, cnt = k => ps.filter(p => p.status === k).length;
+  const pills = [["all", "All", ps.length], ["new", "New", cnt("new")], ["chg", "Change", cnt("chg")], ["same", "Unchanged", cnt("same")], ["err", "Error", cnt("err")], ["skip", "Skipped", cnt("skip")]];
+  if (IMP.done) pills.push(["ok", "Applied", cnt("ok")], ["fail", "Failed", cnt("fail")]);
+  $("#impSum").innerHTML = pills.filter(x => x[0] === "all" || x[2]).map(([k, l, n]) => `<button type="button" class="pill" data-pf="${k}" aria-pressed="${IMP.filter === k}">${l} <b>${n}</b></button>`).join("");
+  $("#impCols").innerHTML = `Detected columns: ${IMP.cols.mapped.map(k => `<code>${esc(k)}</code>`).join(" ")}${IMP.cols.ignored.length ? ` · ignored: ${IMP.cols.ignored.map(h => esc(h)).join(", ")}` : ""}`;
+  const list = ps.filter(p => IMP.filter === "all" || p.status === IMP.filter);
+  const selectable = p => !IMP.done && !IMP.running && (p.status === "new" || p.status === "chg");
+  $("#impRows").innerHTML = list.map((p, i) => `<tr><td><label class="opt"><input type="checkbox" data-pi="${ps.indexOf(p)}" ${p.sel ? "checked" : ""} ${selectable(p) ? "" : "disabled"} aria-label="Apply row ${p.line}"></label></td><td class="muted">${p.line}</td><td><span class="st ${p.status === "fail" ? "err" : p.status}">${ST_LABEL[p.status]}</span></td><td class="mono">${esc(p.mac || "–")}</td><td>${esc(p.c ? (p.c.name || p.c.hostname || "") : (p.d?.name || ""))}</td><td><div class="chg-list">${
+    (p.skip ? `<span class="muted">${esc(p.skip)}</span>` : "") +
+    p.errs.map(e => `<span class="msg">${esc(e)}</span>`).join("") +
+    (p.errs.length ? "" : p.changes.map(([l, f, t]) => `<span>${esc(l)}: ${f ? `<span class="from">${esc(f)}</span> → ` : ""}<span class="to">${esc(t || "(empty)")}</span></span>`).join("")) +
+    (p.result ? `<span class="msg">${esc(p.result)}</span>` : "")}</div></td></tr>`).join("") || `<tr><td colspan="6" class="muted">No rows in this view.</td></tr>`;
+  for (const cb of $("#impRows").querySelectorAll("input[data-pi]")) cb.addEventListener("change", () => { ps[+cb.dataset.pi].sel = cb.checked; renderImport(); });
+  const vis = list.filter(selectable), all = $("#impAll"), nSel = vis.filter(p => p.sel).length;
+  all.disabled = !vis.length; all.checked = vis.length > 0 && nSel === vis.length; all.indeterminate = nSel > 0 && nSel < vis.length;
+  all.onchange = () => { const on = all.checked; vis.forEach(p => p.sel = on); renderImport(); };
+  for (const b of $("#impSum").querySelectorAll("[data-pf]")) b.addEventListener("click", () => { IMP.filter = b.dataset.pf; renderImport(); });
+  const todo = ps.filter(p => (p.status === "new" || p.status === "chg") && p.sel).length;
+  const btn = $("#impApply");
+  if (IMP.done) { btn.disabled = false; btn.textContent = "Close"; }
+  else { btn.disabled = IMP.running || !todo; btn.textContent = IMP.running ? "Applying …" : `Apply ${todo} ${todo === 1 ? "entry" : "entries"}`; }
+}
+async function autoVersion(label) {
+  try { await api("api/versions", { kind: "auto", label }); return true; }
+  catch (e) { toast(`Could not save the automatic version (“${label}”): ${e.message}. Nothing was changed.`); return false; }
+}
+function openImport() {
+  Object.assign(IMP, { plans: [], filter: "all", running: false, done: false, mode: "csv" });
+  $("#impTitle").textContent = "Import CSV"; $("#impTpl").hidden = false; $("#impCols").hidden = false;
+  $("#impPreview").hidden = true; $("#impDrop").hidden = false; $("#impHelp").hidden = false; $("#impProg").hidden = true; $("#impFile").value = "";
+  $("#impApply").disabled = true; $("#impApply").textContent = "Apply";
+  $("#dlgImport").showModal();
+}
+async function readImport(file) {
+  if (!file) return;
+  let text = await file.text();
+  if (text.includes("�")) { try { text = new TextDecoder("windows-1252").decode(await file.arrayBuffer()); } catch {} }
+  const rows = parseCsv(text);
+  if (rows.length < 2) { toast("The file contains no data rows."); return; }
+  const r = buildPlans(rows);
+  if (r.error) { toast(r.error); return; }
+  IMP.plans = r.plans; IMP.filter = r.plans.some(p => p.status === "err") ? "err" : "all";
+  $("#impPreview").hidden = false; $("#impDrop").hidden = true; $("#impHelp").hidden = true;
+  renderImport();
+}
+async function applyImport() {
+  if (IMP.done) { $("#dlgImport").close(); return; }
+  const todo = IMP.plans.filter(p => (p.status === "new" || p.status === "chg") && p.sel);
+  IMP.running = true; renderImport();
+  if (!await autoVersion(IMP.mode === "restore" ? `Before restore of ${IMP.restoreOf}` : "Before CSV import")) { IMP.running = false; renderImport(); return; }
+  $("#impProg").hidden = false;
+  let i = 0;
+  for (const p of todo) {
+    const body = { mac: p.mac, name: p.d.name, note: p.d.note, use_fixedip: p.d.use_fixedip, network_id: p.d.network_id, fixed_ip: p.d.fixed_ip, local_dns_record_enabled: p.d.local_dns_record_enabled, local_dns_record: p.d.local_dns_record };
+    if (p.hasAp) { body.fixed_ap_enabled = p.d.fixed_ap_enabled; body.fixed_ap_mac = p.d.fixed_ap_mac; }
+    try { await api("api/client", body); p.status = "ok"; }
+    catch (e) { p.status = "fail"; p.result = e.message; }
+    $("#impProg i").style.width = (++i / todo.length * 100) + "%";
+  }
+  IMP.running = false; IMP.done = true;
+  const ok = todo.filter(p => p.status === "ok").length, fail = todo.length - ok;
+  IMP.filter = fail ? "fail" : "all";
+  toast(fail ? `${ok} applied, ${fail} failed` : `${ok} ${ok === 1 ? "entry" : "entries"} applied`);
+  renderImport(); load();
+}
+$("#impFile").addEventListener("change", e => readImport(e.target.files[0]));
+const drop = $("#impDrop");
+drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add("over"); });
+drop.addEventListener("dragleave", () => drop.classList.remove("over"));
+drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); readImport(e.dataTransfer.files[0]); });
+$("#impApply").addEventListener("click", applyImport);
+for (const id of ["#impCancel", "#impClose"]) $(id).addEventListener("click", () => { if (!IMP.running) $("#dlgImport").close(); });
+$("#dlgImport").addEventListener("cancel", e => { if (IMP.running) e.preventDefault(); });
+$("#impTpl").addEventListener("click", () => saveFile("dhcp-import-template.csv", ["MAC", "Name", "Fixed IP", "Reservation VLAN", "Locked to AP", "Local DNS", "Note"].join(";") + "\r\n"));
+
+
+// ---------- views (SharePoint-style) ----------
+const clone = o => JSON.parse(JSON.stringify(o ?? null));
+const BUILTIN_VIEWS = [
+  { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: [], colFilters: {}, facets: {}, sort: { key: "name", dir: 1 } } },
+  { id: "dhcp", name: "DHCP Reservations", builtin: true, state: { hiddenCols: COLS.map(c => c.key).filter(k => !["mac", "name", "fixed_ip", "ip", "last_seen"].includes(k)), colOrder: ["mac", "name", "fixed_ip", "ip", "last_seen"], colFilters: {}, facets: { res: ["yes"] }, sort: { key: "fixed_ip", dir: 1 } } },
+];
+const VIEWS = { custom: [], def: "all", current: store.get("currentView", null), loaded: false, armDelete: false };
+const allViews = () => [...BUILTIN_VIEWS, ...VIEWS.custom];
+const viewById = id => allViews().find(v => v.id === id);
+const curView = () => viewById(VIEWS.current) || BUILTIN_VIEWS[0];
+const snapshot = () => clone({ hiddenCols: state.hiddenCols, colOrder: state.colOrder, colFilters: state.colFilters, facets: state.facets, sort: state.sort });
+function normView(st) {
+  st = st || {};
+  const o = st.colOrder || [], hid = st.hiddenCols || [];
+  const vis = [...COLS].sort((a, b) => (o.indexOf(a.key) + 1 || 999) - (o.indexOf(b.key) + 1 || 999)).map(c => c.key).filter(k => !hid.includes(k));
+  const filters = Object.entries(st.colFilters || {}).filter(([k, v]) => v && vis.includes(k)).sort();
+  const facets = Object.entries(st.facets || {}).filter(([, v]) => v && v.length).map(([k, v]) => [k, [...v].sort()]).sort();
+  return JSON.stringify({ vis, filters, facets, sort: st.sort || { key: "name", dir: 1 } });
+}
+const isDirty = () => normView(snapshot()) !== normView(curView().state);
+function renderViewBtn() {
+  $("#viewName").textContent = curView().name;
+  $("#viewMod").hidden = !isDirty();
+}
+function applyView(v) {
+  const st = clone(v.state);
+  state.hiddenCols = (st.hiddenCols || []).filter(k => k !== "name");
+  state.colOrder = st.colOrder || []; state.colFilters = st.colFilters || {}; state.facets = st.facets || {};
+  state.sort = st.sort || { key: "name", dir: 1 };
+  VIEWS.current = v.id; store.set("currentView", v.id);
+  persist(); buildHead(); renderAll(); if (!$("#colPanel").hidden) renderCols();
+}
+async function saveViews(msg) {
+  try { await api("api/views", { views: VIEWS.custom.map(v => ({ id: v.id, name: v.name, state: v.state })), default: VIEWS.def }); if (msg) toast(msg); }
+  catch (e) { toast("Could not save views: " + e.message); }
+  renderViewBtn(); renderViewMenu();
+}
+function askName(title, value) {
+  return new Promise(resolve => {
+    const d = $("#dlgName"); $("#nameTitle").textContent = title; $("#fViewName").value = value || ""; $("#nameErr").hidden = true;
+    const done = val => { d.close(); $("#formName").onsubmit = null; $("#nameCancel").onclick = null; resolve(val); };
+    $("#formName").onsubmit = e => {
+      e.preventDefault(); const n = $("#fViewName").value.trim();
+      if (!n) { $("#nameErr").textContent = "Please enter a name."; $("#nameErr").hidden = false; return; }
+      if (allViews().some(v => v.name.toLowerCase() === n.toLowerCase() && v.name !== value)) { $("#nameErr").textContent = "A view with this name already exists."; $("#nameErr").hidden = false; return; }
+      done(n);
+    };
+    $("#nameCancel").onclick = () => done(null);
+    d.onclose = () => { if ($("#formName").onsubmit) done(null); };
+    d.showModal(); $("#fViewName").focus(); $("#fViewName").select();
+  });
+}
+function renderViewMenu() {
+  const cv = curView(), dirty = isDirty();
+  const item = (act, label, opts = {}) => `<button type="button" class="mi ${opts.cls || ""}" role="menuitem" data-act="${act}" ${opts.id ? `data-id="${opts.id}"` : ""} ${opts.disabled ? 'aria-disabled="true"' : ""}>${opts.check !== undefined ? `<span class="ck">${opts.check ? "✓" : ""}</span>` : ""}${label}${opts.tag ? `<span class="tag info">${opts.tag}</span>` : ""}</button>`;
+  $("#viewMenu").innerHTML =
+    `<div class="lbl">Views</div>` +
+    allViews().map(v => item("select", esc(v.name), { id: v.id, check: v.id === cv.id, tag: v.id === VIEWS.def ? "default" : "" })).join("") +
+    `<div class="sep"></div>` +
+    item("save", cv.builtin ? `Save changes <span class="muted">(built-in view, use “Save as”)</span>` : `Save changes to “${esc(cv.name)}”`, { disabled: cv.builtin || !dirty }) +
+    item("saveas", "Save as new view…") +
+    item("discard", "Discard changes", { disabled: !dirty }) +
+    `<div class="sep"></div>` +
+    item("rename", "Rename view…", { disabled: cv.builtin }) +
+    item("default", "Set as default view", { disabled: VIEWS.def === cv.id }) +
+    item("delete", VIEWS.armDelete ? `Really delete “${esc(cv.name)}”? Click again` : "Delete view", { disabled: cv.builtin, cls: "danger" });
+}
+function toggleViewMenu(open) {
+  const m = $("#viewMenu"); open = open ?? m.hidden;
+  VIEWS.armDelete = false; if (open) renderViewMenu();
+  m.hidden = !open; $("#btnView").setAttribute("aria-expanded", String(open));
+}
+$("#btnView").addEventListener("click", e => { e.stopPropagation(); toggleViewMenu(); });
+document.addEventListener("click", e => { if (!$("#viewMenu").hidden && e.target.isConnected && !e.target.closest(".viewsel")) toggleViewMenu(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#viewMenu").hidden) toggleViewMenu(false); });
+$("#viewMenu").addEventListener("click", async e => {
+  e.stopPropagation();
+  const b = e.target.closest(".mi"); if (!b || b.getAttribute("aria-disabled") === "true") return;
+  const act = b.dataset.act, cv = curView();
+  if (act === "select") { toggleViewMenu(false); applyView(viewById(b.dataset.id)); return; }
+  if (act === "save") { cv.state = snapshot(); toggleViewMenu(false); await saveViews(`View “${cv.name}” saved`); return; }
+  if (act === "saveas") {
+    toggleViewMenu(false);
+    const name = await askName("Save as new view", cv.builtin ? "" : cv.name + " (copy)"); if (!name) return;
+    const v = { id: "v" + Date.now().toString(36), name, state: snapshot() };
+    VIEWS.custom.push(v); VIEWS.current = v.id; store.set("currentView", v.id);
+    await saveViews(`View “${name}” created`); return;
+  }
+  if (act === "discard") { toggleViewMenu(false); applyView(cv); return; }
+  if (act === "rename") { toggleViewMenu(false); const name = await askName("Rename view", cv.name); if (!name) return; cv.name = name; await saveViews("View renamed"); return; }
+  if (act === "default") { VIEWS.def = cv.id; toggleViewMenu(false); await saveViews(`“${cv.name}” is now the default view`); return; }
+  if (act === "delete") {
+    if (!VIEWS.armDelete) { VIEWS.armDelete = true; renderViewMenu(); return; }
+    VIEWS.custom = VIEWS.custom.filter(v => v.id !== cv.id); if (VIEWS.def === cv.id) VIEWS.def = "all";
+    toggleViewMenu(false); applyView(viewById(VIEWS.def) || BUILTIN_VIEWS[0]); await saveViews("View deleted");
+  }
+});
+async function loadViews(firstStart) {
+  try {
+    const d = await api("api/views");
+    VIEWS.custom = (d.views || []).filter(v => v && v.id && v.name);
+    VIEWS.def = viewById(d.default) ? d.default : "all";
+  } catch (e) { toast("Could not load views: " + e.message); }
+  VIEWS.loaded = true;
+  if (firstStart && !viewById(VIEWS.current)) applyView(viewById(VIEWS.def));
+  renderViewBtn();
+}
+
+// ---------- replace subnet ----------
+const SUB = { rows: [], running: false, done: false };
+function parseCidr(v) {
+  v = String(v || "").trim().replace(/\.x+$/i, "");
+  let [ip, bits] = v.split("/");
+  const parts = ip.split(".").filter(p => p !== "");
+  if (bits == null) { bits = parts.length * 8; while (parts.length < 4) parts.push("0"); }
+  ip = parts.join("."); bits = Number(bits);
+  if (ipNum(ip) < 0 || !Number.isInteger(bits) || bits < 8 || bits > 30) return null;
+  const mask = (~0 << (32 - bits)) >>> 0;
+  return { base: (ipNum(ip) & mask) >>> 0, bits, mask };
+}
+const toIp = x => [x >>> 24, (x >>> 16) & 255, (x >>> 8) & 255, x & 255].join(".");
+function buildSubRows() {
+  const from = parseCidr($("#subFrom").value), to = parseCidr($("#subTo").value), sel = $("#subNet").value;
+  const msg = [];
+  if ($("#subFrom").value.trim() && !from) msg.push("Source subnet is not valid (e.g. 192.168.30.0/24).");
+  if ($("#subTo").value.trim() && !to) msg.push("Target subnet is not valid (e.g. 192.168.31.0/24).");
+  if (from && to && from.bits !== to.bits) msg.push("Both subnets need the same prefix length.");
+  if (from && to && from.base === to.base) msg.push("Source and target are the same subnet.");
+  if (!from || !to || msg.length) return { msg, rows: [] };
+  const fromStr = `${toIp(from.base)}/${from.bits}`;
+  const movers = state.clients.filter(c => c.use_fixedip && c.mac && ipNum(c.fixed_ip) >= 0 && inSubnet(c.fixed_ip, fromStr));
+  const moving = new Set(movers.map(c => c.mac));
+  const rows = movers.map(c => {
+    const nip = toIp((to.base | (ipNum(c.fixed_ip) & ~to.mask)) >>> 0);
+    const n = sel ? net(sel) : state.networks.find(x => inSubnet(nip, x.subnet));
+    const errs = [], warns = [];
+    if (!n) errs.push(`No UniFi network contains ${nip}. Create the network first or pick one.`);
+    else if (!inSubnet(nip, n.subnet)) errs.push(`${nip} is not in ${n.name} (${n.subnet})`);
+    else if (nip === n.gateway) errs.push(`${nip} is the gateway of ${n.name}`);
+    const twin = movers.find(x => x !== c && x.fixed_ip === c.fixed_ip);
+    if (twin) errs.push(`${c.fixed_ip} is reserved twice (also ${twin.name || twin.mac}). Fix the duplicate first.`);
+    const other = state.clients.find(x => x.use_fixedip && x.fixed_ip === nip && !moving.has(x.mac));
+    if (other) errs.push(`${nip} is already reserved for ${other.name || other.mac}`);
+    const user = state.clients.find(x => x.online && x.ip === nip && x.mac !== c.mac);
+    if (user && !other) warns.push(`currently used by ${user.name || user.hostname || user.mac}`);
+    if (n && n.dhcp_start && ipNum(nip) >= ipNum(n.dhcp_start) && ipNum(nip) <= ipNum(n.dhcp_stop)) warns.push("in DHCP pool");
+    return { c, nip, n, errs, warns, sel: !errs.length, status: errs.length ? "err" : "chg" };
+  }).sort((a, b) => ipNum(a.c.fixed_ip) - ipNum(b.c.fixed_ip));
+  if (!rows.length) msg.push(`No fixed IPs found in ${fromStr}.`);
+  return { msg, rows };
+}
+function fillSubPicks() {
+  const cnt = n => state.clients.filter(c => c.use_fixedip && inSubnet(c.fixed_ip, n.subnet)).length;
+  const opt = (n, withCount) => `<option value="${n.subnet}" data-net="${n.id}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}${withCount ? ` (${cnt(n)} fixed ${cnt(n) === 1 ? "IP" : "IPs"})` : ""}</option>`;
+  $("#subFromPick").innerHTML = `<option value="">Known networks …</option>` + state.networks.map(n => opt(n, true)).join("");
+  $("#subToPick").innerHTML = `<option value="">Known networks …</option>` + state.networks.map(n => opt(n, false)).join("");
+}
+$("#subFromPick").addEventListener("change", e => { if (!e.target.value) return; $("#subFrom").value = e.target.value; e.target.value = ""; if (!SUB.running && !SUB.done) renderSub(); $("#subTo").focus(); });
+$("#subToPick").addEventListener("change", e => {
+  const o = e.target.selectedOptions[0]; if (!e.target.value) return;
+  $("#subTo").value = e.target.value; $("#subNet").value = o.dataset.net || ""; e.target.value = "";
+  if (!SUB.running && !SUB.done) renderSub();
+});
+function fillSubNets() {
+  $("#subNet").innerHTML = `<option value="">Auto (by target subnet)</option>` + state.networks.map(n => `<option value="${n.id}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join("");
+}
+function renderSub() {
+  if (!SUB.done && !SUB.running) { const r = buildSubRows(); SUB.rows = r.rows; SUB.msg = r.msg; }
+  const rows = SUB.rows, ok = rows.filter(r => r.status === "chg" || r.status === "ok").length, err = rows.filter(r => r.status === "err").length;
+  $("#subPreview").hidden = !rows.length && !SUB.msg?.length;
+  $("#subSum").innerHTML = (SUB.msg || []).map(m => `<span class="st err">${esc(m)}</span>`).join(" ") +
+    (rows.length ? `<span class="pill">Found <b>${rows.length}</b></span><span class="pill">Movable <b>${ok}</b></span>${err ? `<span class="pill">Errors <b>${err}</b></span>` : ""}` : "");
+  const selectable = r => !SUB.running && !SUB.done && r.status === "chg";
+  $("#subRows").innerHTML = rows.map((r, i) => `<tr><td><label class="opt"><input type="checkbox" data-si="${i}" ${r.sel ? "checked" : ""} ${selectable(r) ? "" : "disabled"} aria-label="Move ${esc(r.c.name || r.c.mac)}"></label></td>
+    <td>${esc(r.c.name || r.c.hostname || "–")}</td><td class="mono">${esc(r.c.mac)}</td><td class="mono">${esc(r.c.fixed_ip)}</td><td class="mono"><b>${esc(r.nip)}</b></td>
+    <td>${r.n ? esc(r.n.name) + (r.n.vlan ? ` <span class="muted">(${r.n.vlan})</span>` : "") : "–"}</td>
+    <td><div class="chg-list">${r.status === "ok" ? '<span class="st ok">✓ Moved</span>' : r.status === "fail" ? '<span class="st err">Failed</span>' : r.status === "err" ? '<span class="st err">Error</span>' : '<span class="st chg">Move</span>'}${r.errs.map(e => `<span class="msg">${esc(e)}</span>`).join("")}${r.warns.map(w => `<span class="muted">${esc(w)}</span>`).join("")}${r.result ? `<span class="msg">${esc(r.result)}</span>` : ""}</div></td></tr>`).join("");
+  for (const cb of $("#subRows").querySelectorAll("input[data-si]")) cb.addEventListener("change", () => { rows[+cb.dataset.si].sel = cb.checked; renderSubFoot(); syncSubAll(); });
+  syncSubAll(); renderSubFoot();
+}
+function syncSubAll() {
+  const vis = SUB.rows.filter(r => r.status === "chg" && !SUB.running && !SUB.done), n = vis.filter(r => r.sel).length, all = $("#subAll");
+  all.disabled = !vis.length; all.checked = vis.length > 0 && n === vis.length; all.indeterminate = n > 0 && n < vis.length;
+}
+function renderSubFoot() {
+  const n = SUB.rows.filter(r => r.status === "chg" && r.sel).length, b = $("#subApply");
+  if (SUB.done) { b.disabled = false; b.textContent = "Close"; return; }
+  b.disabled = SUB.running || !n; b.textContent = SUB.running ? "Moving …" : `Move ${n} ${n === 1 ? "reservation" : "reservations"}`;
+}
+$("#subAll").addEventListener("change", e => { SUB.rows.forEach(r => { if (r.status === "chg") r.sel = e.target.checked; }); renderSub(); });
+function openSub() {
+  Object.assign(SUB, { rows: [], running: false, done: false, msg: [] });
+  fillSubNets(); fillSubPicks(); $("#subFrom").value = ""; $("#subTo").value = ""; $("#subProg").hidden = true; $("#subProg i").style.width = "0";
+  renderSub(); $("#dlgSub").showModal(); $("#subFrom").focus();
+}
+for (const id of ["#subFrom", "#subTo", "#subNet"]) $(id).addEventListener("input", () => { if (!SUB.running && !SUB.done) renderSub(); });
+async function applySub() {
+  if (SUB.done) { $("#dlgSub").close(); return; }
+  const todo = SUB.rows.filter(r => r.status === "chg" && r.sel);
+  SUB.running = true; renderSub();
+  if (!await autoVersion("Before replace subnet")) { SUB.running = false; renderSub(); return; }
+  $("#subProg").hidden = false;
+  let i = 0;
+  for (const r of todo) {
+    const c = r.c;
+    try {
+      await api("api/client", { mac: c.mac, name: c.name || "", note: c.note || "", use_fixedip: true, network_id: r.n.id, fixed_ip: r.nip, local_dns_record_enabled: !!c.local_dns_record_enabled, local_dns_record: c.local_dns_record || "" });
+      r.status = "ok";
+    } catch (e) { r.status = "fail"; r.result = e.message; }
+    $("#subProg i").style.width = (++i / todo.length * 100) + "%";
+  }
+  SUB.running = false; SUB.done = true;
+  const ok = todo.filter(r => r.status === "ok").length;
+  toast(ok === todo.length ? `${ok} ${ok === 1 ? "reservation" : "reservations"} moved` : `${ok} moved, ${todo.length - ok} failed`);
+  renderSub(); load();
+}
+$("#subApply").addEventListener("click", applySub);
+for (const id of ["#subCancel", "#subClose"]) $(id).addEventListener("click", () => { if (!SUB.running) $("#dlgSub").close(); });
+$("#dlgSub").addEventListener("cancel", e => { if (SUB.running) e.preventDefault(); });
+
+// ---------- inline edit ----------
+state.inline = !!store.get("inline", false);
+function inlineOn(c) { return state.inline && !!c.mac; }
+function setInline(on) {
+  state.inline = on; store.set("inline", on);
+  $("#btnInline").setAttribute("aria-pressed", String(on)); document.body.classList.toggle("inline-mode", on);
+  if (on) { closePanel(); renderTable(); } else load();
+}
+function clientBody(c, extra) {
+  return Object.assign({ mac: c.mac, name: c.name || "", note: c.note || "", use_fixedip: !!c.use_fixedip, network_id: c._resNet || "", fixed_ip: c.use_fixedip ? c.fixed_ip : "", local_dns_record_enabled: !!c.local_dns_record_enabled, local_dns_record: c.local_dns_record || "" }, extra);
+}
+function refreshRowCells(c) {
+  const tr = $("#tbody").querySelector(`tr[data-k="${CSS.escape(keyOf(c))}"]`); if (!tr) return;
+  visCols().forEach((col, i) => { if (col.key !== "name" && col.key !== "fixed_ip" && tr.children[i]) tr.children[i].innerHTML = col.td(c); });
+}
+async function commitInline(inp) {
+  const c = state.clients.find(x => keyOf(x) === inp.dataset.k); if (!c) return;
+  const v = inp.value.trim(), f = inp.dataset.f;
+  const cur = f === "name" ? (c.name || "") : (c.use_fixedip ? c.fixed_ip : "");
+  if (v === cur) { inp.classList.remove("err"); return; }
+  inp.classList.remove("ok", "err"); inp.classList.add("saving"); inp.title = "";
+  try {
+    if (f === "name") { await api("api/client", clientBody(c, { name: v })); c.name = v; }
+    else if (!v) { await api("api/unreserve", { mac: c.mac }); Object.assign(c, { use_fixedip: false, fixed_ip: "", fixed_network_id: "" }); }
+    else {
+      if (ipNum(v) < 0) throw new Error(`“${v}” is not a valid IP address`);
+      const rn = net(c._resNet), n = rn && inSubnet(v, rn.subnet) ? rn : state.networks.find(x => inSubnet(v, x.subnet));
+      if (!n) throw new Error(`No UniFi network contains ${v}`);
+      await api("api/client", clientBody(c, { use_fixedip: true, fixed_ip: v, network_id: n.id }));
+      Object.assign(c, { use_fixedip: true, fixed_ip: v, fixed_network_id: n.id });
+    }
+    inp.classList.remove("saving"); inp.classList.add("ok"); inp.defaultValue = v; setTimeout(() => inp.classList.remove("ok"), 1500);
+    computeWarnings(); refreshRowCells(c);
+  } catch (e) { inp.classList.remove("saving"); inp.classList.add("err"); inp.title = e.message; toast(e.message); }
+}
+$("#tbody").addEventListener("change", e => { const inp = e.target.closest("input.ie"); if (inp) commitInline(inp); });
+$("#tbody").addEventListener("keydown", e => {
+  const inp = e.target.closest("input.ie"); if (!inp) return;
+  if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); inp.value = inp.defaultValue; inp.classList.remove("err"); inp.blur(); return; }
+  if (e.key === "Enter" || e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault();
+    const all = [...$("#tbody").querySelectorAll(`input.ie[data-f="${inp.dataset.f}"]`)], nx = all[all.indexOf(inp) + (e.key === "ArrowUp" ? -1 : 1)];
+    nx ? (nx.focus(), nx.select()) : inp.blur();
+  }
+});
+$("#btnInline").addEventListener("click", () => setInline(!state.inline));
+$("#btnInline").setAttribute("aria-pressed", String(state.inline)); document.body.classList.toggle("inline-mode", state.inline);
+
+// ---------- names from Home Assistant ----------
+const HAN = { rows: [], filter: "rename", running: false, done: false, missing: 0 };
+const macBytes = m => (m || "").toLowerCase().split(":");
+function buildHaRows(devs) {
+  const byMac = {};
+  for (const d of devs) {
+    const viaUnifiOnly = d.domains.length && d.domains.every(x => x === "unifi");
+    const proposed = d.name_by_user || (viaUnifiOnly ? "" : d.name);
+    if (!proposed) continue;
+    for (const m of d.macs) {
+      const prev = byMac[m];
+      const score = (d.name_by_user ? 2 : 0) + (viaUnifiOnly ? 0 : 1);
+      if (!prev || score > prev.score) byMac[m] = { d, proposed, score };
+    }
+  }
+  const clientsByMac = Object.fromEntries(state.clients.filter(c => c.mac).map(c => [c.mac, c]));
+  const used = new Set(Object.keys(byMac).filter(m => clientsByMac[m]));
+  const rows = [];
+  for (const [m, h] of Object.entries(byMac)) {
+    let c = clientsByMac[m], match = "exact";
+    if (!c) {
+      const [a, b, cc, dd, ee, ff] = macBytes(m);
+      c = state.clients.find(x => { if (!x.mac || used.has(x.mac)) return false; const y = macBytes(x.mac); return y.slice(0, 5).join(":") === [a, b, cc, dd, ee].join(":") && Math.abs(parseInt(y[5], 16) - parseInt(ff, 16)) <= 4; });
+      match = c ? "near" : "none";
+      if (c) used.add(c.mac);
+    }
+    const status = !c ? "missing" : (c.name || "") === h.proposed ? "same" : match === "near" ? "near" : "rename";
+    rows.push({ c, haMac: m, h, match, status, sel: status === "rename" });
+  }
+  return rows.sort((x, y) => ({ rename: 0, near: 1, same: 2, missing: 3 }[x.status] - { rename: 0, near: 1, same: 2, missing: 3 }[y.status]) || (x.h.proposed).localeCompare(y.h.proposed, "en"));
+}
+function renderHa() {
+  const rows = HAN.rows, cnt = k => rows.filter(r => r.status === k).length;
+  const pills = [["all", "All", rows.length], ["rename", "Rename", cnt("rename")], ["near", "Near match", cnt("near")], ["same", "Same name", cnt("same")], ["missing", "Not in UniFi", cnt("missing")]];
+  if (HAN.done) pills.push(["ok", "Renamed", cnt("ok")], ["fail", "Failed", cnt("fail")]);
+  $("#haSum").innerHTML = pills.filter(p => p[0] === "all" || p[2]).map(([k, l, n]) => `<button type="button" class="pill" data-hf="${k}" aria-pressed="${HAN.filter === k}">${l} <b>${n}</b></button>`).join("");
+  for (const b of $("#haSum").querySelectorAll("[data-hf]")) b.addEventListener("click", () => { HAN.filter = b.dataset.hf; renderHa(); });
+  const list = rows.filter(r => HAN.filter === "all" || r.status === HAN.filter);
+  const selectable = r => !HAN.running && !HAN.done && (r.status === "rename" || r.status === "near");
+  const ST = { rename: '<span class="st chg">Rename</span>', near: '<span class="st new">Near match</span>', same: '<span class="st same">Same name</span>', missing: '<span class="st skip">Not in UniFi</span>', ok: '<span class="st ok">✓ Renamed</span>', fail: '<span class="st err">Failed</span>' };
+  $("#haRows").innerHTML = list.map(r => `<tr><td><label class="opt"><input type="checkbox" data-hi="${rows.indexOf(r)}" ${r.sel ? "checked" : ""} ${selectable(r) ? "" : "disabled"} aria-label="Rename ${esc(r.h.proposed)}"></label></td>
+    <td class="mono">${esc(r.c ? r.c.mac : r.haMac)}${r.match === "near" ? `<div class="muted" style="font-size:11px">HA: ${esc(r.haMac)}</div>` : ""}</td>
+    <td>${r.c ? esc(r.c.name || "") || `<span class="muted">${esc(r.c.hostname || "(no name)")}</span>` : "–"}</td>
+    <td><b>${esc(r.h.proposed)}</b>${r.h.d.name_by_user && r.h.d.name !== r.h.proposed ? `<div class="muted" style="font-size:11px">${esc(r.h.d.name)}</div>` : ""}</td>
+    <td class="muted">${esc(r.h.d.domains.join(", "))}${r.h.d.area ? ` · ${esc(r.h.d.area)}` : ""}</td>
+    <td><div class="chg-list">${ST[r.status]}${r.result ? `<span class="msg">${esc(r.result)}</span>` : ""}</div></td></tr>`).join("") || `<tr><td colspan="6" class="muted">No rows in this view.</td></tr>`;
+  for (const cb of $("#haRows").querySelectorAll("input[data-hi]")) cb.addEventListener("change", () => { rows[+cb.dataset.hi].sel = cb.checked; renderHaFoot(); syncHaAll(); });
+  syncHaAll(); renderHaFoot();
+}
+function haVisibleSelectable() { return HAN.rows.filter(r => (HAN.filter === "all" || r.status === HAN.filter) && !HAN.running && !HAN.done && (r.status === "rename" || r.status === "near")); }
+function syncHaAll() { const v = haVisibleSelectable(), n = v.filter(r => r.sel).length, a = $("#haAll"); a.disabled = !v.length; a.checked = v.length > 0 && n === v.length; a.indeterminate = n > 0 && n < v.length; }
+function renderHaFoot() {
+  const n = HAN.rows.filter(r => (r.status === "rename" || r.status === "near") && r.sel).length, b = $("#haApply");
+  if (HAN.done) { b.disabled = false; b.textContent = "Close"; return; }
+  b.disabled = HAN.running || !n; b.textContent = HAN.running ? "Renaming …" : `Rename ${n} ${n === 1 ? "client" : "clients"}`;
+}
+$("#haAll").addEventListener("change", e => { haVisibleSelectable().forEach(r => r.sel = e.target.checked); renderHa(); });
+async function openHa() {
+  Object.assign(HAN, { rows: [], filter: "rename", running: false, done: false });
+  $("#haRows").innerHTML = `<tr><td colspan="6" class="muted"><span class="spin"></span> Reading devices from Home Assistant …</td></tr>`; $("#haSum").innerHTML = ""; $("#haErr").hidden = true; $("#haProg").hidden = true; $("#haProg i").style.width = "0";
+  renderHaFoot(); $("#dlgHa").showModal();
+  try {
+    const d = await api("api/ha_devices");
+    HAN.rows = buildHaRows(d.devices || []);
+    if (!HAN.rows.some(r => r.status === "rename")) HAN.filter = "all";
+    renderHa();
+  } catch (e) { $("#haErr").textContent = "Could not read Home Assistant: " + e.message; $("#haErr").hidden = false; $("#haRows").innerHTML = ""; }
+}
+async function applyHa() {
+  if (HAN.done) { $("#dlgHa").close(); return; }
+  const todo = HAN.rows.filter(r => (r.status === "rename" || r.status === "near") && r.sel);
+  HAN.running = true; renderHa();
+  if (!await autoVersion("Before names from HA")) { HAN.running = false; renderHa(); return; }
+  $("#haProg").hidden = false;
+  let i = 0;
+  for (const r of todo) {
+    try { await api("api/client", clientBody(r.c, { name: r.h.proposed })); r.status = "ok"; }
+    catch (e) { r.status = "fail"; r.result = e.message; }
+    $("#haProg i").style.width = (++i / todo.length * 100) + "%";
+  }
+  HAN.running = false; HAN.done = true;
+  const ok = todo.filter(r => r.status === "ok").length;
+  HAN.filter = ok === todo.length ? "ok" : "fail";
+  toast(ok === todo.length ? `${ok} ${ok === 1 ? "client" : "clients"} renamed` : `${ok} renamed, ${todo.length - ok} failed`);
+  renderHa(); load();
+}
+$("#haApply").addEventListener("click", applyHa);
+for (const id of ["#haCancel", "#haClose"]) $(id).addEventListener("click", () => { if (!HAN.running) $("#dlgHa").close(); });
+$("#dlgHa").addEventListener("cancel", e => { if (HAN.running) e.preventDefault(); });
+$("#btnHa").addEventListener("click", openHa);
+
+// ---------- versions (snapshots) ----------
+const VER = { list: [], settings: { daily: false, baseline: null }, sel: new Set(), armDel: null, cmp: null, cmpFilter: "all" };
+const KIND = { manual: "Manual", daily: "Daily", auto: "Before bulk action" };
+const verTitle = m => `${m.label || KIND[m.kind]} · ${isoDateTime(m.created)}`;
+async function loadVersionsMeta() {
+  try { const d = await api("api/versions"); VER.list = d.versions || []; VER.settings = d.settings || VER.settings; } catch (e) { toast("Could not load versions: " + e.message); }
+  VER.loaded = true;
+  await loadBaseline();
+}
+const BASE_CACHE = {};
+async function baseVersion(id) { if (!BASE_CACHE[id]) BASE_CACHE[id] = await api(`api/versions/${id}`); return BASE_CACHE[id]; }
+function baseChoices() {
+  const ids = []; if (VER.settings.baseline) ids.push(VER.settings.baseline);
+  for (const m of VER.list) { if (ids.length >= 5) break; if (!ids.includes(m.id)) ids.push(m.id); }
+  return ids.map(id => VER.list.find(m => m.id === id)).filter(Boolean);
+}
+// per version: devices that are new or have changed editable fields (IP / network moves do not count)
+function computeBaseCats() {
+  const all = baseChoices(), ch = all.filter(m => BASE_CACHE[m.id]);
+  if (!VER.loaded || !state.clients.length || ch.length < all.length) return; // wait for versions and table
+  const cur = currentAsVersion();
+  state.baseSets = ch.map(m => {
+    const cats = new Set(diffVersions(BASE_CACHE[m.id], cur).filter(r => r.cats.has("new") || r.cats.has("changed")).map(r => r.mac));
+    return { id: m.id, created: m.created, label: m.label, isBaseline: m.id === VER.settings.baseline, cats };
+  });
+  const valid = new Set(state.baseSets.map(b => "chg:" + b.id));
+  if (state.facets.base) state.facets.base = state.facets.base.filter(v => valid.has(v));
+  delete state.facets.baseVer;
+  state.baseReady = true;
+}
+async function loadBaseline() {
+  try { await Promise.all(baseChoices().map(m => baseVersion(m.id))); } catch {}
+  computeBaseCats(); renderAll();
+}
+function showVerPane(which) { for (const id of ["verList", "verCmp", "verRestore"]) $("#" + id).hidden = id !== which; }
+async function openVersions() {
+  VER.sel.clear(); VER.armDel = null; showVerPane("verList"); $("#dlgVer").showModal();
+  $("#verRows").innerHTML = `<tr><td colspan="8" class="muted"><span class="spin"></span> Loading versions …</td></tr>`;
+  await loadVersionsMeta(); renderVerList();
+}
+function renderVerList() {
+  $("#verDaily").textContent = VER.settings.daily ? "Daily automatic version: on" : "Daily automatic version: off";
+  $("#verDaily").title = "Change in the add-on configuration (daily_version)";
+  if (VER.settings.retention_days) $("#verKeep").textContent = VER.settings.retention_days;
+  const base = VER.settings.baseline;
+  $("#verRows").innerHTML = VER.list.map(m => `<tr data-id="${m.id}">
+    <td><label class="opt"><input type="checkbox" data-vsel="${m.id}" ${VER.sel.has(m.id) ? "checked" : ""} aria-label="Select for comparison"></label></td>
+    <td class="mono" style="white-space:nowrap">${isoDateTime(m.created)}</td>
+    <td><b>${esc(m.label || KIND[m.kind])}</b>${m.id === base ? ' <span class="tag info">Baseline</span>' : ""}${m.pinned ? ' <span class="tag warn">Pinned</span>' : ""}</td>
+    <td><span class="st ${m.kind === "manual" ? "chg" : m.kind === "daily" ? "new" : "same"}">${KIND[m.kind]}</span></td>
+    <td class="muted">${esc(m.user || "")}</td>
+    <td class="num">${m.devices}</td><td class="num">${m.reserved}</td>
+    <td><div class="vact">
+      <button class="btn sm" type="button" data-va="cmp">Compare</button>
+      <button class="btn sm" type="button" data-va="restore">Restore…</button>
+      <button class="btn sm" type="button" data-va="csv" title="Download as CSV">CSV</button>
+      <button class="btn sm" type="button" data-va="rename">Rename</button>
+      <button class="btn sm" type="button" data-va="pin">${m.pinned ? "Unpin" : "Pin"}</button>
+      <button class="btn sm" type="button" data-va="base">${m.id === base ? "Clear baseline" : "Set baseline"}</button>
+      <button class="btn sm danger ${VER.armDel === m.id ? "armed" : ""}" type="button" data-va="del">${VER.armDel === m.id ? "Really delete?" : "Delete"}</button>
+    </div></td></tr>`).join("") || `<tr><td colspan="8" class="muted">No versions yet. Save the first one above.</td></tr>`;
+  const n = VER.sel.size; $("#verCmp2").disabled = n !== 2; $("#verCmp2").textContent = n === 2 ? "Compare selected (2)" : "Select two versions to compare";
+}
+$("#verRows").addEventListener("change", e => { const cb = e.target.closest("[data-vsel]"); if (!cb) return; cb.checked ? VER.sel.add(cb.dataset.vsel) : VER.sel.delete(cb.dataset.vsel); if (VER.sel.size > 2) { VER.sel.delete([...VER.sel][0]); } renderVerList(); });
+$("#verRows").addEventListener("click", async e => {
+  const b = e.target.closest("[data-va]"); if (!b) return;
+  const id = b.closest("tr").dataset.id, m = VER.list.find(x => x.id === id), act = b.dataset.va;
+  if (act !== "del") VER.armDel = null;
+  try {
+    if (act === "cmp") return compareVersions(id, null);
+    if (act === "restore") return openRestore(id);
+    if (act === "csv") return downloadVersionCsv(id);
+    if (act === "rename") { $("#dlgVer").close(); const name = await askName("Rename version", m.label || ""); $("#dlgVer").showModal(); if (name == null) return; await api(`api/versions/${id}/update`, { label: name }); }
+    if (act === "pin") await api(`api/versions/${id}/update`, { pinned: !m.pinned });
+    if (act === "base") { VER.settings = await api("api/version_settings", { baseline: VER.settings.baseline === id ? null : id }); await loadBaseline(); toast(VER.settings.baseline ? "Baseline set – use the “Baseline” filter in the sidebar" : "Baseline cleared"); }
+    if (act === "del") { if (VER.armDel !== id) { VER.armDel = id; return renderVerList(); } VER.armDel = null; VER.sel.delete(id); await api(`api/versions/${id}/delete`, {}); toast("Version deleted"); }
+    await loadVersionsMeta(); renderVerList();
+  } catch (err) { toast(err.message); }
+});
+$("#verSave").addEventListener("click", async () => {
+  const b = $("#verSave"); b.disabled = true; b.textContent = "Saving …";
+  try { await api("api/versions", { kind: "manual", label: $("#verLabel").value.trim() }); $("#verLabel").value = ""; toast("Version saved"); await loadVersionsMeta(); renderVerList(); }
+  catch (e) { toast("Could not save version: " + e.message); }
+  finally { b.disabled = false; b.textContent = "Save version"; }
+});
+$("#verLabel").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("#verSave").click(); } });
+$("#verCmp2").addEventListener("click", () => { const [a, b] = [...VER.sel].map(id => VER.list.find(m => m.id === id)).sort((x, y) => x.created - y.created); compareVersions(a.id, b.id); });
+for (const id of ["#verClose", "#verClose2"]) $(id).addEventListener("click", () => $("#dlgVer").close());
+for (const id of ["#cmpBack", "#rstBack"]) $(id).addEventListener("click", () => { showVerPane("verList"); renderVerList(); });
+
+// current table in the same shape as a stored version
+function currentAsVersion() {
+  const clients = {};
+  for (const c of state.clients) if (c.mac) clients[c.mac] = { name: c.name, hostname: c.hostname, oui: c.oui, note: c.note, use_fixedip: c.use_fixedip, fixed_ip: c.fixed_ip, fixed_network_id: c.use_fixedip ? (c.fixed_network_id || c._resNet) : "", network_id: c.network_id, ip: c.ip, conn: c.conn, is_device: c.is_device, device_name: c.device_name, device_model: c.device_model, fixed_ap_enabled: c.fixed_ap_enabled, fixed_ap_mac: c.fixed_ap_mac, local_dns_record_enabled: c.local_dns_record_enabled, local_dns_record: c.local_dns_record, first_seen: c.first_seen, last_seen: c.last_seen };
+  return { meta: { id: null, created: state.fetchedAt, label: "Current" }, networks: state.networks, aps: state.aps, clients };
+}
+function diffVersions(A, B) {
+  const nl = (v, id) => { const n = (v.networks || []).find(x => x.id === id); return n ? n.name + (n.vlan ? ` (${n.vlan})` : "") : (id ? "?" : ""); };
+  const al = (v, mac) => ((v.aps || []).find(a => a.mac === mac) || {}).name || mac;
+  // the reservation's network: stored id, otherwise the network whose subnet contains the IP (UniFi often stores no id)
+  const resNet = (v, c) => (c.fixed_network_id && (v.networks || []).some(n => n.id === c.fixed_network_id)) ? c.fixed_network_id : ((v.networks || []).find(n => inSubnet(c.fixed_ip, n.subnet)) || {}).id || "";
+  const res = (v, c) => c.use_fixedip ? [c.fixed_ip, nl(v, resNet(v, c))].filter(Boolean).join(" · ") : "none";
+  const rows = [];
+  const macs = new Set([...Object.keys(A.clients), ...Object.keys(B.clients)]);
+  for (const mac of macs) {
+    const a = A.clients[mac], b = B.clients[mac], cats = new Set(), changes = [];
+    if (!a) cats.add("new"); else if (!b) cats.add("removed");
+    else {
+      const ch = (label, x, y, cat = "changed") => { if ((x ?? "") !== (y ?? "")) { changes.push([label, x ?? "", y ?? "", cat]); cats.add(cat); } };
+      ch("Name", a.name, b.name); ch("Note", a.note, b.note);
+      ch("Fixed IP", res(A, a), res(B, b));
+      ch("Locked to AP", a.fixed_ap_enabled ? al(A, a.fixed_ap_mac) : "no", b.fixed_ap_enabled ? al(B, b.fixed_ap_mac) : "no");
+      ch("Local DNS", a.local_dns_record_enabled ? a.local_dns_record : "", b.local_dns_record_enabled ? b.local_dns_record : "");
+      if (a.ip && b.ip) ch("IP address", a.ip, b.ip, "ip");
+      if (a.network_id && b.network_id) ch("Network", nl(A, a.network_id), nl(B, b.network_id), "moved");
+    }
+    if (cats.size) rows.push({ mac, a, b, cats, changes });
+  }
+  // likely MAC rotation: new and removed device share a hostname
+  const removedByHost = {};
+  for (const r of rows) if (r.cats.has("removed") && r.a.hostname) (removedByHost[r.a.hostname.toLowerCase()] ||= []).push(r);
+  for (const r of rows) if (r.cats.has("new") && r.b.hostname) { const twin = removedByHost[r.b.hostname.toLowerCase()]; if (twin) { r.twin = twin[0].mac; twin[0].twin = r.mac; } }
+  const order = { new: 0, removed: 1, changed: 2, ip: 3, moved: 4 };
+  const first = r => Math.min(...[...r.cats].map(c => order[c]));
+  return rows.sort((x, y) => first(x) - first(y) || ((x.b || x.a).name || (x.b || x.a).hostname || x.mac).localeCompare((y.b || y.a).name || (y.b || y.a).hostname || y.mac, "en"));
+}
+async function compareVersions(aId, bId) {
+  showVerPane("verCmp"); $("#cmpRows").innerHTML = `<tr><td colspan="4" class="muted"><span class="spin"></span> Comparing …</td></tr>`; $("#cmpSum").innerHTML = "";
+  try {
+    const A = await api(`api/versions/${aId}`), B = bId ? await api(`api/versions/${bId}`) : currentAsVersion();
+    VER.cmp = { A, B, rows: diffVersions(A, B), live: !bId }; VER.cmpFilter = VER.cmp.rows.some(r => r.cats.has("new")) ? "new" : "all";
+    $("#cmpTitle").textContent = `${verTitle(A.meta)}  →  ${bId ? verTitle(B.meta) : "Current"}`;
+    renderCompare();
+  } catch (e) { $("#cmpRows").innerHTML = `<tr><td colspan="4" class="err">${esc(e.message)}</td></tr>`; }
+}
+const CAT = { new: ["New device", "new"], removed: ["Removed", "err"], changed: ["Changed", "chg"], ip: ["IP changed", "same"], moved: ["Moved network", "same"] };
+function renderCompare() {
+  const { rows, A, B, live } = VER.cmp, cnt = k => rows.filter(r => r.cats.has(k)).length;
+  const pills = [["all", "All", rows.length], ["new", "New devices", cnt("new")], ["removed", "Removed", cnt("removed")], ["changed", "Changed", cnt("changed")], ["ip", "IP changed", cnt("ip")], ["moved", "Moved network", cnt("moved")]];
+  $("#cmpSum").innerHTML = pills.filter(p => p[0] === "all" || p[2]).map(([k, l, n]) => `<button type="button" class="pill" data-cf="${k}" aria-pressed="${VER.cmpFilter === k}">${l} <b>${n}</b></button>`).join("") +
+    `<span class="pill">Devices <b>${Object.keys(A.clients).length}</b> → <b>${Object.keys(B.clients).length}</b></span>`;
+  for (const b of $("#cmpSum").querySelectorAll("[data-cf]")) b.addEventListener("click", () => { VER.cmpFilter = b.dataset.cf; renderCompare(); });
+  const list = rows.filter(r => VER.cmpFilter === "all" || r.cats.has(VER.cmpFilter));
+  const nl = (v, id) => { const n = (v.networks || []).find(x => x.id === id); return n ? n.name + (n.vlan ? ` (${n.vlan})` : "") : ""; };
+  const devTxt = c => [c.oui, CONN_LABEL[c.conn], nl(B, c.network_id) || nl(A, c.network_id), c.ip].filter(Boolean).map(esc).join(" · ");
+  $("#cmpRows").innerHTML = list.map(r => {
+    const c = r.b || r.a, tags = [...r.cats].map(k => `<span class="st ${CAT[k][1]}">${CAT[k][0]}</span>`).join(" ");
+    let det = "";
+    if (r.cats.has("new")) det = `<span>${devTxt(c)}</span><span class="muted">First seen ${c.first_seen ? isoDateTime(c.first_seen) : "unknown"}${c.use_fixedip ? ` · fixed IP ${esc(c.fixed_ip)}` : ""}</span>`;
+    else if (r.cats.has("removed")) det = `<span class="muted">Was: ${devTxt(c)}${c.use_fixedip ? ` · fixed IP ${esc(c.fixed_ip)}` : ""}${c.last_seen ? ` · last seen ${isoDate(c.last_seen)}` : ""}</span>`;
+    else det = r.changes.map(([l, f, t, cat]) => `<span class="${cat === "changed" ? "" : "muted"}">${esc(l)}: ${f ? `<span class="from">${esc(f)}</span> → ` : ""}<span class="to">${esc(t || "(empty)")}</span></span>`).join("");
+    if (c.mac && isRandomMac(c.mac) && !c.is_device && (r.cats.has("new") || r.cats.has("removed"))) det += `<span class="muted">Random MAC (private Wi-Fi address)</span>`;
+    if (r.twin) det += `<span class="msg" style="color:var(--warn)">Same hostname as ${r.cats.has("new") ? "removed" : "new"} ${esc(r.twin)} – probably the same device with a new MAC</span>`;
+    const open = live && r.b && state.clients.some(x => x.mac === r.mac) ? `<button class="btn sm" type="button" data-open="${esc(r.mac)}">Open</button>` : "";
+    return `<tr><td>${tags}</td><td><b>${esc(c.name || c.hostname || "Unknown")}</b><div class="mono muted" style="font-size:11.5px">${esc(r.mac)}</div></td><td><div class="chg-list">${det}</div></td><td>${open}</td></tr>`;
+  }).join("") || `<tr><td colspan="4" class="muted">${rows.length ? "No rows in this view." : "No differences."}</td></tr>`;
+}
+$("#cmpRows").addEventListener("click", e => { const b = e.target.closest("[data-open]"); if (!b) return; const c = state.clients.find(x => x.mac === b.dataset.open); $("#dlgVer").close(); if (c) openPanel(c); });
+$("#cmpCsv").addEventListener("click", () => {
+  const { rows, A, B } = VER.cmp, q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const lines = rows.map(r => { const c = r.b || r.a; return [[...r.cats].map(k => CAT[k][0]).join(", "), r.mac, c.name, c.hostname, c.oui, r.changes.map(x => `${x[0]}: ${x[1]} -> ${x[2]}`).join(" | "), r.twin || ""].map(q).join(";"); });
+  saveFile(`compare-${A.meta.id}-${B.meta.id || "current"}.csv`, [["Change", "MAC", "Name", "Hostname", "Vendor", "Details", "Possible same device"].map(q).join(";"), ...lines].join("\r\n"));
+});
+async function downloadVersionCsv(id) {
+  const v = await api(`api/versions/${id}`), q = x => '"' + String(x ?? "").replace(/"/g, '""') + '"';
+  const nl = nid => { const n = (v.networks || []).find(x => x.id === nid); return n ? n.name + (n.vlan ? ` (${n.vlan})` : "") : ""; };
+  const al = mac => ((v.aps || []).find(a => a.mac === mac) || {}).name || mac;
+  const head = ["Name", "Hostname", "MAC", "Vendor", "Connection type", "Network", "Reserved", "Fixed IP", "Reservation VLAN", "IP address", "Locked to AP", "Local DNS", "Note", "First seen", "Last seen"];
+  const lines = Object.entries(v.clients).map(([mac, c]) => [c.name, c.hostname, mac, c.oui, CONN_LABEL[c.conn] || "", nl(c.network_id), c.use_fixedip ? "yes" : "no", c.use_fixedip ? c.fixed_ip : "", c.use_fixedip ? nl(c.fixed_network_id) : "", c.ip, c.fixed_ap_enabled ? al(c.fixed_ap_mac) : "", c.local_dns_record_enabled ? c.local_dns_record : "", c.note, c.first_seen ? isoDateTime(c.first_seen) : "", c.last_seen ? isoDateTime(c.last_seen) : ""].map(q).join(";"));
+  saveFile(`version-${id}.csv`, [head.map(q).join(";"), ...lines].join("\r\n"));
+}
+
+// ---------- restore = import from a version ----------
+async function openRestore(id) {
+  VER.restoreId = id; const m = VER.list.find(x => x.id === id);
+  $("#rstTitle").textContent = `Restore ${verTitle(m)}`; showVerPane("verRestore");
+}
+$("#rstPreview").addEventListener("click", async () => {
+  const id = VER.restoreId, m = VER.list.find(x => x.id === id);
+  const scope = k => $("#rst_" + k).checked;
+  let v; try { v = await api(`api/versions/${id}`); } catch (e) { return toast(e.message); }
+  const curMacs = new Set(state.clients.map(c => c.mac));
+  const rows = [["MAC", "Name", "Note", "Reserved", "Fixed IP", "Reservation VLAN", "Locked to AP", "Local DNS"]];
+  for (const [mac, c] of Object.entries(v.clients)) {
+    if (!curMacs.has(mac) && (!scope("recreate") || !(c.name || c.note || c.use_fixedip || c.fixed_ap_enabled || c.local_dns_record_enabled))) continue;
+    const netOk = c.fixed_network_id && state.networks.some(n => n.id === c.fixed_network_id);
+    rows.push([mac, scope("names") ? c.name || "" : "", scope("notes") ? c.note || "" : "",
+      scope("res") ? (c.use_fixedip ? "yes" : "no") : "", scope("res") && c.use_fixedip ? c.fixed_ip : "", scope("res") && c.use_fixedip && netOk ? c.fixed_network_id : "",
+      scope("ap") && c.conn === "wifi" ? (c.fixed_ap_enabled ? c.fixed_ap_mac : "no") : "", scope("dns") ? (c.local_dns_record_enabled ? c.local_dns_record : "no") : ""]);
+  }
+  const r = buildPlans(rows); if (r.error) return toast(r.error);
+  $("#dlgVer").close();
+  Object.assign(IMP, { plans: r.plans, running: false, done: false, mode: "restore", restoreOf: m.label || isoDateTime(m.created) });
+  IMP.filter = r.plans.some(p => p.status === "chg" || p.status === "new") ? "all" : "same";
+  $("#impTitle").textContent = `Restore: ${verTitle(m)}`; $("#impTpl").hidden = true; $("#impCols").hidden = true;
+  $("#impPreview").hidden = false; $("#impDrop").hidden = true; $("#impHelp").hidden = true; $("#impProg").hidden = true;
+  renderImport(); $("#dlgImport").showModal();
+});
+$("#btnVer").addEventListener("click", openVersions);
+
+// ---------- wiring ----------
+$("#tbody").addEventListener("click", e => { if (e.target.closest("input.ie")) return; const tr = e.target.closest("tr[data-k]"); if (!tr) return; const c = state.clients.find(x => keyOf(x) === tr.dataset.k); if (c) openPanel(c); });
+$("#q").addEventListener("input", e => { state.q = e.target.value; renderAll(); });
+$("#btnReload").addEventListener("click", load);
+$("#btnMenu").addEventListener("click", () => $("#side").classList.toggle("open"));
+$("#btnCols").addEventListener("click", () => $("#colPanel").hidden ? openCols() : closeCols());
+$("#btnImp").addEventListener("click", openImport);
+$("#btnExp").addEventListener("click", exportCsv);
+$("#btnNew").addEventListener("click", () => openPanel(null));
+$("#btnSub").addEventListener("click", openSub);
+function toggleActMenu(open) { const m = $("#actMenu"); open = open ?? m.hidden; m.hidden = !open; $("#btnActions").setAttribute("aria-expanded", String(open)); }
+$("#btnActions").addEventListener("click", e => { e.stopPropagation(); toggleActMenu(); });
+$("#actMenu").addEventListener("click", () => toggleActMenu(false));
+document.addEventListener("click", e => { if (!$("#actMenu").hidden && e.target.isConnected && !e.target.closest(".actsel")) toggleActMenu(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#actMenu").hidden) toggleActMenu(false); });
+
+const saved = store.get("view2", null);
+if (saved) { state.sort = saved.sort || state.sort; state.colFilters = saved.colFilters || {}; state.facets = saved.facets || {}; state.hiddenCols = (saved.hiddenCols || []).filter(k => COLS.some(c => c.key === k && k !== "name")); state.colOrder = (saved.colOrder || []).filter(k => COLS.some(c => c.key === k)); }
+buildHead(); renderAll(); load(); loadViews(true); loadVersionsMeta();
+})();
+</script>
+</body>
+</html>

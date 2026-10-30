@@ -1,0 +1,21 @@
+configuration:
+  unifi_host:
+    name: UniFi controller
+    description: IP or hostname of the gateway (without https://)
+  username:
+    name: Username
+    description: Local UniFi account (not a Ubiquiti cloud account)
+  password:
+    name: Password
+  site:
+    name: Site
+    description: Usually "default"
+  verify_ssl:
+    name: Verify certificate
+    description: Leave off while the gateway uses a self-signed certificate
+  daily_version:
+    name: Daily automatic version
+    description: Saves one version of the table per day (shown as "Daily" under Versions).
+  auto_version_retention_days:
+    name: Keep automatic versions (days)
+    description: Daily versions and the versions saved before bulk actions are deleted after this many days. Manual, pinned and baseline versions are kept.
