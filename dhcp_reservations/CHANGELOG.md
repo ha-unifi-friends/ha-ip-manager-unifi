@@ -1,6 +1,9 @@
 # Changelog
 
-## 1.9.7
+## 1.9.8 – 2026-10-31
+- Detail panel: the *Edit reservation* button is replaced by **Open `http://<IP>`** (plus *HTTPS*), which opens the device's web interface in a new tab. It uses the current IP when the device is online, otherwise the fixed IP. Editing stays on the *Settings* tab.
+
+## 1.9.7 – 2026-10-31
 - **History** in the detail panel: for each device a timeline of what changed and in which version (name, note, fixed IP + network, AP lock, local DNS; IP and network moves in grey), plus the changes made since the latest version.
 
 ## 1.9.6

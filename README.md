@@ -59,7 +59,7 @@ versions you can compare and restore.
     <td valign="top"><img src="docs/screenshots/changed-since.png" alt="Changed since filter"><br><b>Changed since …</b> – sidebar filter for new or changed devices.</td>
   </tr>
   <tr>
-    <td valign="top"><img src="docs/screenshots/history.png" alt="Device history"><br><b>History</b> – per device: what changed, and in which version.</td>
+    <td valign="top"><img src="docs/screenshots/history.png" alt="Device history"><br><b>Detail panel</b> – open the device in the browser, and its <b>history</b>: what changed, in which version.</td>
     <td valign="top"></td>
   </tr>
 </table>

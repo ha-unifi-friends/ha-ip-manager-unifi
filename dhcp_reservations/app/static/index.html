@@ -213,6 +213,10 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .hint a{color:var(--accent)}
 .imp-foot .notes{display:flex;flex-direction:column;gap:3px;min-width:0}
 .vnote{display:flex;align-items:center;gap:6px}
+.openrow{display:flex;gap:8px}
+.openrow .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;padding:9px 12px}
+.openrow .btn:not(.primary){color:var(--fg)}
+.openrow .btn.primary{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
 .hist{padding:10px 14px}
 .hist-list{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line)}
 .hist-list li{position:relative;padding:0 0 12px}
@@ -802,6 +806,8 @@ function openPanel(c, tab) {
   renderTable();
 }
 function closePanel() { state.sel = null; $("#detail").hidden = true; renderTable(); }
+// address for the "open in browser" button: current IP when online, otherwise the fixed IP, otherwise the last known IP
+const webIp = c => c.conn === "teleport" ? "" : (c.online && c.ip) || (c.use_fixedip && c.fixed_ip) || c.ip || "";
 function renderInfo() {
   const c = state.sel; if (!c) return;
   const n = net(c.network_id), rn = net(c._resNet);
@@ -830,10 +836,10 @@ function renderInfo() {
       ${kv("Local DNS", c.local_dns_record_enabled ? esc(c.local_dns_record) : "")}
       ${kv("Note", esc(c.note))}
     </dl></div>
-    ${c.mac ? `<button class="btn primary" type="button" id="btnGoEdit">${c.use_fixedip ? "Edit reservation" : "Reserve fixed IP"}</button>` : `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>`}
+    ${webIp(c) ? `<div class="openrow"><a class="btn primary" href="http://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open the device's web interface in a new tab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Open http://${esc(webIp(c))}</a><a class="btn" href="https://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open with HTTPS">HTTPS</a></div>${!c.online ? `<p class="hint">The device is offline – the page may not load.</p>` : ""}` : ""}
+    ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
-  $("#btnGoEdit")?.addEventListener("click", () => { if (!c.use_fixedip) { $("#fFixed").checked = true; syncToggles(); onNetChange(); } setTab("edit"); $("#fIp").focus(); });
   $("#tabEdit").hidden = !c.mac;
 }
 
