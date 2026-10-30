@@ -56,7 +56,7 @@ versions you can compare and restore.
   </tr>
   <tr>
     <td><img src="docs/screenshots/changed-since.png" alt="Changed since filter"><br><b>Changed since …</b> – sidebar filter for new or changed devices.</td>
-    <td></td>
+    <td><img src="docs/screenshots/actions.png" alt="Actions menu"><br><b>Actions</b> – the bulk tools: names from Home Assistant, replace subnet, CSV import and export.</td>
   </tr>
 </table>
 
