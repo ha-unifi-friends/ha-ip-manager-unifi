@@ -211,6 +211,9 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .switch input:checked::after{left:16px}
 .hint{font-size:12px;color:var(--muted)}
 .hint a{color:var(--accent)}
+.imp-foot .notes{display:flex;flex-direction:column;gap:3px;min-width:0}
+.vnote{display:flex;align-items:center;gap:6px}
+.vnote svg{flex:none;color:var(--accent)}
 .err{color:var(--bad);background:var(--bad-bg);padding:8px 10px;border-radius:6px}
 .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .danger-zone{display:grid;gap:10px}
@@ -375,7 +378,7 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
       </div>
     </div>
     <div class="imp-foot">
-      <span class="hint" id="impNote">Rows with errors or without changes are not applied.</span>
+      <div class="notes"><span class="hint" id="impNote">Rows with errors or without changes are not applied.</span><span class="hint vnote"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>A version of the current settings is saved first – undo anytime via Versions › Restore.</span></div>
       <div class="prog" id="impProg" hidden><i></i></div>
       <span class="sp"></span>
       <button class="btn" type="button" id="impCancel">Cancel</button>
@@ -408,7 +411,7 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
       </div>
     </div>
     <div class="imp-foot">
-      <span class="hint">Rows with errors are never applied.</span>
+      <div class="notes"><span class="hint">Rows with errors are never applied.</span><span class="hint vnote"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>A version of the current settings is saved first – undo anytime via Versions › Restore.</span></div>
       <div class="prog" id="subProg" hidden><i></i></div>
       <span class="sp"></span>
       <button class="btn" type="button" id="subCancel">Cancel</button>
@@ -426,7 +429,7 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
       <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="haAll" aria-label="Select all"></label></th><th>MAC</th><th>Current name</th><th>Name in Home Assistant</th><th>Integration · Area</th><th>Status</th></tr></thead><tbody id="haRows"></tbody></table></div>
     </div>
     <div class="imp-foot">
-      <span class="hint">Only the name changes; fixed IP, note and other settings stay as they are.</span>
+      <div class="notes"><span class="hint">Only the name changes; fixed IP, note and other settings stay as they are.</span><span class="hint vnote"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>A version of the current settings is saved first – undo anytime via Versions › Restore.</span></div>
       <div class="prog" id="haProg" hidden><i></i></div>
       <span class="sp"></span>
       <button class="btn" type="button" id="haCancel">Cancel</button>

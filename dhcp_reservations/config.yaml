@@ -1,5 +1,5 @@
 name: "Clients & Reservations"
-version: "1.9.5"
+version: "1.9.6"
 slug: dhcp_reservations
 description: UniFi clients, devices and DHCP reservations – views, bulk import and subnet migration
 url: https://github.com/raphaelkoeppel/ha-unifi-clients-reservations

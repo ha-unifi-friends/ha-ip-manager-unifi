@@ -33,25 +33,30 @@ versions you can compare and restore.
 | **Names from Home Assistant** | Proposes the names from the HA device registry, matched by MAC. Includes a "near match" for devices with separate WiFi/Ethernet MACs. |
 | **Versions** | Snapshot the table manually, daily, and automatically before every bulk action. **Compare** two versions (new / removed / changed devices; spots a device that came back with a new random MAC). **Restore** through a preview. A *Changed since …* filter shows what changed since a version. |
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. |
+| **Safe bulk changes** | Every bulk action (CSV import, restore, replace subnet, names from HA) saves a version of the current settings first, so you can always go back via *Versions › Restore*. |
 
 ## Screenshots
 
 <table>
   <tr>
     <td width="50%"><img src="docs/screenshots/replace-subnet.png" alt="Replace subnet with collision check"><br><b>Replace subnet</b> – preview with collision check: an address that is already reserved is an error, an address in use is a warning.</td>
-    <td width="50%"><img src="docs/screenshots/compare-versions.png" alt="Compare versions"><br><b>Compare versions</b> – new, removed and changed devices since a snapshot.</td>
+    <td width="50%"><img src="docs/screenshots/csv-import.png" alt="CSV import with validation"><br><b>CSV import</b> – every row is validated before anything changes: duplicate IP, IP outside the network, invalid MAC, unknown AP.</td>
   </tr>
   <tr>
+    <td><img src="docs/screenshots/compare-versions.png" alt="Compare versions"><br><b>Compare versions</b> – new, removed and changed devices since a snapshot.</td>
     <td><img src="docs/screenshots/names-from-ha.png" alt="Names from Home Assistant"><br><b>Names from Home Assistant</b> – rename UniFi clients after your HA device names.</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/edit-panel.png" alt="Edit panel"><br><b>Edit</b> – fixed IP, network, AP lock and local DNS in the detail panel.</td>
-  </tr>
-  <tr>
     <td><img src="docs/screenshots/views.png" alt="Views"><br><b>Views</b> – e.g. the built-in <i>DHCP Reservations</i> view.</td>
-    <td><img src="docs/screenshots/inline-edit.png" alt="Inline edit"><br><b>Inline edit</b> – names and fixed IPs right in the table.</td>
   </tr>
   <tr>
+    <td><img src="docs/screenshots/inline-edit.png" alt="Inline edit"><br><b>Inline edit</b> – names and fixed IPs right in the table.</td>
     <td><img src="docs/screenshots/versions.png" alt="Versions"><br><b>Versions</b> – manual, daily and before-bulk-action snapshots.</td>
+  </tr>
+  <tr>
     <td><img src="docs/screenshots/changed-since.png" alt="Changed since filter"><br><b>Changed since …</b> – sidebar filter for new or changed devices.</td>
+    <td></td>
   </tr>
 </table>
 

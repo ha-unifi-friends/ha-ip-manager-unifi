@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.9.6
+- Bulk dialogs (CSV import, restore, replace subnet, names from HA) now say in the footer that a version of the current settings is saved first, so every bulk change can be undone via *Versions › Restore*.
+
 ## 1.9.5
 - Baseline filter simplified: one entry *Changed since …* per version (new devices + changed name, note, fixed IP, AP lock or DNS), for the baseline (★) and the latest versions, max. 5. IP or network moves alone do not count.
 - Fix: an active baseline filter no longer hides all rows while the versions are still loading.
