@@ -213,6 +213,16 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .hint a{color:var(--accent)}
 .imp-foot .notes{display:flex;flex-direction:column;gap:3px;min-width:0}
 .vnote{display:flex;align-items:center;gap:6px}
+.hist{padding:10px 14px}
+.hist-list{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.hist-list li{position:relative;padding:0 0 12px}
+.hist-list li:last-child{padding-bottom:0}
+.hist-list li::before{content:"";position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;background:var(--card);border:2px solid var(--muted)}
+.hist-list li.now::before{border-color:var(--accent);background:var(--accent)}
+.hist-list .hh{display:flex;flex-direction:column;gap:1px;margin-bottom:3px;font-size:12.5px}
+.hist-list .hh b{font-weight:600}
+.hist-list .hh > .muted{font-size:11.5px}
+.hist-list .chg-list{font-size:12.5px}
 .vnote svg{flex:none;color:var(--accent)}
 .err{color:var(--bad);background:var(--bad-bg);padding:8px 10px;border-radius:6px}
 .actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
@@ -820,7 +830,9 @@ function renderInfo() {
       ${kv("Local DNS", c.local_dns_record_enabled ? esc(c.local_dns_record) : "")}
       ${kv("Note", esc(c.note))}
     </dl></div>
-    ${c.mac ? `<button class="btn primary" type="button" id="btnGoEdit">${c.use_fixedip ? "Edit reservation" : "Reserve fixed IP"}</button>` : `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>`}`;
+    ${c.mac ? `<button class="btn primary" type="button" id="btnGoEdit">${c.use_fixedip ? "Edit reservation" : "Reserve fixed IP"}</button>` : `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>`}
+    ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
+  if (c.mac) loadHistory(c);
   $("#btnGoEdit")?.addEventListener("click", () => { if (!c.use_fixedip) { $("#fFixed").checked = true; syncToggles(); onNetChange(); } setTab("edit"); $("#fIp").focus(); });
   $("#tabEdit").hidden = !c.mac;
 }
@@ -1596,6 +1608,48 @@ function diffVersions(A, B) {
   const order = { new: 0, removed: 1, changed: 2, ip: 3, moved: 4 };
   const first = r => Math.min(...[...r.cats].map(c => order[c]));
   return rows.sort((x, y) => first(x) - first(y) || ((x.b || x.a).name || (x.b || x.a).hostname || x.mac).localeCompare((y.b || y.a).name || (y.b || y.a).hostname || y.mac, "en"));
+}
+// per-device history: what changed between consecutive versions, and since the latest one
+const HIST_CACHE = {};
+async function loadHistory(c) {
+  const box = () => state.sel === c ? $("#histBox") : null;
+  const key = c.mac + "|" + VER.list.map(m => m.id).join(",");
+  try {
+    if (!HIST_CACHE[key]) HIST_CACHE[key] = await api(`api/history/${c.mac}`);
+    const el = box(); if (el) el.innerHTML = renderHistory(c, HIST_CACHE[key].versions);
+  } catch (e) { const el = box(); if (el) el.innerHTML = `<span class="err">${esc(e.message)}</span>`; }
+}
+function renderHistory(c, vs) {
+  if (!vs.length) return `<span class="muted">No versions yet. Save a version (Versions › Save version) to start tracking changes.</span>`;
+  const one = (v, rec) => ({ networks: v.networks, aps: v.aps, clients: rec ? { [c.mac]: rec } : {} });
+  const cur = currentAsVersion(), steps = [];
+  for (let i = 0; i < vs.length; i++) {
+    const v = vs[i], prev = vs[i - 1];
+    if (!prev) { if (v.record) steps.push({ v, first: true }); continue; }
+    if (!prev.record && !v.record) continue;
+    const r = diffVersions(one(prev, prev.record), one(v, v.record))[0];
+    if (r) steps.push({ v, prev, r });
+  }
+  const last = vs[vs.length - 1];
+  const now = diffVersions(one(last, last.record), { networks: cur.networks, aps: cur.aps, clients: cur.clients[c.mac] ? { [c.mac]: cur.clients[c.mac] } : {} })[0];
+  const line = r => {
+    if (r.cats.has("new")) return `<span><span class="st new">Appeared</span> ${r.b.use_fixedip ? `fixed IP ${esc(r.b.fixed_ip)}` : ""}</span>`;
+    if (r.cats.has("removed")) return `<span><span class="st err">Not in this version</span> <span class="muted">(forgotten or not seen)</span></span>`;
+    return r.changes.map(([l, f, t, cat]) => `<span class="${cat === "changed" ? "" : "muted"}">${esc(l)}: ${f ? `<span class="from">${esc(f)}</span> → ` : ""}<span class="to">${esc(t || "(empty)")}</span></span>`).join("");
+  };
+  const head = (title, sub) => `<div class="hh"><b>${title}</b>${sub ? `<span class="muted">${sub}</span>` : ""}</div>`;
+  const vt = m => `${esc(m.label || KIND[m.kind])} <span class="muted">· ${isoDateTime(m.created)}</span>`;
+  const items = [];
+  if (now) items.push(`<li class="now">${head("Current", `not yet in a version · since ${isoDateTime(last.meta.created)}`)}<div class="chg-list">${line(now)}</div></li>`);
+  for (const s of steps.reverse()) {
+    if (s.first) {
+      const r = s.v.record, nl = (s.v.networks || []).find(n => inSubnet(r.fixed_ip, n.subnet));
+      items.push(`<li>${head(vt(s.v.meta), "")}<div class="chg-list"><span class="muted">${s.v === vs[0] ? "First version" : "First recorded"}: ${esc(r.name || r.hostname || "unnamed")}${r.use_fixedip ? ` · fixed IP ${esc(r.fixed_ip)}${nl ? " · " + esc(nl.name) : ""}` : " · no fixed IP"}</span></div></li>`);
+    } else items.push(`<li>${head(vt(s.v.meta), `changed since ${isoDateTime(s.prev.meta.created)}`)}<div class="chg-list">${line(s.r)}</div></li>`);
+  }
+  if (!last.record && !cur.clients[c.mac]) return `<span class="muted">Not in any version yet.</span>`;
+  const unchanged = steps.length <= 1 && !now;
+  return `<ol class="hist-list">${items.join("")}</ol>` + (unchanged ? `<div class="muted" style="margin-top:6px">No changes across ${vs.length} version${vs.length > 1 ? "s" : ""}.</div>` : "");
 }
 async function compareVersions(aId, bId) {
   showVerPane("verCmp"); $("#cmpRows").innerHTML = `<tr><td colspan="4" class="muted"><span class="spin"></span> Comparing …</td></tr>`; $("#cmpSum").innerHTML = "";

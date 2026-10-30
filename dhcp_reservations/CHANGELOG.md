@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.9.7
+- **History** in the detail panel: for each device a timeline of what changed and in which version (name, note, fixed IP + network, AP lock, local DNS; IP and network moves in grey), plus the changes made since the latest version.
+
 ## 1.9.6
 - Bulk dialogs (CSV import, restore, replace subnet, names from HA) now say in the footer that a version of the current settings is saved first, so every bulk change can be undone via *Versions › Restore*.
 

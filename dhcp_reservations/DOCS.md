@@ -24,6 +24,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
     between two versions. New devices with the same hostname as a removed one are flagged as probably the same device with a new MAC.
   - *Restore* runs like a CSV import from the version (preview, checkbox per row, chosen fields) and leaves devices that were
     added later untouched. A version of the current state is saved first.
+  - *History* in the detail panel (Overview) shows, per device, a timeline of the changes and the version that first contains them, plus what changed since the latest version.
   - The sidebar filter *Baseline* is always there: *Changed since …* for the baseline (★, set via *Set baseline*) and the
     latest versions (max. 5). It lists devices that are new or whose name, note, fixed IP, AP lock or DNS record changed.
 - **Inline edit:** switch it on in the header to edit Name and Fixed IP directly in the table. A change is saved when you leave the field

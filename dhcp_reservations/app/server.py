@@ -11,6 +11,7 @@ import sys
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from http.cookiejar import CookieJar
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -577,6 +578,21 @@ def get_version(vid):
     return data
 
 
+def device_history(mac):
+    """The record of one MAC in every version (oldest first), with that version's networks and APs."""
+    mac = normalize_mac(mac)
+    if not mac:
+        raise UnifiError("Invalid MAC.", 400)
+    out = []
+    for meta in sorted(_index(), key=lambda m: m.get("created", 0)):
+        data = _read_json(_vpath(meta["id"]), None)
+        if not data:
+            continue
+        out.append({"meta": meta, "record": (data.get("clients") or {}).get(mac),
+                    "networks": data.get("networks") or [], "aps": data.get("aps") or []})
+    return {"mac": mac, "versions": out}
+
+
 def update_version(vid, body):
     with VERSIONS_LOCK:
         idx = _index()
@@ -703,6 +719,9 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, load_views())
             if method == "POST" and path.endswith("/api/views"):
                 return self._send(200, save_views(self._json_body()))
+            m = re.search(r"/api/history/([0-9A-Fa-f:.-]{12,17})$", urllib.parse.unquote(path))
+            if method == "GET" and m:
+                return self._send(200, device_history(m.group(1)))
             m = re.search(r"/api/versions/([A-Za-z0-9_-]+)(/update|/delete)?$", path)
             if m:
                 vid, act = m.group(1), m.group(2)
