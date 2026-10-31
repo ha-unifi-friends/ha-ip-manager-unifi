@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.26.0 – 2026-11-01
+
+- **Gateway:** the fixed IP settings are locked in its edit panel – its address comes from the network settings in UniFi. A note says so; *Remove reservation only* is hidden.
+- **Home Assistant host:** a note in its edit panel, *Forget client* is hidden (for the gateway too), and changing or removing its fixed IP needs a confirmation: tick *I am aware that …* and click *Change anyway*.
+- The *Free: …* suggestion link below the IP field is gone – use *Select* to pick an address in the IP plan.
+
 ## 1.25.1 – 2026-11-01
 
 - *Pick a free IP*: no focus ring around *No icons* when the popup opens.

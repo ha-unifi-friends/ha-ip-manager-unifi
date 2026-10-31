@@ -167,6 +167,7 @@ body.inline-mode tbody tr{cursor:default}
 .menu .sep{height:1px;background:var(--line);margin:5px 4px}
 .menu .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:6px 10px 3px}
 dialog.small{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(420px,calc(100vw - 32px))}
+dialog#dlgHaWarn{width:min(520px,calc(100vw - 32px))}
 dialog#dlgHa{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgVer{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1200px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgVer > .imp > div{display:flex;flex-direction:column;min-height:0;max-height:calc(100vh - 50px)}
@@ -261,6 +262,15 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .imp-table th[data-sk]:hover{color:var(--fg)}
 .imp-table th.sa::after{content:"▲";font-size:9px;margin-left:5px;color:var(--accent)}
 .imp-table th.sd::after{content:"▼";font-size:9px;margin-left:5px;color:var(--accent)}
+.lock-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin-top:8px}
+.gw-note{background:color-mix(in srgb,var(--gwc) 14%,transparent);color:var(--fg);border:1px solid color-mix(in srgb,var(--gwc) 50%,transparent)}
+.ha-note{background:color-mix(in srgb,var(--hab) 14%,transparent);color:var(--fg);border:1px solid color-mix(in srgb,var(--hab) 50%,transparent)}
+#dlgHaWarn form{padding:18px 20px}
+#dlgHaWarn h2{margin:0 0 10px;font-size:15px;color:var(--warn)}
+.ha-warn-txt{font-size:13px;line-height:1.5;margin:0 0 12px}
+.ha-ack{display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.45;padding:10px;border:1px solid var(--warn);border-radius:8px;background:var(--warn-bg);cursor:pointer;margin-bottom:14px}
+.ha-ack input{margin-top:2px;flex:none}
+#dlgHaWarn .actions{display:flex;justify-content:flex-end;gap:8px}
 .rc-opt{display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;white-space:nowrap}
 .rc-opt input{margin:0}
 .rc-note{color:var(--accent)}
@@ -659,6 +669,8 @@ body.side-off .menu-btn{display:inline-flex}
       </div>
       <div class="form card">
         <label class="switch" for="fFixed"><span>Fixed IP address</span><input type="checkbox" id="fFixed" form="formEdit"></label>
+        <div class="lock-note gw-note" id="gwNote" hidden>This is the <b>gateway</b>. Its address comes from the network settings in UniFi (<i>Settings › Networks</i>) and cannot be set here.</div>
+        <div class="lock-note ha-note" id="haNote" hidden>This is the <b>Home Assistant host</b>. Integrations, dashboards and devices point to its address – change it only if you know what you are doing. You will be asked to confirm.</div>
         <div id="fixedFields" class="form">
           <div class="field"><label for="fNet">Network</label><select id="fNet" form="formEdit"></select></div>
           <div class="field"><label for="fIp">IP address</label><div class="ip-row"><input id="fIp" class="mono" autocomplete="off" inputmode="decimal" form="formEdit"><button class="btn" type="button" id="btnPickIp" title="Pick a free address in the IP plan of this network – and see its neighbours"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Select</button></div></div>
@@ -682,7 +694,7 @@ body.side-off .menu-btn{display:inline-flex}
         <button class="btn outline-accent" type="button" id="btnUnres">Remove reservation only</button>
         <p id="unresText">Name and note are kept. The device gets an address from the DHCP pool again.</p>
         <button class="btn danger" type="button" id="btnForget">Forget client</button>
-        <p>Removes name, note, reservation and history from the controller. This cannot be undone.</p>
+        <p id="forgetText">Removes name, note, reservation and history from the controller. This cannot be undone.</p>
       </div>
     </div>
   </section>
@@ -711,6 +723,14 @@ body.side-off .menu-btn{display:inline-flex}
       <button class="btn primary" type="button" id="impApply" disabled>Apply</button>
     </div>
   </div>
+</dialog>
+<dialog id="dlgHaWarn" class="small" aria-labelledby="haWarnTitle">
+  <form method="dialog" id="formHaWarn" novalidate>
+    <h2 id="haWarnTitle">Change the address of the Home Assistant host?</h2>
+    <p class="ha-warn-txt" id="haWarnTxt"></p>
+    <label class="ha-ack"><input type="checkbox" id="haAck"><span>I am aware that Home Assistant may become unreachable and that integrations, dashboards, automations and devices that talk to Home Assistant by its IP address can stop working until I update them.</span></label>
+    <div class="actions"><button class="btn" type="button" id="haWarnCancel">Cancel</button><button class="btn danger" type="submit" id="haWarnOk" disabled>Change anyway</button></div>
+  </form>
 </dialog>
 <dialog id="dlgName" class="small" aria-labelledby="nameTitle">
   <form method="dialog" id="formName" novalidate>
@@ -1878,11 +1898,9 @@ function updateHint() {
     if (ip && ipNum(ip) < 0) h += " · invalid IP";
     else if (ip && !inSubnet(ip, n.subnet)) h += " · IP is not in this network";
     else if (ip) { const me = state.sel?.mac || $("#fMac").value.trim().toLowerCase(); const other = state.clients.find(c => c.use_fixedip && c.fixed_ip === ip && c.mac !== me); if (other) h += ` · already reserved for ${esc(other.name || other.mac)}`; }
-    const sug = suggestIp(n.id); if (sug && sug !== ip) h += ` · <a href="#" id="useSug">Free: ${sug}</a>`;
   }
   $("#ipHint").innerHTML = h;
   syncReconnect();
-  $("#useSug")?.addEventListener("click", e => { e.preventDefault(); $("#fIp").value = suggestIp($("#fNet").value); updateHint(); });
 }
 function syncReconnect() {
   const c = state.sel, ip = $("#fFixed").checked ? $("#fIp").value.trim() : "";
@@ -1910,8 +1928,33 @@ function fillForm(c) {
   $("#fDnsOn").checked = !!c?.local_dns_record_enabled; $("#fDns").value = c?.local_dns_record || "";
   $("#editErr").hidden = true; $("#dangerZone").hidden = !c?.known;
   $("#btnUnres").hidden = $("#unresText").hidden = !c?.use_fixedip;
-  disarm(); syncToggles(); updateHint();
+  disarm(); lockIpFields(c); syncToggles(); updateHint();
 }
+// the gateway's address is set in the network settings, not as a fixed IP
+const isGateway = c => !!c && (c.device_kind === "gateway" || state.networks.some(n => n.gateway && c.online && c.ip === n.gateway));
+function lockIpFields(c) {
+  const gw = isGateway(c), ha = !gw && isHaHost(c);
+  $("#gwNote").hidden = !gw; $("#haNote").hidden = !ha;
+  for (const el of [$("#fFixed"), $("#fNet"), $("#fIp"), $("#btnPickIp")]) el.disabled = gw;
+  if (gw) $("#btnUnres").hidden = $("#unresText").hidden = true;
+  // never offer to forget the gateway or the Home Assistant host
+  $("#btnForget").hidden = $("#forgetText").hidden = gw || ha;
+  if (!$("#dangerZone").hidden && $("#btnUnres").hidden && $("#btnForget").hidden) $("#dangerZone").hidden = true;
+}
+// Home Assistant host: explicit acknowledgement before its address changes
+function haConfirm(what) {
+  return new Promise(res => {
+    const d = $("#dlgHaWarn"), c = state.sel;
+    $("#haWarnTxt").innerHTML = `<b>${esc(c?.name || c?.hostname || c?.mac || "")}</b> is the machine Home Assistant runs on. ${what}`;
+    $("#haAck").checked = false; $("#haWarnOk").disabled = true;
+    const done = ok => { d.onclose = null; d.close(); res(ok); };
+    $("#haWarnCancel").onclick = () => done(false);
+    $("#formHaWarn").onsubmit = e => { e.preventDefault(); done($("#haAck").checked); };
+    d.onclose = () => res(false);
+    d.showModal();
+  });
+}
+$("#haAck").addEventListener("change", e => { $("#haWarnOk").disabled = !e.target.checked; });
 $("#fFixed").addEventListener("change", () => { syncToggles(); if ($("#fFixed").checked) onNetChange(); });
 $("#fDnsOn").addEventListener("change", syncToggles);
 // the reservation has to be in the override network – follow it
@@ -1966,7 +2009,13 @@ $("#formEdit").addEventListener("submit", async e => {
   if (!$("#apCard").hidden) { body.fixed_ap_enabled = $("#fLock").checked; body.fixed_ap_mac = $("#fAp").value; if (body.fixed_ap_enabled && !body.fixed_ap_mac) return showErr("Please choose an access point."); }
   if (!/^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/.test(body.mac)) return showErr("Please enter a valid MAC address (aa:bb:cc:dd:ee:ff).");
   if (body.use_fixedip && !body.network_id) return showErr("Please choose a network.");
+  const cur = state.sel && state.clients.find(x => x.mac === state.sel.mac);
+  if (cur && isGateway(cur)) Object.assign(body, { use_fixedip: !!cur.use_fixedip, network_id: cur._resNet || cur.network_id || body.network_id, fixed_ip: cur.fixed_ip || "" });
   if (body.use_fixedip && ipNum(body.fixed_ip) < 0) return showErr("Please enter a valid IP address.");
+  if (cur && !isGateway(cur) && isHaHost(cur)) {
+    const was = cur.use_fixedip ? cur.fixed_ip : "", now = body.use_fixedip ? body.fixed_ip : "";
+    if (was !== now && !(await haConfirm(now ? `Its fixed IP changes from <b class="mono">${esc(was || cur.ip || "–")}</b> to <b class="mono">${esc(now)}</b>.` : `Its fixed IP <b class="mono">${esc(was)}</b> is removed – it may get a different address from the DHCP pool.`))) return;
+  }
   const btn = $("#btnSave"); btn.disabled = true; btn.textContent = "Saving …";
   try {
     await api("api/client", body);
@@ -1985,7 +2034,9 @@ async function doDel(path, btn, label, msg) {
   catch (err) { showErr(err.message); }
   finally { btn.disabled = false; btn.textContent = label; }
 }
-$("#btnUnres").addEventListener("click", e => doDel("api/unreserve", e.currentTarget, "Remove reservation only", "Reservation removed").then(() => state.sel && openPanel(state.sel, "info")));
+$("#btnUnres").addEventListener("click", async e => { const btn = e.currentTarget, c = state.sel && state.clients.find(x => x.mac === state.sel.mac);
+  if (c && isHaHost(c) && !(await haConfirm(`Its fixed IP <b class="mono">${esc(c.fixed_ip)}</b> is removed – it may get a different address from the DHCP pool.`))) return;
+  doDel("api/unreserve", btn, "Remove reservation only", "Reservation removed").then(() => state.sel && openPanel(state.sel, "info")); });
 $("#btnForget").addEventListener("click", e => {
   const b = e.currentTarget;
   if (!b.dataset.armed) { b.dataset.armed = "1"; b.classList.add("armed"); b.textContent = "Really forget? Click again"; return; }
