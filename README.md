@@ -57,8 +57,8 @@ versions you can compare and restore.
 
 | | |
 |---|---|
-| **IP plan** | Networks as cards with utilization and a **Tidiness score** (0–100: fixed IPs outside the pool, close together, no conflicts), plus an address grid that shows conflicts at a glance, with *No icons / UniFi / Home Assistant* icons. Click a free address to reserve it. |
-| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *minimal*, *grouped by vendor* or *grouped by HA integration* – shows Current / Proposal / Changes (arrows and animation) and applies the checked measures: moves, reconnect and the pool change (after a second confirmation). |
+| **IP plan** | A full page next to the client list (switch *Clients / IP Plan*), filtered by the same sidebar filters (non-matching devices greyed out): networks as cards with utilization and a **Tidiness score** (0–100: fixed IPs outside the pool, close together, no conflicts), plus an address grid that shows conflicts at a glance, with *No icons / UniFi / Home Assistant* icons. Click an address to open the device – or a free one to reserve it – in the detail panel next to the plan. |
+| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *minimal*, *grouped by vendor* or *grouped by HA integration* – right in the IP plan as a tab, with *Preview changes* (arrows and animation) and applies the checked measures: moves, reconnect and the pool change (after a second confirmation). |
 | **Replace subnet** | Move all fixed IPs from e.g. `192.168.30.x` to `192.168.31.x`, keeping the host part. A preview catches collisions before anything changes. |
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. Hosts-file export of fixed IPs and DNS records. |
 | **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |
@@ -95,7 +95,7 @@ versions you can compare and restore.
   </tr>
   <tr>
     <td width="50%" valign="top"><img src="docs/screenshots/names-from-ha.png" alt="Names from Home Assistant"><br><b>Names from Home Assistant</b> – rename UniFi clients after your HA device names, with area / integration as prefix or suffix.</td>
-    <td width="50%" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal grouped by HA integration"><br><b>CleanUp Proposal grouped by HA integration</b> – <i>Changes</i> tab with every move as an arrow, Tidiness before → after.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal grouped by HA integration"><br><b>CleanUp Proposal grouped by HA integration</b> – tab of the IP plan with <i>Preview changes</i>: every move as an arrow, Tidiness before → after.</td>
   </tr>
 </table>
 

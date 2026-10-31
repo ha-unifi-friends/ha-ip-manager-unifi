@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.22.0 – 2026-10-31
+- **IP Plan is a full page:** a switch *Clients / IP Plan* at the left of the header replaces the IP plan button and popup. In *IP Plan* the sidebar shows the networks on top and **all filters and the search below** – devices outside the filters are greyed out in the plan (e.g. search *shelly* or *Issues › In DHCP pool*). Clicking an address opens the device (or a new reservation) in the detail panel while the plan stays open, and the plan refreshes after saving. The choice is remembered. The tabs *Current / CleanUp Proposal* sit in the header next to the switch, the icon switch on the right.
+- The detail panel now pushes the list / plan aside on tablets and narrow windows too instead of covering it (only phones still show it as an overlay).
+- **CleanUp Proposal is a tab of the IP plan** instead of a separate dialog: *Current* (default) and *CleanUp Proposal*. The cleanup options (strategy, fixed range, pool, tidiness before → after) appear in the header of that tab, the measures below the grid, and *Apply* in the footer. Switching networks keeps you in the tab.
+- **Preview changes** (checkbox) replaces the *Proposal / Changes* tabs: off shows the resulting plan, on shows every move as an arrow and plays the animation.
+- The move arrows are now drawn in front of the address cells.
+
 ## 1.21.0 – 2026-10-31
 - **IP plan:** the networks are now a pane on the left – one card per network with subnet, DHCP pool, fixed / in pool / dynamic / free and utilization. The selected network's title is larger and sits next to the *CleanUp Proposal* button.
 - New **Tidiness score** (0–100) per network: fixed IPs outside the DHCP pool (up to 50 points), close together (30 – gaps of up to 10 addresses, e.g. one block per vendor, are fine) and without conflicts or devices on another IP (20). Green from 80, orange from 50, red below; the tooltip explains the points.

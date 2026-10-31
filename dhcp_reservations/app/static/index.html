@@ -266,12 +266,21 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 /* ---------- CSV-Import ---------- */
 dialog#dlgImport{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
-dialog#dlgPlan,dialog#dlgRules{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1180px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog#dlgRules{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1180px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgRules{width:min(820px,calc(100vw - 32px))}
-dialog#dlgPlan::backdrop,dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
-dialog#dlgPlan{width:min(1360px,calc(100vw - 32px))}
-.plan-layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:18px;align-items:start}
-.plan-nets{position:sticky;top:0;display:grid;gap:6px}
+dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
+.plan-view{flex:1;min-height:0;display:flex;flex-direction:column}
+.plan-scroll{flex:1;min-height:0;overflow:auto;padding:14px max(16px,env(safe-area-inset-right)) 18px 16px}
+.plan-view .imp-foot{border-top:1px solid var(--line);background:var(--panel)}
+#planNets{padding-top:4px}
+#planNets .plan-hint{margin:10px 2px 4px;font-size:12px}
+.seg.view-switch{display:inline-flex;flex:none;background:var(--chip);border:1px solid var(--line-strong);border-radius:999px;padding:2px}
+.seg.view-switch button{border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.seg.view-switch button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
+body:not(.plan-mode) .plan-only{display:none!important}
+body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,body.plan-mode #btnInline{display:none}
+
+.plan-nets{display:grid;gap:6px}
 .pn{display:grid;gap:3px;text-align:left;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);cursor:pointer;font-size:12px}
 .pn:hover{border-color:var(--line-strong)}
 .pn.on{border-color:var(--accent);background:var(--sel)}
@@ -281,16 +290,24 @@ dialog#dlgPlan{width:min(1360px,calc(100vw - 32px))}
 .pn .l2,.pn .l3{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pn .l2 .mono{font-size:11.5px}
 .pn .l3 .w{color:var(--warn)}
+.pn .l3 .ubar{width:34px;height:5px;margin:0 6px 0 0}
+.pn{padding:7px 10px;gap:2px}
+#planNets{margin-bottom:6px}
+.pc.dim{opacity:.22}
+.pc.dim:hover{opacity:.6}
 .pn .l4{display:flex;align-items:center;gap:6px;color:var(--muted)}
 .pn .l4 .ubar{flex:1;width:auto;margin:0}
 .tidy{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;white-space:nowrap}
 .tidy.good{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
 .tidy.mid{background:var(--warn-bg);color:var(--warn)}
 .tidy.bad{background:var(--bad-bg);color:var(--bad)}
-.plan-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.plan-head{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;margin-bottom:8px}
+.plan-tabs{margin:0;border-bottom:0;flex:none}
+.topbar .plan-tabs button[role="tab"]{padding:8px 10px}
+.plan-tabs button[role="tab"]{font-size:13.5px}
+#planClean .cl-ctrl{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:2px 0 10px}
 .plan-head h3{margin:0;font-size:17px;font-weight:600}
 .plan-head h3 .muted{font-weight:400;font-size:14px}
-@media (max-width:860px){.plan-layout{grid-template-columns:minmax(0,1fr)}.plan-nets{position:static;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}}
 .ubar{display:inline-block;width:90px;height:7px;border-radius:4px;background:var(--chip);vertical-align:middle;margin-right:7px;overflow:hidden}
 .ubar i{display:block;height:100%;background:var(--accent)}
 .ubar.hi i{background:var(--warn)}
@@ -306,14 +323,13 @@ dialog#dlgPlan{width:min(1360px,calc(100vw - 32px))}
 .pc.gw{background:var(--ok);color:#fff}
 .pc.sys{background:transparent;color:var(--faint);cursor:default}
 .pc.sys:hover{outline:none}
+.pc.selc{outline:3px solid var(--fg);outline-offset:-2px;z-index:1}
 .plan-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin-top:10px}
 .plan-legend span{display:inline-flex;align-items:center;gap:6px}
 .plan-legend .pc{width:22px;padding:4px 0;cursor:default}
 .plan-legend .pc:hover{outline:none}
 .rule-row{display:grid;grid-template-columns:130px 1fr 220px 34px;gap:8px;align-items:center;margin-bottom:8px}
 .rule-row input,.rule-row select{width:100%}
-dialog#dlgClean{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1180px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
-dialog#dlgClean::backdrop{background:rgba(8,10,14,.55)}
 .cl-ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:10px}
 .cl-ctrl label{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 .cl-ctrl input[type=number]{width:70px}
@@ -352,7 +368,7 @@ dialog#dlgClean::backdrop{background:rgba(8,10,14,.55)}
 .pc.dst{border:2px dashed var(--ok)}
 .cg-wrap{position:relative}
 .pc.left{opacity:.35;transition:opacity .4s}
-.cg-arrows{position:absolute;inset:0;pointer-events:none;overflow:visible}
+.cg-arrows{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:4}
 .cg-fly{position:absolute;z-index:3;pointer-events:none;transition:transform 1.1s cubic-bezier(.45,0,.2,1),opacity .3s;box-shadow:0 6px 18px rgba(0,0,0,.45)}
 .cg-bar{display:flex;align-items:center;gap:10px;margin:10px 0 0;font-size:12.5px;color:var(--muted)}
 .cl-confirm{border:1px solid var(--warn);background:var(--warn-bg);border-radius:8px;padding:10px 12px;margin-top:12px;font-size:13px}
@@ -428,7 +444,8 @@ body.side-off aside{display:none}
 body.side-off .app{grid-template-columns:minmax(0,1fr) auto}
 body.side-off .menu-btn{display:inline-flex}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}#toast,.switch input,.switch input::after,summary svg{transition:none}}
-@media (max-width:1100px){.detail{position:fixed;inset:0 0 0 auto;width:min(400px,100vw);z-index:15;box-shadow:-8px 0 24px rgba(0,0,0,.25)}}
+@media (max-width:760px){.detail{position:fixed;inset:0 0 0 auto;width:min(400px,100vw);z-index:15;box-shadow:-8px 0 24px rgba(0,0,0,.25)}}
+@media (max-width:1100px) and (min-width:761px){.detail{width:340px}}
 @media (max-width:760px){
   .app{grid-template-columns:minmax(0,1fr)}
   aside{position:fixed;inset:0 auto 0 0;width:min(300px,88vw);z-index:14;transform:translateX(-100%);transition:transform .2s}
@@ -445,23 +462,28 @@ body.side-off .menu-btn{display:inline-flex}
       <div class="brand"><button type="button" class="brand-ic" id="btnSide" title="Hide filters" aria-label="Hide filters"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></button>IP Manager for UniFi</div>
       <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="q" placeholder="Search" aria-label="Search"></div>
     </div>
-    <div class="side-scroll" id="facets"></div>
+    <div class="side-scroll">
+      <details id="planNets" open hidden><summary>Networks<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary><nav class="plan-nets" id="planStats" aria-label="Networks"></nav><p class="hint plan-hint">Click an address to open the device, or a free one to reserve it. Devices outside the filters below are greyed out.</p></details>
+      <div id="facets"></div>
+    </div>
     <div class="side-foot"><div class="side-links"><button class="link" type="button" id="lnkClear" disabled>Clear filters</button><button class="link" type="button" id="lnkCols">Customize columns</button></div><span id="appVer" title="IP Manager for UniFi – add-on version"></span><span class="sp"></span><button type="button" class="theme-btn" id="btnTheme"></button></div>
   </aside>
 
   <main>
     <div class="topbar">
       <button class="btn menu-btn" id="btnMenu" type="button" title="Show filters" aria-label="Show filters"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></button>
+      <div class="seg view-switch" role="group" aria-label="View"><button type="button" data-vw="clients" aria-pressed="true">Clients</button><button type="button" data-vw="plan" aria-pressed="false">IP Plan</button></div>
       <div class="viewsel">
         <button class="btn view-btn" id="btnView" type="button" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="viewName">All</span><span class="mod" id="viewMod" hidden title="Unsaved changes">•</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="menu" id="viewMenu" role="menu" hidden></div>
       </div>
       <span id="count"></span>
+      <div class="cl-tabs plan-tabs plan-only" role="tablist"><button type="button" role="tab" data-pt="cur" aria-selected="true">Current</button><button type="button" role="tab" data-pt="clean" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M14 3 9.5 11.5"/><path d="M5 13.5h9l1.5 7.5H3.5z"/><path d="M8 17v4M11 17v4"/><path d="M18 3v3M16.5 4.5h3M20 9v2M19 10h2"/></svg>CleanUp Proposal</button></div>
       <span class="sp"></span>
+      <span class="plan-icons-slot plan-only"></span>
       <div class="grp">
         <span id="stand"></span>
         <button class="btn" id="btnReload" type="button">Refresh</button>
-        <button class="btn icon-btn" id="btnPlan" type="button" title="IP plan and utilization per network"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="lbl">IP plan</span></button>
         <button class="btn icon-btn" id="btnVer" type="button" title="Save, compare and restore versions of the table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span class="lbl">Versions</span></button>
         <button class="btn icon-btn" id="btnInline" type="button" aria-pressed="false" title="Edit name and fixed IP directly in the table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span class="lbl">Inline edit</span></button>
         <div class="viewsel actsel">
@@ -485,6 +507,40 @@ body.side-off .menu-btn{display:inline-flex}
         <tbody id="tbody"><tr><td class="empty" colspan="14"><span class="spin"></span> Loading data from the controller …</td></tr></tbody>
       </table>
     </div>
+    <section class="plan-view" id="planView" hidden aria-label="IP plan">
+      <div class="plan-scroll">
+      <div class="plan-main">
+        <div class="plan-head"><h3 id="planNet"></h3>
+</div>
+        <div id="planGridWrap"></div>
+        <div id="planClean" hidden>
+      <div class="cl-ctrl">
+        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button></span>
+        <label>Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253"></label>
+        <label>DHCP pool <b class="mono" id="clPool"></b></label>
+        <label class="rc-opt"><input type="checkbox" id="clPreview"><span>Preview changes</span></label><span class="sp"></span><span id="clSum" class="sumrow" style="margin:0"></span>
+      </div>
+      <div id="clErr"></div>
+      <div id="clGrid"></div>
+      <div class="sec-title" style="margin-top:16px">Measures</div>
+      <div class="measures">
+        <div id="clM1"></div>
+        <div id="clMoves" class="mv-box"><div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="clAll" aria-label="Select all"></label></th><th data-sk="dev">Device</th><th data-sk="mac">MAC</th><th data-sk="ip">Fixed IP</th><th data-sk="nip">New IP</th><th data-sk="grp">Group</th><th data-sk="status">Notes</th></tr></thead><tbody id="clRows"></tbody></table></div></div>
+        <div id="clM2"></div>
+        <div id="clM3"></div>
+      </div>
+      <div id="clConfirm"></div>
+        </div>
+      </div>
+      </div>
+    <div class="imp-foot" id="planFootClean" hidden>
+      <div class="notes"><span class="hint">Nothing changes until you apply. Each measure and each move can be unticked.</span><span class="hint vnote"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>A version of the current settings is saved first – undo anytime via Versions › Restore.</span></div>
+      <div class="prog" id="clProg" hidden><i></i></div>
+      <span class="sp"></span>
+      <button class="btn" type="button" id="clCancel">Cancel</button>
+      <button class="btn primary" type="button" id="clApply">Apply</button>
+    </div>
+    </section>
   </main>
 
   <section class="detail colpanel" id="colPanel" hidden aria-label="Customize columns">
@@ -656,46 +712,6 @@ body.side-off .menu-btn{display:inline-flex}
         <div class="hint">Limitation: a name or note that was empty in the version does not clear the current one.</div>
       </div>
       <div class="imp-foot"><span class="sp"></span><button class="btn primary" type="button" id="rstPreview">Preview restore</button></div>
-    </div>
-  </div>
-</dialog>
-<dialog id="dlgPlan" aria-labelledby="planTitle">
-  <div class="imp">
-    <div class="imp-head"><h2 id="planTitle">IP plan</h2><button class="x link" type="button" id="planClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-    <div class="imp-body">
-      <div class="plan-layout"><nav class="plan-nets" id="planStats" aria-label="Networks"></nav><div id="planGridWrap"></div></div>
-    </div>
-    <div class="imp-foot"><span class="hint">Click an address to open the device, or a free address to reserve it.</span><span class="sp"></span><button class="btn" type="button" id="btnClean" title="Suggest a tidier layout for the selected network"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M14 3 9.5 11.5"/><path d="M5 13.5h9l1.5 7.5H3.5z"/><path d="M8 17v4M11 17v4"/><path d="M18 3v3M16.5 4.5h3M20 9v2M19 10h2"/></svg>CleanUp Proposal</button><button class="btn" type="button" id="planDone">Close</button></div>
-  </div>
-</dialog>
-<dialog id="dlgClean" aria-labelledby="clTitle">
-  <div class="imp">
-    <div class="imp-head"><h2 id="clTitle">CleanUp Proposal</h2><button class="x link" type="button" id="clClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
-    <div class="imp-body">
-      <div class="cl-ctrl">
-        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button></span>
-        <label>Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253"></label>
-        <label>DHCP pool <b class="mono" id="clPool"></b></label>
-        <span class="sp"></span><span id="clSum" class="sumrow" style="margin:0"></span>
-      </div>
-      <div class="cl-tabs" role="tablist"><button type="button" role="tab" data-ct="cur" aria-selected="false">Current</button><button type="button" role="tab" data-ct="plan" aria-selected="true">Proposal</button><button type="button" role="tab" data-ct="chg" aria-selected="false">Changes</button><span class="sp"></span><span class="plan-icons-slot"></span></div>
-      <div id="clErr"></div>
-      <div id="clGrid"></div>
-      <div class="sec-title" style="margin-top:16px">Measures</div>
-      <div class="measures">
-        <div id="clM1"></div>
-        <div id="clMoves" class="mv-box"><div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="clAll" aria-label="Select all"></label></th><th data-sk="dev">Device</th><th data-sk="mac">MAC</th><th data-sk="ip">Fixed IP</th><th data-sk="nip">New IP</th><th data-sk="grp">Group</th><th data-sk="status">Notes</th></tr></thead><tbody id="clRows"></tbody></table></div></div>
-        <div id="clM2"></div>
-        <div id="clM3"></div>
-      </div>
-      <div id="clConfirm"></div>
-    </div>
-    <div class="imp-foot">
-      <div class="notes"><span class="hint">Nothing changes until you apply. Each measure and each move can be unticked.</span><span class="hint vnote"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>A version of the current settings is saved first – undo anytime via Versions › Restore.</span></div>
-      <div class="prog" id="clProg" hidden><i></i></div>
-      <span class="sp"></span>
-      <button class="btn" type="button" id="clCancel">Cancel</button>
-      <button class="btn primary" type="button" id="clApply">Apply</button>
     </div>
   </div>
 </dialog>
@@ -1002,7 +1018,7 @@ function renderTable() {
   $("#count").textContent = list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`;
   $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "";
 }
-function renderAll() { renderFacets(); renderTable(); }
+function renderAll() { renderFacets(); renderTable(); if (isPlan() && !CL.running) renderPlan(); }
 function persist() { store.set("view2", { sort: state.sort, colFilters: state.colFilters, facets: state.facets, hiddenCols: state.hiddenCols, colOrder: state.colOrder }); if (typeof renderViewBtn === "function") renderViewBtn(); }
 
 // ---------- customize columns ----------
@@ -1140,8 +1156,18 @@ function tidiness(p) {
   return tidyScore(ips, p.ps, p.pe, bad);
 }
 const tidyBadge = (t, prefix = "") => `<span class="tidy ${t.score >= 80 ? "good" : t.score >= 50 ? "mid" : "bad"}" title="${esc(`Tidiness ${t.score}/100 – ${t.n} fixed IPs: ${t.inPool} inside the DHCP pool (-50 max), ${Math.round(t.compact * 100)} % close together (-30 max), ${t.bad} conflicts / devices on another IP (-20 max)`)}">${prefix}${t.score}</span>`;
-const PLAN = { sel: null };
-function openPlan() { if (!PLAN.sel || !net(PLAN.sel)) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; renderPlan(); $("#dlgPlan").showModal(); }
+const PLAN = { sel: null, tab: "cur" }; // tab: cur = current plan, clean = CleanUp Proposal
+// ---------- view: Clients (table) or IP Plan (full page, networks in the sidebar) ----------
+const isPlan = () => document.body.classList.contains("plan-mode");
+function setView(v) {
+  if (CL.running) return;
+  const plan = v === "plan"; document.body.classList.toggle("plan-mode", plan); store.set("view", v);
+  for (const b of document.querySelectorAll("[data-vw]")) b.setAttribute("aria-pressed", String(b.dataset.vw === v));
+  $("#planNets").hidden = !plan; $(".tablewrap").hidden = plan; $("#planView").hidden = !plan;
+  if (plan) { closeCols(); openPlan(); } else { PLAN.tab = "cur"; renderTable(); }
+}
+document.querySelectorAll("[data-vw]").forEach(b => b.addEventListener("click", () => setView(b.dataset.vw)));
+function openPlan() { if (!PLAN.sel || !net(PLAN.sel)) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; PLAN.tab = "cur"; renderPlan(); }
 // icons in the IP plan cells: none, the UniFi device icon, or the logo of the Home Assistant integration
 const PLAN_ICONS = { mode: store.get("planIconMode", store.get("planIcons", false) ? "unifi" : "off") };
 const iconSeg = () => `<span class="seg plan-icons" role="group" aria-label="Icons in the cells">${[["off", "No icons"], ["unifi", "UniFi"], ["ha", "Home Assistant"]].map(([k, t]) => `<button type="button" data-pim="${k}" aria-pressed="${PLAN_ICONS.mode === k}" title="${k === "off" ? "Only the address" : k === "unifi" ? "Device icon from UniFi" : "Logo of the Home Assistant integration (empty when the device is not in HA)"}">${t}</button>`).join("")}</span>`;
@@ -1171,6 +1197,7 @@ function currentCells(p, mark = {}) {
     else if (pool) { cls = "pool"; tip += " · free (DHCP pool)"; }
     else tip += " · free";
     if (mark[x]) { cls += " " + mark[x].cls; tip += mark[x].tip || ""; }
+    if (PLAN.vis && e && ![...e.res, ...e.dyn].some(d => PLAN.vis.has(d.mac))) { cls += " dim"; tip += " · outside the current filters"; }
     out.push(cellHtml(p, x, cls, tip, c));
   }
   return out.join("");
@@ -1181,33 +1208,36 @@ function syncIconBoxes() { document.querySelectorAll(".plan-icons-slot").forEach
 document.addEventListener("click", e => {
   const b = e.target.closest?.("[data-pim]"); if (!b) return;
   PLAN_ICONS.mode = b.dataset.pim; store.set("planIconMode", PLAN_ICONS.mode);
-  if ($("#dlgPlan").open) renderPlan(); if ($("#dlgClean").open) renderClean();
+  if (isPlan()) renderPlan();
 });
 function renderPlan() {
   const ps = state.networks.map(planNet).filter(Boolean);
   $("#planStats").innerHTML = ps.map(p => { const pct = p.usable ? Math.round(p.used / p.usable * 100) : 0, t = tidiness(p); return `<button type="button" class="pn ${p.n.id === PLAN.sel ? "on" : ""}" data-net="${esc(p.n.id)}" aria-pressed="${p.n.id === PLAN.sel}">
     <span class="l1"><b>${esc(p.n.name)}</b>${p.n.vlan ? `<span class="muted">(${p.n.vlan})</span>` : ""}<span class="sp"></span>${tidyBadge(t, "Tidiness ")}</span>
     <span class="l2"><span class="mono">${esc(p.n.subnet)}</span> · pool ${p.poolSize ? `<span class="mono">.${esc(p.n.dhcp_start.split(".").pop())}–.${esc(p.n.dhcp_stop.split(".").pop())}</span>` : "–"}</span>
-    <span class="l3">${p.fixed} fixed${p.inPool ? ` · <span class="w">${p.inPool} in pool</span>` : ""} · ${p.dyn} dynamic · ${p.freeOut} free</span>
-    <span class="l4"><span class="ubar ${pct >= 80 ? "hi" : ""}"><i style="width:${pct}%"></i></span>${pct} %</span></button>`; }).join("");
+    <span class="l3"><span class="ubar ${pct >= 80 ? "hi" : ""}" title="Utilization ${pct} % (${p.used}/${p.usable})"><i style="width:${pct}%"></i></span>${pct} % · ${p.fixed} fixed${p.inPool ? ` · <span class="w">${p.inPool} in pool</span>` : ""} · ${p.dyn} dyn</span></button>`; }).join("");
+  if (!ps.some(x => x.n.id === PLAN.sel)) PLAN.sel = ps[0]?.n.id || null;
+  const vis = rows(); PLAN.vis = vis.length === state.clients.length ? null : new Set(vis.map(c => c.mac));
   const p = ps.find(x => x.n.id === PLAN.sel);
+  $("#planNet").innerHTML = p ? `${esc(p.n.name)}${p.n.vlan ? ` <span class="muted">(${p.n.vlan})</span>` : ""} <span class="muted mono">${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</span>` : "";
+  const clean = PLAN.tab === "clean" && !!p;
+  for (const t of document.querySelectorAll("[data-pt]")) t.setAttribute("aria-selected", String(t.dataset.pt === (clean ? "clean" : "cur")));
+  $("#planGridWrap").hidden = clean; $("#planClean").hidden = !clean; $("#planFootClean").hidden = !clean;
   if (!p) { $("#planGridWrap").innerHTML = ""; return; }
-  BTN_CLEAN.remove(); // kept in a variable: it moves into the grid header below
-  $("#planGridWrap").innerHTML = `<div class="cl-tabs plan-head" style="border:0;margin:0"><h3>${esc(p.n.name)}${p.n.vlan ? ` <span class="muted">(${p.n.vlan})</span>` : ""} <span class="muted mono">${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</span></h3><span class="clean-slot"></span><span class="sp"></span><span class="plan-icons-slot"></span></div>
-    ${legend(LEG_CUR)}<div class="plan-grid">${currentCells(p)}</div>`;
-  $("#planGridWrap .clean-slot").append(BTN_CLEAN);
+  if (clean) { renderClean(); return; }
+  $("#planGridWrap").innerHTML = `${legend(LEG_CUR)}<div class="plan-grid">${currentCells(p)}</div>`;
+  markSel();
   syncIconBoxes();
 }
-$("#planStats").addEventListener("click", e => { const b = e.target.closest("[data-net]"); if (b) { PLAN.sel = b.dataset.net; renderPlan(); } });
+$("#planStats").addEventListener("click", e => { const b = e.target.closest("[data-net]"); if (!b || CL.running) return; PLAN.sel = b.dataset.net; if (PLAN.tab === "clean") resetClean(); $("#side").classList.remove("open"); renderPlan(); });
+document.querySelectorAll("[data-pt]").forEach(t => t.addEventListener("click", () => { if (CL.running) return; t.dataset.pt === "clean" ? openClean() : backToPlan(); }));
 $("#planGridWrap").addEventListener("click", e => {
   const d = e.target.closest(".pc[data-ip]"); if (!d || d.classList.contains("sys") || d.classList.contains("gw")) return;
   const c = d.dataset.mac && state.clients.find(x => x.mac === d.dataset.mac);
-  $("#dlgPlan").close();
   if (c) { openPanel(c); return; }
   openPanel(null); $("#fFixed").checked = true; syncToggles(); $("#fNet").value = PLAN.sel; $("#fIp").value = d.dataset.ip; updateHint(); $("#fMac").focus();
 });
-for (const id of ["#planClose", "#planDone"]) $(id).addEventListener("click", () => $("#dlgPlan").close());
-$("#btnPlan").addEventListener("click", openPlan);
+
 
 // ---------- CleanUp Proposal ----------
 const CL = { strategy: "min", end: null, rows: [], m: { move: true, rc: false, pool: true }, tab: "plan", running: false, done: false, confirm: false, ha: null };
@@ -1251,9 +1281,9 @@ function buildClean() {
   CL.rows = fixed.filter(c => plan.has(c.mac) && plan.get(c.mac) !== ipNum(c.fixed_ip)).map(c => ({ c, nip: ipStr(plan.get(c.mac)), grp: CL.strategy !== "min" ? c._grp : groupKey(c), sel: prev.get(c.mac) ?? true, status: "chg" }));
   return { n, p, first: first === p.gw ? first + 1 : first, end, poolS, poolE, plan, fixed, dynIn, err, poolChange: p.ps !== poolS || p.pe !== poolE };
 }
+function resetClean() { Object.assign(CL, { end: null, rows: [], tab: "plan", preview: false, played: false, running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true } }); }
 async function openClean() {
-  Object.assign(CL, { end: null, rows: [], tab: "plan", running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true } });
-  $("#dlgPlan").close(); renderClean(); $("#dlgClean").showModal();
+  resetClean(); PLAN.tab = "clean"; renderPlan();
   if (!CL.ha) { try { CL.ha = new Set((await api("api/ha_devices")).devices.flatMap(d => d.macs)); renderClean(); } catch { CL.ha = new Set(); } }
 }
 function futureCells(b, sel) {
@@ -1312,7 +1342,6 @@ function renderClean() {
   const b = buildClean(); if (!b) return;
   CL.b = b;
   const { n, p, first, end, poolS, poolE, dynIn, err } = b;
-  $("#clTitle").textContent = `CleanUp Proposal · ${n.name}${n.vlan ? ` (${n.vlan})` : ""} · ${n.subnet}`;
   $("#clFrom").textContent = "." + (first & 255); $("#clEnd").value = end & 255; $("#clEnd").min = (first & 255) + 1; $("#clEnd").max = ((p.r.end - 2) & 255);
   $("#clPool").textContent = `.${poolS & 255} – .${poolE & 255}`;
   for (const x of document.querySelectorAll("[data-cs]")) x.setAttribute("aria-pressed", String(x.dataset.cs === CL.strategy));
@@ -1322,7 +1351,7 @@ function renderClean() {
   const after = tidyScore(b.fixed.filter(c => !c.is_device).map(c => CL.m.move && selMac.has(c.mac) ? selMac.get(c.mac) : ipNum(c.fixed_ip)),
     CL.m.pool && b.poolChange ? poolS : p.ps, CL.m.pool && b.poolChange ? poolE : p.pe, 0);
   $("#clSum").innerHTML = `<span class="pill">Tidiness ${tidyBadge(tidiness(p))} → ${tidyBadge(after)}</span><span class="pill">Fixed IPs <b>${b.fixed.length}</b></span><span class="pill">Moves <b>${sel.length}/${CL.rows.length}</b></span><span class="pill">Dynamic in fixed range <b>${dynIn.length}</b></span>`;
-  for (const t of document.querySelectorAll("[data-ct]")) t.setAttribute("aria-selected", String(t.dataset.ct === CL.tab));
+  CL.tab = CL.preview ? "chg" : "plan"; $("#clPreview").checked = !!CL.preview; $("#clPreview").disabled = CL.running;
   $("#clErr").innerHTML = err ? `<div class="err">${esc(err)}</div>` : "";
   // grid for the selected tab
   if (CL.tab === "cur") $("#clGrid").innerHTML = legend(LEG_CUR) + `<div class="plan-grid">${currentCells(p)}</div>`;
@@ -1382,24 +1411,21 @@ async function applyClean() {
   const ok = todo.filter(r => r.status === "ok").length;
   if (todo.length) toast(`${ok} of ${todo.length} moved` + (rcTxt ? ` · ${rcTxt}` : ""));
   CL.running = false;
-  if (CL.m.pool && b.poolChange) { CL.confirm = true; CL.tab = "plan"; } else CL.done = true;
+  if (CL.m.pool && b.poolChange) { CL.confirm = true; CL.preview = false; } else CL.done = true;
   renderClean(); if (rcTxt) setTimeout(() => load(), 20000);
 }
 $("#clEnd").addEventListener("change", e => { const p = CL.b?.p; if (!p || CL.running || CL.done) return; CL.end = p.r.start - (p.r.start & 255) + +e.target.value; renderClean(); });
 document.querySelectorAll("[data-cs]").forEach(x => x.addEventListener("click", () => { if (CL.running || CL.done) return; CL.strategy = x.dataset.cs; CL.rows = []; renderClean(); }));
-document.querySelectorAll("[data-ct]").forEach(x => x.addEventListener("click", () => { CL.tab = x.dataset.ct; CL.played = false; renderClean(); }));
-$("#dlgClean").addEventListener("change", e => { const k = e.target.dataset?.cm; if (k) { CL.m[k] = e.target.checked; CL.played = true; renderClean(); } });
+$("#clPreview").addEventListener("change", e => { CL.preview = e.target.checked; CL.played = false; renderClean(); });
+$("#planClean").addEventListener("change", e => { const k = e.target.dataset?.cm; if (k) { CL.m[k] = e.target.checked; CL.played = true; renderClean(); } });
 $("#clGrid").addEventListener("click", e => { if (e.target.closest("#cgPlay")) { const sel = CL.rows.filter(r => r.sel); drawArrows(sel); playMoves(sel); } });
-window.addEventListener("resize", () => { if ($("#dlgClean").open && CL.tab === "chg") drawArrows(CL.rows.filter(r => r.sel)); });
+window.addEventListener("resize", () => { if (isPlan() && PLAN.tab === "clean" && CL.tab === "chg") drawArrows(CL.rows.filter(r => r.sel)); });
 $("#clRows").addEventListener("change", e => { const i = e.target.dataset.ci; if (i != null) { CL.rows[+i].sel = e.target.checked; CL.played = true; renderClean(); } });
 $("#clAll").addEventListener("change", e => { CL.rows.forEach(r => r.sel = e.target.checked); renderClean(); });
 bindSort("clRows", () => renderClean());
 $("#clApply").addEventListener("click", applyClean);
-const backToPlan = () => { if (CL.running) return; $("#dlgClean").close(); openPlan(); };
-for (const id of ["#clCancel", "#clClose"]) $(id).addEventListener("click", backToPlan);
-$("#dlgClean").addEventListener("cancel", e => { e.preventDefault(); backToPlan(); });
-$("#btnClean").addEventListener("click", openClean);
-const BTN_CLEAN = $("#btnClean");
+const backToPlan = async () => { if (CL.running) return; const reload = CL.done; PLAN.tab = "cur"; renderPlan(); if (reload) { await load(); if (isPlan() && PLAN.tab === "cur") renderPlan(); } };
+$("#clCancel").addEventListener("click", backToPlan);
 
 // ---------- hosts file ----------
 const hostName = v => String(v || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9.-]+/g, "-").replace(/^-+|-+$/g, "").replace(/-{2,}/g, "-");
@@ -1481,6 +1507,7 @@ function openPanel(c, tab) {
 // only move the highlight – re-building the table on a click made Safari jump back to the top
 function markSel() {
   const k = state.sel ? keyOf(state.sel) : null;
+  for (const el of document.querySelectorAll("#planGridWrap .pc")) el.classList.toggle("selc", !!state.sel?.mac && el.dataset.mac === state.sel.mac);
   for (const tr of $("#tbody").querySelectorAll("tr[data-k]")) tr.classList.toggle("sel", tr.dataset.k === k);
 }
 function closePanel() {
@@ -2652,6 +2679,7 @@ if (saved) { state.sort = saved.sort || state.sort; state.colFilters = saved.col
 // only the table, the filter pane and the detail panel scroll – the frame itself must never move (Safari scrolls it on focus / re-layout)
 for (const el of [document.scrollingElement, document.querySelector(".app"), document.querySelector("main")]) el?.addEventListener?.("scroll", () => { if (el.scrollTop || el.scrollLeft) { el.scrollTop = 0; el.scrollLeft = 0; } }, { passive: true });
 window.addEventListener("scroll", () => { if (window.scrollY || window.scrollX) window.scrollTo(0, 0); }, { passive: true });
+if (store.get("view", "clients") === "plan") setView("plan");
 buildHead(); renderAll(); Promise.all([loadRules(), loadScans()]).then(() => { if (state.clients.length) { computeWarnings(); renderAll(); } }); load(); loadViews(true); loadVersionsMeta();
 })();
 </script>
