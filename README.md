@@ -9,6 +9,8 @@
 
 <p align="center">
   <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fha-unifi-friends%2Fha-ip-manager-unifi"><img src="https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg" alt="Add repository to Home Assistant"></a>
+  <br>
+  <sub>or add manually: <a href="https://github.com/ha-unifi-friends/ha-ip-manager-unifi"><code>https://github.com/ha-unifi-friends/ha-ip-manager-unifi</code></a></sub>
 </p>
 
 ![Overview](docs/screenshots/overview.png)
