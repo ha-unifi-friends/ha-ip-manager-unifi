@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.16.0 – 2026-10-31
+- **Home Assistant link per device** (matched by MAC): new section *Home Assistant* in the detail panel with the integration logo, the HA device name, area and status (OK / partly unavailable / unavailable / integration error / disabled) and **Open in HA ›**, which opens the device page in Home Assistant.
+- New column **Home Assistant** (integration logos + status dot) and sidebar filter *Home Assistant* (known / not known / unavailable, per integration). For clients, the UniFi integration's device trackers are ignored; for UniFi devices (access points, switches, gateway) the UniFi integration device is linked.
+- Integration logos come from brands.home-assistant.io (allowed in the Content-Security-Policy).
+
 ## 1.15.1 – 2026-10-31
 - Replace subnet, CSV import and restore: *Reconnect Wi-Fi clients afterwards* is now on by default.
 - Conflicts in the previews (address already reserved, address in use, duplicate) link to the other device: *Open <device> ›* shows its details, and closing the panel returns to the dialog with everything still filled in.

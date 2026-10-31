@@ -33,6 +33,7 @@ versions you can compare and restore.
 | **Names from Home Assistant** | Proposes the names from the HA device registry, matched by MAC. Includes a "near match" for devices with separate WiFi/Ethernet MACs. |
 | **Versions** | Snapshot the table manually, daily, and automatically before every bulk action. **Compare** two versions (new / removed / changed devices; spots a device that came back with a new random MAC). **Restore** through a preview. A *Changed since …* filter shows what changed since a version, and each device has a **history** timeline: which change, in which version. |
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. |
+| **Home Assistant link** | Devices known to Home Assistant show the integration logo and HA status (column, filter and detail panel) with a jump to the HA device page. |
 | **Reconnect** | After a fixed IP change, online Wi-Fi clients can be reconnected right away so they pick up the new address – per device or for a whole subnet move. |
 | **IP plan** | Utilization per network (fixed / in pool / dynamic / free outside the pool) and an address grid that shows conflicts at a glance. Click a free address to reserve it. |
 | **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it), shows the resulting IP plan and applies the checked measures – moves, reconnect and the pool change (after a second confirmation). |

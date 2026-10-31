@@ -54,6 +54,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 - **Ping:** *Network check › Ping* sends 4 ICMP echo requests from Home Assistant's network and shows replies and round-trip times.
 - **Open ports:** *Check ports* in the detail panel tests about 30 common TCP ports on the device (on demand, one device at a time, in small batches). Web ports become links with the page title; Telnet and FTP are flagged as issues. Only addresses inside the UniFi networks can be checked. The result reflects what Home Assistant's network can reach – from another VLAN it may differ. If UniFi Threat Management (IDS/IPS) is on, it may still log the check.
 - **Vendor lookup:** *Lookup vendor* next to the MAC opens maclookup.app for the vendor prefix. Vendors UniFi does not know are looked up in the background via macvendors.com (option `vendor_lookup`); only the 3-byte prefix is sent and results are cached.
+- **Home Assistant link:** devices that Home Assistant knows (matched by MAC – for clients through an integration other than UniFi, for access points, switches and the gateway through the UniFi integration) show the integration logo and their HA status in the column *Home Assistant* and in the detail panel, with *Open in HA ›* to jump to the device page. Sidebar filter *Home Assistant*.
 - **Inactive filter:** not seen for > 30 / 90 / 365 days or never seen.
 - **CSV export** of the current filtered view.
 - **CSV import (bulk):** Actions → *Import CSV*. Required column `MAC`; optional `Name`, `Note`,

@@ -589,7 +589,11 @@ HA_TEMPLATE = """{%- set ns = namespace(out=[]) -%}
 {%- set macs = device_attr(did, 'connections') | selectattr(0, 'eq', 'mac') | map(attribute=1) | map('lower') | list -%}
 {%- if macs -%}
 {%- set ns.out = ns.out + [{'id': did, 'macs': macs, 'name_by_user': device_attr(did, 'name_by_user'), 'name': device_attr(did, 'name'),
-  'domains': device_attr(did, 'config_entries') | map('config_entry_attr', 'domain') | reject('none') | list, 'area': area_name(did)}] -%}
+  'domains': device_attr(did, 'config_entries') | map('config_entry_attr', 'domain') | reject('none') | list, 'area': area_name(did),
+  'entry_states': device_attr(did, 'config_entries') | map('config_entry_attr', 'state') | reject('none') | map('string') | list,
+  'disabled': device_attr(did, 'disabled_by') is not none,
+  'entities': device_entities(did) | length,
+  'unavailable': device_entities(did) | select('is_state', 'unavailable') | list | length}] -%}
 {%- endif -%}
 {%- endfor -%}
 {{ ns.out | tojson }}"""
@@ -633,9 +637,25 @@ def ha_devices():
         macs = [m for m in (normalize_mac(x) for x in d.get("macs") or []) if m]
         if macs:
             out.append({"id": d.get("id"), "macs": macs, "name_by_user": d.get("name_by_user") or "",
-                        "name": d.get("name") or "", "domains": d.get("domains") or [], "area": d.get("area") or ""})
+                        "name": d.get("name") or "", "domains": d.get("domains") or [], "area": d.get("area") or "",
+                        "status": ha_status(d)})
     log("HA devices with MAC:", len(out))
     return {"devices": out}
+
+
+def ha_status(d):
+    """ok | partial | unavailable | error | disabled | unknown – how the device looks in Home Assistant."""
+    if d.get("disabled"):
+        return "disabled"
+    states = [str(x).lower() for x in d.get("entry_states") or []]
+    if states and not any(x.endswith("loaded") and not x.endswith("not_loaded") for x in states):
+        return "error"
+    n, u = d.get("entities"), d.get("unavailable") or 0
+    if n is None:
+        return "unknown"
+    if n and u >= n:
+        return "unavailable"
+    return "partial" if u else "ok"
 
 
 def normalize_mac(v):
@@ -1241,7 +1261,7 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         if ctype.startswith("text/html"):
-            self.send_header("Content-Security-Policy", "default-src 'self'; img-src 'self' data: https://static.ubnt.com; "
+            self.send_header("Content-Security-Policy", "default-src 'self'; img-src 'self' data: https://static.ubnt.com https://brands.home-assistant.io; "
                              "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; "
                              "frame-ancestors 'self'; base-uri 'none'; form-action 'none'")
         self.end_headers()
