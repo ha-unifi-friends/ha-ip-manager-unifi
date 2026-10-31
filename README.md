@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fraphaelkoeppel%2Fha-unifi-clients-reservations"><img src="https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg" alt="Add repository to Home Assistant"></a>
+  <a href="https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fha-unifi-friends%2Fha-ip-manager-unifi"><img src="https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg" alt="Add repository to Home Assistant"></a>
 </p>
 
 ![Overview](docs/screenshots/overview.png)
@@ -149,7 +149,7 @@ versions you can compare and restore.
 ## Installation
 
 1. Click the button above, **or** go to *Settings → Add-ons → Add-on Store → ⋮ → Repositories* and add
-   `https://github.com/raphaelkoeppel/ha-unifi-clients-reservations`
+   `https://github.com/ha-unifi-friends/ha-ip-manager-unifi`
 2. Install **IP Manager for UniFi**. Home Assistant builds the image locally, so this takes a minute.
 3. On the *Configuration* tab, enter the gateway IP, username and password, then start the add-on.
 4. Turn on *Show in sidebar* (the panel is called *IP Manager*), or open it via *Open Web UI*.
@@ -189,6 +189,10 @@ A small Python service (standard library only) inside the add-on talks to the Un
 - **Write:** `rest/user` for name, note, fixed IP, AP lock, local DNS and the virtual network override; `cmd/stamgr` (`kick-sta` to reconnect, `forget-sta` to forget a client); `rest/networkconf` only for the DHCP pool of a CleanUp Proposal.
 
 For the Home Assistant features, the service reads the device registry through the Supervisor API (read-only) and creates notifications. Views and versions are stored in the add-on's `/data` folder, so they are included in Home Assistant backups.
+
+## Contributing
+
+The project lives in the GitHub organization [ha-unifi-friends](https://github.com/ha-unifi-friends) – ideas, bug reports and pull requests are welcome. Please open an [issue](https://github.com/ha-unifi-friends/ha-ip-manager-unifi/issues) first for larger changes.
 
 ## Disclaimer
 

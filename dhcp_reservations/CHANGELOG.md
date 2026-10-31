@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.19.3 – 2026-10-31
+- The project moved to the GitHub organization **ha-unifi-friends**: https://github.com/ha-unifi-friends/ha-ip-manager-unifi. The old repository URL keeps working (GitHub redirects it), so existing installations need no change.
+
 ## 1.19.2 – 2026-10-31
 - *Names from Home Assistant*: **Already in the name** – *Add anyway / Skip / Replace* (replaces the *Skip if already in the name* checkbox). *Replace* first removes the area or integration from the name and then adds it at the chosen place, e.g. *Kitchen Light* with area as suffix → *Light-Kitchen*, *shellyLEDmatrix* with integration as prefix → *Shelly-LEDmatrix*. A name is never stripped completely.
 - *Names from Home Assistant*: the column is now called **New name** (it includes area / integration when chosen). Fix: the help text no longer breaks into separate lines around *UniFi-managed*.
