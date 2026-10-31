@@ -39,7 +39,7 @@ versions you can compare and restore.
 |---|---|
 | **Integration icon & status** | Devices known to Home Assistant (matched by MAC) show the logo of their integration and their HA status – OK, partly unavailable, unavailable, integration error, disabled – as a column, a filter and in the detail panel. For a partly unavailable device the unavailable entities are listed. |
 | **Home Assistant link** | *Open in HA ↗* opens the device page in Home Assistant in a new tab. |
-| **Names from Home Assistant** | Proposes the names from the HA device registry for your UniFi clients – including a “near match” for devices with separate WiFi/Ethernet MACs. Preview, pick, apply. |
+| **Names from Home Assistant** | Proposes the names from the HA device registry for your UniFi clients – optionally with the **area** and/or the **integration** as prefix or suffix (e.g. *Office Desk Lamp*, *Desk Lamp - ESPHome*), since the UniFi app shows neither. Includes a “near match” for devices with separate WiFi/Ethernet MACs. Preview, pick, apply. |
 | **New-device alerts** | A Home Assistant notification and the event `clients_reservations_new_device` when a never-seen MAC appears – optionally only for certain networks. |
 | **HA in the IP plan** | The IP plan can show the integration logos, and the CleanUp Proposal can group fixed IPs **by HA integration** (all Shelly, then all ESPHome, …). |
 | **HA status in versions** | Every version records the HA status, so *Compare* and the device history show e.g. “OK → Unavailable”. |
@@ -94,7 +94,7 @@ versions you can compare and restore.
     <td colspan="2" valign="top"><img src="docs/screenshots/home-assistant.png" alt="Home Assistant integration icon and status"><br><b>Integration icon & status</b> – column, filter and the <i>Home Assistant</i> section in the detail panel with <i>Open in HA ↗</i> and the unavailable entities.</td>
   </tr>
   <tr>
-    <td width="50%" valign="top"><img src="docs/screenshots/names-from-ha.png" alt="Names from Home Assistant"><br><b>Names from Home Assistant</b> – rename UniFi clients after your HA device names.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/names-from-ha.png" alt="Names from Home Assistant"><br><b>Names from Home Assistant</b> – rename UniFi clients after your HA device names, with area / integration as prefix or suffix.</td>
     <td width="50%" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal grouped by HA integration"><br><b>CleanUp Proposal grouped by HA integration</b> – <i>Changes</i> tab with every move as an arrow.</td>
   </tr>
 </table>

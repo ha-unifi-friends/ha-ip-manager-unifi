@@ -108,6 +108,11 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 .resip{font-family:var(--mono);font-size:12.5px;font-weight:600}
 .resip.mism{color:var(--warn)}
 .vno-miss{color:var(--warn);font-weight:600}
+.ha-opts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:10px 0 4px}
+.ha-opts label{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:12.5px}
+.ha-opts .seg{background:var(--bg)}
+.ha-opts .ha-ex{font-size:12.5px}
+.ha-opts .ha-ex b{color:var(--fg);font-weight:600}
 .vl{color:var(--muted);margin-left:3px}
 .tag{display:inline-block;font-size:11px;line-height:18px;padding:0 6px;border-radius:4px;margin-right:4px}
 .tag.bad{background:var(--bad-bg);color:var(--bad)}
@@ -576,6 +581,7 @@ body.side-off .menu-btn{display:inline-flex}
     <div class="imp-head"><h2 id="haTitle">Update names from Home Assistant</h2><button class="x link" type="button" id="haClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="imp-body">
       <div class="imp-help">Matches Home Assistant devices to UniFi clients by MAC address. The proposed name is the name you set in Home Assistant, otherwise the device name of its integration (devices known only through the UniFi integration are skipped, they already carry the UniFi name). “Near match” means the MAC differs only in the last byte, typical for devices with separate Wi-Fi and Ethernet MACs; those are not selected by default.</div>
+      <div class="ha-opts" id="haOpts"></div>
       <div class="err" id="haErr" hidden></div>
       <div class="sumrow" id="haSum"></div>
       <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="haAll" aria-label="Select all"></label></th><th data-sk="mac">MAC</th><th data-sk="cur">Current name</th><th data-sk="ha">Name in Home Assistant</th><th data-sk="int">Integration · Area</th><th data-sk="status">Status</th></tr></thead><tbody id="haRows"></tbody></table></div>
@@ -2155,23 +2161,63 @@ $("#btnInline").setAttribute("aria-pressed", String(state.inline)); document.bod
 
 // ---------- names from Home Assistant ----------
 const HAN = { rows: [], filter: "rename", running: false, done: false, missing: 0 };
+// naming: add area and/or integration as prefix or suffix (remembered per browser)
+const HA_OPTS = Object.assign({ area: "off", integ: "off", sep: " ", dedup: true, camel: false }, store.get("haNameOpts", {}));
+const HA_DOM_NAMES = { esphome: "ESPHome", shelly: "Shelly", unifiprotect: "UniFi Protect", unifi: "UniFi", hue: "Hue", zha: "ZHA", mqtt: "MQTT", tuya: "Tuya", sonos: "Sonos", xiaomi_miio: "Xiaomi", tasmota: "Tasmota", wled: "WLED", homekit_controller: "HomeKit", matter: "Matter", mobile_app: "Mobile App", brother: "Brother", nuki: "Nuki", tplink: "TP-Link", synology_dsm: "Synology", dlna_dmr: "DLNA", smartthings: "SmartThings", cast: "Google Cast", apple_tv: "Apple TV", samsungtv: "Samsung TV", fritz: "FRITZ!Box", deconz: "deCONZ", zwave_js: "Z-Wave", solarman: "Solarman", nut: "NUT" };
+const domTitle = d => HA_DOM_NAMES[d] || d.replace(/_/g, " ").replace(/\b\w/g, x => x.toUpperCase());
+function haCompose(h) {
+  // dedup: a part already contained in the name (ignoring case, spaces, - and _) is not added again
+  const flat = t => String(t || "").toLowerCase().replace(/[\s_-]+/g, "");
+  const base = h.base, has = t => HA_OPTS.dedup && t && flat(base).includes(flat(t));
+  const area = HA_OPTS.area !== "off" && h.d.area && !has(h.d.area) ? h.d.area : "";
+  const dom = h.d.domains.find(x => x !== "unifi") || h.d.domains[0] || "";
+  const integ = HA_OPTS.integ !== "off" && dom && !has(domTitle(dom)) ? domTitle(dom) : "";
+  const pre = [HA_OPTS.area === "prefix" && area, HA_OPTS.integ === "prefix" && integ].filter(Boolean);
+  const suf = [HA_OPTS.area === "suffix" && area, HA_OPTS.integ === "suffix" && integ].filter(Boolean);
+  const parts = [...pre, base, ...suf];
+  // CamelCase: every word starts upper case and continues lower case; all words are joined with the separator
+  if (HA_OPTS.camel) return parts.flatMap(x => x.split(/[\s_-]+/)).filter(Boolean).map(w => w[0].toUpperCase() + w.slice(1).toLowerCase()).join(HA_OPTS.sep);
+  return parts.join(HA_OPTS.sep);
+}
+function haRestatus() {
+  for (const r of HAN.rows) {
+    if (!["rename", "same", "near", "missing"].includes(r.status)) continue;
+    r.h.proposed = haCompose(r.h);
+    const st = !r.c ? "missing" : (r.c.name || "") === r.h.proposed ? "same" : r.match === "near" ? "near" : "rename";
+    if (st !== r.status) { r.status = st; r.sel = st === "rename"; }
+  }
+}
+function renderHaOpts() {
+  const seg = (k, opts) => `<span class="seg" role="group">${opts.map(([v, t]) => `<button type="button" data-ho="${k}" data-v="${esc(v)}" aria-pressed="${HA_OPTS[k] === v}">${t}</button>`).join("")}</span>`;
+  const pos = [["off", "Off"], ["prefix", "Prefix"], ["suffix", "Suffix"]];
+  const ex = HAN.rows.find(r => r.c && r.h.d.area) || HAN.rows[0];
+  $("#haOpts").innerHTML = `<label>Area ${seg("area", pos)}</label><label>Integration ${seg("integ", pos)}</label>
+    <label>Separator ${seg("sep", [[" ", "a b"], ["-", "a-b"], ["_", "a_b"], [" - ", "a - b"], ["", "ab"]])}</label>
+    <label class="rc-opt" title="Do not add the area or integration when the name already contains it (e.g. shellyLEDmatrix + Shelly)"><input type="checkbox" data-hc="dedup" ${HA_OPTS.dedup ? "checked" : ""}><span>Skip if already in the name</span></label>
+    <label class="rc-opt" title="Every word starts upper case and continues lower case, e.g. OfficeDeskLamp with separator ab"><input type="checkbox" data-hc="camel" ${HA_OPTS.camel ? "checked" : ""}><span>CamelCase</span></label>
+    ${ex ? `<span class="muted ha-ex">e.g. <b>${esc(haCompose(ex.h))}</b></span>` : ""}`;
+  const busy = HAN.running || HAN.done;
+  for (const cb of $("#haOpts").querySelectorAll("[data-hc]")) { cb.disabled = busy; cb.addEventListener("change", () => { HA_OPTS[cb.dataset.hc] = cb.checked; store.set("haNameOpts", HA_OPTS); haRestatus(); renderHa(); }); }
+  for (const b of $("#haOpts").querySelectorAll("[data-ho]")) { b.disabled = busy; b.addEventListener("click", () => { HA_OPTS[b.dataset.ho] = b.dataset.v; store.set("haNameOpts", HA_OPTS); haRestatus(); renderHa(); }); }
+}
 const macBytes = m => (m || "").toLowerCase().split(":");
 function buildHaRows(devs) {
   const byMac = {};
   for (const d of devs) {
     const viaUnifiOnly = d.domains.length && d.domains.every(x => x === "unifi");
     const proposed = d.name_by_user || (viaUnifiOnly ? "" : d.name);
-    if (!proposed) continue;
+    if (!proposed) continue; // base name; haCompose() adds area / integration
     for (const m of d.macs) {
       const prev = byMac[m];
       const score = (d.name_by_user ? 2 : 0) + (viaUnifiOnly ? 0 : 1);
-      if (!prev || score > prev.score) byMac[m] = { d, proposed, score };
+      if (!prev || score > prev.score) byMac[m] = { d, base: proposed, proposed, score };
     }
   }
   const clientsByMac = Object.fromEntries(state.clients.filter(c => c.mac).map(c => [c.mac, c]));
   const used = new Set(Object.keys(byMac).filter(m => clientsByMac[m]));
   const rows = [];
   for (const [m, h] of Object.entries(byMac)) {
+    h.proposed = haCompose(h);
     let c = clientsByMac[m], match = "exact";
     if (!c) {
       const [a, b, cc, dd, ee, ff] = macBytes(m);
@@ -2185,6 +2231,7 @@ function buildHaRows(devs) {
   return rows.sort((x, y) => ({ rename: 0, near: 1, same: 2, missing: 3 }[x.status] - { rename: 0, near: 1, same: 2, missing: 3 }[y.status]) || (x.h.proposed).localeCompare(y.h.proposed, "en"));
 }
 function renderHa() {
+  renderHaOpts();
   const rows = HAN.rows, cnt = k => rows.filter(r => r.status === k).length;
   const pills = [["all", "All", rows.length], ["rename", "Rename", cnt("rename")], ["near", "Near match", cnt("near")], ["same", "Same name", cnt("same")], ["missing", "Not in UniFi", cnt("missing")]];
   if (HAN.done) pills.push(["ok", "Renamed", cnt("ok")], ["fail", "Failed", cnt("fail")]);
@@ -2199,8 +2246,8 @@ function renderHa() {
   $("#haRows").innerHTML = list.map(r => `<tr><td><label class="opt"><input type="checkbox" data-hi="${rows.indexOf(r)}" ${r.sel ? "checked" : ""} ${selectable(r) ? "" : "disabled"} aria-label="Rename ${esc(r.h.proposed)}"></label></td>
     <td class="mono">${esc(r.c ? r.c.mac : r.haMac)}${r.match === "near" ? `<div class="muted" style="font-size:11px">HA: ${esc(r.haMac)}</div>` : ""}</td>
     <td>${r.c ? esc(r.c.name || "") || `<span class="muted">${esc(r.c.hostname || "(no name)")}</span>` : "–"}</td>
-    <td><b>${esc(r.h.proposed)}</b>${r.h.d.name_by_user && r.h.d.name !== r.h.proposed ? `<div class="muted" style="font-size:11px">${esc(r.h.d.name)}</div>` : ""}</td>
-    <td class="muted">${esc(r.h.d.domains.join(", "))}${r.h.d.area ? ` · ${esc(r.h.d.area)}` : ""}</td>
+    <td><b>${esc(r.h.proposed)}</b>${r.h.d.name_by_user && r.h.d.name !== r.h.base ? `<div class="muted" style="font-size:11px">${esc(r.h.d.name)}</div>` : ""}</td>
+    <td class="muted">${esc(r.h.d.domains.map(domTitle).join(", "))}${r.h.d.area ? ` · ${esc(r.h.d.area)}` : ""}</td>
     <td><div class="chg-list">${ST[r.status]}${r.result ? `<span class="msg">${esc(r.result)}</span>` : ""}</div></td></tr>`).join("") || `<tr><td colspan="6" class="muted">No rows in this view.</td></tr>`;
   for (const cb of $("#haRows").querySelectorAll("input[data-hi]")) cb.addEventListener("change", () => { rows[+cb.dataset.hi].sel = cb.checked; renderHaFoot(); syncHaAll(); });
   syncHaAll(); renderHaFoot();
