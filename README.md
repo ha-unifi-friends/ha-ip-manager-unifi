@@ -50,7 +50,7 @@ versions you can compare and restore.
 
 | | |
 |---|---|
-| **Edit** | Name, note, fixed IP + network, lock to an access point, local DNS record. Add reservations for MACs the controller has never seen. Remove a reservation or forget the client. |
+| **Edit** | Name, note, fixed IP + network (with *Select*: pick a free address in a small IP plan with icons and see its neighbours), lock to an access point, local DNS record. Add reservations for MACs the controller has never seen. Remove a reservation or forget the client. |
 | **Virtual Network Override** | Put a client into a network (VLAN) regardless of its WiFi or switch port. **UniFi offers this only in its mobile app** – here it is in the browser, with its own column, and an issue when a device is not in its override network. |
 | **Reconnect** | After a fixed IP change, online WiFi clients can be reconnected right away so they pick up the new address – per device or for a whole subnet move. |
 | **Open, ping & port check** | Open the device's web UI (HTTP / HTTPS), ping it, and check ~30 common TCP ports on demand; web UIs become links with their page title, Telnet/FTP are flagged. Vendor lookup for unknown MAC prefixes, Wake on LAN. |
