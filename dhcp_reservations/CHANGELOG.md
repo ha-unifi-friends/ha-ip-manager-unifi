@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.20.0 – 2026-10-31
+- The UniFi device icon now sits in the **UniFi Status** column, left of the online dot – the same layout as the Home Assistant column (logo + status). The *Name* column shows only the name.
+- The *Columns* button is gone: **Clear filters** and **Customize columns** are now at the bottom of the filter pane, next to the version.
+- IP plan: **CleanUp Proposal** moved up, right next to the network title. The icon switch *No icons / UniFi / Home Assistant* is shown as a clear pill switch.
+- IP plan with *Home Assistant* icons: devices without a Home Assistant integration show their UniFi icon instead of nothing.
+
 ## 1.19.3 – 2026-10-31
 - The project moved to the GitHub organization **ha-unifi-friends**: https://github.com/ha-unifi-friends/ha-ip-manager-unifi. The old repository URL keeps working (GitHub redirects it), so existing installations need no change.
 

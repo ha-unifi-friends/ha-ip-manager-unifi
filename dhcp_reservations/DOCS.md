@@ -15,7 +15,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 - **Issues:** IP outside its network, duplicate IP, device currently has a different IP,
   reservation inside the DHCP pool, random MAC (e.g. iOS "Private Wi-Fi Address"),
   not on the locked AP, VLAN override.
-- **Header bar:** View selector, Refresh, Columns, Versions, Inline edit, Actions (Names from HA, Replace subnet, Import CSV, Export CSV) and Add reservation.
+- **Header bar:** View selector, Refresh, IP plan, Versions, Inline edit, Actions (Names from HA, Replace subnet, Import/Export CSV, hosts file, Network rules) and Add reservation. *Clear filters*, *Customize columns*, the version and the light/dark switch are at the bottom of the filter pane.
 - **Versions:** *Versions* in the header. *Save version* stores the table (names, notes, fixed IPs, AP locks, DNS records and,
   for information, current IP, network, first/last seen) in `/data/versions/` – part of Home Assistant backups. A version is
   also saved automatically before every bulk action, and once a day (option `daily_version`, default on). Automatic versions

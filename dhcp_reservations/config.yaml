@@ -1,5 +1,5 @@
 name: "IP Manager for UniFi"
-version: "1.19.3"
+version: "1.20.0"
 slug: dhcp_reservations
 description: "UniFi clients, fixed IPs and DHCP reservations – IP plan, cleanup, views, bulk changes, versions (unofficial)"
 url: https://github.com/ha-unifi-friends/ha-ip-manager-unifi
