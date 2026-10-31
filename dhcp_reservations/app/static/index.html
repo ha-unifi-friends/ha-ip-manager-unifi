@@ -323,12 +323,18 @@ body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,bo
 .tidy.bad{background:var(--bad-bg);color:var(--bad)}
 .plan-head{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;margin-bottom:8px}
 /* Current / CleanUp Proposal: tabs on a shared track (between the Clients / IP Plan switch and a tab bar) */
-.topbar .plan-tabs{margin:0 0 -10px;position:relative;z-index:1;border:1px solid var(--line-strong);border-bottom:0;flex:none;gap:2px;background:var(--chip);border-radius:9px 9px 0 0;padding:3px 3px 0;align-self:flex-end} /* -10px = padding: the tabs end exactly on the (blue) header line */
-.plan-tabs button[role="tab"]{font-size:13.5px;padding:7px 14px 9px;border-radius:7px 7px 0 0;border-bottom:0;display:inline-flex;align-items:center}
+.topbar .plan-tabs{margin:0 0 -10px;position:relative;z-index:1;border:1px solid var(--line-strong);border-bottom:0;flex:none;gap:2px;background:var(--chip);border-radius:20px 20px 0 0;padding:4px 4px 0;align-self:flex-end} /* -10px = padding: the tabs end exactly on the (blue) header line */
+.plan-tabs button[role="tab"]{font-size:13.5px;padding:7px 16px 9px;border-radius:16px 16px 0 0;border-bottom:0;display:inline-flex;align-items:center}
 .plan-tabs button[role="tab"]:hover{color:var(--fg)}
 .topbar .plan-tabs button[role="tab"][aria-selected="true"]{background:var(--accent);color:#fff;font-weight:600}
 body.plan-mode .topbar{border-bottom:2px solid var(--accent)}
 .prev-toggle{display:inline-flex;align-items:center;gap:8px;padding:6px 10px 6px 12px;border:1px solid var(--line-strong);border-radius:999px;background:var(--bg);cursor:pointer;font-size:13.5px;font-weight:600;color:var(--fg);user-select:none}
+.prev-group{display:inline-flex;align-items:center;border:1px solid var(--line-strong);border-radius:999px;background:var(--bg)}
+.prev-group:has(input:checked){border-color:var(--accent);background:var(--sel)}
+.prev-group .prev-toggle{border:0;background:transparent}
+.prev-group:has(input:checked) .prev-toggle{background:transparent}
+.play-btn{display:inline-flex;align-items:center;gap:6px;border:0;border-left:1px solid color-mix(in srgb,var(--accent) 45%,transparent);background:transparent;color:var(--accent);font:inherit;font-size:13px;font-weight:600;padding:6px 14px 6px 12px;border-radius:0 999px 999px 0;cursor:pointer}
+.play-btn:hover{background:color-mix(in srgb,var(--accent) 18%,transparent)}
 .prev-toggle input{position:absolute;opacity:0;pointer-events:none}
 .prev-toggle svg{color:var(--muted)}
 .prev-toggle .sw{position:relative;width:34px;height:20px;border-radius:999px;background:var(--line-strong);transition:background .2s}
@@ -367,9 +373,9 @@ body.plan-mode .topbar{border-bottom:2px solid var(--accent)}
 .cl-ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:10px}
 .cl-ctrl label{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 .cl-ctrl input[type=number]{width:70px}
-.seg{display:inline-flex;background:var(--bg);border-radius:7px;padding:2px;gap:2px}
-.seg button{border:0;background:transparent;color:var(--muted);padding:4px 10px;border-radius:5px;cursor:pointer;font-size:12.5px}
-.seg button[aria-pressed="true"]{background:var(--card);color:var(--fg)}
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--line-strong);border-radius:999px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;color:var(--muted);padding:4px 12px;border-radius:999px;cursor:pointer;font-size:12.5px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
 .cl-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:6px 0 12px}
 .cl-tabs button[role="tab"]{border:0;background:transparent;color:var(--muted);padding:8px 12px;cursor:pointer;border-bottom:2px solid transparent;font-size:13px}
 .cl-tabs button[role="tab"][aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent)}
@@ -562,7 +568,7 @@ body.side-off .menu-btn{display:inline-flex}
         <label class="cl-one">DHCP pool <b class="mono" id="clPool"></b></label>
         <label class="cl-multi" title="Size of the fixed block at the start of every network; empty = a suggestion per network">Fixed block <input type="number" id="clPct" min="10" max="90" step="5" placeholder="auto"> % of each network</label>
         <span class="sp"></span>
-        <label class="prev-toggle" title="Show every move as an arrow and play the animation"><input type="checkbox" id="clPreview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Preview changes</span><i class="sw" aria-hidden="true"></i></label>
+        <span class="prev-group"><label class="prev-toggle" title="Show every move as an arrow and play the animation"><input type="checkbox" id="clPreview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Preview changes</span><i class="sw" aria-hidden="true"></i></label><button class="play-btn" type="button" id="cgPlay" hidden title="Play the moves again" aria-label="Play moves"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M6 4l14 8-14 8z"/></svg>Play</button></span>
         <span id="clSum" class="sumrow" style="margin:0;flex-basis:100%"></span>
       </div>
       <div id="clErr"></div>
@@ -1458,7 +1464,7 @@ function renderClean() {
     before = tidyAvg(ps.map(p => tidiness(p))); after = tidyAvg(ps.map(p => byId.has(p.n.id) ? tidyAfter(byId.get(p.n.id)) : tidiness(p)));
   }
   $("#clSum").innerHTML = `<span class="pill">${multi ? "Overall tidiness" : "Tidiness"} ${tidyBadge(before)} → ${tidyBadge(after)}</span>${multi ? `<span class="pill">Networks <b>${inc.length}/${bs.length}</b></span>` : ""}<span class="pill">Fixed IPs <b>${fixedN}</b></span><span class="pill">Moves <b>${sel.length}/${CL.rows.length}</b></span>${multi ? `<span class="pill">Pool changes <b>${CL.m.pool ? pools.length : 0}</b></span>` : ""}<span class="pill">Dynamic in fixed range <b>${dynIn.length}</b></span>`;
-  CL.tab = CL.preview ? "chg" : "plan"; $("#clPreview").checked = !!CL.preview; $("#clPreview").disabled = CL.running;
+  CL.tab = CL.preview ? "chg" : "plan"; $("#clPreview").checked = !!CL.preview; $("#clPreview").disabled = CL.running; $("#cgPlay").hidden = CL.tab !== "chg" || !CL.m.move;
   const errs = inc.filter(b => b.err);
   $("#clErr").innerHTML = errs.map(b => `<div class="err">${multi ? esc(b.n.name) + ": " : ""}${esc(b.err)}</div>`).join("");
   // grid(s)
@@ -1468,16 +1474,17 @@ function renderClean() {
     return `<div class="cg-wrap" data-netid="${esc(b.n.id)}"${multi ? "" : ' id="cgWrap"'}><div class="plan-grid">${changeCells(b, s2)}</div><svg class="cg-arrows"></svg></div>`;
   };
   const leg = `<div class="plan-legend-bar">${legend(CL.tab === "plan" ? LEG_PLAN : LEG_CHG)}</div>`;
-  const bar = CL.tab === "chg" ? `<div class="cg-bar"><button class="btn" type="button" id="cgPlay">▶ Play moves</button><span>${CL.m.move ? `${sel.length} ${sel.length === 1 ? "move" : "moves"}` : "Moves are unticked"}${CL.m.pool && pools.length ? ` · ${multi ? `${pools.length} pool ${pools.length === 1 ? "change" : "changes"}` : `pool ${poolTxt(b0.p.ps, b0.p.pe)} → ${poolTxt(b0.poolS, b0.poolE)}`}` : ""}${dynIn.length ? ` · ${dynIn.length} dynamic in the new fixed range` : ""}</span></div>` : "";
+  const bar = CL.tab === "chg" ? `<div class="cg-bar"><span>${CL.m.move ? `${sel.length} ${sel.length === 1 ? "move" : "moves"}` : "Moves are unticked"}${CL.m.pool && pools.length ? ` · ${multi ? `${pools.length} pool ${pools.length === 1 ? "change" : "changes"}` : `pool ${poolTxt(b0.p.ps, b0.p.pe)} → ${poolTxt(b0.poolS, b0.poolE)}`}` : ""}${dynIn.length ? ` · ${dynIn.length} dynamic in the new fixed range` : ""}</span></div>` : "";
   if (!multi) $("#clGrid").innerHTML = leg + grid(b0) + bar;
   else if (!bs.length) $("#clGrid").innerHTML = `<p class="hint" style="padding:12px 0">Nothing to clean up – every network already has its fixed IPs in one block outside the DHCP pool.</p>`;
   else {
-    const tbl = `<div class="imp-table cl-nets"><table><thead><tr><th style="width:34px"></th><th>Network</th><th>Fixed block</th><th>DHCP pool</th><th>Moves</th><th>Tidiness</th></tr></thead><tbody>${bs.map(b => `<tr class="${b.inc ? "" : "off"}">
+    const tbl = `<div class="imp-table cl-nets"><table><thead><tr><th style="width:34px"></th><th>Network</th><th>Fixed block</th><th>DHCP pool</th><th>Moves</th><th title="Dynamic clients that currently use an address inside the new fixed block – they get a pool address at their next DHCP renewal">Conflicts</th><th>Tidiness</th></tr></thead><tbody>${bs.map(b => `<tr class="${b.inc ? "" : "off"}">
       <td><label class="opt"><input type="checkbox" data-cn="${esc(b.n.id)}" ${b.inc ? "checked" : ""} ${CL.running || CL.done ? "disabled" : ""} aria-label="Include ${esc(b.n.name)}"></label></td>
       <td><b>${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span>${b.err ? ` <span class="tag bad">${esc(b.err)}</span>` : ""}</td>
       <td class="mono">.${b.first & 255} – .${b.end & 255}</td>
       <td class="mono">${b.poolChange ? `${poolTxt(b.p.ps, b.p.pe)} → <b>${poolTxt(b.poolS, b.poolE)}</b>` : `<span class="muted">${poolTxt(b.p.ps, b.p.pe)} (stays)</span>`}</td>
       <td>${b.rows.filter(r => r.sel).length}/${b.rows.length}</td>
+      <td>${b.dynIn.length ? `<span class="tag warn" title="${esc(b.dynIn.map(c => `${c.name || c.hostname || c.mac} (${c.ip})`).join("\n"))}">${b.dynIn.length}</span>` : `<span class="muted">0</span>`}</td>
       <td>${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</td></tr>`).join("")}</tbody></table></div>`;
     $("#clGrid").innerHTML = tbl + leg + inc.map(b => `<section class="plan-sec"><div class="plan-sec-h" style="cursor:default"><b>${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span> ${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</div>${grid(b)}</section>`).join("") + bar;
   }
@@ -1565,9 +1572,9 @@ $("#clGrid").addEventListener("change", e => { const id = e.target.dataset?.cn; 
 document.querySelectorAll("[data-cs]").forEach(x => x.addEventListener("click", () => { if (CL.running || CL.done) return; CL.strategy = x.dataset.cs; CL.rows = []; renderClean(); }));
 $("#clPreview").addEventListener("change", e => { CL.preview = e.target.checked; CL.played = false; renderClean(); });
 $("#planClean").addEventListener("change", e => { const k = e.target.dataset?.cm; if (k) { CL.m[k] = e.target.checked; CL.played = true; renderClean(); } });
+$("#cgPlay").addEventListener("click", () => cgEach((s2, w) => { drawArrows(s2, w); playMoves(s2, w); }));
 const cgEach = fn => { const sel = CL.rows.filter(r => r.sel); for (const w of document.querySelectorAll("#clGrid .cg-wrap")) fn(sel.filter(r => r.b.n.id === w.dataset.netid), w); };
 $("#clGrid").addEventListener("click", e => {
-  if (e.target.closest("#cgPlay")) { cgEach((s2, w) => { drawArrows(s2, w); playMoves(s2, w); }); return; }
   const d = e.target.closest(".pc[data-mac]"), c = d?.dataset.mac && state.clients.find(x => x.mac === d.dataset.mac);
   if (c) openPanel(c); // the proposal stays open next to the detail panel
 });

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.23.2 – 2026-10-31
+- **Play** moved up into the *Preview changes* switch (appears when the preview is on).
+- CleanUp for all networks: new column **Conflicts** – dynamic clients that currently use an address inside the new fixed block (0 when none; hover for the devices). They get a pool address at their next DHCP renewal.
+- Uniform rounded look: the *Current / CleanUp Proposal* tabs have round tops, all switches are rounded pills and the selected option is blue – e.g. the CleanUp strategy *Minimal / Grouped by vendor / Grouped by HA integration* and the naming options in *Names from Home Assistant*.
+
 ## 1.23.1 – 2026-10-31
 - **IP plan cell size Small / Large** (switch next to the icon switch, remembered): *Small* is a compact view – lower cells and 32 addresses per row when there is room; *Large* has tall cells with big icons. The height no longer changes with the icons: the address sits on the left, the icon on the right using the full inner height.
 - **Fixed IP, in use** is now a blue frame with a light transparent fill (like *Dynamic, in use*) instead of a solid block; *Fixed IP, not in use* has a dashed frame.
