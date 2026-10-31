@@ -105,6 +105,7 @@ versions you can compare and restore.
 | `username` / `password` | – | Local UniFi account |
 | `site` | `default` | UniFi site name |
 | `verify_ssl` | `false` | Keep off while the console uses its self-signed certificate |
+| `certificate_fingerprint` | – | Pin the controller certificate (SHA-256); the add-on log shows the value to paste at start |
 | `daily_version` | `true` | Save one version of the table per day |
 | `auto_version_retention_days` | `30` | Days to keep automatic versions; manual, pinned and baseline versions are kept until deleted |
 | `notify_new_devices` | `true` | Notify Home Assistant about devices with a never-seen MAC |
@@ -118,6 +119,8 @@ versions you can compare and restore.
 - The password is stored in the add-on's options inside Home Assistant (masked in the UI). It is never logged and never sent to the browser.
 - Home Assistant backups contain add-on options, so keep your backups encrypted.
 - The UI is only reachable through Home Assistant Ingress. The add-on does not expose a port.
+- Pin the controller certificate with `certificate_fingerprint` – the self-signed UniFi certificate is otherwise not verified.
+- Ping, port check and Wake on LAN only work for addresses inside your UniFi networks. CSV exports are protected against formula injection.
 
 Full documentation: [`dhcp_reservations/DOCS.md`](dhcp_reservations/DOCS.md) · Changes: [`CHANGELOG.md`](dhcp_reservations/CHANGELOG.md)
 

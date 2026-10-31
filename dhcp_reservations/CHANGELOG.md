@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.14.0 – 2026-10-31
+Security hardening after a code review (SAST-style).
+- **Certificate pinning** for the UniFi controller: new option `certificate_fingerprint` (SHA-256). At start the add-on logs the controller's fingerprint so it can be copied; with a pin, the connection (and the UniFi login) is only accepted if the certificate matches.
+- **CSV exports** (table, comparison, version): cells starting with `=`, `+`, `-`, `@`, tab or CR get a leading `'` so spreadsheets do not execute them as formulas (device hostnames are chosen by the devices themselves). The CSV import removes this prefix again.
+- **Ping, port check and Wake on LAN** only accept addresses inside the UniFi networks; the port check no longer follows HTTP redirects when it reads the page title.
+- POST requests must be `application/json` (CSRF protection in depth).
+- New-device notifications escape Markdown in names, vendors and networks.
+- Unexpected errors return a generic message (details in the add-on log); responses carry `X-Content-Type-Options`, `Referrer-Policy` and a Content-Security-Policy for the UI.
+- At most 32 requests in parallel and at most 2 pings at a time; the device history caches the versions; the files for known devices and vendors are written under a lock.
+- Fix: the issues filter could fail right after a refresh while unknown vendors were being filled in.
+- **Better error messages**: the banner now shows a hint what to check (controller address, local account / 2FA, certificate, site) and where to change it.
+- **Site**: besides the internal name (usually `default`) the site can now be given by its display name (e.g. “Dream Machine Pro”); with only one site on the controller it is used automatically. Previously a name with spaces caused “URL can't contain control characters”.
+
 ## 1.13.2 – 2026-10-31
 - IP plan: all networks are always listed; the whole dialog scrolls instead of the network table.
 - The blue icon top left now hides and shows the filter pane – on phones as a slide-in menu (hamburger), on desktop to gain room for the table (remembered per browser).

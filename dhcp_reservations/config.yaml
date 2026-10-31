@@ -1,5 +1,5 @@
 name: "Clients & Reservations"
-version: "1.13.2"
+version: "1.14.0"
 slug: dhcp_reservations
 description: UniFi clients, devices and DHCP reservations – views, bulk import and subnet migration
 url: https://github.com/raphaelkoeppel/ha-unifi-clients-reservations
@@ -20,6 +20,7 @@ options:
   password: ""
   site: default
   verify_ssl: false
+  certificate_fingerprint: ""
   daily_version: true
   auto_version_retention_days: 30
   notify_new_devices: true
@@ -32,6 +33,7 @@ schema:
   password: password
   site: str
   verify_ssl: bool
+  certificate_fingerprint: str?
   daily_version: bool?
   auto_version_retention_days: int(1,3650)?
   notify_new_devices: bool?

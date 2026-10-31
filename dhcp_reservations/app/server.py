@@ -2,6 +2,8 @@
 
 Talks directly to the UniFi OS API of the gateway (Python standard library only).
 """
+import hashlib
+import http.client
 import ipaddress
 import socket
 import struct
@@ -30,6 +32,9 @@ RULES_PATH = os.environ.get("RULES_PATH", "/data/rules.json")
 SCANS_PATH = os.environ.get("SCANS_PATH", "/data/portscans.json")
 VENDORS_PATH = os.environ.get("VENDORS_PATH", "/data/vendors.json")
 VENDOR_API = os.environ.get("VENDOR_API", "https://api.macvendors.com/")
+KNOWN_LOCK = threading.Lock()
+VENDOR_LOCK = threading.Lock()
+HIST_CACHE = {}  # version id -> (mtime, clients, networks, aps)
 SCAN_LOCK = threading.Lock()
 WATCH_INTERVAL = int(os.environ.get("WATCH_INTERVAL", "120"))
 
@@ -68,9 +73,65 @@ def load_options():
 
 
 class UnifiError(Exception):
-    def __init__(self, msg, status=502):
+    def __init__(self, msg, status=502, hint=""):
         super().__init__(msg)
         self.status = status
+        self.hint = hint
+
+
+CONFIG_PATH_HINT = "Settings › Add-ons (Apps) › Clients & Reservations › Configuration"
+
+
+def _norm_fp(v):
+    h = re.sub(r"[^0-9a-f]", "", str(v or "").lower())
+    return h if len(h) == 64 else ""
+
+
+class _PinnedHTTPSConnection(http.client.HTTPSConnection):
+    """HTTPS connection that accepts the controller only if its certificate has the configured SHA-256 fingerprint."""
+    pin = ""
+
+    def connect(self):
+        super().connect()
+        der = self.sock.getpeercert(binary_form=True) or b""
+        got = hashlib.sha256(der).hexdigest()
+        if got != self.pin:
+            self.close()
+            raise ssl.SSLError(f"Controller certificate fingerprint mismatch (got {_fmt_fp(got)}).")
+
+
+class _PinnedHTTPSHandler(urllib.request.HTTPSHandler):
+    def __init__(self, context, pin):
+        super().__init__(context=context)
+        self.pin = pin
+
+    def https_open(self, req):
+        pin = self.pin
+
+        class Conn(_PinnedHTTPSConnection):
+            pass
+        Conn.pin = pin
+        return self.do_open(Conn, req, context=self._context)
+
+
+def _fmt_fp(h):
+    return ":".join(h[i:i + 2] for i in range(0, len(h), 2)).upper()
+
+
+def controller_fingerprint(base):
+    """SHA-256 fingerprint of the controller certificate (for the log, so it can be pinned)."""
+    u = urllib.parse.urlparse(base)
+    if u.scheme != "https":
+        return ""
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    try:
+        with socket.create_connection((u.hostname, u.port or 443), timeout=5) as raw:
+            with ctx.wrap_socket(raw, server_hostname=u.hostname) as tls:
+                return hashlib.sha256(tls.getpeercert(binary_form=True)).hexdigest()
+    except OSError:
+        return ""
 
 
 class Unifi:
@@ -81,16 +142,16 @@ class Unifi:
         )
         self.user = opts["username"]
         self.password = opts["password"]
-        self.site = opts.get("site") or "default"
+        self.site_cfg = (opts.get("site") or "default").strip()
+        self.site = self.site_cfg or "default"
         ctx = ssl.create_default_context()
-        if not opts.get("verify_ssl", False):
+        self.pin = _norm_fp(opts.get("certificate_fingerprint"))
+        if self.pin or not opts.get("verify_ssl", False):
             ctx.check_hostname = False
             ctx.verify_mode = ssl.CERT_NONE
+        https = _PinnedHTTPSHandler(ctx, self.pin) if self.pin else urllib.request.HTTPSHandler(context=ctx)
         self.jar = CookieJar()
-        self.opener = urllib.request.build_opener(
-            urllib.request.HTTPSHandler(context=ctx),
-            urllib.request.HTTPCookieProcessor(self.jar),
-        )
+        self.opener = urllib.request.build_opener(https, urllib.request.HTTPCookieProcessor(self.jar))
         self.csrf = ""
         self.lock = threading.Lock()
         self.logged_in = False
@@ -109,7 +170,18 @@ class Unifi:
         except urllib.error.HTTPError as e:
             status, headers, raw = e.code, e.headers, e.read()
         except (urllib.error.URLError, OSError) as e:
-            raise UnifiError(f"Controller not reachable ({self.base}): {e}")
+            reason = str(getattr(e, "reason", e))
+            if "fingerprint mismatch" in reason:
+                raise UnifiError(f"The controller certificate does not match the pinned fingerprint ({reason}).", 502,
+                                 "The certificate may have changed (e.g. after a firmware update). Check the add-on log for the "
+                                 "current fingerprint and update certificate_fingerprint – or clear it. " + CONFIG_PATH_HINT)
+            if "CERTIFICATE_VERIFY_FAILED" in reason or "certificate verify failed" in reason:
+                raise UnifiError(f"The controller certificate could not be verified ({self.base}).", 502,
+                                 "UniFi consoles use a self-signed certificate. Turn verify_ssl off, or pin the certificate with "
+                                 "certificate_fingerprint (the value is in the add-on log). " + CONFIG_PATH_HINT)
+            raise UnifiError(f"Controller not reachable ({self.base}): {reason}", 502,
+                             "Check unifi_host: the IP or host name of your UniFi console (UDM, UDR, UCG, Cloud Key …) without "
+                             "https://, reachable from Home Assistant. " + CONFIG_PATH_HINT)
         new = headers.get("X-Updated-CSRF-Token") or headers.get("X-CSRF-Token")
         if new:
             self.csrf = new
@@ -121,21 +193,53 @@ class Unifi:
 
     def login(self):
         if not self.user or not self.password:
-            raise UnifiError("Username/password missing in the add-on configuration.", 500)
+            raise UnifiError("Username/password missing in the add-on configuration.", 500,
+                             "Enter a local UniFi account (username and password). " + CONFIG_PATH_HINT)
         self.jar.clear()
         self.csrf = ""
         status, payload = self._raw(
             "POST", "/api/auth/login",
             {"username": self.user, "password": self.password, "remember": True},
         )
+        if status == 404:
+            raise UnifiError(f"{self.base} does not look like a UniFi OS console (no /api/auth/login).", 502,
+                             "The add-on needs a UniFi OS console (UDM / UDM Pro / UDR / UCG / UX / Cloud Key Gen2+ or UniFi OS "
+                             "Server). Check unifi_host. " + CONFIG_PATH_HINT)
         if status != 200:
-            raise UnifiError(f"Login to the controller failed (HTTP {status}). Check the credentials.", 502)
+            raise UnifiError(f"Login to the controller failed (HTTP {status}).", 502,
+                             "Check username and password. Use a local UniFi account (UniFi OS › Admins & Users, "
+                             "“Restrict to local access only”) – Ubiquiti cloud/SSO accounts and accounts with 2FA do not work. "
+                             + CONFIG_PATH_HINT)
         self.logged_in = True
         log("Login OK")
+        self.resolve_site()
+
+    def resolve_site(self):
+        """The option `site` must be the internal site name (usually "default"). Accept the description shown in
+        the UI too, and fall back to the only site when there is just one."""
+        status, payload = self._raw("GET", "/proxy/network/api/self/sites")
+        sites = payload.get("data", []) if isinstance(payload, dict) else []
+        if status != 200 or not sites:
+            return
+        want = (self.site_cfg or "").strip()
+        hit = next((x for x in sites if x.get("name") == want), None) \
+            or next((x for x in sites if (x.get("desc") or "").strip().lower() == want.lower()), None)
+        if not hit and len(sites) == 1:
+            hit = sites[0]
+            log(f'Site "{want}" not found – using the only site "{hit.get("name")}" ({hit.get("desc")})')
+        if not hit:
+            names = ", ".join(f'{x.get("name")} ({x.get("desc")})' for x in sites)
+            raise UnifiError(f'Site "{want}" not found on the controller.', 400,
+                             f"Set site to one of: {names}. Use the short name before the brackets "
+                             f"(the first site is usually “default”). " + CONFIG_PATH_HINT)
+        if hit.get("name") != self.site:
+            log(f'Using site "{hit.get("name")}" ({hit.get("desc")})')
+        self.site = hit.get("name")
 
     def call(self, method, path, body=None, v2=False):
-        full = (f"/proxy/network/v2/api/site/{self.site}{path}" if v2
-                else f"/proxy/network/api/s/{self.site}{path}")
+        site = urllib.parse.quote(self.site, safe="")
+        full = (f"/proxy/network/v2/api/site/{site}{path}" if v2
+                else f"/proxy/network/api/s/{site}{path}")
         with self.lock:
             if not self.logged_in:
                 self.login()
@@ -175,11 +279,15 @@ def net_info(n):
     }
 
 
+KNOWN_NETS = []  # ipaddress networks of the last snapshot – targets for ping / port check / WoL
+
+
 def build_snapshot(api):
     users = api.call("GET", "/rest/user")
     online = api.call("GET", "/stat/sta")
     nets = [net_info(n) for n in api.call("GET", "/rest/networkconf")
             if n.get("purpose") != "wan" and n.get("ip_subnet")]
+    KNOWN_NETS[:] = [ipaddress.ip_network(n["subnet"]) for n in nets if n.get("subnet")]
     sta = {c["mac"].lower(): c for c in online if c.get("mac")}
     # v2 API (as used by the UniFi UI): returns the connection type incl. Teleport/VPN.
     # Best effort: without it, WiFi/Wired is derived from the classic API.
@@ -623,13 +731,23 @@ def device_history(mac):
     mac = normalize_mac(mac)
     if not mac:
         raise UnifiError("Invalid MAC.", 400)
-    out = []
+    out, ids = [], set()
     for meta in sorted(_index(), key=lambda m: m.get("created", 0)):
-        data = _read_json(_vpath(meta["id"]), None)
-        if not data:
+        path = _vpath(meta["id"])
+        ids.add(meta["id"])
+        try:
+            mt = os.path.getmtime(path)
+        except OSError:
             continue
-        out.append({"meta": meta, "record": (data.get("clients") or {}).get(mac),
-                    "networks": data.get("networks") or [], "aps": data.get("aps") or []})
+        hit = HIST_CACHE.get(meta["id"])
+        if not hit or hit[0] != mt:
+            data = _read_json(path, None)
+            if not data:
+                continue
+            hit = HIST_CACHE[meta["id"]] = (mt, data.get("clients") or {}, data.get("networks") or [], data.get("aps") or [])
+        out.append({"meta": meta, "record": hit[1].get(mac), "networks": hit[2], "aps": hit[3]})
+    for k in [k for k in HIST_CACHE if k not in ids]:
+        HIST_CACHE.pop(k, None)
     return {"mac": mac, "versions": out}
 
 
@@ -743,6 +861,11 @@ def _net_matches(net, wanted):
 def check_new_devices(api, snap=None):
     """Remembers every client MAC; notifies Home Assistant about MACs it has not seen before."""
     snap = snap or build_snapshot(api)
+    with KNOWN_LOCK:
+        return _check_new_devices(snap)
+
+
+def _check_new_devices(snap):
     nets = {n["id"]: n for n in snap["networks"]}
     known = _read_json(KNOWN_PATH, None)
     clients = [c for c in snap["clients"] if c.get("mac") and not c.get("is_device")]
@@ -772,8 +895,9 @@ def check_new_devices(api, snap=None):
         except UnifiError as e:
             log("Event failed:", e)
     if out:
-        lines = [f"- **{x['name'] or x['hostname'] or 'Unknown'}** · `{x['mac']}` · {x['vendor'] or 'unknown vendor'} · "
-                 f"{x['network'] or '?'}{' (' + str(x['vlan']) + ')' if x['vlan'] else ''} · {x['ip'] or 'no IP'}" for x in out]
+        md = lambda v: re.sub(r"([\\`*_{}\[\]()#+\-.!|<>~])", r"\\\1", re.sub(r"[\r\n]+", " ", str(v or "")))[:80]
+        lines = [f"- **{md(x['name'] or x['hostname'] or 'Unknown')}** · `{x['mac']}` · {md(x['vendor'] or 'unknown vendor')} · "
+                 f"{md(x['network'] or '?')}{' (' + str(x['vlan']) + ')' if x['vlan'] else ''} · {md(x['ip'] or 'no IP')}" for x in out]
         try:
             ha_call("/services/persistent_notification/create", {
                 "title": f"New device{'s' if len(out) > 1 else ''} in the network ({len(out)})",
@@ -795,8 +919,15 @@ def vendor_lookup_enabled():
 
 def fill_vendors(snap, limit=40):
     """Looks up the vendor of OUIs UniFi does not know (macvendors.com, max. 1 request per second)."""
-    if not vendor_lookup_enabled():
+    if not vendor_lookup_enabled() or not VENDOR_LOCK.acquire(blocking=False):
         return 0
+    try:
+        return _fill_vendors(snap, limit)
+    finally:
+        VENDOR_LOCK.release()
+
+
+def _fill_vendors(snap, limit):
     cache = _read_json(VENDORS_PATH, {})
     now, todo = int(time.time()), []
     for c in snap["clients"]:
@@ -871,6 +1002,26 @@ def save_rules(body):
     return {"rules": rules}
 
 
+def check_target(ip, what="address"):
+    """Only addresses inside the UniFi networks may be pinged / checked (no probing of other hosts)."""
+    try:
+        addr = ipaddress.ip_address(str(ip or ""))
+        if addr.version != 4:
+            raise ValueError
+    except ValueError:
+        raise UnifiError(f"Invalid {what}.", 400)
+    if not KNOWN_NETS and API:
+        build_snapshot(API)
+    if not any(addr in n for n in KNOWN_NETS):
+        raise UnifiError(f"{addr} is not inside one of the UniFi networks.", 400)
+    return str(addr)
+
+
+class _NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *a, **kw):
+        return None
+
+
 # ---------------------------------------------------------------- port check
 # (port, service, scheme for a browser link or "")
 SCAN_PORTS = [
@@ -897,9 +1048,10 @@ def _http_title(scheme, ip, port):
     ctx.check_hostname = False
     ctx.verify_mode = ssl.CERT_NONE
     url = f"{scheme}://{ip}:{port}/"
+    opener = urllib.request.build_opener(_NoRedirect, urllib.request.HTTPSHandler(context=ctx))
     try:
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (port check)"})
-        with urllib.request.urlopen(req, timeout=2.5, context=ctx if scheme == "https" else None) as r:
+        with opener.open(req, timeout=2.5) as r:
             html = r.read(65536).decode("utf-8", "replace")
             server = r.headers.get("Server") or ""
     except urllib.error.HTTPError as e:
@@ -917,12 +1069,7 @@ def _http_title(scheme, ip, port):
 
 def port_scan(body):
     mac = clean_mac(body.get("mac"))
-    ip = str(body.get("ip") or "")
-    try:
-        if ipaddress.ip_address(ip).version != 4:
-            raise ValueError
-    except ValueError:
-        raise UnifiError("Invalid IP address.", 400)
+    ip = check_target(body.get("ip"), "IP address")
     if not SCAN_LOCK.acquire(blocking=False):
         raise UnifiError("Another port check is running – try again in a few seconds.", 409)
     try:
@@ -968,13 +1115,20 @@ def _icmp_checksum(data):
     return ~s & 0xFFFF
 
 
+PING_SEM = threading.BoundedSemaphore(2)
+
+
 def ping(body, count=4, timeout=1.0):
-    ip = str(body.get("ip") or "")
+    ip = check_target(body.get("ip"), "IP address")
+    if not PING_SEM.acquire(blocking=False):
+        raise UnifiError("Too many pings at the same time – try again in a moment.", 429)
     try:
-        if ipaddress.ip_address(ip).version != 4:
-            raise ValueError
-    except ValueError:
-        raise UnifiError("Invalid IP address.", 400)
+        return _ping(ip, count, timeout)
+    finally:
+        PING_SEM.release()
+
+
+def _ping(ip, count, timeout):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
         raw = True
@@ -1028,7 +1182,8 @@ def ping(body, count=4, timeout=1.0):
 # ---------------------------------------------------------------- wake on LAN
 def wake_on_lan(body):
     mac = clean_mac(body.get("mac"))
-    ip, bcast = str(body.get("ip") or ""), str(body.get("broadcast") or "")
+    ip = check_target(body.get("ip"), "IP address") if body.get("ip") else ""
+    bcast = check_target(body.get("broadcast"), "broadcast address") if body.get("broadcast") else ""
     sent = []
     try:  # Home Assistant runs on the host network and reaches its own LAN segment
         ha_call("/services/wake_on_lan/send_magic_packet", {"mac": mac, **({"broadcast_address": bcast} if bcast else {})})
@@ -1083,6 +1238,12 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
         self.send_header("Cache-Control", "no-store")
+        self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("Referrer-Policy", "no-referrer")
+        if ctype.startswith("text/html"):
+            self.send_header("Content-Security-Policy", "default-src 'self'; img-src 'self' data: https://static.ubnt.com; "
+                             "style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self'; "
+                             "frame-ancestors 'self'; base-uri 'none'; form-action 'none'")
         self.end_headers()
         self.wfile.write(data)
 
@@ -1091,6 +1252,9 @@ class Handler(BaseHTTPRequestHandler):
         return (self.headers.get("X-Remote-User-Display-Name") or self.headers.get("X-Remote-User-Name") or "").strip()
 
     def _json_body(self):
+        # JSON only: a cross-site form cannot send application/json without a CORS preflight (CSRF defence)
+        if not (self.headers.get("Content-Type") or "").lower().startswith("application/json"):
+            raise UnifiError("Content-Type must be application/json.", 415)
         n = int(self.headers.get("Content-Length") or 0)
         if n > 100_000:
             raise UnifiError("Request too large.", 400)
@@ -1161,13 +1325,13 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, reconnect_client(API, self._json_body().get("mac")))
             if method == "POST" and path.endswith("/api/forget"):
                 return self._send(200, forget_client(API, self._json_body().get("mac")))
-            self._send(404, {"error": "Nicht gefunden"})
+            self._send(404, {"error": "Not found"})
         except UnifiError as e:
             log("Error:", e)
-            self._send(e.status, {"error": str(e)})
+            self._send(e.status, {"error": str(e), **({"hint": e.hint} if e.hint else {})})
         except Exception as e:  # noqa: BLE001
             log("Unexpected error:", repr(e))
-            self._send(500, {"error": f"Internal error: {e}"})
+            self._send(500, {"error": "Internal error – details are in the add-on log."})
 
     def do_GET(self):
         self._route("GET")
@@ -1176,13 +1340,40 @@ class Handler(BaseHTTPRequestHandler):
         self._route("POST")
 
 
+class BoundedServer(ThreadingHTTPServer):
+    """ThreadingHTTPServer with at most 32 requests in parallel."""
+    daemon_threads = True
+    slots = threading.BoundedSemaphore(32)
+
+    def process_request(self, request, client_address):
+        self.slots.acquire()
+        try:
+            super().process_request(request, client_address)
+        except Exception:
+            self.slots.release()
+            raise
+
+    def process_request_thread(self, request, client_address):
+        try:
+            super().process_request_thread(request, client_address)
+        finally:
+            self.slots.release()
+
+
 def main():
     global API
-    API = Unifi(load_options())
+    opts = load_options()
+    API = Unifi(opts)
     log(f"Starting on port {PORT}, controller {API.base}, site {API.site}")
+    if API.pin:
+        log("Certificate pinning on:", _fmt_fp(API.pin))
+    elif not opts.get("verify_ssl", False):
+        fp = controller_fingerprint(API.base)
+        if fp:
+            log("Controller certificate is not verified. To pin it, set certificate_fingerprint to:", _fmt_fp(fp))
     threading.Thread(target=daily_worker, daemon=True).start()
     threading.Thread(target=watch_worker, daemon=True).start()
-    ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
+    BoundedServer(("0.0.0.0", PORT), Handler).serve_forever()
 
 
 if __name__ == "__main__":

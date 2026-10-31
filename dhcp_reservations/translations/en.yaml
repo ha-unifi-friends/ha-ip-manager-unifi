@@ -9,10 +9,13 @@ configuration:
     name: Password
   site:
     name: Site
-    description: Usually "default"
+    description: Internal site name, usually "default". The display name shown in UniFi works too; with only one site it is found automatically.
   verify_ssl:
     name: Verify certificate
     description: Leave off while the gateway uses a self-signed certificate
+  certificate_fingerprint:
+    name: Certificate fingerprint (SHA-256)
+    description: Pin the controller's self-signed certificate – the add-on log shows the value to paste here at start. When set, the connection is only accepted if the certificate matches (verify_ssl is then not needed).
   daily_version:
     name: Daily automatic version
     description: Saves one version of the table per day (shown as "Daily" under Versions).

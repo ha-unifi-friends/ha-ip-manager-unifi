@@ -293,6 +293,8 @@ dialog#dlgClean::backdrop{background:rgba(8,10,14,.55)}
 .mv-box{margin:-4px 0 0 30px}
 .mv-box .imp-table{max-height:none}
 .plan-icons{margin-left:auto;color:var(--muted)}
+.banner-hint{margin-top:6px;font-size:12.5px;color:var(--fg)}
+.banner-hint.muted{color:var(--muted)}
 .pc .pi{display:block;height:16px;margin:-3px auto 3px;color:inherit}
 .pc .pi svg{width:15px;height:15px}
 .pc .pi img{width:20px;height:16px;object-fit:contain}
@@ -686,7 +688,7 @@ function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.ad
 async function api(path, body) {
   const res = await fetch(path, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : {});
   let data = {}; try { data = await res.json(); } catch {}
-  if (!res.ok) throw new Error(data.error || ("HTTP " + res.status));
+  if (!res.ok) { const err = new Error(data.error || ("HTTP " + res.status)); err.hint = data.hint || ""; throw err; }
   return data;
 }
 
@@ -811,7 +813,7 @@ function buildHead() {
     const id = "flt_" + col.key;
     if (col.filter === "none") return `<th></th>`;
     if (col.filter === "select") return `<th><select id="${id}" data-k="${col.key}" aria-label="Filter ${col.label}">${col.opts.map(o => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select></th>`;
-    if (col.filter === "net") return `<th><select id="${id}" data-k="${col.key}" aria-label="Filter ${col.label}"><option value="">All</option>${state.networks.map(n => `<option value="${n.id}">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("")}<option value="__none">(empty)</option></select></th>`;
+    if (col.filter === "net") return `<th><select id="${id}" data-k="${col.key}" aria-label="Filter ${col.label}"><option value="">All</option>${state.networks.map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("")}<option value="__none">(empty)</option></select></th>`;
     return `<th><input id="${id}" data-k="${col.key}" placeholder="Filter" aria-label="Filter ${col.label}"></th>`;
   }).join("");
   for (const el of $("#filterRow").querySelectorAll("input,select")) {
@@ -1301,11 +1303,16 @@ async function load() {
   try {
     const d = await api("api/snapshot");
     state.networks = d.networks; state.netById = Object.fromEntries(d.networks.map(n => [n.id, n]));
+    // fill unknown vendors before the clients become visible (no await between assigning and computing the issues)
+    try { const v = (await api("api/vendors")).vendors || {}; for (const c of d.clients) if (!c.oui && c.mac && v[c.mac.slice(0, 8)]) { c.oui = v[c.mac.slice(0, 8)]; c.oui_src = "lookup"; } } catch {}
     state.aps = d.aps || []; state.clients = d.clients; state.fetchedAt = d.fetched_at;
-    try { const v = (await api("api/vendors")).vendors || {}; for (const c of state.clients) if (!c.oui && c.mac && v[c.mac.slice(0, 8)]) { c.oui = v[c.mac.slice(0, 8)]; c.oui_src = "lookup"; } } catch {}
     computeWarnings(); if (typeof computeBaseCats === "function") computeBaseCats(); buildHead(); $("#banner").hidden = true;
     if (state.sel) { const again = state.clients.find(c => keyOf(c) === keyOf(state.sel)); again ? (state.sel = again, renderInfo()) : closePanel(); }
-  } catch (e) { $("#banner").textContent = "Could not load data: " + e.message; $("#banner").hidden = false; }
+  } catch (e) {
+    $("#banner").innerHTML = `<b>Could not load data:</b> ${esc(e.message)}` + (e.hint ? `<div class="banner-hint"><b>Hint:</b> ${esc(e.hint)}</div>` : "") +
+      `<div class="banner-hint muted">After changing the configuration, restart the add-on and press Refresh. Details are in the add-on log.</div>`;
+    $("#banner").hidden = false;
+  }
   finally { state.loading = false; b.disabled = false; b.textContent = "Refresh"; renderAll(); }
 }
 
@@ -1371,7 +1378,7 @@ function renderInfo() {
   $("#tabEdit").hidden = !c.mac;
 }
 
-function fillNetSelect(sel) { $("#fNet").innerHTML = `<option value="">– select –</option>` + state.networks.map(n => `<option value="${n.id}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join(""); $("#fNet").value = sel || ""; }
+function fillNetSelect(sel) { $("#fNet").innerHTML = `<option value="">– select –</option>` + state.networks.map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join(""); $("#fNet").value = sel || ""; }
 function suggestIp(netId) {
   const n = net(netId); if (!n || !n.subnet) return "";
   const used = new Set(state.clients.flatMap(c => [c.use_fixedip ? c.fixed_ip : "", c.ip]).filter(Boolean));
@@ -1461,9 +1468,11 @@ $("#dClose").addEventListener("click", closePanel);
 document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (!$("#detail").hidden) closePanel(); else if (!$("#colPanel").hidden) closeCols(); });
 
 // ---------- CSV ----------
+// CSV cell; values starting with = + - @ tab or CR get a leading ' so spreadsheets do not run them as formulas (CWE-1236)
+const csvCell = v => { let t = String(v ?? ""); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
 function exportCsv() {
   const head = ["Name", "Hostname", "MAC", "Vendor", "Connection type", "Connection", "Locked to AP", "Network", "WiFi", "Reserved", "Fixed IP", "Reservation VLAN", "IP address", "Online", "Last seen", "Issues", "Local DNS", "Note"];
-  const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const q = csvCell;
   const lines = rows().map(c => [c.name, c.hostname, c.mac, c.oui, CONN_LABEL[c.conn], connText(c), c.fixed_ap_enabled ? apName(c.fixed_ap_mac) : "", netLabel(c.network_id) || c.network_name, c.essid, c.use_fixedip ? "yes" : "no", c.fixed_ip, netLabel(c._resNet), c.ip, c.online ? "yes" : "no", c.last_seen ? isoDateTime(c.last_seen) : "", c._warn.map(w => w[1]).join("; "), c.local_dns_record_enabled ? c.local_dns_record : "", c.note].map(q).join(";"));
     saveFile("dhcp-reservations.csv", [head.map(q).join(";"), ...lines].join("\r\n"));
 }
@@ -1498,7 +1507,7 @@ function parseCsv(text) {
     else cur += ch;
   }
   if (cur !== "" || row.length) { row.push(cur); rows.push(row); }
-  return rows.filter(r => r.some(v => v.trim() !== ""));
+  return rows.filter(r => r.some(v => v.trim() !== "")).map(r => r.map(v => /^'[=+\-@\t\r]/.test(v) ? v.slice(1) : v));
 }
 function normMac(v) {
   const h = String(v || "").toLowerCase().replace(/[^0-9a-f]/g, "");
@@ -1897,7 +1906,7 @@ $("#subToPick").addEventListener("change", e => {
   if (!SUB.running && !SUB.done) renderSub();
 });
 function fillSubNets() {
-  $("#subNet").innerHTML = `<option value="">Auto (by target subnet)</option>` + state.networks.map(n => `<option value="${n.id}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join("");
+  $("#subNet").innerHTML = `<option value="">Auto (by target subnet)</option>` + state.networks.map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join("");
 }
 function renderSub() {
   if (!SUB.done && !SUB.running) { const r = buildSubRows(); SUB.rows = r.rows; SUB.msg = r.msg; }
@@ -2159,8 +2168,8 @@ function renderVerList() {
   $("#verDaily").title = "Change in the add-on configuration (daily_version)";
   if (VER.settings.retention_days) $("#verKeep").textContent = VER.settings.retention_days;
   const base = VER.settings.baseline;
-  $("#verRows").innerHTML = VER.list.map(m => `<tr data-id="${m.id}">
-    <td><label class="opt"><input type="checkbox" data-vsel="${m.id}" ${VER.sel.has(m.id) ? "checked" : ""} aria-label="Select for comparison"></label></td>
+  $("#verRows").innerHTML = VER.list.map(m => `<tr data-id="${esc(m.id)}">
+    <td><label class="opt"><input type="checkbox" data-vsel="${esc(m.id)}" ${VER.sel.has(m.id) ? "checked" : ""} aria-label="Select for comparison"></label></td>
     <td class="mono" style="white-space:nowrap">${isoDateTime(m.created)}</td>
     <td><b>${esc(m.label || KIND[m.kind])}</b>${m.id === base ? ' <span class="tag info">Baseline</span>' : ""}${m.pinned ? ' <span class="tag warn">Pinned</span>' : ""}</td>
     <td><span class="st ${m.kind === "manual" ? "chg" : m.kind === "daily" ? "new" : "same"}">${KIND[m.kind]}</span></td>
@@ -2318,12 +2327,12 @@ function renderCompare() {
 bindSort("cmpRows", () => renderCompare());
 $("#cmpRows").addEventListener("click", e => { const b = e.target.closest("[data-open]"); if (!b) return; const c = state.clients.find(x => x.mac === b.dataset.open); $("#dlgVer").close(); if (c) openPanel(c); });
 $("#cmpCsv").addEventListener("click", () => {
-  const { rows, A, B } = VER.cmp, q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const { rows, A, B } = VER.cmp, q = csvCell;
   const lines = rows.map(r => { const c = r.b || r.a; return [[...r.cats].map(k => CAT[k][0]).join(", "), r.mac, c.name, c.hostname, c.oui, r.changes.map(x => `${x[0]}: ${x[1]} -> ${x[2]}`).join(" | "), r.twin || ""].map(q).join(";"); });
   saveFile(`compare-${A.meta.id}-${B.meta.id || "current"}.csv`, [["Change", "MAC", "Name", "Hostname", "Vendor", "Details", "Possible same device"].map(q).join(";"), ...lines].join("\r\n"));
 });
 async function downloadVersionCsv(id) {
-  const v = await api(`api/versions/${id}`), q = x => '"' + String(x ?? "").replace(/"/g, '""') + '"';
+  const v = await api(`api/versions/${id}`), q = csvCell;
   const nl = nid => { const n = (v.networks || []).find(x => x.id === nid); return n ? n.name + (n.vlan ? ` (${n.vlan})` : "") : ""; };
   const al = mac => ((v.aps || []).find(a => a.mac === mac) || {}).name || mac;
   const head = ["Name", "Hostname", "MAC", "Vendor", "Connection type", "Network", "Reserved", "Fixed IP", "Reservation VLAN", "IP address", "Locked to AP", "Local DNS", "Note", "First seen", "Last seen"];

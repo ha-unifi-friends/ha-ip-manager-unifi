@@ -52,7 +52,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 - **Export hosts file** (Actions): fixed IPs with local DNS record and a host name derived from the device name.
 - **Wake on LAN:** button for offline wired devices. Uses Home Assistant's `wake_on_lan` service when it is set up (`wake_on_lan:` in configuration.yaml) and additionally sends a magic packet to the subnet broadcast and the device IP. Waking devices in another VLAN only works if the network forwards the packet.
 - **Ping:** *Network check › Ping* sends 4 ICMP echo requests from Home Assistant's network and shows replies and round-trip times.
-- **Open ports:** *Check ports* in the detail panel tests about 30 common TCP ports on the device (on demand, one device at a time, in small batches). Web ports become links with the page title; Telnet and FTP are flagged as issues. The result reflects what Home Assistant's network can reach – from another VLAN it may differ. If UniFi Threat Management (IDS/IPS) is on, it may still log the check.
+- **Open ports:** *Check ports* in the detail panel tests about 30 common TCP ports on the device (on demand, one device at a time, in small batches). Web ports become links with the page title; Telnet and FTP are flagged as issues. Only addresses inside the UniFi networks can be checked. The result reflects what Home Assistant's network can reach – from another VLAN it may differ. If UniFi Threat Management (IDS/IPS) is on, it may still log the check.
 - **Vendor lookup:** *Lookup vendor* next to the MAC opens maclookup.app for the vendor prefix. Vendors UniFi does not know are looked up in the background via macvendors.com (option `vendor_lookup`); only the 3-byte prefix is sent and results are cached.
 - **Inactive filter:** not seen for > 30 / 90 / 365 days or never seen.
 - **CSV export** of the current filtered view.
@@ -69,8 +69,9 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 |---|---|
 | `unifi_host` | IP of the gateway, e.g. `192.168.1.1` |
 | `username` / `password` | Local UniFi account with permission to edit clients |
-| `site` | Usually `default` |
+| `site` | Internal site name, usually `default`. The display name (e.g. “Dream Machine Pro”) also works; with a single site it is detected automatically. |
 | `verify_ssl` | Keep `false` while the gateway uses a self-signed certificate |
+| `certificate_fingerprint` | SHA-256 fingerprint of the controller certificate (pinning). The add-on log shows the current value at start; with a pin the connection is only accepted if it matches. |
 | `daily_version` | Save one version of the table per day (default on) |
 | `auto_version_retention_days` | Days to keep automatic versions (daily / before bulk actions), default 30 |
 | `notify_new_devices` | Notify Home Assistant about devices with a MAC never seen before (default on) |
@@ -82,3 +83,17 @@ Use a dedicated local UniFi account for this add-on rather than sharing one with
 integration, so the sessions don't log each other out.
 
 The UI is only reachable through Home Assistant (Ingress); no port is exposed.
+
+## Troubleshooting
+
+When the table cannot be loaded, the red banner shows the reason and a hint:
+
+| Message | What to do |
+|---|---|
+| Controller not reachable | `unifi_host` must be the IP / host name of the UniFi console without `https://`, reachable from Home Assistant. |
+| Login failed (HTTP 401/403) | Use a **local** UniFi account (UniFi OS › Admins & Users › *Restrict to local access only*); cloud/SSO accounts and accounts with 2FA do not work. |
+| Site not found | Set `site` to the internal name listed in the hint (usually `default`). |
+| Certificate could not be verified / fingerprint mismatch | Turn `verify_ssl` off or pin the certificate with `certificate_fingerprint` (the current value is printed in the add-on log at start). |
+| Does not look like a UniFi OS console | The add-on needs UniFi OS (UDM, UDR, UCG, UX, Cloud Key Gen2+, UniFi OS Server); the classic standalone controller is not supported. |
+
+After changing the configuration, restart the add-on and press *Refresh*.
