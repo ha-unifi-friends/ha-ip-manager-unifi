@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.13.1 – 2026-10-31
+- CleanUp Proposal: tabs **Current / Proposal / Changes** to switch quickly between today's layout and the proposal. *Changes* draws an arrow from every old to the new address, marks the future DHCP pool and plays the moves as an animation (*▶ Play moves*).
+- The moves are now listed directly below measure 1 (instead of in a separate tab); *Reconnect* is on by default.
+- **Show icons** switch in every IP plan view – the device icon in each cell (remembered per browser).
+- Button with a broom icon.
+
 ## 1.13.0 – 2026-10-31
 - **CleanUp Proposal** (IP plan › *CleanUp Proposal* for the selected network): suggests a tidy layout – fixed IPs in a block at the start (e.g. .2 – .99), the DHCP pool behind it (e.g. .100 – .254), sized from the current number of fixed and dynamic clients.
   - *Proposal* tab: the IP plan after the cleanup (moved addresses highlighted, freed addresses dashed) and the measures, each with a checkbox: move fixed IPs, reconnect affected Wi-Fi clients, change the DHCP pool.

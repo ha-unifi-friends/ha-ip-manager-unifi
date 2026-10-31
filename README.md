@@ -49,7 +49,7 @@ versions you can compare and restore.
     <td colspan="2" valign="top"><img src="docs/screenshots/ip-plan.png" alt="IP plan"><br><b>IP plan</b> – utilization per network and an address grid: fixed IPs in use / not in use, dynamic leases, conflicts, DHCP pool and free addresses.</td>
   </tr>
   <tr>
-    <td colspan="2" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal"><br><b>CleanUp Proposal</b> – the IP plan after the cleanup and the measures, each with a checkbox; moves in a separate tab.</td>
+    <td colspan="2" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal"><br><b>CleanUp Proposal</b> – Current / Proposal / Changes (arrows and animation of every move) and the measures, each with a checkbox.</td>
   </tr>
   <tr>
     <td width="50%" valign="top"><img src="docs/screenshots/replace-subnet.png" alt="Replace subnet with collision check"><br><b>Replace subnet</b> – preview with collision check (an address that is already reserved is an error, an address in use is a warning) and optional reconnect of the affected Wi-Fi clients.</td>
