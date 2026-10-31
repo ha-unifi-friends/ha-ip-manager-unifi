@@ -294,6 +294,15 @@ body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,bo
 .pn{padding:7px 10px;gap:2px}
 #planNets{margin-bottom:6px}
 .pc.dim{opacity:.22}
+.plan-legend-bar{position:sticky;top:-14px;z-index:5;background:var(--bg);padding:8px 0 6px;margin:-8px 0 2px}
+.plan-legend-bar .plan-legend{margin-top:0}
+.plan-sec + .plan-sec{margin-top:22px}
+.plan-sec-h{display:flex;align-items:center;gap:8px;background:none;border:0;padding:0;color:var(--fg);cursor:pointer;font-size:15px;margin-bottom:-2px}
+.plan-sec-h:hover b{color:var(--accent)}
+.plan-sec-h .mono{font-size:13px}
+.pn-all{border-style:dashed}
+.pn-all.on{border-style:solid}
+.plan-tabs button[role="tab"]:disabled{opacity:.4;cursor:not-allowed}
 .pc.dim:hover{opacity:.6}
 .pn .l4{display:flex;align-items:center;gap:6px;color:var(--muted)}
 .pn .l4 .ubar{flex:1;width:auto;margin:0}
@@ -302,9 +311,23 @@ body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,bo
 .tidy.mid{background:var(--warn-bg);color:var(--warn)}
 .tidy.bad{background:var(--bad-bg);color:var(--bad)}
 .plan-head{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;margin-bottom:8px}
-.plan-tabs{margin:0;border-bottom:0;flex:none}
-.topbar .plan-tabs button[role="tab"]{padding:8px 10px}
-.plan-tabs button[role="tab"]{font-size:13.5px}
+/* Current / CleanUp Proposal: tabs on a shared track (between the Clients / IP Plan switch and a tab bar) */
+.topbar .plan-tabs{margin:0 0 -10px;position:relative;z-index:1;border:1px solid var(--line-strong);border-bottom:0;flex:none;gap:2px;background:var(--chip);border-radius:9px 9px 0 0;padding:3px 3px 0;align-self:flex-end} /* -10px = padding: the tabs end exactly on the (blue) header line */
+.plan-tabs button[role="tab"]{font-size:13.5px;padding:7px 14px 9px;border-radius:7px 7px 0 0;border-bottom:0;display:inline-flex;align-items:center}
+.plan-tabs button[role="tab"]:hover{color:var(--fg)}
+.topbar .plan-tabs button[role="tab"][aria-selected="true"]{background:var(--accent);color:#fff;font-weight:600}
+body.plan-mode .topbar{border-bottom:2px solid var(--accent)}
+.prev-toggle{display:inline-flex;align-items:center;gap:8px;padding:6px 10px 6px 12px;border:1px solid var(--line-strong);border-radius:999px;background:var(--bg);cursor:pointer;font-size:13.5px;font-weight:600;color:var(--fg);user-select:none}
+.prev-toggle input{position:absolute;opacity:0;pointer-events:none}
+.prev-toggle svg{color:var(--muted)}
+.prev-toggle .sw{position:relative;width:34px;height:20px;border-radius:999px;background:var(--line-strong);transition:background .2s}
+.prev-toggle .sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .2s}
+.prev-toggle:has(input:checked){border-color:var(--accent);background:var(--sel)}
+.prev-toggle:has(input:checked) svg{color:var(--accent)}
+.prev-toggle:has(input:checked) .sw{background:var(--accent)}
+.prev-toggle:has(input:checked) .sw::after{transform:translateX(14px)}
+.prev-toggle:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.prev-toggle:has(input:disabled){opacity:.5;cursor:default}
 #planClean .cl-ctrl{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:2px 0 10px}
 .plan-head h3{margin:0;font-size:17px;font-weight:600}
 .plan-head h3 .muted{font-weight:400;font-size:14px}
@@ -363,6 +386,14 @@ body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,bo
 .clean-slot{display:inline-flex}
 .plan-icons-slot{margin-left:auto;display:inline-flex;align-items:center}
 .pc.ic{padding:6px 0 5px}
+/* with icons: the address sits small in the top-left corner, the icon gets the cell */
+body.plan-icons-on .plan-grid .pc,body.plan-icons-on .cg-fly{height:44px;padding:0}
+body.plan-icons-on .plan-grid .pc .ix,body.plan-icons-on .cg-fly .ix{position:absolute;top:3px;left:5px;font-size:10px;line-height:1}
+body.plan-icons-on .plan-grid .pc .pi,body.plan-icons-on .cg-fly .pi{position:absolute;inset:8px 0 0;display:grid;place-items:center;margin:0;height:auto}
+body.plan-icons-on .pc .pi svg{width:20px;height:20px}
+body.plan-icons-on .pc .pi img{width:30px;height:24px}
+body.plan-icons-on .pc .pi .brand-ic-img{width:22px;height:22px;border-radius:4px}
+body.plan-icons-on .pc .pi .brand-fb{width:22px;height:22px;font-size:12px}
 .pc.np::after{content:"";position:absolute;left:3px;right:3px;bottom:2px;height:3px;border-radius:2px;background:var(--info)}
 .pc.src{box-shadow:inset 0 0 0 2px var(--warn)}
 .pc.dst{border:2px dashed var(--ok)}
@@ -518,7 +549,9 @@ body.side-off .menu-btn{display:inline-flex}
         <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button></span>
         <label>Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253"></label>
         <label>DHCP pool <b class="mono" id="clPool"></b></label>
-        <label class="rc-opt"><input type="checkbox" id="clPreview"><span>Preview changes</span></label><span class="sp"></span><span id="clSum" class="sumrow" style="margin:0"></span>
+        <span class="sp"></span>
+        <label class="prev-toggle" title="Show every move as an arrow and play the animation"><input type="checkbox" id="clPreview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Preview changes</span><i class="sw" aria-hidden="true"></i></label>
+        <span id="clSum" class="sumrow" style="margin:0;flex-basis:100%"></span>
       </div>
       <div id="clErr"></div>
       <div id="clGrid"></div>
@@ -1156,6 +1189,7 @@ function tidiness(p) {
   return tidyScore(ips, p.ps, p.pe, bad);
 }
 const tidyBadge = (t, prefix = "") => `<span class="tidy ${t.score >= 80 ? "good" : t.score >= 50 ? "mid" : "bad"}" title="${esc(`Tidiness ${t.score}/100 – ${t.n} fixed IPs: ${t.inPool} inside the DHCP pool (-50 max), ${Math.round(t.compact * 100)} % close together (-30 max), ${t.bad} conflicts / devices on another IP (-20 max)`)}">${prefix}${t.score}</span>`;
+const ALL_NETS = "__all";
 const PLAN = { sel: null, tab: "cur" }; // tab: cur = current plan, clean = CleanUp Proposal
 // ---------- view: Clients (table) or IP Plan (full page, networks in the sidebar) ----------
 const isPlan = () => document.body.classList.contains("plan-mode");
@@ -1167,7 +1201,7 @@ function setView(v) {
   if (plan) { closeCols(); openPlan(); } else { PLAN.tab = "cur"; renderTable(); }
 }
 document.querySelectorAll("[data-vw]").forEach(b => b.addEventListener("click", () => setView(b.dataset.vw)));
-function openPlan() { if (!PLAN.sel || !net(PLAN.sel)) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; PLAN.tab = "cur"; renderPlan(); }
+function openPlan() { if (PLAN.sel !== ALL_NETS && (!PLAN.sel || !net(PLAN.sel))) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; PLAN.tab = "cur"; renderPlan(); }
 // icons in the IP plan cells: none, the UniFi device icon, or the logo of the Home Assistant integration
 const PLAN_ICONS = { mode: store.get("planIconMode", store.get("planIcons", false) ? "unifi" : "off") };
 const iconSeg = () => `<span class="seg plan-icons" role="group" aria-label="Icons in the cells">${[["off", "No icons"], ["unifi", "UniFi"], ["ha", "Home Assistant"]].map(([k, t]) => `<button type="button" data-pim="${k}" aria-pressed="${PLAN_ICONS.mode === k}" title="${k === "off" ? "Only the address" : k === "unifi" ? "Device icon from UniFi" : "Logo of the Home Assistant integration (empty when the device is not in HA)"}">${t}</button>`).join("")}</span>`;
@@ -1181,7 +1215,7 @@ function planIcon(c) {
 function cellHtml(p, x, cls, tip, c, extra = "") {
   const lbl = p.r.size > 256 ? ipStr(x).split(".").slice(2).join(".") : x - p.r.start;
   const ic = planIcon(c);
-  return `<div class="pc ${cls}${ic ? " ic" : ""}" data-x="${x}" data-ip="${ipStr(x)}" data-mac="${esc(c?.mac || "")}" title="${esc(tip)}" ${extra}>${ic}${lbl}</div>`;
+  return `<div class="pc ${cls}${ic ? " ic" : ""}" data-x="${x}" data-ip="${ipStr(x)}" data-mac="${esc(c?.mac || "")}" title="${esc(tip)}" ${extra}>${ic}<span class="ix">${lbl}</span></div>`;
 }
 // current state of a network as grid cells
 function currentCells(p, mark = {}) {
@@ -1204,10 +1238,11 @@ function currentCells(p, mark = {}) {
 }
 const legend = items => `<div class="plan-legend">${items.map(([cls, t]) => `<span><i class="pc ${cls}"></i>${t}</span>`).join("")}</div>`;
 const LEG_CUR = [["res", "Fixed IP, in use"], ["res off", "Fixed IP, not in use"], ["dyn", "Dynamic, in use"], ["conf", "Conflict"], ["gw", "Gateway"], ["pool", "Free, DHCP pool"], ["free", "Free"]];
+document.body.classList.toggle("plan-icons-on", PLAN_ICONS.mode !== "off");
 function syncIconBoxes() { document.querySelectorAll(".plan-icons-slot").forEach(x => x.innerHTML = iconSeg()); }
 document.addEventListener("click", e => {
   const b = e.target.closest?.("[data-pim]"); if (!b) return;
-  PLAN_ICONS.mode = b.dataset.pim; store.set("planIconMode", PLAN_ICONS.mode);
+  PLAN_ICONS.mode = b.dataset.pim; store.set("planIconMode", PLAN_ICONS.mode); document.body.classList.toggle("plan-icons-on", PLAN_ICONS.mode !== "off");
   if (isPlan()) renderPlan();
 });
 function renderPlan() {
@@ -1216,26 +1251,43 @@ function renderPlan() {
     <span class="l1"><b>${esc(p.n.name)}</b>${p.n.vlan ? `<span class="muted">(${p.n.vlan})</span>` : ""}<span class="sp"></span>${tidyBadge(t, "Tidiness ")}</span>
     <span class="l2"><span class="mono">${esc(p.n.subnet)}</span> · pool ${p.poolSize ? `<span class="mono">.${esc(p.n.dhcp_start.split(".").pop())}–.${esc(p.n.dhcp_stop.split(".").pop())}</span>` : "–"}</span>
     <span class="l3"><span class="ubar ${pct >= 80 ? "hi" : ""}" title="Utilization ${pct} % (${p.used}/${p.usable})"><i style="width:${pct}%"></i></span>${pct} % · ${p.fixed} fixed${p.inPool ? ` · <span class="w">${p.inPool} in pool</span>` : ""} · ${p.dyn} dyn</span></button>`; }).join("");
-  if (!ps.some(x => x.n.id === PLAN.sel)) PLAN.sel = ps[0]?.n.id || null;
+  // "All networks" card on top: totals, utilization over all, tidiness weighted by the fixed IPs per network
+  { const sum = k => ps.reduce((a, p) => a + p[k], 0), used = sum("used"), usable = sum("usable"), pct = usable ? Math.round(used / usable * 100) : 0;
+    const ts = ps.map(p => [tidiness(p), p]), wsum = ts.reduce((a, [t]) => a + t.n, 0);
+    const tAll = { score: wsum ? Math.round(ts.reduce((a, [t]) => a + t.score * t.n, 0) / wsum) : 100, n: wsum, inPool: ts.reduce((a, [t]) => a + t.inPool, 0), compact: 1, bad: ts.reduce((a, [t]) => a + t.bad, 0) };
+    $("#planStats").insertAdjacentHTML("afterbegin", `<button type="button" class="pn pn-all ${PLAN.sel === ALL_NETS ? "on" : ""}" data-net="${ALL_NETS}" aria-pressed="${PLAN.sel === ALL_NETS}">
+      <span class="l1"><b>All networks</b><span class="muted">(${ps.length})</span><span class="sp"></span><span title="Average tidiness, weighted by the fixed IPs per network">${tidyBadge(tAll, "Tidiness ")}</span></span>
+      <span class="l3"><span class="ubar ${pct >= 80 ? "hi" : ""}" title="Utilization ${pct} % (${used}/${usable})"><i style="width:${pct}%"></i></span>${pct} % · ${sum("fixed")} fixed${sum("inPool") ? ` · <span class="w">${sum("inPool")} in pool</span>` : ""} · ${sum("dyn")} dyn</span></button>`); }
+  if (PLAN.sel !== ALL_NETS && !ps.some(x => x.n.id === PLAN.sel)) PLAN.sel = ps[0]?.n.id || null;
+  const all = PLAN.sel === ALL_NETS;
+  if (all && PLAN.tab === "clean") PLAN.tab = "cur";
+  const ct = document.querySelector('[data-pt="clean"]'); ct.disabled = all; ct.title = all ? "Select a single network for a CleanUp Proposal" : "";
   const vis = rows(); PLAN.vis = vis.length === state.clients.length ? null : new Set(vis.map(c => c.mac));
   const p = ps.find(x => x.n.id === PLAN.sel);
-  $("#planNet").innerHTML = p ? `${esc(p.n.name)}${p.n.vlan ? ` <span class="muted">(${p.n.vlan})</span>` : ""} <span class="muted mono">${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</span>` : "";
+  $("#planNet").innerHTML = all ? `All networks <span class="muted">(${ps.length})</span>` : p ? `${esc(p.n.name)}${p.n.vlan ? ` <span class="muted">(${p.n.vlan})</span>` : ""} <span class="muted mono">${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</span>` : "";
   const clean = PLAN.tab === "clean" && !!p;
   for (const t of document.querySelectorAll("[data-pt]")) t.setAttribute("aria-selected", String(t.dataset.pt === (clean ? "clean" : "cur")));
   $("#planGridWrap").hidden = clean; $("#planClean").hidden = !clean; $("#planFootClean").hidden = !clean;
+  if (all) {
+    $("#planGridWrap").innerHTML = `<div class="plan-legend-bar">${legend(LEG_CUR)}</div>` + ps.map(q => `<section class="plan-sec" data-netid="${esc(q.n.id)}">
+      <button type="button" class="plan-sec-h" data-open-net="${esc(q.n.id)}" title="Show only this network"><b>${esc(q.n.name)}</b>${q.n.vlan ? ` <span class="muted">(${q.n.vlan})</span>` : ""} <span class="muted mono">${esc(q.n.subnet)}</span> ${tidyBadge(tidiness(q), "Tidiness ")}<span class="muted">›</span></button>
+      <div class="plan-grid">${currentCells(q)}</div></section>`).join("");
+    markSel(); syncIconBoxes(); return;
+  }
   if (!p) { $("#planGridWrap").innerHTML = ""; return; }
   if (clean) { renderClean(); return; }
-  $("#planGridWrap").innerHTML = `${legend(LEG_CUR)}<div class="plan-grid">${currentCells(p)}</div>`;
+  $("#planGridWrap").innerHTML = `<div class="plan-legend-bar">${legend(LEG_CUR)}</div><section class="plan-sec" data-netid="${esc(p.n.id)}"><div class="plan-grid">${currentCells(p)}</div></section>`;
   markSel();
   syncIconBoxes();
 }
 $("#planStats").addEventListener("click", e => { const b = e.target.closest("[data-net]"); if (!b || CL.running) return; PLAN.sel = b.dataset.net; if (PLAN.tab === "clean") resetClean(); $("#side").classList.remove("open"); renderPlan(); });
 document.querySelectorAll("[data-pt]").forEach(t => t.addEventListener("click", () => { if (CL.running) return; t.dataset.pt === "clean" ? openClean() : backToPlan(); }));
 $("#planGridWrap").addEventListener("click", e => {
+  const h = e.target.closest("[data-open-net]"); if (h) { PLAN.sel = h.dataset.openNet; renderPlan(); $(".plan-scroll").scrollTop = 0; return; }
   const d = e.target.closest(".pc[data-ip]"); if (!d || d.classList.contains("sys") || d.classList.contains("gw")) return;
   const c = d.dataset.mac && state.clients.find(x => x.mac === d.dataset.mac);
   if (c) { openPanel(c); return; }
-  openPanel(null); $("#fFixed").checked = true; syncToggles(); $("#fNet").value = PLAN.sel; $("#fIp").value = d.dataset.ip; updateHint(); $("#fMac").focus();
+  openPanel(null); $("#fFixed").checked = true; syncToggles(); $("#fNet").value = d.closest("[data-netid]")?.dataset.netid || PLAN.sel; $("#fIp").value = d.dataset.ip; updateHint(); $("#fMac").focus();
 });
 
 
@@ -1335,7 +1387,7 @@ function playMoves(sel) {
     Object.assign(fly.style, { left: ra.left - W.left + "px", top: ra.top - W.top + "px", width: ra.width + "px", height: ra.height + "px" });
     wrap.appendChild(fly);
     setTimeout(() => { a.classList.add("left"); fly.style.transform = `translate(${rz.left - ra.left}px, ${rz.top - ra.top}px)`; }, 250 + i * 180);
-    fly.addEventListener("transitionend", e => { if (e.propertyName !== "transform") return; fly.innerHTML = planIcon(r.c) + (ipNum(r.nip) - CL.b.p.r.start); fly.classList.add("mv"); fly.title = `${r.c.name || r.c.mac}: ${r.c.fixed_ip} → ${r.nip}`; }, { once: true });
+    fly.addEventListener("transitionend", e => { if (e.propertyName !== "transform") return; fly.innerHTML = planIcon(r.c) + `<span class="ix">${ipNum(r.nip) - CL.b.p.r.start}</span>`; fly.classList.add("mv"); fly.title = `${r.c.name || r.c.mac}: ${r.c.fixed_ip} → ${r.nip}`; }, { once: true });
   });
 }
 function renderClean() {

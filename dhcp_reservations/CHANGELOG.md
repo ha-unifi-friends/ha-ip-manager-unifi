@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.22.1 – 2026-10-31
+- **All networks** as first entry under *Networks*: all networks one below the other to scroll through (click a network title to show only that one), with totals and an average tidiness. *CleanUp Proposal* is disabled there – it works per network. The legend stays visible at the top while scrolling.
+- **Preview changes** is now a prominent switch with an eye icon in the CleanUp options (blue when on).
+- The tabs **Current / CleanUp Proposal** sit on a shared track like real tabs – the selected one is blue like the active switches and ends exactly on the header line, which is blue in the IP plan.
+- IP plan with icons: the address now sits small in the top-left corner of each cell and the icon (UniFi or Home Assistant logo) is shown larger in the middle.
+
 ## 1.22.0 – 2026-10-31
 - **IP Plan is a full page:** a switch *Clients / IP Plan* at the left of the header replaces the IP plan button and popup. In *IP Plan* the sidebar shows the networks on top and **all filters and the search below** – devices outside the filters are greyed out in the plan (e.g. search *shelly* or *Issues › In DHCP pool*). Clicking an address opens the device (or a new reservation) in the detail panel while the plan stays open, and the plan refreshes after saving. The choice is remembered. The tabs *Current / CleanUp Proposal* sit in the header next to the switch, the icon switch on the right.
 - The detail panel now pushes the list / plan aside on tablets and narrow windows too instead of covering it (only phones still show it as an overlay).
