@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.19.2 – 2026-10-31
+- *Names from Home Assistant*: **Already in the name** – *Add anyway / Skip / Replace* (replaces the *Skip if already in the name* checkbox). *Replace* first removes the area or integration from the name and then adds it at the chosen place, e.g. *Kitchen Light* with area as suffix → *Light-Kitchen*, *shellyLEDmatrix* with integration as prefix → *Shelly-LEDmatrix*. A name is never stripped completely.
+- *Names from Home Assistant*: the column is now called **New name** (it includes area / integration when chosen). Fix: the help text no longer breaks into separate lines around *UniFi-managed*.
+
 ## 1.19.1 – 2026-10-31
 - **Names from Home Assistant** never renames UniFi devices (access points, switches, gateway) or UniFi Protect cameras: UniFi is the golden record for their names, a new name would be synced back into Home Assistant. They are listed as *UniFi-managed* and cannot be selected.
 

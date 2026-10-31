@@ -580,11 +580,11 @@ body.side-off .menu-btn{display:inline-flex}
   <div class="imp">
     <div class="imp-head"><h2 id="haTitle">Update names from Home Assistant</h2><button class="x link" type="button" id="haClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="imp-body">
-      <div class="imp-help">Matches Home Assistant devices to UniFi clients by MAC address. The proposed name is the name you set in Home Assistant, otherwise the device name of its integration (devices known only through the UniFi integration are skipped, they already carry the UniFi name). UniFi devices (access points, switches, gateway) and UniFi Protect cameras are shown as <i>UniFi-managed</i> and never renamed – their name comes from UniFi and would be synced back into Home Assistant. “Near match” means the MAC differs only in the last byte, typical for devices with separate Wi-Fi and Ethernet MACs; those are not selected by default.</div>
+      <div class="imp-help"><p>Matches Home Assistant devices to UniFi clients by MAC address. The proposed name is the name you set in Home Assistant, otherwise the device name of its integration (devices known only through the UniFi integration are skipped, they already carry the UniFi name). UniFi devices (access points, switches, gateway) and UniFi Protect cameras are shown as <i>UniFi-managed</i> and never renamed – their name comes from UniFi and would be synced back into Home Assistant. “Near match” means the MAC differs only in the last byte, typical for devices with separate Wi-Fi and Ethernet MACs; those are not selected by default.</p></div>
       <div class="ha-opts" id="haOpts"></div>
       <div class="err" id="haErr" hidden></div>
       <div class="sumrow" id="haSum"></div>
-      <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="haAll" aria-label="Select all"></label></th><th data-sk="mac">MAC</th><th data-sk="cur">Current name</th><th data-sk="ha">Name in Home Assistant</th><th data-sk="int">Integration · Area</th><th data-sk="status">Status</th></tr></thead><tbody id="haRows"></tbody></table></div>
+      <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="haAll" aria-label="Select all"></label></th><th data-sk="mac">MAC</th><th data-sk="cur">Current name</th><th data-sk="ha">New name</th><th data-sk="int">Integration · Area</th><th data-sk="status">Status</th></tr></thead><tbody id="haRows"></tbody></table></div>
     </div>
     <div class="imp-foot">
       <div class="notes"><span class="hint">Only the name changes; fixed IP, note and other settings stay as they are.</span><span class="hint vnote"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>A version of the current settings is saved first – undo anytime via Versions › Restore.</span></div>
@@ -2162,16 +2162,29 @@ $("#btnInline").setAttribute("aria-pressed", String(state.inline)); document.bod
 // ---------- names from Home Assistant ----------
 const HAN = { rows: [], filter: "rename", running: false, done: false, missing: 0 };
 // naming: add area and/or integration as prefix or suffix (remembered per browser)
-const HA_OPTS = Object.assign({ area: "off", integ: "off", sep: " ", dedup: true, camel: false }, store.get("haNameOpts", {}));
+const HA_OPTS = Object.assign({ area: "off", integ: "off", sep: " ", dup: "skip", camel: false }, store.get("haNameOpts", {}));
+if ("dedup" in HA_OPTS) { if (!store.get("haNameOpts", {}).dup) HA_OPTS.dup = HA_OPTS.dedup ? "skip" : "add"; delete HA_OPTS.dedup; } // 1.19.0 checkbox
 const HA_DOM_NAMES = { esphome: "ESPHome", shelly: "Shelly", unifiprotect: "UniFi Protect", unifi: "UniFi", hue: "Hue", zha: "ZHA", mqtt: "MQTT", tuya: "Tuya", sonos: "Sonos", xiaomi_miio: "Xiaomi", tasmota: "Tasmota", wled: "WLED", homekit_controller: "HomeKit", matter: "Matter", mobile_app: "Mobile App", brother: "Brother", nuki: "Nuki", tplink: "TP-Link", synology_dsm: "Synology", dlna_dmr: "DLNA", smartthings: "SmartThings", cast: "Google Cast", apple_tv: "Apple TV", samsungtv: "Samsung TV", fritz: "FRITZ!Box", deconz: "deCONZ", zwave_js: "Z-Wave", solarman: "Solarman", nut: "NUT" };
 const domTitle = d => HA_DOM_NAMES[d] || d.replace(/_/g, " ").replace(/\b\w/g, x => x.toUpperCase());
 function haCompose(h) {
-  // dedup: a part already contained in the name (ignoring case, spaces, - and _) is not added again
+  // a part already contained in the name (ignoring case, spaces, - and _):
+  //   add = add anyway · skip = do not add it again · replace = remove it from the name first, then add it at the chosen place
   const flat = t => String(t || "").toLowerCase().replace(/[\s_-]+/g, "");
-  const base = h.base, has = t => HA_OPTS.dedup && t && flat(base).includes(flat(t));
-  const area = HA_OPTS.area !== "off" && h.d.area && !has(h.d.area) ? h.d.area : "";
   const dom = h.d.domains.find(x => x !== "unifi") || h.d.domains[0] || "";
-  const integ = HA_OPTS.integ !== "off" && dom && !has(domTitle(dom)) ? domTitle(dom) : "";
+  const want = { area: HA_OPTS.area !== "off" ? h.d.area || "" : "", integ: HA_OPTS.integ !== "off" && dom ? domTitle(dom) : "" };
+  let base = h.base;
+  const has = t => t && flat(base).includes(flat(t));
+  if (HA_OPTS.dup === "replace") {
+    for (const t of [want.area, want.integ]) {
+      if (!has(t)) continue;
+      const rx = new RegExp(t.split(/[\s_-]+/).filter(Boolean).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("[\\s_-]*"), "gi");
+      const rest = base.replace(rx, "").replace(/([\s_-])[\s_-]+/g, "$1").replace(/^[\s_-]+|[\s_-]+$/g, "");
+      if (rest) base = rest; // never strip the whole name
+    }
+  }
+  const skip = t => HA_OPTS.dup !== "add" && has(t);
+  const area = want.area && !skip(want.area) ? want.area : "";
+  const integ = want.integ && !skip(want.integ) ? want.integ : "";
   const pre = [HA_OPTS.area === "prefix" && area, HA_OPTS.integ === "prefix" && integ].filter(Boolean);
   const suf = [HA_OPTS.area === "suffix" && area, HA_OPTS.integ === "suffix" && integ].filter(Boolean);
   const parts = [...pre, base, ...suf];
@@ -2194,7 +2207,7 @@ function renderHaOpts() {
   const ex = HAN.rows.find(r => r.c && r.h.d.area) || HAN.rows[0];
   $("#haOpts").innerHTML = `<label>Area ${seg("area", pos)}</label><label>Integration ${seg("integ", pos)}</label>
     <label>Separator ${seg("sep", [[" ", "a b"], ["-", "a-b"], ["_", "a_b"], [" - ", "a - b"], ["", "ab"]])}</label>
-    <label class="rc-opt" title="Do not add the area or integration when the name already contains it (e.g. shellyLEDmatrix + Shelly)"><input type="checkbox" data-hc="dedup" ${HA_OPTS.dedup ? "checked" : ""}><span>Skip if already in the name</span></label>
+    <label title="When the name already contains the area or integration (e.g. shellyLEDmatrix + Shelly): add it anyway, skip it, or remove it from the name and add it at the chosen place">Already in the name ${seg("dup", [["add", "Add anyway"], ["skip", "Skip"], ["replace", "Replace"]])}</label>
     <label class="rc-opt" title="Every word starts upper case and continues lower case, e.g. OfficeDeskLamp with separator ab"><input type="checkbox" data-hc="camel" ${HA_OPTS.camel ? "checked" : ""}><span>CamelCase</span></label>
     ${ex ? `<span class="muted ha-ex">e.g. <b>${esc(haCompose(ex.h))}</b></span>` : ""}`;
   const busy = HAN.running || HAN.done;

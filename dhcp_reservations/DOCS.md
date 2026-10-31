@@ -35,7 +35,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
   UniFi is the golden record for their names, a change would be synced back into Home Assistant.
   Preview with checkbox per row; “near match” covers devices whose MAC differs only in the last byte (separate Wi-Fi/Ethernet MAC).
   *Area* and *Integration* can each be added as prefix or suffix (*Off / Prefix / Suffix*), with the separator `a b`, `a-b`, `a_b`, `a - b` or none –
-  e.g. *Office Desk Lamp* or *Desk Lamp - ESPHome*. *Skip if already in the name* (default on) leaves out parts the name already contains;
+  e.g. *Office Desk Lamp* or *Desk Lamp - ESPHome*. *Already in the name*: *Add anyway*, *Skip* (default – leaves out parts the name already contains) or *Replace* (removes the part from the name first, then adds it at the chosen place, e.g. *Kitchen Light* → *Light-Kitchen*);
   *CamelCase* starts every word upper case and continues lower case (*OfficeDeskLamp*). The choice is remembered per browser.
 - **Views:** like SharePoint views. A view stores the visible columns, their order, column filters, sidebar filters and sort.
   Built-in: *All* and *DHCP Reservations* (MAC, Name, Fixed IP, IP, Last seen – clients with a fixed IP). Use the view menu to
