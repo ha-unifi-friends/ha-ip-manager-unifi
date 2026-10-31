@@ -765,10 +765,10 @@ function computeWarnings() {
       if (rn && rn.dhcp_start && rn.dhcp_stop && ipNum(c.fixed_ip) >= ipNum(rn.dhcp_start) && ipNum(c.fixed_ip) <= ipNum(rn.dhcp_stop)) w.push(["info", "In DHCP pool"]);
     }
     if (c.fixed_ap_enabled && c.online && c.ap_mac && c.ap_mac !== c.fixed_ap_mac) w.push(["warn", "Not on locked AP"]);
-    // Virtual Network Override set, but the online device is in another network / subnet
+    // Virtual Network Override set, but the device is (online) or was last (offline) in another network / subnet
     const vn = c.vno_id ? net(c.vno_id) : null;
-    c._vnoMiss = !!(vn && c.online && ((c.network_id && c.network_id !== vn.id) || (c.ip && vn.subnet && !inSubnet(c.ip, vn.subnet))));
-    if (c._vnoMiss) w.push(["warn", "Not in " + vn.name + " (override)"]);
+    c._vnoMiss = !!(vn && ((c.network_id && c.network_id !== vn.id) || (c.ip && vn.subnet && !inSubnet(c.ip, vn.subnet))));
+    if (c._vnoMiss) w.push([c.online ? "warn" : "info", (c.online ? "Not in " : "Last seen outside ") + vn.name + " (override)"]);
     else if (c.vno_id) w.push(["info", "VLAN override"]);
     if (c.mac && !c.is_device && c.name && byName[c.name.trim().toLowerCase()]?.length > 1) w.push(["warn", "Duplicate name"]);
     for (const o of state.scans?.[c.mac]?.open || []) if (o.port === 23 || o.port === 21) w.push(["warn", o.service + " open"]);
@@ -870,7 +870,7 @@ const COLS = [
   { key: "network_id", label: "Network", filter: "net", val: c => netLabel(c.network_id) || c.network_name, fval: c => c.network_id,
     td: c => c.network_id && net(c.network_id) ? `${esc(netName(c.network_id))}${net(c.network_id).vlan ? `<span class="vl">(${net(c.network_id).vlan})</span>` : ""}` : esc(c.network_name || "") },
   { key: "vno", label: "Virtual network override", filter: "net", val: c => c.vno_id ? netLabel(c.vno_id) : "~", fval: c => c.vno_id || "",
-    td: c => c.vno_id ? `<span class="${c._vnoMiss ? "vno-miss" : ""}" title="${c._vnoMiss ? `Override to ${esc(netName(c.vno_id))}, but the device is in ${esc(netName(c.network_id) || c.ip)}` : "Virtual network override"}">${esc(netName(c.vno_id) || "?")}${net(c.vno_id)?.vlan ? `<span class="vl">(${net(c.vno_id).vlan})</span>` : ""}</span>` : `<span class="muted">-</span>` },
+    td: c => c.vno_id ? `<span class="${c._vnoMiss ? "vno-miss" : ""}" title="${c._vnoMiss ? `Override to ${esc(netName(c.vno_id))}, but the device ${c.online ? "is" : "was last"} in ${esc(netName(c.network_id) || c.ip)}` : "Virtual network override"}">${esc(netName(c.vno_id) || "?")}${net(c.vno_id)?.vlan ? `<span class="vl">(${net(c.vno_id).vlan})</span>` : ""}</span>` : `<span class="muted">-</span>` },
   { key: "essid", label: "WiFi", val: c => (c.essid || "").toLowerCase(), td: c => c.essid ? esc(c.essid) : `<span class="muted">-</span>` },
   { key: "_warn", label: "Issues", val: c => c._warn.length ? (c._serious ? 0 : 1) : 2, fval: c => c._warn.map(w => w[1]).join(" "), td: c => c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("") },
   { key: "_resNet", label: "Reservation VLAN", filter: "net", val: c => netLabel(c._resNet), fval: c => c._resNet,

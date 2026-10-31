@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.18.3 – 2026-10-31
+- *Not in override VLAN* now also lists offline devices whose last known network differs from their virtual network override (info *Last seen outside <network> (override)*; online devices keep the warning).
+
 ## 1.18.2 – 2026-10-31
 - The **Fixed IP** is shown in yellow when the device's current (or last known) IP address is a different one – e.g. it has not renewed its lease yet. The tooltip shows the address in use.
 - New filter **Issues › IP is not Fixed IP** for exactly these devices.
