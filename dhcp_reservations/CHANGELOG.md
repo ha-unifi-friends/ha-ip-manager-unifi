@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.18.1 – 2026-10-31
+- Fix: clicking a device further down the list made the table jump back to the top (Safari / Home Assistant app). Selecting a device now only moves the highlight; the scroll position stays.
+- New default column order (built-in view *All* and *Columns › Restore*): UniFi Status, Home Assistant Status, IP, Name, IP address, Fixed IP, MAC address, Vendor, Connection type, Connection, Locked to AP, Network, WiFi, Issues, Reservation VLAN, First seen, Last seen, Note. *All* is sorted by IP address; devices without an IP come last.
+
 ## 1.18.0 – 2026-10-31
 - Columns **UniFi Status** (formerly the unnamed status dot) and **Home Assistant Status**: the header shows only an icon so the columns stay narrow (full name as tooltip and in *Columns*). Both can now be sorted and filtered (UniFi: online / offline; HA: OK, partly unavailable, unavailable, integration error, disabled, known / not in HA).
 - The built-in view *All* shows *Home Assistant Status* as second column.

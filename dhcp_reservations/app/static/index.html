@@ -63,7 +63,7 @@ details:not([open]) summary svg{transform:rotate(180deg)}
 .link:disabled{color:var(--faint);cursor:default}
 
 /* ---------- table ---------- */
-main{display:flex;flex-direction:column;min-width:0;min-height:0;container:main/inline-size}
+main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow:hidden;container:main/inline-size}
 .banner{margin:10px 16px 0;padding:9px 12px;border-radius:6px;background:var(--bad-bg);color:var(--bad)}
 .tablewrap{flex:1;overflow:auto;min-height:0}
 table{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
@@ -844,6 +844,9 @@ const COLS = [
       return `<span class="ippill ${m}" title="${esc(t)}">${m === "fix" ? "Fix" : "DHCP"}</span>`; } },
   { key: "name", label: "Name", val: c => (c.name || c.hostname || c.mac || "").toLowerCase(), fval: c => [c.name, c.hostname].join(" "),
     td: c => `<div class="nm"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span>${inlineOn(c) ? `<input class="ie" data-f="name" data-k="${esc(keyOf(c))}" value="${esc(c.name)}" placeholder="${esc(c.hostname || c.device_name || "Name")}" aria-label="Name of ${esc(c.mac)}">` : `<span class="t">${esc(c.name || c.hostname || "Unknown")}</span>`}${c.is_device ? `<span class="h">${esc(c.name && c.device_name && c.device_name.trim() !== c.name ? c.device_name + " · " : "")}${esc(c.device_model)}</span>` : !c.name && c.mac ? `<span class="h">${esc(c.mac.slice(-5))}</span>` : (c.name && c.hostname && c.hostname !== c.name ? `<span class="h">${esc(c.hostname)}</span>` : "")}</div>` },
+  { key: "ip", label: "IP address", val: c => c.ip ? ipNum(c.ip) : 1e12, fval: c => c.ip, td: c => `<span class="mono ${c.ip_is_last ? "muted" : ""}" title="${c.ip_is_last ? "Last known IP" : ""}">${esc(c.ip)}</span>` },
+  { key: "fixed_ip", label: "Fixed IP", val: c => c.use_fixedip ? ipNum(c.fixed_ip) : 1e12, fval: c => c.use_fixedip ? c.fixed_ip : "",
+    td: c => inlineOn(c) ? `<input class="ie mono" data-f="ip" data-k="${esc(keyOf(c))}" value="${esc(c.use_fixedip ? c.fixed_ip : "")}" placeholder="${esc(c.ip && !c.use_fixedip ? c.ip : "none")}" inputmode="decimal" aria-label="Fixed IP of ${esc(c.mac)}">` : c.use_fixedip ? `<span class="resip">${esc(c.fixed_ip)}</span>` : `<span class="muted">-</span>` },
   { key: "mac", label: "MAC address", val: c => c.mac, td: c => `<span class="mono">${esc(c.mac || "–")}</span>` },
   { key: "oui", label: "Vendor", val: c => (c.oui || "").toLowerCase(), td: c => esc(c.oui) + (c.oui_src ? ` <span class="muted" title="Looked up via macvendors.com – UniFi does not know this vendor">(lookup)</span>` : "") },
   { key: "conn", label: "Connection type", filter: "select", opts: [["", "All"], ["wifi", "WiFi"], ["wired", "Wired"], ["teleport", "Teleport"]], val: c => c.conn, fval: c => c.conn,
@@ -854,12 +857,9 @@ const COLS = [
   { key: "network_id", label: "Network", filter: "net", val: c => netLabel(c.network_id) || c.network_name, fval: c => c.network_id,
     td: c => c.network_id && net(c.network_id) ? `${esc(netName(c.network_id))}${net(c.network_id).vlan ? `<span class="vl">(${net(c.network_id).vlan})</span>` : ""}` : esc(c.network_name || "") },
   { key: "essid", label: "WiFi", val: c => (c.essid || "").toLowerCase(), td: c => c.essid ? esc(c.essid) : `<span class="muted">-</span>` },
-  { key: "fixed_ip", label: "Fixed IP", val: c => c.use_fixedip ? ipNum(c.fixed_ip) : 1e12, fval: c => c.use_fixedip ? c.fixed_ip : "",
-    td: c => inlineOn(c) ? `<input class="ie mono" data-f="ip" data-k="${esc(keyOf(c))}" value="${esc(c.use_fixedip ? c.fixed_ip : "")}" placeholder="${esc(c.ip && !c.use_fixedip ? c.ip : "none")}" inputmode="decimal" aria-label="Fixed IP of ${esc(c.mac)}">` : c.use_fixedip ? `<span class="resip">${esc(c.fixed_ip)}</span>` : `<span class="muted">-</span>` },
+  { key: "_warn", label: "Issues", val: c => c._warn.length ? (c._serious ? 0 : 1) : 2, fval: c => c._warn.map(w => w[1]).join(" "), td: c => c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("") },
   { key: "_resNet", label: "Reservation VLAN", filter: "net", val: c => netLabel(c._resNet), fval: c => c._resNet,
     td: c => c._resNet ? `${esc(netName(c._resNet))}${net(c._resNet)?.vlan ? `<span class="vl">(${net(c._resNet).vlan})</span>` : ""}` : "" },
-  { key: "ip", label: "IP address", val: c => ipNum(c.ip), fval: c => c.ip, td: c => `<span class="mono ${c.ip_is_last ? "muted" : ""}" title="${c.ip_is_last ? "Last known IP" : ""}">${esc(c.ip)}</span>` },
-  { key: "_warn", label: "Issues", val: c => c._warn.length ? (c._serious ? 0 : 1) : 2, fval: c => c._warn.map(w => w[1]).join(" "), td: c => c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("") },
   { key: "first_seen", label: "First seen", filter: "none", val: c => c.first_seen || 9e12, td: c => `<span class="muted" title="${c.first_seen ? isoDateTime(c.first_seen) : ""}">${c.first_seen ? isoDate(c.first_seen) : "–"}</span>` },
   { key: "last_seen", label: "Last seen", filter: "none", val: c => c.online ? -9e12 : -(c.last_seen || -1), td: c => `<span class="muted" title="${c.last_seen ? isoDateTime(c.last_seen) : ""}">${c.online ? "Online" : rel(c.last_seen)}</span>` },
   { key: "note", label: "Note", val: c => (c.note || "").toLowerCase(), td: c => `<div class="note" title="${esc(c.note)}">${esc(c.note)}</div>` },
@@ -952,10 +952,11 @@ function renderTable() {
     on ? th.setAttribute("aria-sort", state.sort.dir > 0 ? "ascending" : "descending") : th.removeAttribute("aria-sort");
     const a = th.querySelector(".arr"); if (a) a.textContent = state.sort.dir > 0 ? "▲" : "▼";
   }
-  const list = rows(), tb = $("#tbody");
+  const list = rows(), tb = $("#tbody"), tw = $(".tablewrap"), keep = [tw.scrollTop, tw.scrollLeft];
   if (!state.clients.length) tb.innerHTML = `<tr><td class="empty" colspan="${visCols().length}">${state.loading ? '<span class="spin"></span> Loading data from the controller …' : "No clients found."}</td></tr>`;
   else if (!list.length) tb.innerHTML = `<tr><td class="empty" colspan="${visCols().length}">No client matches the filters.</td></tr>`;
   else tb.innerHTML = list.map(c => `<tr data-k="${esc(keyOf(c))}" class="${state.sel && keyOf(state.sel) === keyOf(c) ? "sel" : ""}">${visCols().map(col => `<td>${col.td(c)}</td>`).join("")}</tr>`).join("");
+  if (tw.scrollTop !== keep[0] || tw.scrollLeft !== keep[1]) { tw.scrollTop = keep[0]; tw.scrollLeft = keep[1]; } // never jump on a re-render
   $("#count").textContent = list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`;
   $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }) : "";
 }
@@ -1405,10 +1406,15 @@ function openPanel(c, tab) {
   if (c) renderInfo();
   fillForm(c);
   setTab(c ? (tab || "info") : "edit");
-  renderTable();
+  markSel();
+}
+// only move the highlight – re-building the table on a click made Safari jump back to the top
+function markSel() {
+  const k = state.sel ? keyOf(state.sel) : null;
+  for (const tr of $("#tbody").querySelectorAll("tr[data-k]")) tr.classList.toggle("sel", tr.dataset.k === k);
 }
 function closePanel() {
-  state.sel = null; $("#detail").hidden = true; renderTable();
+  state.sel = null; $("#detail").hidden = true; markSel();
   // came from a dialog via "Open …" → go back to it, with its state kept
   const back = state.returnTo; state.returnTo = null;
   if (back && !back.open) { back.showModal(); if (back.id === "dlgSub") renderSub(); else if (back.id === "dlgImport") renderImport(); }
@@ -1840,7 +1846,7 @@ $("#impTpl").addEventListener("click", () => saveFile("dhcp-import-template.csv"
 // ---------- views (SharePoint-style) ----------
 const clone = o => JSON.parse(JSON.stringify(o ?? null));
 const BUILTIN_VIEWS = [
-  { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name"], colFilters: {}, facets: {}, sort: { key: "name", dir: 1 } } },
+  { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: {}, sort: { key: "ip", dir: 1 } } },
   { id: "dhcp", name: "DHCP Reservations", builtin: true, state: { hiddenCols: COLS.map(c => c.key).filter(k => !["mac", "name", "fixed_ip", "ip", "last_seen"].includes(k)), colOrder: ["mac", "name", "fixed_ip", "ip", "last_seen"], colFilters: {}, facets: { res: ["yes"] }, sort: { key: "fixed_ip", dir: 1 } } },
 ];
 const VIEWS = { custom: [], def: "all", current: store.get("currentView", null), loaded: false, armDelete: false };
@@ -2505,6 +2511,9 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#actMe
 
 const saved = store.get("view2", null);
 if (saved) { state.sort = saved.sort || state.sort; state.colFilters = saved.colFilters || {}; state.facets = saved.facets || {}; state.hiddenCols = (saved.hiddenCols || []).filter(k => COLS.some(c => c.key === k && k !== "name")); state.colOrder = (saved.colOrder || []).filter(k => COLS.some(c => c.key === k)); }
+// only the table, the filter pane and the detail panel scroll – the frame itself must never move (Safari scrolls it on focus / re-layout)
+for (const el of [document.scrollingElement, document.querySelector(".app"), document.querySelector("main")]) el?.addEventListener?.("scroll", () => { if (el.scrollTop || el.scrollLeft) { el.scrollTop = 0; el.scrollLeft = 0; } }, { passive: true });
+window.addEventListener("scroll", () => { if (window.scrollY || window.scrollX) window.scrollTo(0, 0); }, { passive: true });
 buildHead(); renderAll(); Promise.all([loadRules(), loadScans()]).then(() => { if (state.clients.length) { computeWarnings(); renderAll(); } }); load(); loadViews(true); loadVersionsMeta();
 })();
 </script>
