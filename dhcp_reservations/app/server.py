@@ -1,4 +1,4 @@
-"""DHCP Reservations – Home Assistant add-on (Ingress).
+"""DHCP Reservations – Home Assistant app (Ingress).
 
 Talks directly to the UniFi OS API of the gateway (Python standard library only).
 """
@@ -35,7 +35,7 @@ VENDOR_API = os.environ.get("VENDOR_API", "https://api.macvendors.com/")
 KNOWN_LOCK = threading.Lock()
 VENDOR_LOCK = threading.Lock()
 def _addon_version():
-    """Version from the add-on's config.yaml (copied into the image), else the BUILD_VERSION build arg."""
+    """Version from the app's config.yaml (copied into the image), else the BUILD_VERSION build arg."""
     here = os.path.dirname(os.path.abspath(__file__))
     for p in (os.path.join(here, "config.yaml"), os.path.join(here, "..", "config.yaml")):
         try:
@@ -96,7 +96,7 @@ class UnifiError(Exception):
         self.hint = hint
 
 
-CONFIG_PATH_HINT = "Settings › Add-ons (Apps) › IP Manager for UniFi › Configuration"
+CONFIG_PATH_HINT = "Settings › Apps › IP Manager for UniFi › Configuration"
 
 
 def _norm_fp(v):
@@ -190,12 +190,12 @@ class Unifi:
             reason = str(getattr(e, "reason", e))
             if "fingerprint mismatch" in reason:
                 raise UnifiError(f"The controller certificate does not match the pinned fingerprint ({reason}).", 502,
-                                 "The certificate may have changed (e.g. after a firmware update). Check the add-on log for the "
+                                 "The certificate may have changed (e.g. after a firmware update). Check the app log for the "
                                  "current fingerprint and update certificate_fingerprint – or clear it. " + CONFIG_PATH_HINT)
             if "CERTIFICATE_VERIFY_FAILED" in reason or "certificate verify failed" in reason:
                 raise UnifiError(f"The controller certificate could not be verified ({self.base}).", 502,
                                  "UniFi consoles use a self-signed certificate. Turn verify_ssl off, or pin the certificate with "
-                                 "certificate_fingerprint (the value is in the add-on log). " + CONFIG_PATH_HINT)
+                                 "certificate_fingerprint (the value is in the app log). " + CONFIG_PATH_HINT)
             raise UnifiError(f"Controller not reachable ({self.base}): {reason}", 502,
                              "Check unifi_host: the IP or host name of your UniFi console (UDM, UDR, UCG, Cloud Key …) without "
                              "https://, reachable from Home Assistant. " + CONFIG_PATH_HINT)
@@ -210,7 +210,7 @@ class Unifi:
 
     def login(self):
         if not self.user or not self.password:
-            raise UnifiError("Username/password missing in the add-on configuration.", 500,
+            raise UnifiError("Username/password missing in the app configuration.", 500,
                              "Enter a local UniFi account (username and password). " + CONFIG_PATH_HINT)
         self.jar.clear()
         self.csrf = ""
@@ -220,7 +220,7 @@ class Unifi:
         )
         if status == 404:
             raise UnifiError(f"{self.base} does not look like a UniFi OS console (no /api/auth/login).", 502,
-                             "The add-on needs a UniFi OS console (UDM / UDM Pro / UDR / UCG / UX / Cloud Key Gen2+ or UniFi OS "
+                             "The app needs a UniFi OS console (UDM / UDM Pro / UDR / UCG / UX / Cloud Key Gen2+ or UniFi OS "
                              "Server). Check unifi_host. " + CONFIG_PATH_HINT)
         if status != 200:
             raise UnifiError(f"Login to the controller failed (HTTP {status}).", 502,
@@ -651,7 +651,7 @@ def ha_devices():
     token = supervisor_token()
     base = os.environ.get("HA_API", "http://supervisor/core/api")
     if not token and "HA_API" not in os.environ:
-        raise UnifiError("Home Assistant API is not available to the add-on (update the add-on to grant access).", 500)
+        raise UnifiError("Home Assistant API is not available to the app (update the app to grant access).", 500)
     req = urllib.request.Request(base + "/template", data=json.dumps({"template": HA_TEMPLATE}).encode(), method="POST",
                                  headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
     try:
@@ -749,7 +749,7 @@ def load_settings():
 
 
 def save_settings(body):
-    cur = {"baseline": load_settings()["baseline"]}  # daily / retention live in the add-on configuration
+    cur = {"baseline": load_settings()["baseline"]}  # daily / retention live in the app configuration
     if "baseline" in body:
         b = body["baseline"]
         if b and not os.path.exists(_vpath(b)):
@@ -900,7 +900,7 @@ def ha_call(path, body):
     token = supervisor_token()
     base = os.environ.get("HA_API", "http://supervisor/core/api")
     if not token and "HA_API" not in os.environ:
-        raise UnifiError("Home Assistant API is not available to the add-on.", 500)
+        raise UnifiError("Home Assistant API is not available to the app.", 500)
     req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",
                                  headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
     try:
@@ -1418,7 +1418,7 @@ class Handler(BaseHTTPRequestHandler):
             self._send(e.status, {"error": str(e), **({"hint": e.hint} if e.hint else {})})
         except Exception as e:  # noqa: BLE001
             log("Unexpected error:", repr(e))
-            self._send(500, {"error": "Internal error – details are in the add-on log."})
+            self._send(500, {"error": "Internal error – details are in the app log."})
 
     def do_GET(self):
         self._route("GET")

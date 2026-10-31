@@ -14,7 +14,7 @@
 ![Overview](docs/screenshots/overview.png)
 
 UniFi Network spreads DHCP reservations over individual client pages, and there is no single place to check which device has
-which fixed IP in which VLAN. **IP Manager for UniFi** is a Home Assistant add-on that gives you exactly that view. It is styled like
+which fixed IP in which VLAN. **IP Manager for UniFi** is a Home Assistant app (formerly called add-on) that gives you exactly that view. It is styled like
 UniFi Network, and it adds bulk tools that UniFi doesn't have: subnet migration, CSV import, names from Home Assistant, and
 versions you can compare and restore.
 
@@ -143,16 +143,16 @@ versions you can compare and restore.
 
 ## Requirements
 
-- Home Assistant **OS** or **Supervised** (add-ons are required), on `amd64` or `aarch64`.
+- Home Assistant **OS** or **Supervised** (apps are required), on `amd64` or `aarch64`.
 - A UniFi OS console running UniFi Network (UDM / UDM Pro / UDR / UCG / UX / Cloud Key Gen2+, or a self-hosted UniFi OS Server).
 - A **local** UniFi account (not a Ubiquiti cloud account, no 2FA) with permission to edit clients.
 
 ## Installation
 
-1. Click the button above, **or** go to *Settings → Add-ons → Add-on Store → ⋮ → Repositories* and add
+1. Click the button above, **or** go to *Settings → Apps*, open the app store and choose *⋮ → Repositories*, then add
    `https://github.com/ha-unifi-friends/ha-ip-manager-unifi`
 2. Install **IP Manager for UniFi**. Home Assistant builds the image locally, so this takes a minute.
-3. On the *Configuration* tab, enter the gateway IP, username and password, then start the add-on.
+3. On the *Configuration* tab, enter the gateway IP, username and password, then start the app.
 4. Turn on *Show in sidebar* (the panel is called *IP Manager*), or open it via *Open Web UI*.
 
 ## Configuration
@@ -163,7 +163,7 @@ versions you can compare and restore.
 | `username` / `password` | – | Local UniFi account |
 | `site` | `default` | UniFi site name |
 | `verify_ssl` | `false` | Keep off while the console uses its self-signed certificate |
-| `certificate_fingerprint` | – | Pin the controller certificate (SHA-256); the add-on log shows the value to paste at start |
+| `certificate_fingerprint` | – | Pin the controller certificate (SHA-256); the app log shows the value to paste at start |
 | `daily_version` | `true` | Save one version of the table per day |
 | `auto_version_retention_days` | `30` | Days to keep automatic versions; manual, pinned and baseline versions are kept until deleted |
 | `notify_new_devices` | `true` | Notify Home Assistant about devices with a never-seen MAC |
@@ -173,10 +173,10 @@ versions you can compare and restore.
 
 **Security notes**
 
-- Create a dedicated local UniFi user for this add-on, with the *Network* admin role (needed to edit clients) and not as owner or super admin.
-- The password is stored in the add-on's options inside Home Assistant (masked in the UI). It is never logged and never sent to the browser.
-- Home Assistant backups contain add-on options, so keep your backups encrypted.
-- The UI is only reachable through Home Assistant Ingress. The add-on does not expose a port.
+- Create a dedicated local UniFi user for this app, with the *Network* admin role (needed to edit clients) and not as owner or super admin.
+- The password is stored in the app's options inside Home Assistant (masked in the UI). It is never logged and never sent to the browser.
+- Home Assistant backups contain app options, so keep your backups encrypted.
+- The UI is only reachable through Home Assistant Ingress. The app does not expose a port.
 - Pin the controller certificate with `certificate_fingerprint` – the self-signed UniFi certificate is otherwise not verified.
 - Ping, port check and Wake on LAN only work for addresses inside your UniFi networks. CSV exports are protected against formula injection.
 
@@ -184,12 +184,12 @@ Full documentation: [`dhcp_reservations/DOCS.md`](dhcp_reservations/DOCS.md) · 
 
 ## How it works
 
-A small Python service (standard library only) inside the add-on talks to the UniFi Network API of your console:
+A small Python service (standard library only) inside the app talks to the UniFi Network API of your console:
 
 - **Read:** `rest/user`, `stat/sta`, `stat/device`, `rest/networkconf`, and v2 `clients/active` for Teleport.
 - **Write:** `rest/user` for name, note, fixed IP, AP lock, local DNS and the virtual network override; `cmd/stamgr` (`kick-sta` to reconnect, `forget-sta` to forget a client); `rest/networkconf` only for the DHCP pool of a CleanUp Proposal.
 
-For the Home Assistant features, the service reads the device registry through the Supervisor API (read-only) and creates notifications. Views and versions are stored in the add-on's `/data` folder, so they are included in Home Assistant backups.
+For the Home Assistant features, the service reads the device registry through the Supervisor API (read-only) and creates notifications. Views and versions are stored in the app's `/data` folder, so they are included in Home Assistant backups.
 
 ## Contributing
 
@@ -199,7 +199,7 @@ The project lives in the GitHub organization [ha-unifi-friends](https://github.c
 
 This is a community project. It is not affiliated with or endorsed by Ubiquiti Inc. or the Home Assistant project.
 UniFi is a trademark of Ubiquiti Inc. It uses the controller's unofficial local API, which can change with UniFi Network updates.
-Always keep a backup. The add-on saves a version before every bulk action, but you use it at your own risk.
+Always keep a backup. The app saves a version before every bulk action, but you use it at your own risk.
 
 ## License
 

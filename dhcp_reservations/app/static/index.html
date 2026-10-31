@@ -532,7 +532,7 @@ body.side-off .menu-btn{display:inline-flex}
       <details id="planNets" open hidden><summary>Networks<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary><nav class="plan-nets" id="planStats" aria-label="Networks"></nav><p class="hint plan-hint">Click an address to open the device, or a free one to reserve it. Devices outside the filters below are greyed out.</p></details>
       <div id="facets"></div>
     </div>
-    <div class="side-foot"><div class="side-links"><button class="link" type="button" id="lnkClear" disabled>Clear filters</button><button class="link" type="button" id="lnkCols">Customize columns</button></div><span id="appVer" title="IP Manager for UniFi – add-on version"></span><span class="sp"></span><button type="button" class="theme-btn" id="btnTheme"></button></div>
+    <div class="side-foot"><div class="side-links"><button class="link" type="button" id="lnkClear" disabled>Clear filters</button><button class="link" type="button" id="lnkCols">Customize columns</button></div><span id="appVer" title="IP Manager for UniFi – app version"></span><span class="sp"></span><button type="button" class="theme-btn" id="btnTheme"></button></div>
   </aside>
 
   <main>
@@ -756,7 +756,7 @@ body.side-off .menu-btn{display:inline-flex}
           <button class="btn primary" type="button" id="verSave">Save version</button>
           <span class="hint" id="verDaily"></span>
         </div>
-        <div class="imp-help">A version freezes the table: names, notes, fixed IPs, AP locks, DNS records and – for information – current IP, network and first/last seen. A version is also saved automatically before every bulk action (CSV import, replace subnet, names from HA, restore). Automatic versions (daily, before bulk actions) are kept <b id="verKeep">30</b> days; daily versions and the retention are set in the add-on configuration; manual and pinned versions and the baseline are kept until you delete them.</div>
+        <div class="imp-help">A version freezes the table: names, notes, fixed IPs, AP locks, DNS records and – for information – current IP, network and first/last seen. A version is also saved automatically before every bulk action (CSV import, replace subnet, names from HA, restore). Automatic versions (daily, before bulk actions) are kept <b id="verKeep">30</b> days; daily versions and the retention are set in the app configuration; manual and pinned versions and the baseline are kept until you delete them.</div>
         <div class="imp-table"><table><thead><tr><th style="width:34px"></th><th>Saved</th><th>Name</th><th>Type</th><th>By</th><th>Devices</th><th>Fixed IPs</th><th></th></tr></thead><tbody id="verRows"></tbody></table></div>
       </div>
       <div class="imp-foot"><span class="hint">Tick two versions to compare them with each other.</span><span class="sp"></span><button class="btn" type="button" id="verCmp2" disabled>Select two versions to compare</button><button class="btn" type="button" id="verClose2">Close</button></div>
@@ -1715,7 +1715,7 @@ async function load() {
     if (state.sel) { const again = state.clients.find(c => keyOf(c) === keyOf(state.sel)); again ? (state.sel = again, renderInfo()) : closePanel(); }
   } catch (e) {
     $("#banner").innerHTML = `<b>Could not load data:</b> ${esc(e.message)}` + (e.hint ? `<div class="banner-hint"><b>Hint:</b> ${esc(e.hint)}</div>` : "") +
-      `<div class="banner-hint muted">After changing the configuration, restart the add-on and press Refresh. Details are in the add-on log.</div>`;
+      `<div class="banner-hint muted">After changing the configuration, restart the app and press Refresh. Details are in the app log.</div>`;
     $("#banner").hidden = false;
   }
   finally { state.loading = false; b.disabled = false; b.textContent = "Refresh"; renderAll(); }
@@ -2662,7 +2662,7 @@ async function openVersions() {
 }
 function renderVerList() {
   $("#verDaily").textContent = VER.settings.daily ? "Daily automatic version: on" : "Daily automatic version: off";
-  $("#verDaily").title = "Change in the add-on configuration (daily_version)";
+  $("#verDaily").title = "Change in the app configuration (daily_version)";
   if (VER.settings.retention_days) $("#verKeep").textContent = VER.settings.retention_days;
   const base = VER.settings.baseline;
   $("#verRows").innerHTML = VER.list.map(m => `<tr data-id="${esc(m.id)}">

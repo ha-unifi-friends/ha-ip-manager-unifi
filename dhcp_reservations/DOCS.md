@@ -40,7 +40,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 - **Views:** like SharePoint views. A view stores the visible columns, their order, column filters, sidebar filters and sort.
   Built-in: *All* and *DHCP Reservations* (MAC, Name, Fixed IP, IP, Last seen – clients with a fixed IP). Use the view menu to
   save changes, save as a new view, rename, delete, discard changes or set the default view. Views are stored in the
-  add-on (`/data/views.json`) and shared by every browser.
+  app (`/data/views.json`) and shared by every browser.
 - **Replace subnet:** moves every fixed IP of a source subnet to the same host address in a target subnet
   (e.g. `192.168.30.0/24` → `192.168.31.0/24`; shorthand `192.168.31` works too). The target network must exist in UniFi.
   The preview flags rows that cannot be moved (no target network, gateway address, IP already reserved, duplicate in the
@@ -58,7 +58,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
   *All networks* (first card) shows every network one below the other with an overall tidiness (weighted by the fixed IPs). Its CleanUp Proposal works on all networks at once: same strategy, fixed block suggested per network or as a percentage, one checkbox per network, all pool changes confirmed together.
   *Tidiness* (0–100): fixed IPs outside the DHCP pool (50 points), close together – gaps up to 10 addresses are fine (30), no conflicts or devices on another IP (20). The CleanUp Proposal shows the value before → after.
 - **CleanUp Proposal** (tab in the IP plan, next to *Current*): proposes a fixed-IP block at the start of the network and the DHCP pool behind it, shows the resulting plan and – with *Preview changes* – every move as an arrow / animation, and lists the measures (move fixed IPs, reconnect Wi-Fi clients, change the pool) with a checkbox each. *Minimal* moves only what is in the way; *Grouped by vendor* and *Grouped by HA integration* renumber in blocks (devices not in Home Assistant last). The cells of all IP plan views can show *No icons*, the *UniFi* device icon or the *Home Assistant* integration logo. Applying runs in this order after one confirmation: save a version, change the pools, reconnect conflicting Wi-Fi clients, move the fixed IPs, reconnect the moved Wi-Fi clients. Devices that other systems reach by IP (e.g. Home Assistant integrations configured with an IP, firewall rules) must be updated after a move.
-- **New-device notifications:** every 2 minutes the add-on looks for MACs it has never seen and creates a Home Assistant notification and the event `clients_reservations_new_device` (data: mac, name, hostname, vendor, ip, network, vlan, connection, random_mac) – use it in automations, e.g. to send a push message. The first run only learns the current devices.
+- **New-device notifications:** every 2 minutes the app looks for MACs it has never seen and creates a Home Assistant notification and the event `clients_reservations_new_device` (data: mac, name, hostname, vendor, ip, network, vlan, connection, random_mac) – use it in automations, e.g. to send a push message. The first run only learns the current devices.
 - **Network rules** (Actions › Network rules): “Vendor / Name / Hostname contains … → network”. Devices in another network get the issue *Expected in …*.
 - **Export hosts file** (Actions): fixed IPs with local DNS record and a host name derived from the device name.
 - **Wake on LAN:** button for offline wired devices. Uses Home Assistant's `wake_on_lan` service when it is set up (`wake_on_lan:` in configuration.yaml) and additionally sends a magic packet to the subnet broadcast and the device IP. Waking devices in another VLAN only works if the network forwards the packet.
@@ -68,7 +68,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 - **Home Assistant link:** devices that Home Assistant knows (matched by MAC – for clients through an integration other than UniFi, for access points, switches and the gateway through the UniFi integration) show the integration logo and their HA status in the column *Home Assistant* and in the detail panel, with *Open in HA ›* to jump to the device page. Sidebar filter *Home Assistant*.
 - **Inactive filter:** not seen for > 30 / 90 / 365 days or never seen.
 - **IP column:** *Fix* (DHCP reservation, or for UniFi devices a static IP configured on the device) or *DHCP*; filter and sort like any column.
-- **Light / dark:** the button at the bottom of the filter pane switches *Auto* (follows the system) → *Light* → *Dark*; the add-on version is shown next to it.
+- **Light / dark:** the button at the bottom of the filter pane switches *Auto* (follows the system) → *Light* → *Dark*; the app version is shown next to it.
 - **CSV export** of the current filtered view.
 - **CSV import (bulk):** Actions → *Import CSV*. Required column `MAC`; optional `Name`, `Note`,
   `Fixed IP`, `Reservation VLAN` (name or VLAN ID, empty = derived from the IP), `Reserved` (yes/no),
@@ -85,7 +85,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 | `username` / `password` | Local UniFi account with permission to edit clients |
 | `site` | Internal site name, usually `default`. The display name (e.g. “Dream Machine Pro”) also works; with a single site it is detected automatically. |
 | `verify_ssl` | Keep `false` while the gateway uses a self-signed certificate |
-| `certificate_fingerprint` | SHA-256 fingerprint of the controller certificate (pinning). The add-on log shows the current value at start; with a pin the connection is only accepted if it matches. |
+| `certificate_fingerprint` | SHA-256 fingerprint of the controller certificate (pinning). The app log shows the current value at start; with a pin the connection is only accepted if it matches. |
 | `daily_version` | Save one version of the table per day (default on) |
 | `auto_version_retention_days` | Days to keep automatic versions (daily / before bulk actions), default 30 |
 | `notify_new_devices` | Notify Home Assistant about devices with a MAC never seen before (default on) |
@@ -93,7 +93,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 | `notify_random_mac` | Also notify about random/private MACs (default off) |
 | `vendor_lookup` | Fill unknown vendors via macvendors.com (only the vendor prefix is sent; default on) |
 
-Use a dedicated local UniFi account for this add-on rather than sharing one with another
+Use a dedicated local UniFi account for this app rather than sharing one with another
 integration, so the sessions don't log each other out.
 
 The UI is only reachable through Home Assistant (Ingress); no port is exposed.
@@ -107,7 +107,7 @@ When the table cannot be loaded, the red banner shows the reason and a hint:
 | Controller not reachable | `unifi_host` must be the IP / host name of the UniFi console without `https://`, reachable from Home Assistant. |
 | Login failed (HTTP 401/403) | Use a **local** UniFi account (UniFi OS › Admins & Users › *Restrict to local access only*); cloud/SSO accounts and accounts with 2FA do not work. |
 | Site not found | Set `site` to the internal name listed in the hint (usually `default`). |
-| Certificate could not be verified / fingerprint mismatch | Turn `verify_ssl` off or pin the certificate with `certificate_fingerprint` (the current value is printed in the add-on log at start). |
-| Does not look like a UniFi OS console | The add-on needs UniFi OS (UDM, UDR, UCG, UX, Cloud Key Gen2+, UniFi OS Server); the classic standalone controller is not supported. |
+| Certificate could not be verified / fingerprint mismatch | Turn `verify_ssl` off or pin the certificate with `certificate_fingerprint` (the current value is printed in the app log at start). |
+| Does not look like a UniFi OS console | The app needs UniFi OS (UDM, UDR, UCG, UX, Cloud Key Gen2+, UniFi OS Server); the classic standalone controller is not supported. |
 
-After changing the configuration, restart the add-on and press *Refresh*.
+After changing the configuration, restart the app and press *Refresh*.

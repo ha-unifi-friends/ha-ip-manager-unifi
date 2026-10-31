@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.23.6 – 2026-10-31
+- Wording: Home Assistant calls add-ons **apps** since 2026.2 – texts, hints and documentation now say *app* (e.g. *Settings › Apps › IP Manager for UniFi › Configuration*, *app log*). Nothing else changes; existing installations update as usual.
+
 ## 1.23.5 – 2026-10-31
 - **CleanUp runs in a safer order:** 1 · save a version, 2 · change the DHCP pools, 3 · reconnect the conflicting (pink) Wi-Fi clients so they move into the new pool and free their address, 4 · move the fixed IPs, 5 · reconnect the moved Wi-Fi clients. Changing the pools first means no new device gets a dynamic address in the fixed block while the moves run; moved devices find their new address free.
 - One confirmation up front instead of a second one for the pool at the end: *Apply …* lists all steps in this order, *Confirm & apply* runs them. Changing an option goes back to editing.
