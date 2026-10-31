@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.18.2 – 2026-10-31
+- The **Fixed IP** is shown in yellow when the device's current (or last known) IP address is a different one – e.g. it has not renewed its lease yet. The tooltip shows the address in use.
+- New filter **Issues › IP is not Fixed IP** for exactly these devices.
+- **Virtual network override** in the device *Settings* (as in the UniFi app): put a client into a network regardless of its Wi-Fi or switch port. A fixed IP follows the chosen network; the *Overview* shows the active override.
+- New column **Virtual network override** (between *Network* and *WiFi*, sortable and filterable); shown in yellow when the device is not in that network.
+- New issue **Not in <network> (override)** and filter **Issues › Not in override VLAN**: the device is online but not in the network its virtual network override points to.
+
 ## 1.18.1 – 2026-10-31
 - Fix: clicking a device further down the list made the table jump back to the top (Safari / Home Assistant app). Selecting a device now only moves the highlight; the scroll position stays.
 - New default column order (built-in view *All* and *Columns › Restore*): UniFi Status, Home Assistant Status, IP, Name, IP address, Fixed IP, MAC address, Vendor, Connection type, Connection, Locked to AP, Network, WiFi, Issues, Reservation VLAN, First seen, Last seen, Note. *All* is sorted by IP address; devices without an IP come last.

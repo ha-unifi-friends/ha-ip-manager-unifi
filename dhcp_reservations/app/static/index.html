@@ -106,6 +106,8 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 .ctype.teleport{color:var(--info)}
 .ctype.lockap{color:var(--accent)}
 .resip{font-family:var(--mono);font-size:12.5px;font-weight:600}
+.resip.mism{color:var(--warn)}
+.vno-miss{color:var(--warn);font-weight:600}
 .vl{color:var(--muted);margin-left:3px}
 .tag{display:inline-block;font-size:11px;line-height:18px;padding:0 6px;border-radius:4px;margin-right:4px}
 .tag.bad{background:var(--bad-bg);color:var(--bad)}
@@ -475,6 +477,11 @@ body.side-off .menu-btn{display:inline-flex}
         <div class="field"><label for="fName">Name</label><input id="fName" autocomplete="off"></div>
         <div class="field"><label for="fNote">Note</label><input id="fNote" autocomplete="off"></div>
       </form>
+      <div class="form card" id="vnoCard">
+        <label class="switch" for="fVnoOn"><span>Virtual network override</span><input type="checkbox" id="fVnoOn" form="formEdit"></label>
+        <div class="field" id="vnoField"><label for="fVno">Network</label><select id="fVno" form="formEdit"></select></div>
+        <div class="hint" id="vnoHint">Puts the client into this network (VLAN) regardless of the Wi-Fi or switch port it uses. A fixed IP must then lie in this network.</div>
+      </div>
       <div class="form card">
         <label class="switch" for="fFixed"><span>Fixed IP address</span><input type="checkbox" id="fFixed" form="formEdit"></label>
         <div id="fixedFields" class="form">
@@ -743,6 +750,8 @@ function computeWarnings() {
   for (const c of state.clients) if (c.local_dns_record_enabled && c.local_dns_record) (byDns[c.local_dns_record.trim().toLowerCase()] ||= []).push(c);
   state.clients.forEach((c, i) => {
     c._key = c.mac || "tp" + i;
+    // the device's current (or last known) address is not its fixed IP – e.g. it has not renewed its lease yet
+    c._ipMismatch = !!(c.use_fixedip && c.fixed_ip && c.ip && c.ip !== c.fixed_ip);
     const w = [];
     c._resNet = c.use_fixedip ? (c.fixed_network_id || state.networks.find(x => inSubnet(c.fixed_ip, x.subnet))?.id || "") : "";
     if (c.use_fixedip) {
@@ -756,7 +765,11 @@ function computeWarnings() {
       if (rn && rn.dhcp_start && rn.dhcp_stop && ipNum(c.fixed_ip) >= ipNum(rn.dhcp_start) && ipNum(c.fixed_ip) <= ipNum(rn.dhcp_stop)) w.push(["info", "In DHCP pool"]);
     }
     if (c.fixed_ap_enabled && c.online && c.ap_mac && c.ap_mac !== c.fixed_ap_mac) w.push(["warn", "Not on locked AP"]);
-    if (c.vno_id) w.push(["info", "VLAN override"]);
+    // Virtual Network Override set, but the online device is in another network / subnet
+    const vn = c.vno_id ? net(c.vno_id) : null;
+    c._vnoMiss = !!(vn && c.online && ((c.network_id && c.network_id !== vn.id) || (c.ip && vn.subnet && !inSubnet(c.ip, vn.subnet))));
+    if (c._vnoMiss) w.push(["warn", "Not in " + vn.name + " (override)"]);
+    else if (c.vno_id) w.push(["info", "VLAN override"]);
     if (c.mac && !c.is_device && c.name && byName[c.name.trim().toLowerCase()]?.length > 1) w.push(["warn", "Duplicate name"]);
     for (const o of state.scans?.[c.mac]?.open || []) if (o.port === 23 || o.port === 21) w.push(["warn", o.service + " open"]);
     if (c.local_dns_record_enabled && c.local_dns_record && byDns[c.local_dns_record.trim().toLowerCase()]?.length > 1) w.push(["bad", "Duplicate DNS name"]);
@@ -779,8 +792,8 @@ const FACETS = [
   { id: "kind", title: "Type", get: c => c.is_device ? "dev" : "client", opts: () => [["client", "Clients"], ["dev", "UniFi devices"]] },
   { id: "conn", title: "Connection", get: c => c.conn, opts: () => [["wifi", "WiFi"], ["wired", "Wired"], ["teleport", "Teleport"]] },
   { id: "res", title: "Reservation", get: c => c.use_fixedip ? "yes" : "no", opts: () => [["yes", "With fixed IP"], ["no", "Without fixed IP"]] },
-  { id: "hint", title: "Issues", multi: c => [c._serious ? "problem" : "", ...c._warn.map(w => w[1] === "Random MAC" ? "random" : w[1] === "In DHCP pool" ? "pool" : w[1].startsWith("Expected in ") ? "wrongnet" : w[1].startsWith("Duplicate") ? "dup" : /^(Telnet|FTP) open$/.test(w[1]) ? "insecure" : "")].filter(Boolean),
-    opts: () => [["problem", "Problems"], ["pool", "In DHCP pool"], ["random", "Random MAC"], ["dup", "Duplicates (IP / name / DNS)"], ["wrongnet", "Wrong network (rules)"], ["insecure", "Insecure ports (Telnet / FTP)"]] },
+  { id: "hint", title: "Issues", multi: c => [c._serious ? "problem" : "", ...c._warn.map(w => w[1] === "Random MAC" ? "random" : w[1] === "In DHCP pool" ? "pool" : w[1].startsWith("Expected in ") ? "wrongnet" : w[1].startsWith("Duplicate") ? "dup" : /^(Telnet|FTP) open$/.test(w[1]) ? "insecure" : ""), c._ipMismatch ? "mismatch" : "", c._vnoMiss ? "vno" : ""].filter(Boolean),
+    opts: () => [["problem", "Problems"], ["pool", "In DHCP pool"], ["mismatch", "IP is not Fixed IP"], ["vno", "Not in override VLAN"], ["random", "Random MAC"], ["dup", "Duplicates (IP / name / DNS)"], ["wrongnet", "Wrong network (rules)"], ["insecure", "Insecure ports (Telnet / FTP)"]] },
   { id: "ha", title: "Home Assistant", ready: () => state.haOk !== undefined, multi: c => { if (!c.mac) return []; const ds = haOf(c); if (!ds.length) return ["no"]; const w = haWorst(ds); return ["yes", ...(["error", "unavailable"].includes(w) ? ["bad"] : []), ...ds.flatMap(d => haDoms(c, d)).map(x => "d:" + x)]; },
     opts: () => [["yes", "Known to Home Assistant"], ["no", "Not in Home Assistant"], ["bad", "Unavailable in HA"], ...uniq(state.clients.flatMap(c => haOf(c).flatMap(d => haDoms(c, d)))).map(x => ["d:" + x, "Integration: " + x])] },
   { id: "seen", title: "Inactive", multi: c => { if (c.is_device || c.online || c.conn === "teleport") return []; if (!c.last_seen) return ["never"]; const d = (Date.now() / 1000 - c.last_seen) / 86400; return [d > 30 ? "30" : "", d > 90 ? "90" : "", d > 365 ? "365" : ""].filter(Boolean); },
@@ -846,7 +859,7 @@ const COLS = [
     td: c => `<div class="nm"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span>${inlineOn(c) ? `<input class="ie" data-f="name" data-k="${esc(keyOf(c))}" value="${esc(c.name)}" placeholder="${esc(c.hostname || c.device_name || "Name")}" aria-label="Name of ${esc(c.mac)}">` : `<span class="t">${esc(c.name || c.hostname || "Unknown")}</span>`}${c.is_device ? `<span class="h">${esc(c.name && c.device_name && c.device_name.trim() !== c.name ? c.device_name + " · " : "")}${esc(c.device_model)}</span>` : !c.name && c.mac ? `<span class="h">${esc(c.mac.slice(-5))}</span>` : (c.name && c.hostname && c.hostname !== c.name ? `<span class="h">${esc(c.hostname)}</span>` : "")}</div>` },
   { key: "ip", label: "IP address", val: c => c.ip ? ipNum(c.ip) : 1e12, fval: c => c.ip, td: c => `<span class="mono ${c.ip_is_last ? "muted" : ""}" title="${c.ip_is_last ? "Last known IP" : ""}">${esc(c.ip)}</span>` },
   { key: "fixed_ip", label: "Fixed IP", val: c => c.use_fixedip ? ipNum(c.fixed_ip) : 1e12, fval: c => c.use_fixedip ? c.fixed_ip : "",
-    td: c => inlineOn(c) ? `<input class="ie mono" data-f="ip" data-k="${esc(keyOf(c))}" value="${esc(c.use_fixedip ? c.fixed_ip : "")}" placeholder="${esc(c.ip && !c.use_fixedip ? c.ip : "none")}" inputmode="decimal" aria-label="Fixed IP of ${esc(c.mac)}">` : c.use_fixedip ? `<span class="resip">${esc(c.fixed_ip)}</span>` : `<span class="muted">-</span>` },
+    td: c => inlineOn(c) ? `<input class="ie mono" data-f="ip" data-k="${esc(keyOf(c))}" value="${esc(c.use_fixedip ? c.fixed_ip : "")}" placeholder="${esc(c.ip && !c.use_fixedip ? c.ip : "none")}" inputmode="decimal" aria-label="Fixed IP of ${esc(c.mac)}">` : c.use_fixedip ? `<span class="resip${c._ipMismatch ? " mism" : ""}"${c._ipMismatch ? ` title="${esc(`The device ${c.online ? "uses" : "last used"} ${c.ip}, not its fixed IP – it gets the fixed IP when it renews its lease (Reconnect helps for Wi-Fi)`)}"` : ""}>${esc(c.fixed_ip)}</span>` : `<span class="muted">-</span>` },
   { key: "mac", label: "MAC address", val: c => c.mac, td: c => `<span class="mono">${esc(c.mac || "–")}</span>` },
   { key: "oui", label: "Vendor", val: c => (c.oui || "").toLowerCase(), td: c => esc(c.oui) + (c.oui_src ? ` <span class="muted" title="Looked up via macvendors.com – UniFi does not know this vendor">(lookup)</span>` : "") },
   { key: "conn", label: "Connection type", filter: "select", opts: [["", "All"], ["wifi", "WiFi"], ["wired", "Wired"], ["teleport", "Teleport"]], val: c => c.conn, fval: c => c.conn,
@@ -856,6 +869,8 @@ const COLS = [
     td: c => c.fixed_ap_enabled ? `<span class="ctype lockap">${ICON.lock}${esc(apName(c.fixed_ap_mac))}</span>` : `<span class="muted">-</span>` },
   { key: "network_id", label: "Network", filter: "net", val: c => netLabel(c.network_id) || c.network_name, fval: c => c.network_id,
     td: c => c.network_id && net(c.network_id) ? `${esc(netName(c.network_id))}${net(c.network_id).vlan ? `<span class="vl">(${net(c.network_id).vlan})</span>` : ""}` : esc(c.network_name || "") },
+  { key: "vno", label: "Virtual network override", filter: "net", val: c => c.vno_id ? netLabel(c.vno_id) : "~", fval: c => c.vno_id || "",
+    td: c => c.vno_id ? `<span class="${c._vnoMiss ? "vno-miss" : ""}" title="${c._vnoMiss ? `Override to ${esc(netName(c.vno_id))}, but the device is in ${esc(netName(c.network_id) || c.ip)}` : "Virtual network override"}">${esc(netName(c.vno_id) || "?")}${net(c.vno_id)?.vlan ? `<span class="vl">(${net(c.vno_id).vlan})</span>` : ""}</span>` : `<span class="muted">-</span>` },
   { key: "essid", label: "WiFi", val: c => (c.essid || "").toLowerCase(), td: c => c.essid ? esc(c.essid) : `<span class="muted">-</span>` },
   { key: "_warn", label: "Issues", val: c => c._warn.length ? (c._serious ? 0 : 1) : 2, fval: c => c._warn.map(w => w[1]).join(" "), td: c => c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("") },
   { key: "_resNet", label: "Reservation VLAN", filter: "net", val: c => netLabel(c._resNet), fval: c => c._resNet,
@@ -1448,7 +1463,7 @@ function renderInfo() {
       ${kv("IP address", esc(c.ip) + (c.ip_is_last ? ' <span class="muted">(last known)</span>' : ""), "mono")}
       ${kv("Network", esc(n ? n.name : c.network_name))}
       ${kv("VLAN ID", n?.vlan ?? "")}
-      ${kv("VLAN override", c.vno_id ? esc(netLabel(c.vno_id) || "active") : "")}
+      ${kv("Virtual network override", c.vno_id ? esc(netLabel(c.vno_id) || "active") : "")}
       ${kv("Hostname", esc(c.hostname))}
     </dl></div>
     <div class="sec-title">DHCP reservation</div>
@@ -1508,7 +1523,7 @@ function syncReconnect() {
   $("#rcRow").hidden = !(need && canReconnect(c));
   $("#rcHint").hidden = !(need && !canReconnect(c)); $("#rcHint").textContent = need ? renewNote(c) + "." : "";
 }
-function syncToggles() { $("#apField").hidden = !$("#fLock").checked; $("#fixedFields").hidden = !$("#fFixed").checked; $("#dnsField").hidden = !$("#fDnsOn").checked; syncReconnect(); }
+function syncToggles() { $("#vnoField").hidden = $("#vnoHint").hidden = !$("#fVnoOn").checked; $("#apField").hidden = !$("#fLock").checked; $("#fixedFields").hidden = !$("#fFixed").checked; $("#dnsField").hidden = !$("#fDnsOn").checked; syncReconnect(); }
 function onNetChange() { const n = net($("#fNet").value); if (n && !inSubnet($("#fIp").value, n.subnet)) $("#fIp").value = suggestIp(n.id); updateHint(); }
 function fillForm(c) {
   $("#fReconnect").checked = true;
@@ -1518,6 +1533,10 @@ function fillForm(c) {
   fillNetSelect(c ? (c._resNet || c.network_id) : "");
   $("#fIp").value = c ? (c.use_fixedip ? c.fixed_ip : c.ip) : "";
   $("#apCard").hidden = !c || c.conn !== "wifi";
+  $("#vnoCard").hidden = !!c && (c.is_device || !c.mac);
+  $("#fVnoOn").checked = !!c?.vno_id;
+  $("#fVno").innerHTML = state.networks.filter(n => n.subnet).map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join("");
+  $("#fVno").value = c?.vno_id || c?.network_id || $("#fVno").options[0]?.value || "";
   $("#fLock").checked = !!c?.fixed_ap_enabled;
   $("#fAp").innerHTML = state.aps.map(a => `<option value="${a.mac}">${esc(a.name)}</option>`).join("");
   $("#fAp").value = c?.fixed_ap_mac || c?.ap_mac || state.aps[0]?.mac || "";
@@ -1528,6 +1547,10 @@ function fillForm(c) {
 }
 $("#fFixed").addEventListener("change", () => { syncToggles(); if ($("#fFixed").checked) onNetChange(); });
 $("#fDnsOn").addEventListener("change", syncToggles);
+// the reservation has to be in the override network – follow it
+const followVno = () => { if ($("#fVnoOn").checked && $("#fFixed").checked && $("#fNet").value !== $("#fVno").value) { $("#fNet").value = $("#fVno").value; onNetChange(); } };
+$("#fVnoOn").addEventListener("change", () => { syncToggles(); followVno(); });
+$("#fVno").addEventListener("change", followVno);
 $("#fLock").addEventListener("change", syncToggles);
 $("#fNet").addEventListener("change", onNetChange);
 $("#fIp").addEventListener("input", updateHint);
@@ -1535,6 +1558,7 @@ const showErr = msg => { $("#editErr").textContent = msg; $("#editErr").hidden =
 $("#formEdit").addEventListener("submit", async e => {
   e.preventDefault();
   const body = { mac: $("#fMac").value.trim().toLowerCase(), name: $("#fName").value, note: $("#fNote").value, use_fixedip: $("#fFixed").checked, network_id: $("#fNet").value, fixed_ip: $("#fIp").value.trim(), local_dns_record_enabled: $("#fDnsOn").checked, local_dns_record: $("#fDns").value.trim() };
+  if (!$("#vnoCard").hidden) { body.vno_enabled = $("#fVnoOn").checked; body.vno_id = body.vno_enabled ? $("#fVno").value : ""; if (body.vno_enabled && body.use_fixedip && body.network_id !== body.vno_id) return showErr(`With a virtual network override, the fixed IP must be in ${netName(body.vno_id)}.`); }
   if (!$("#apCard").hidden) { body.fixed_ap_enabled = $("#fLock").checked; body.fixed_ap_mac = $("#fAp").value; if (body.fixed_ap_enabled && !body.fixed_ap_mac) return showErr("Please choose an access point."); }
   if (!/^([0-9a-f]{2}[:-]){5}[0-9a-f]{2}$/.test(body.mac)) return showErr("Please enter a valid MAC address (aa:bb:cc:dd:ee:ff).");
   if (body.use_fixedip && !body.network_id) return showErr("Please choose a network.");
@@ -1846,7 +1870,7 @@ $("#impTpl").addEventListener("click", () => saveFile("dhcp-import-template.csv"
 // ---------- views (SharePoint-style) ----------
 const clone = o => JSON.parse(JSON.stringify(o ?? null));
 const BUILTIN_VIEWS = [
-  { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: {}, sort: { key: "ip", dir: 1 } } },
+  { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: {}, sort: { key: "ip", dir: 1 } } },
   { id: "dhcp", name: "DHCP Reservations", builtin: true, state: { hiddenCols: COLS.map(c => c.key).filter(k => !["mac", "name", "fixed_ip", "ip", "last_seen"].includes(k)), colOrder: ["mac", "name", "fixed_ip", "ip", "last_seen"], colFilters: {}, facets: { res: ["yes"] }, sort: { key: "fixed_ip", dir: 1 } } },
 ];
 const VIEWS = { custom: [], def: "all", current: store.get("currentView", null), loaded: false, armDelete: false };

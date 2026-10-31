@@ -510,6 +510,17 @@ def save_client(api, body):
             if not any((d.get("mac") or "").lower() == ap and str(d.get("type", "")).startswith("uap") for d in devs):
                 raise UnifiError("Selected access point not found.", 400)
             payload["fixed_ap_mac"] = ap
+    if "vno_enabled" in body:
+        # Virtual Network Override: the client is put into this network regardless of SSID / switch port
+        vno = bool(body.get("vno_enabled"))
+        payload["virtual_network_override_enabled"] = vno
+        if vno:
+            vnet = nets.get(str(body.get("vno_id") or ""))
+            if not vnet:
+                raise UnifiError("Please choose the network for the virtual network override.", 400)
+            if use_fixed and payload.get("network_id") != vnet["id"]:
+                raise UnifiError(f"With a virtual network override, the fixed IP must be in {vnet.get('name') or 'that network'}.", 400)
+            payload["virtual_network_override_id"] = vnet["id"]
     dns = (body.get("local_dns_record") or "").strip()
     payload["local_dns_record_enabled"] = bool(body.get("local_dns_record_enabled")) and bool(dns)
     payload["local_dns_record"] = dns if payload["local_dns_record_enabled"] else ""
