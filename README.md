@@ -22,62 +22,118 @@ versions you can compare and restore.
 
 ## Features
 
+### Overview & checks
+
 | | |
 |---|---|
-| **One table for everything** | Every client and UniFi device (APs, switches, gateway) with MAC, name, fixed IP, network/VLAN, connection type (WiFi, wired with switch port, Teleport), IP mode (*Fix* / *DHCP*), UniFi and Home Assistant status, locked AP, first and last seen. Sort and filter every column. Reorder columns by drag & drop. |
-| **Issue hints** | Duplicate IP, fixed IP outside its network, fixed IP inside the DHCP pool, device currently using a different IP, random/private MAC, device not on its locked AP, VLAN override. |
-| **Edit** | Name, note, fixed IP + network, lock to an access point, local DNS record. Add reservations for MACs the controller has never seen. Remove a reservation or forget the client. |
-| **Views** | SharePoint-style views store columns, order, filters and sort. Built-in *All* and *DHCP Reservations*. Views are shared by every browser. |
+| **One table for everything** | Every client and UniFi device (APs, switches, gateway) with MAC, name, IP address, fixed IP, network/VLAN, connection type (WiFi, wired with switch port, Teleport), locked AP, first and last seen. Sort and filter every column, reorder columns by drag & drop. |
+| **Status at a glance** | Narrow icon columns for **UniFi Status** (online / offline) and **Home Assistant Status**, plus an **IP** pill: *Fix* (reservation or static IP) or *DHCP*. |
+| **Issue hints** | Duplicate IP, fixed IP outside its network or inside the DHCP pool, **IP is not Fixed IP** (the fixed IP is shown in yellow), **not in the override VLAN**, random/private MAC, not on its locked AP, wrong network by your own rules, Telnet/FTP open, duplicate names / DNS records, inactive devices. Every issue is a filter in the sidebar. |
+| **Views** | SharePoint-style views store columns, order, filters and sort. Built-in *All* and *DHCP Reservations*; views are shared by every browser. |
 | **Inline edit** | Edit names and fixed IPs directly in the table (Enter / ↑ / ↓ move to the next row). |
+| **Light & dark** | *Auto* (follows the system) → *Light* → *Dark*, remembered per browser. |
+
+### Home Assistant
+
+| | |
+|---|---|
+| **Integration icon & status** | Devices known to Home Assistant (matched by MAC) show the logo of their integration and their HA status – OK, partly unavailable, unavailable, integration error, disabled – as a column, a filter and in the detail panel. For a partly unavailable device the unavailable entities are listed. |
+| **Home Assistant link** | *Open in HA ↗* opens the device page in Home Assistant in a new tab. |
+| **Names from Home Assistant** | Proposes the names from the HA device registry for your UniFi clients – including a “near match” for devices with separate WiFi/Ethernet MACs. Preview, pick, apply. |
+| **New-device alerts** | A Home Assistant notification and the event `clients_reservations_new_device` when a never-seen MAC appears – optionally only for certain networks. |
+| **HA in the IP plan** | The IP plan can show the integration logos, and the CleanUp Proposal can group fixed IPs **by HA integration** (all Shelly, then all ESPHome, …). |
+| **HA status in versions** | Every version records the HA status, so *Compare* and the device history show e.g. “OK → Unavailable”. |
+
+### Edit a device
+
+| | |
+|---|---|
+| **Edit** | Name, note, fixed IP + network, lock to an access point, local DNS record. Add reservations for MACs the controller has never seen. Remove a reservation or forget the client. |
+| **Virtual Network Override** | Put a client into a network (VLAN) regardless of its WiFi or switch port. **UniFi offers this only in its mobile app** – here it is in the browser, with its own column, and an issue when a device is not in its override network. |
+| **Reconnect** | After a fixed IP change, online WiFi clients can be reconnected right away so they pick up the new address – per device or for a whole subnet move. |
+| **Open, ping & port check** | Open the device's web UI (HTTP / HTTPS), ping it, and check ~30 common TCP ports on demand; web UIs become links with their page title, Telnet/FTP are flagged. Vendor lookup for unknown MAC prefixes, Wake on LAN. |
+
+### Bulk changes & IP planning
+
+| | |
+|---|---|
+| **IP plan** | Utilization per network (fixed / in pool / dynamic / free outside the pool) and an address grid that shows conflicts at a glance, with *No icons / UniFi / Home Assistant* icons. Click a free address to reserve it. |
+| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *minimal*, *grouped by vendor* or *grouped by HA integration* – shows Current / Proposal / Changes (arrows and animation) and applies the checked measures: moves, reconnect and the pool change (after a second confirmation). |
 | **Replace subnet** | Move all fixed IPs from e.g. `192.168.30.x` to `192.168.31.x`, keeping the host part. A preview catches collisions before anything changes. |
-| **Names from Home Assistant** | Proposes the names from the HA device registry, matched by MAC. Includes a "near match" for devices with separate WiFi/Ethernet MACs. |
-| **Versions** | Snapshot the table manually, daily, and automatically before every bulk action. **Compare** two versions (new / removed / changed devices; spots a device that came back with a new random MAC). **Restore** through a preview. A *Changed since …* filter shows what changed since a version, and each device has a **history** timeline: which change, in which version. |
-| **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. |
-| **Home Assistant link** | Devices known to Home Assistant show the integration logo and HA status (column, filter and detail panel) with a jump to the HA device page. |
-| **Reconnect** | After a fixed IP change, online Wi-Fi clients can be reconnected right away so they pick up the new address – per device or for a whole subnet move. |
-| **IP plan** | Utilization per network (fixed / in pool / dynamic / free outside the pool) and an address grid that shows conflicts at a glance. Click a free address to reserve it. |
-| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it), shows the resulting IP plan and applies the checked measures – moves, reconnect and the pool change (after a second confirmation). |
-| **New-device alerts** | A Home Assistant notification and the event `clients_reservations_new_device` when a MAC appears that was never seen before – optionally only for certain networks. |
+| **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. Hosts-file export of fixed IPs and DNS records. |
 | **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |
-| **Ping & port check** | Ping with round-trip times, and an on-demand check of ~30 common TCP ports per device; web UIs become links, Telnet/FTP are flagged. |
-| **Housekeeping** | Vendor lookup for unknown MAC prefixes, duplicate names / DNS names, *Inactive* filter (not seen > 30 / 90 / 365 days), hosts-file export, Wake on LAN, light / dark switch. |
-| **Safe bulk changes** | Every bulk action (CSV import, restore, replace subnet, names from HA) saves a version of the current settings first, so you can always go back via *Versions › Restore*. |
+| **Safe bulk changes** | Every bulk action (CSV import, restore, replace subnet, names from HA, CleanUp) saves a version of the current settings first, so you can always go back via *Versions › Restore*. |
+
+### Versions & history
+
+| | |
+|---|---|
+| **Versions** | Snapshot the table manually, daily, and automatically before every bulk action. **Compare** two versions (new / removed / changed devices; spots a device that came back with a new random MAC) and **restore** through a preview. |
+| **Changed since …** | Sidebar filter for devices that are new or changed since a version. |
+| **Device history** | Per device: which change, in which version. |
 
 ## Screenshots
+
+**Overview & checks**
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/views.png" alt="Views"><br><b>Views</b> – e.g. the built-in <i>DHCP Reservations</i> view.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/light.png" alt="Light theme"><br><b>Light & dark</b> – the switch at the bottom of the filter pane.</td>
+  </tr>
+  <tr>
+    <td valign="top"><img src="docs/screenshots/inline-edit.png" alt="Inline edit"><br><b>Inline edit</b> – names and fixed IPs right in the table.</td>
+    <td valign="top"><img src="docs/screenshots/actions.png" alt="Actions menu"><br><b>Actions</b> – names from Home Assistant, replace subnet, CSV import/export, hosts file, network rules.</td>
+  </tr>
+</table>
+
+**Home Assistant**
+
+<table>
+  <tr>
+    <td colspan="2" valign="top"><img src="docs/screenshots/home-assistant.png" alt="Home Assistant integration icon and status"><br><b>Integration icon & status</b> – column, filter and the <i>Home Assistant</i> section in the detail panel with <i>Open in HA ↗</i> and the unavailable entities.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/names-from-ha.png" alt="Names from Home Assistant"><br><b>Names from Home Assistant</b> – rename UniFi clients after your HA device names.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal grouped by HA integration"><br><b>CleanUp Proposal grouped by HA integration</b> – <i>Changes</i> tab with every move as an arrow.</td>
+  </tr>
+</table>
+
+**Edit a device**
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/edit-panel.png" alt="Edit panel with Virtual Network Override"><br><b>Edit</b> – Virtual Network Override, fixed IP, AP lock and local DNS in the detail panel.</td>
+    <td width="25%" valign="top"><img src="docs/screenshots/open-ports.png" alt="Network check"><br><b>Network check</b> – open the web UI, ping, open ports.</td>
+    <td width="25%" valign="top"><img src="docs/screenshots/history.png" alt="Device history"><br><b>History</b> – what changed, in which version.</td>
+  </tr>
+</table>
+
+**Bulk changes & IP planning**
 
 <table>
   <tr>
     <td colspan="2" valign="top"><img src="docs/screenshots/ip-plan.png" alt="IP plan"><br><b>IP plan</b> – utilization per network and an address grid: fixed IPs in use / not in use, dynamic leases, conflicts, DHCP pool and free addresses.</td>
   </tr>
   <tr>
-    <td colspan="2" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal"><br><b>CleanUp Proposal</b> – Current / Proposal / Changes (arrows and animation of every move) and the measures, each with a checkbox.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/replace-subnet.png" alt="Replace subnet with collision check"><br><b>Replace subnet</b> – preview with collision check and optional reconnect of the affected WiFi clients.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/csv-import.png" alt="CSV import with validation"><br><b>CSV import</b> – every row is validated before anything changes.</td>
   </tr>
   <tr>
-    <td width="50%" valign="top"><img src="docs/screenshots/replace-subnet.png" alt="Replace subnet with collision check"><br><b>Replace subnet</b> – preview with collision check (an address that is already reserved is an error, an address in use is a warning) and optional reconnect of the affected Wi-Fi clients.</td>
-    <td width="50%" valign="top"><img src="docs/screenshots/csv-import.png" alt="CSV import with validation"><br><b>CSV import</b> – every row is validated before anything changes: duplicate IP, IP outside the network, invalid MAC, unknown AP.</td>
-  </tr>
-  <tr>
-    <td valign="top"><img src="docs/screenshots/compare-versions.png" alt="Compare versions"><br><b>Compare versions</b> – new, removed and changed devices since a snapshot.</td>
-    <td valign="top"><img src="docs/screenshots/names-from-ha.png" alt="Names from Home Assistant"><br><b>Names from Home Assistant</b> – rename UniFi clients after your HA device names.</td>
-  </tr>
-  <tr>
-    <td valign="top"><img src="docs/screenshots/edit-panel.png" alt="Edit panel"><br><b>Edit</b> – fixed IP, network, AP lock and local DNS in the detail panel.</td>
-    <td valign="top"><img src="docs/screenshots/views.png" alt="Views"><br><b>Views</b> – e.g. the built-in <i>DHCP Reservations</i> view.</td>
-  </tr>
-  <tr>
-    <td valign="top"><img src="docs/screenshots/inline-edit.png" alt="Inline edit"><br><b>Inline edit</b> – names and fixed IPs right in the table.</td>
-    <td valign="top"><img src="docs/screenshots/actions.png" alt="Actions menu"><br><b>Actions</b> – the bulk tools: names from Home Assistant, replace subnet, CSV import and export.</td>
-  </tr>
-  <tr>
-    <td valign="top"><img src="docs/screenshots/versions.png" alt="Versions"><br><b>Versions</b> – manual, daily and before-bulk-action snapshots.</td>
-    <td valign="top"><img src="docs/screenshots/changed-since.png" alt="Changed since filter"><br><b>Changed since …</b> – sidebar filter for new or changed devices.</td>
-  </tr>
-  <tr>
-    <td valign="top"><img src="docs/screenshots/history.png" alt="Device history"><br><b>Detail panel</b> – open the device in the browser, and its <b>history</b>: what changed, in which version.</td>
     <td valign="top"><img src="docs/screenshots/network-rules.png" alt="Network rules"><br><b>Network rules</b> – which devices belong in which network; violations show up as issues.</td>
+    <td valign="top"></td>
+  </tr>
+</table>
+
+**Versions & history**
+
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/compare-versions.png" alt="Compare versions"><br><b>Compare versions</b> – new, removed and changed devices since a snapshot.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/versions.png" alt="Versions"><br><b>Versions</b> – manual, daily and before-bulk-action snapshots.</td>
   </tr>
   <tr>
-    <td valign="top"><img src="docs/screenshots/open-ports.png" alt="Open ports"><br><b>Network check</b> – ping, plus open ports: web UIs as links with their page title; insecure protocols flagged.</td>
+    <td valign="top"><img src="docs/screenshots/changed-since.png" alt="Changed since filter"><br><b>Changed since …</b> – sidebar filter for new or changed devices.</td>
     <td valign="top"></td>
   </tr>
 </table>
@@ -130,9 +186,9 @@ Full documentation: [`dhcp_reservations/DOCS.md`](dhcp_reservations/DOCS.md) · 
 A small Python service (standard library only) inside the add-on talks to the UniFi Network API of your console:
 
 - **Read:** `rest/user`, `stat/sta`, `stat/device`, `rest/networkconf`, and v2 `clients/active` for Teleport.
-- **Write:** `rest/user` for name, note, fixed IP, AP lock and local DNS, and `cmd/stamgr forget-sta` to forget a client.
+- **Write:** `rest/user` for name, note, fixed IP, AP lock, local DNS and the virtual network override; `cmd/stamgr` (`kick-sta` to reconnect, `forget-sta` to forget a client); `rest/networkconf` only for the DHCP pool of a CleanUp Proposal.
 
-For *Names from HA*, the service reads the Home Assistant device registry through the Supervisor API (read-only). Views and versions are stored in the add-on's `/data` folder, so they are included in Home Assistant backups.
+For the Home Assistant features, the service reads the device registry through the Supervisor API (read-only) and creates notifications. Views and versions are stored in the add-on's `/data` folder, so they are included in Home Assistant backups.
 
 ## Disclaimer
 
