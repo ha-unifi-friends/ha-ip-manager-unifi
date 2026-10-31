@@ -60,7 +60,7 @@ versions you can compare and restore.
 | | |
 |---|---|
 | **IP plan** | A full page next to the client list (switch *Clients / IP Plan*), filtered by the same sidebar filters (non-matching devices greyed out): networks as cards with utilization and a **Tidiness score** (0–100: fixed IPs outside the pool, close together, no conflicts), plus an address grid that shows conflicts at a glance, with *No icons / UniFi / Home Assistant* icons. Click an address to open the device – or a free one to reserve it – in the detail panel next to the plan. |
-| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *minimal*, *grouped by HA integration* or *grouped by vendor* – for one network or **all networks at once** (overall tidiness before → after), right in the IP plan as a tab. *Preview changes* shows every move as an arrow, **conflicts in pink** (dynamic clients in the new fixed block), and a hover card shows the concrete change per address. After one confirmation it runs in a safe order: save a version → change the pools → reconnect conflicting Wi-Fi clients → move the fixed IPs → reconnect the moved clients. |
+| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *minimal*, *grouped by HA integration* or *grouped by vendor* – for one network or **all networks at once** (overall tidiness before → after), right in the IP plan as a tab. *Preview changes* shows every move as an arrow, **conflicts in pink** (dynamic clients in the new fixed block), and a hover card shows the concrete change per address. The **Home Assistant host** (HA blue) and the **gateway** (violet) are never moved. After one confirmation it runs in a safe order: save a version → change the pools → reconnect conflicting Wi-Fi clients → move the fixed IPs → reconnect the moved clients. |
 | **Replace subnet** | Move all fixed IPs from e.g. `192.168.30.x` to `192.168.31.x`, keeping the host part. A preview catches collisions before anything changes. |
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. Hosts-file export of fixed IPs and DNS records. |
 | **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |
@@ -191,7 +191,7 @@ A small Python service (standard library only) inside the app talks to the UniFi
 - **Read:** `rest/user`, `stat/sta`, `stat/device`, `rest/networkconf`, and v2 `clients/active` for Teleport.
 - **Write:** `rest/user` for name, note, fixed IP, AP lock, local DNS and the virtual network override; `cmd/stamgr` (`kick-sta` to reconnect, `forget-sta` to forget a client); `rest/networkconf` only for the DHCP pool of a CleanUp Proposal.
 
-For the Home Assistant features, the service reads the device registry through the Supervisor API (read-only) and creates notifications. Views and versions are stored in the app's `/data` folder, so they are included in Home Assistant backups.
+For the Home Assistant features, the service reads the device registry through the Supervisor API (read-only), reads the host's own addresses (`network/info`, so CleanUp never moves the Home Assistant host) and creates notifications. Views and versions are stored in the app's `/data` folder, so they are included in Home Assistant backups.
 
 ## Contributing
 
