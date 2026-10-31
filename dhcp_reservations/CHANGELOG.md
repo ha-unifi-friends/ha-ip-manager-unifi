@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.23.5 – 2026-10-31
+- **CleanUp runs in a safer order:** 1 · save a version, 2 · change the DHCP pools, 3 · reconnect the conflicting (pink) Wi-Fi clients so they move into the new pool and free their address, 4 · move the fixed IPs, 5 · reconnect the moved Wi-Fi clients. Changing the pools first means no new device gets a dynamic address in the fixed block while the moves run; moved devices find their new address free.
+- One confirmation up front instead of a second one for the pool at the end: *Apply …* lists all steps in this order, *Confirm & apply* runs them. Changing an option goes back to editing.
+- CleanUp strategy order: *Minimal · Grouped by HA integration · Grouped by vendor*.
+- New measure *Reconnect conflicting Wi-Fi clients* (on by default); wired or offline conflicts are listed and clear at their next DHCP renewal.
+
 ## 1.23.4 – 2026-10-31
 - **Hover box in the IP plan:** a larger card per address – network, device(s) with icon, MAC, vendor, online status, fixed and current IP, Home Assistant integration – and in the CleanUp Proposal the concrete changes: who moves away or arrives (from → to, reconnect), conflicts (pink) and whether the address joins or leaves the DHCP pool.
 - **Conflicts are pink** everywhere in the CleanUp Proposal – cells, arrows, the *Conflicts* column and summary – so they stand out from the orange dynamic leases.

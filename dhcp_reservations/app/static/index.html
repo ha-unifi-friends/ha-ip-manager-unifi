@@ -414,6 +414,7 @@ body.plan-sz-l .pc .pi .brand-fb{font-size:15px}
 .pc.np::after{content:"";position:absolute;left:3px;right:3px;bottom:2px;height:3px;border-radius:2px;background:var(--info)}
 .pc.src{box-shadow:inset 0 0 0 2px var(--warn)}
 .pc.dst{border:2px dashed var(--ok)}
+.cl-confirm ol{margin:6px 0;padding-left:20px}
 .pc-tip{position:fixed;z-index:60;width:300px;max-width:calc(100vw - 16px);background:var(--card);color:var(--fg);border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.35);padding:12px 14px;font-size:12.5px;line-height:1.45;pointer-events:none}
 .pc-tip .tt-h{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
 .pc-tip .tt-ip{font:600 15px var(--mono)}
@@ -580,7 +581,7 @@ body.side-off .menu-btn{display:inline-flex}
         <div id="planGridWrap"></div>
         <div id="planClean" hidden>
       <div class="cl-ctrl">
-        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button></span>
+        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button></span>
         <label class="cl-one">Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253"></label>
         <label class="cl-one">DHCP pool <b class="mono" id="clPool"></b></label>
         <label class="cl-multi" title="Size of the fixed block at the start of every network; empty = a suggestion per network">Fixed block <input type="number" id="clPct" min="10" max="90" step="5" placeholder="auto"> % of each network</label>
@@ -592,10 +593,12 @@ body.side-off .menu-btn{display:inline-flex}
       <div id="clGrid"></div>
       <div class="sec-title" style="margin-top:16px">Measures</div>
       <div class="measures">
+        <div id="clMV"></div>
+        <div id="clM3"></div>
+        <div id="clM0"></div>
         <div id="clM1"></div>
         <div id="clMoves" class="mv-box"><div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="clAll" aria-label="Select all"></label></th><th data-sk="dev">Device</th><th data-sk="mac">MAC</th><th data-sk="ip">Fixed IP</th><th data-sk="nip">New IP</th><th data-sk="grp">Group</th><th data-sk="status">Notes</th></tr></thead><tbody id="clRows"></tbody></table></div></div>
         <div id="clM2"></div>
-        <div id="clM3"></div>
       </div>
       <div id="clConfirm"></div>
         </div>
@@ -1431,7 +1434,7 @@ function buildClean() {
   CL.rows = CL.bs.filter(b => b.inc).flatMap(b => b.rows);
   return CL.bs[0] || { multiEmpty: true };
 }
-function resetClean() { Object.assign(CL, { frozen: false, end: null, pct: null, inc: {}, bs: [], multi: PLAN.sel === ALL_NETS, rows: [], tab: "plan", preview: false, played: false, running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true } }); }
+function resetClean() { Object.assign(CL, { frozen: false, end: null, pct: null, inc: {}, bs: [], multi: PLAN.sel === ALL_NETS, rows: [], tab: "plan", preview: false, played: false, running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true, rcc: true } }); }
 async function openClean() {
   resetClean(); PLAN.tab = "clean"; renderPlan();
   if (!CL.ha) { try { CL.ha = new Set((await api("api/ha_devices")).devices.flatMap(d => d.macs)); renderClean(); } catch { CL.ha = new Set(); } }
@@ -1553,12 +1556,15 @@ function renderClean() {
   const m = (k, title, desc, dis) => `<label class="measure"><input type="checkbox" data-cm="${k}" ${CL.m[k] && !dis ? "checked" : ""} ${dis || CL.running || CL.done ? "disabled" : ""}><span class="h">${title}</span><span class="d">${desc}</span></label>`;
   const nWifi = wifi.length, nOther = sel.filter(r => needsNewIp(r.c, r.nip) && !canReconnect(r.c)).length;
   const where = multi ? `in ${inc.length} ${inc.length === 1 ? "network" : "networks"}` : `into .${b0.first & 255} – .${b0.end & 255}`;
-  $("#clM1").innerHTML = m("move", `1 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}${multi ? " Every device stays in its network." : ""} Untick single devices below.${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range.", !CL.rows.length);
+  $("#clM1").innerHTML = m("move", `4 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}${multi ? " Every device stays in its network." : ""} Untick single devices below.${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range.", !CL.rows.length);
   $("#clMoves").hidden = !CL.rows.length;
-  $("#clM2").innerHTML = m("rc", `2 · Reconnect ${nWifi} Wi-Fi ${nWifi === 1 ? "client" : "clients"} afterwards`, nWifi ? `So they take the new IP right away (one per second).${nOther ? ` ${nOther} wired or offline ${nOther === 1 ? "device takes" : "devices take"} it at the next DHCP renewal.` : ""}` : "No online Wi-Fi client is affected.", !nWifi || !CL.m.move);
+  $("#clMV").innerHTML = `<label class="measure"><input type="checkbox" checked disabled><span class="h">1 · Save a version of the current settings</span><span class="d">Always first – undo anytime via <i>Versions › Restore</i>.</span></label>`;
+  const cflWifi = dynIn.filter(canReconnect), cflOther = dynIn.length - cflWifi.length;
+  $("#clM0").innerHTML = m("rcc", `3 · Reconnect ${cflWifi.length} conflicting Wi-Fi ${cflWifi.length === 1 ? "client" : "clients"}`, dynIn.length ? `${cflWifi.length ? `${cflWifi.map(c => esc(c.name || c.hostname || c.mac)).join(", ")} ${cflWifi.length === 1 ? "uses an address" : "use addresses"} in the new fixed block – reconnected after the pool change, they get a pool address and free it.` : ""}${cflOther ? ` ${cflOther} wired or offline ${cflOther === 1 ? "client keeps its address" : "clients keep their addresses"} until the next DHCP renewal.` : ""}` : "No dynamic client uses an address in the new fixed block.", !cflWifi.length);
+  $("#clM2").innerHTML = m("rc", `5 · Reconnect ${nWifi} moved Wi-Fi ${nWifi === 1 ? "client" : "clients"}`, nWifi ? `So they take the new IP right away (one per second).${nOther ? ` ${nOther} wired or offline ${nOther === 1 ? "device takes" : "devices take"} it at the next DHCP renewal.` : ""}` : "No online Wi-Fi client is affected.", !nWifi || !CL.m.move);
   $("#clM3").innerHTML = multi
-    ? m("pool", `3 · Change the DHCP pool in ${pools.length} ${pools.length === 1 ? "network" : "networks"}`, pools.length ? `${pools.map(b => `${esc(b.n.name)} ${poolTxt(b.p.ps, b.p.pe)} → ${poolTxt(b.poolS, b.poolE)}`).join(" · ")}. ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in a new fixed range and will get a pool address at the next renewal. ` : ""}Changed in UniFi as the last step – you confirm it once more.` : "All pools already match.", !pools.length)
-    : m("pool", `3 · Change the DHCP pool ${poolTxt(b0.p.ps, b0.p.pe)} → .${b0.poolS & 255} – .${b0.poolE & 255}`, b0.poolChange ? `${b0.poolE - b0.poolS + 1} addresses for dynamic clients (today ${b0.p.dyn} in use). ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in the new fixed range and will get a pool address at the next renewal. ` : ""}Changed in UniFi as the last step – you confirm it once more.` : "The pool already matches.", !b0.poolChange);
+    ? m("pool", `2 · Change the DHCP pool in ${pools.length} ${pools.length === 1 ? "network" : "networks"}`, pools.length ? `${pools.map(b => `${esc(b.n.name)} ${poolTxt(b.p.ps, b.p.pe)} → ${poolTxt(b.poolS, b.poolE)}`).join(" · ")}. ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in a new fixed range and will get a pool address at the next renewal. ` : ""}Done first, so that no new device gets a dynamic address in the fixed block while the moves run.` : "All pools already match.", !pools.length)
+    : m("pool", `2 · Change the DHCP pool ${poolTxt(b0.p.ps, b0.p.pe)} → .${b0.poolS & 255} – .${b0.poolE & 255}`, b0.poolChange ? `${b0.poolE - b0.poolS + 1} addresses for dynamic clients (today ${b0.p.dyn} in use). ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in the new fixed range and will get a pool address at the next renewal. ` : ""}Done first, so that no new device gets a dynamic address in the fixed block while the moves run.` : "The pool already matches.", !b0.poolChange);
   // moves (children of measure 1)
   const view = tsorted("clRows", CL.rows, { dev: r => (r.c.name || r.c.hostname || "").toLowerCase(), mac: r => r.c.mac, ip: r => ipNum(r.c.fixed_ip), nip: r => ipNum(r.nip), grp: r => (multi ? r.b.n.name + " " : "") + r.grp, status: r => r.status });
   $("#clRows").innerHTML = view.map(r => `<tr><td><label class="opt"><input type="checkbox" data-ci="${CL.rows.indexOf(r)}" ${r.sel ? "checked" : ""} ${CL.running || CL.done || !CL.m.move ? "disabled" : ""}></label></td>
@@ -1567,69 +1573,75 @@ function renderClean() {
   const vis = CL.rows.filter(() => !CL.running && !CL.done && CL.m.move), nS = vis.filter(r => r.sel).length, all = $("#clAll");
   all.disabled = !vis.length; all.checked = vis.length > 0 && nS === vis.length; all.indeterminate = nS > 0 && nS < vis.length;
   // footer
+  const cflWifi2 = CL.m.rcc ? dynIn.filter(canReconnect) : [];
   const btn = $("#clApply"), todo = (CL.m.move ? sel.length : 0) + (CL.m.pool ? pools.length : 0);
-  const poolList = pools.map(b => `${b.n.name} ${ipStr(b.poolS)} – ${ipStr(b.poolE)}`);
-  if (CL.confirm) { btn.textContent = multi ? `Confirm: change ${pools.length} ${pools.length === 1 ? "pool" : "pools"}` : `Confirm: change pool to .${b0.poolS & 255} – .${b0.poolE & 255}`; btn.disabled = CL.running; }
-  else if (CL.done) { btn.textContent = "Close"; btn.disabled = false; }
+  const steps = ["save a version of the current settings", CL.m.pool && pools.length ? `change the DHCP ${pools.length === 1 ? "pool" : "pools"} (${pools.map(b => `${b.n.name} ${poolTxt(b.poolS, b.poolE)}`).join(" · ")})` : "",
+    cflWifi2.length ? `reconnect ${cflWifi2.length} conflicting Wi-Fi ${cflWifi2.length === 1 ? "client" : "clients"}` : "",
+    CL.m.move && sel.length ? `move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"}` : "",
+    CL.m.move && CL.m.rc && wifi.length ? `reconnect ${wifi.length} moved Wi-Fi ${wifi.length === 1 ? "client" : "clients"}` : ""].filter(Boolean);
+  if (CL.done) { btn.textContent = "Close"; btn.disabled = false; }
+  else if (CL.confirm) { btn.textContent = CL.running ? "Applying …" : "Confirm & apply"; btn.disabled = CL.running; }
   else {
     const parts = [CL.m.move && sel.length ? `${sel.length} ${sel.length === 1 ? "move" : "moves"}` : "", CL.m.pool && pools.length ? (pools.length > 1 ? `${pools.length} pool changes` : "pool change") : ""].filter(Boolean);
-    btn.textContent = CL.running ? "Applying …" : parts.length ? "Apply " + parts.join(" + ") : "Nothing to apply"; btn.disabled = CL.running || !todo || !!errs.length;
+    btn.textContent = parts.length ? "Apply " + parts.join(" + ") + " …" : "Nothing to apply"; btn.disabled = !todo || !!errs.length;
   }
-  $("#clConfirm").innerHTML = CL.confirm ? `<div class="cl-confirm"><b>Change the DHCP ${poolList.length === 1 ? "pool" : "pools"}: ${esc(poolList.join(" · "))}?</b><br>This changes the network configuration in UniFi. Clients with a dynamic address outside the new pool get a new one at their next renewal. Click the button again to confirm, or Cancel to keep the ${poolList.length === 1 ? "pool" : "pools"}.</div>` : "";
+  $("#clConfirm").innerHTML = CL.confirm && !CL.done ? `<div class="cl-confirm"><b>Apply in this order?</b><ol>${steps.map(t => `<li>${esc(t[0].toUpperCase() + t.slice(1))}</li>`).join("")}</ol>${CL.m.pool && pools.length ? "This changes the network configuration in UniFi. " : ""}Click <i>Confirm &amp; apply</i>, or Cancel.</div>` : "";
 }
 async function applyClean() {
   if (CL.done) { backToPlan(); return; }
+  if (!CL.confirm) { CL.confirm = true; CL.frozen = true; renderClean(); $("#clConfirm").scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
   const inc = CL.bs.filter(b => b.inc), pools = CL.m.pool ? inc.filter(b => b.poolChange) : [];
-  if (CL.confirm) {
-    CL.running = true; renderClean(); let ok = 0;
-    for (const b of pools) {
-      try { await api("api/pool", { network_id: b.n.id, start: ipStr(b.poolS), stop: ipStr(b.poolE) }); ok++; }
-      catch (e) { toast(`Pool change in ${b.n.name} failed: ` + e.message); }
-    }
-    if (ok) toast(pools.length === 1 ? `DHCP pool changed to .${pools[0].poolS & 255} – .${pools[0].poolE & 255}` : `${ok} of ${pools.length} DHCP pools changed`);
-    CL.running = false; CL.confirm = false; CL.done = true; renderClean(); load(); return;
-  }
+  const conflicts = CL.m.rcc ? inc.flatMap(b => b.dynIn).filter(canReconnect) : [];
   const todo = CL.m.move ? CL.rows.filter(r => r.sel && r.status === "chg") : [];
-  CL.running = true; CL.frozen = true; renderClean();
-  if (!await autoVersion(CL.multi ? `Before cleanup of ${inc.length} networks` : `Before cleanup of ${inc[0].n.name}`)) { CL.running = false; CL.frozen = false; renderClean(); return; }
+  CL.running = true; renderClean();
+  if (!await autoVersion(CL.multi ? `Before cleanup of ${inc.length} networks` : `Before cleanup of ${inc[0].n.name}`)) { CL.running = false; CL.confirm = false; CL.frozen = false; renderClean(); return; }
+  const msg = [];
+  // 1 · pools first: from now on no new dynamic lease lands in the fixed block
+  let pOk = 0;
+  for (const b of pools) {
+    try { await api("api/pool", { network_id: b.n.id, start: ipStr(b.poolS), stop: ipStr(b.poolE) }); pOk++; }
+    catch (e) { toast(`Pool change in ${b.n.name} failed: ` + e.message); }
+  }
+  if (pools.length) msg.push(`${pOk}/${pools.length} ${pools.length === 1 ? "pool" : "pools"} changed`);
+  // 2 · conflicting dynamic clients get a pool address and free theirs
+  if (conflicts.length) { const r = await reconnectAll(conflicts); msg.push(`${r.ok} ${r.ok === 1 ? "conflict" : "conflicts"} reconnected`); await sleep(8000); }
+  // 3 · moves, in a safe order (an address still reserved by another moving device is freed first)
   $("#clProg").hidden = !todo.length; let i = 0;
   const put = async (r, ip) => api("api/client", clientBody(r.c, { use_fixedip: true, fixed_ip: ip, network_id: r.b.n.id }));
-  // order the moves so no target address is still reserved by another device; swaps / cycles go through a temporary free address
   const held = new Map(state.clients.filter(c => c.use_fixedip && c.fixed_ip).map(c => [c.fixed_ip, c.mac]));
   let pending = [...todo];
   while (pending.length) {
     const ready = pending.filter(r => !held.has(r.nip) || held.get(r.nip) === r.c.mac);
-    let batch = ready, viaTmp = null;
     if (!ready.length) { // cycle: park the first device on a free address
-      const r = pending[0], p = r.b.p, planned = new Set([...r.b.plan.values()]);
+      const r = pending[0], p = r.b.p, planned = new Set([...r.b.plan.values()]); let viaTmp = null;
       for (let x = p.r.end - 1; x > p.r.start; x--) { const ip = ipStr(x); if (x !== p.gw && !held.has(ip) && !planned.has(x)) { viaTmp = ip; break; } }
       if (!viaTmp) { for (const q of pending) { q.status = "fail"; q.result = "No free address to resolve the swap"; } break; }
       try { await put(r, viaTmp); held.delete(r.c.fixed_ip); held.set(viaTmp, r.c.mac); r.c._tmp = viaTmp; } catch (e) { r.status = "fail"; r.result = e.message; pending = pending.slice(1); }
       continue;
     }
-    for (const r of batch) {
+    for (const r of ready) {
       const from = r.c._tmp || r.c.fixed_ip;
       try { await put(r, r.nip); r.status = "ok"; held.delete(from); held.set(r.nip, r.c.mac); }
       catch (e) { r.status = "fail"; r.result = e.message; }
       delete r.c._tmp;
       $("#clProg i").style.width = (++i / todo.length * 100) + "%";
     }
-    pending = pending.filter(r => !batch.includes(r));
+    pending = pending.filter(r => !ready.includes(r));
   }
-  let rcTxt = "";
-  if (CL.m.rc) { const aff = todo.filter(r => r.status === "ok" && needsNewIp(r.c, r.nip)), wifi = aff.filter(r => canReconnect(r.c)); if (wifi.length) rcTxt = rcSummary(await reconnectAll(wifi.map(r => r.c)), aff.length - wifi.length); }
-  const ok = todo.filter(r => r.status === "ok").length;
-  if (todo.length) toast(`${ok} of ${todo.length} moved` + (rcTxt ? ` · ${rcTxt}` : ""));
-  CL.running = false;
-  if (pools.length) { CL.confirm = true; CL.preview = false; } else CL.done = true;
-  renderClean(); if (rcTxt) setTimeout(() => load(), 20000);
+  if (todo.length) msg.push(`${todo.filter(r => r.status === "ok").length}/${todo.length} moved`);
+  // 4 · moved Wi-Fi clients pick up their new fixed IP right away
+  if (CL.m.rc) { const aff = todo.filter(r => r.status === "ok" && needsNewIp(r.c, r.nip)), wifi = aff.filter(r => canReconnect(r.c)); if (wifi.length) msg.push(rcSummary(await reconnectAll(wifi.map(r => r.c)), aff.length - wifi.length)); }
+  toast(msg.join(" · ") || "Done");
+  CL.running = false; CL.confirm = false; CL.done = true; renderClean();
+  setTimeout(() => load(), 15000);
 }
-$("#clEnd").addEventListener("change", e => { const p = CL.b?.p; if (!p || CL.running || CL.done) return; CL.end = p.r.start - (p.r.start & 255) + +e.target.value; renderClean(); });
-$("#clPct").addEventListener("change", e => { if (CL.running || CL.done) return; const v = +e.target.value; CL.pct = e.target.value === "" ? null : Math.min(90, Math.max(10, v || 40)); renderClean(); });
-$("#clGrid").addEventListener("change", e => { const id = e.target.dataset?.cn; if (id == null || CL.running || CL.done) return; CL.inc[id] = e.target.checked; CL.played = true; renderClean(); });
-document.querySelectorAll("[data-cs]").forEach(x => x.addEventListener("click", () => { if (CL.running || CL.done) return; CL.strategy = x.dataset.cs; CL.rows = []; renderClean(); }));
+const unconfirm = () => { if (CL.confirm && !CL.running) { CL.confirm = false; CL.frozen = false; } };
+$("#clEnd").addEventListener("change", e => { unconfirm(); const p = CL.b?.p; if (!p || CL.running || CL.done) return; CL.end = p.r.start - (p.r.start & 255) + +e.target.value; renderClean(); });
+$("#clPct").addEventListener("change", e => { unconfirm(); if (CL.running || CL.done) return; const v = +e.target.value; CL.pct = e.target.value === "" ? null : Math.min(90, Math.max(10, v || 40)); renderClean(); });
+$("#clGrid").addEventListener("change", e => { const id = e.target.dataset?.cn; if (id == null || CL.running || CL.done) return; unconfirm(); CL.inc[id] = e.target.checked; CL.played = true; renderClean(); });
+document.querySelectorAll("[data-cs]").forEach(x => x.addEventListener("click", () => { if (CL.running || CL.done) return; unconfirm(); CL.strategy = x.dataset.cs; CL.rows = []; renderClean(); }));
 $("#clPreview").addEventListener("change", e => { CL.preview = e.target.checked; CL.played = false; renderClean(); });
-$("#planClean").addEventListener("change", e => { const k = e.target.dataset?.cm; if (k) { CL.m[k] = e.target.checked; CL.played = true; renderClean(); } });
+$("#planClean").addEventListener("change", e => { const k = e.target.dataset?.cm; if (k) { unconfirm(); CL.m[k] = e.target.checked; CL.played = true; renderClean(); } });
 $("#cgPlay").addEventListener("click", () => cgEach((s2, w) => { drawArrows(s2, w); playMoves(s2, w); }));
 const cgEach = fn => { const sel = CL.rows.filter(r => r.sel); for (const w of document.querySelectorAll("#clGrid .cg-wrap")) fn(sel.filter(r => r.b.n.id === w.dataset.netid), w); };
 $("#clGrid").addEventListener("click", e => {
@@ -1640,8 +1652,8 @@ $("#clGrid").addEventListener("click", e => {
 new ResizeObserver(() => { if (!(isPlan() && PLAN.tab === "clean" && CL.tab === "chg")) return;
   document.querySelectorAll("#clGrid .cg-fly").forEach(x => x.remove()); document.querySelectorAll("#clGrid .pc.left").forEach(x => x.classList.remove("left"));
   cgEach((s2, w) => drawArrows(s2, w)); }).observe($("#clGrid"));
-$("#clRows").addEventListener("change", e => { const i = e.target.dataset.ci; if (i != null) { CL.rows[+i].sel = e.target.checked; CL.played = true; renderClean(); } });
-$("#clAll").addEventListener("change", e => { CL.rows.forEach(r => r.sel = e.target.checked); renderClean(); });
+$("#clRows").addEventListener("change", e => { const i = e.target.dataset.ci; if (i != null) { unconfirm(); CL.rows[+i].sel = e.target.checked; CL.played = true; renderClean(); } });
+$("#clAll").addEventListener("change", e => { unconfirm(); CL.rows.forEach(r => r.sel = e.target.checked); renderClean(); });
 bindSort("clRows", () => renderClean());
 $("#clApply").addEventListener("click", applyClean);
 const backToPlan = async () => { if (CL.running) return; const reload = CL.done; PLAN.tab = "cur"; renderPlan(); if (reload) { await load(); if (isPlan() && PLAN.tab === "cur") renderPlan(); } };
