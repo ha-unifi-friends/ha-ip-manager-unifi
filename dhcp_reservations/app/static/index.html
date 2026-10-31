@@ -580,7 +580,7 @@ body.side-off .menu-btn{display:inline-flex}
   <div class="imp">
     <div class="imp-head"><h2 id="haTitle">Update names from Home Assistant</h2><button class="x link" type="button" id="haClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="imp-body">
-      <div class="imp-help">Matches Home Assistant devices to UniFi clients by MAC address. The proposed name is the name you set in Home Assistant, otherwise the device name of its integration (devices known only through the UniFi integration are skipped, they already carry the UniFi name). “Near match” means the MAC differs only in the last byte, typical for devices with separate Wi-Fi and Ethernet MACs; those are not selected by default.</div>
+      <div class="imp-help">Matches Home Assistant devices to UniFi clients by MAC address. The proposed name is the name you set in Home Assistant, otherwise the device name of its integration (devices known only through the UniFi integration are skipped, they already carry the UniFi name). UniFi devices (access points, switches, gateway) and UniFi Protect cameras are shown as <i>UniFi-managed</i> and never renamed – their name comes from UniFi and would be synced back into Home Assistant. “Near match” means the MAC differs only in the last byte, typical for devices with separate Wi-Fi and Ethernet MACs; those are not selected by default.</div>
       <div class="ha-opts" id="haOpts"></div>
       <div class="err" id="haErr" hidden></div>
       <div class="sumrow" id="haSum"></div>
@@ -2181,8 +2181,9 @@ function haCompose(h) {
 }
 function haRestatus() {
   for (const r of HAN.rows) {
-    if (!["rename", "same", "near", "missing"].includes(r.status)) continue;
+    if (!["rename", "same", "near", "missing", "unifi"].includes(r.status)) continue;
     r.h.proposed = haCompose(r.h);
+    if (r.status === "unifi") continue;
     const st = !r.c ? "missing" : (r.c.name || "") === r.h.proposed ? "same" : r.match === "near" ? "near" : "rename";
     if (st !== r.status) { r.status = st; r.sel = st === "rename"; }
   }
@@ -2205,12 +2206,14 @@ function buildHaRows(devs) {
   const byMac = {};
   for (const d of devs) {
     const viaUnifiOnly = d.domains.length && d.domains.every(x => x === "unifi");
+    // UniFi Protect devices get their name from UniFi – a new name would be synced back into Home Assistant
+    const protect = d.domains.includes("unifiprotect");
     const proposed = d.name_by_user || (viaUnifiOnly ? "" : d.name);
     if (!proposed) continue; // base name; haCompose() adds area / integration
     for (const m of d.macs) {
       const prev = byMac[m];
       const score = (d.name_by_user ? 2 : 0) + (viaUnifiOnly ? 0 : 1);
-      if (!prev || score > prev.score) byMac[m] = { d, base: proposed, proposed, score };
+      if (!prev || score > prev.score) byMac[m] = { d, base: proposed, proposed, score, protect };
     }
   }
   const clientsByMac = Object.fromEntries(state.clients.filter(c => c.mac).map(c => [c.mac, c]));
@@ -2225,24 +2228,25 @@ function buildHaRows(devs) {
       match = c ? "near" : "none";
       if (c) used.add(c.mac);
     }
-    const status = !c ? "missing" : (c.name || "") === h.proposed ? "same" : match === "near" ? "near" : "rename";
+    const status = !c ? "missing" : (c.is_device || h.protect) ? "unifi" : (c.name || "") === h.proposed ? "same" : match === "near" ? "near" : "rename";
     rows.push({ c, haMac: m, h, match, status, sel: status === "rename" });
   }
-  return rows.sort((x, y) => ({ rename: 0, near: 1, same: 2, missing: 3 }[x.status] - { rename: 0, near: 1, same: 2, missing: 3 }[y.status]) || (x.h.proposed).localeCompare(y.h.proposed, "en"));
+  const ORD = { rename: 0, near: 1, same: 2, unifi: 3, missing: 4 };
+  return rows.sort((x, y) => (ORD[x.status] - ORD[y.status]) || (x.h.proposed).localeCompare(y.h.proposed, "en"));
 }
 function renderHa() {
   renderHaOpts();
   const rows = HAN.rows, cnt = k => rows.filter(r => r.status === k).length;
-  const pills = [["all", "All", rows.length], ["rename", "Rename", cnt("rename")], ["near", "Near match", cnt("near")], ["same", "Same name", cnt("same")], ["missing", "Not in UniFi", cnt("missing")]];
+  const pills = [["all", "All", rows.length], ["rename", "Rename", cnt("rename")], ["near", "Near match", cnt("near")], ["same", "Same name", cnt("same")], ["unifi", "UniFi-managed", cnt("unifi")], ["missing", "Not in UniFi", cnt("missing")]];
   if (HAN.done) pills.push(["ok", "Renamed", cnt("ok")], ["fail", "Failed", cnt("fail")]);
   $("#haSum").innerHTML = pills.filter(p => p[0] === "all" || p[2]).map(([k, l, n]) => `<button type="button" class="pill" data-hf="${k}" aria-pressed="${HAN.filter === k}">${l} <b>${n}</b></button>`).join("");
   for (const b of $("#haSum").querySelectorAll("[data-hf]")) b.addEventListener("click", () => { HAN.filter = b.dataset.hf; renderHa(); });
-  const HST = { rename: 0, near: 1, fail: 2, ok: 3, same: 4, missing: 5 };
+  const HST = { rename: 0, near: 1, fail: 2, ok: 3, same: 4, unifi: 5, missing: 6 };
   const list = tsorted("haRows", rows.filter(r => HAN.filter === "all" || r.status === HAN.filter), {
     mac: r => r.c ? r.c.mac : r.haMac, cur: r => r.c ? (r.c.name || r.c.hostname || "").toLowerCase() : "", ha: r => r.h.proposed.toLowerCase(),
     int: r => r.h.d.domains.join(", ") + " " + (r.h.d.area || ""), status: r => HST[r.status] ?? 9 });
   const selectable = r => !HAN.running && !HAN.done && (r.status === "rename" || r.status === "near");
-  const ST = { rename: '<span class="st chg">Rename</span>', near: '<span class="st new">Near match</span>', same: '<span class="st same">Same name</span>', missing: '<span class="st skip">Not in UniFi</span>', ok: '<span class="st ok">✓ Renamed</span>', fail: '<span class="st err">Failed</span>' };
+  const ST = { rename: '<span class="st chg">Rename</span>', near: '<span class="st new">Near match</span>', same: '<span class="st same">Same name</span>', missing: '<span class="st skip">Not in UniFi</span>', unifi: '<span class="st skip" title="UniFi devices and UniFi Protect cameras take their name from UniFi – renaming them here would be synced back into Home Assistant">UniFi-managed</span>', ok: '<span class="st ok">✓ Renamed</span>', fail: '<span class="st err">Failed</span>' };
   $("#haRows").innerHTML = list.map(r => `<tr><td><label class="opt"><input type="checkbox" data-hi="${rows.indexOf(r)}" ${r.sel ? "checked" : ""} ${selectable(r) ? "" : "disabled"} aria-label="Rename ${esc(r.h.proposed)}"></label></td>
     <td class="mono">${esc(r.c ? r.c.mac : r.haMac)}${r.match === "near" ? `<div class="muted" style="font-size:11px">HA: ${esc(r.haMac)}</div>` : ""}</td>
     <td>${r.c ? esc(r.c.name || "") || `<span class="muted">${esc(r.c.hostname || "(no name)")}</span>` : "–"}</td>

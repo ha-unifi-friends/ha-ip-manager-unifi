@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.19.1 – 2026-10-31
+- **Names from Home Assistant** never renames UniFi devices (access points, switches, gateway) or UniFi Protect cameras: UniFi is the golden record for their names, a new name would be synced back into Home Assistant. They are listed as *UniFi-managed* and cannot be selected.
+
 ## 1.19.0 – 2026-10-31
 - **Names from Home Assistant** can add the **area** and/or the **integration** to the name – each *Off / Prefix / Suffix* – with a separator of your choice (`a b`, `a-b`, `a_b`, `a - b` or none), e.g. *Office Desk Lamp* or *Desk Lamp - ESPHome*. The proposed names, the *Rename / Same name* counts and an example update live; *Skip if already in the name* (on by default) does not add a part the name already contains – e.g. *shellyLEDmatrix* gets no *Shelly*. *CamelCase* starts every word upper case and continues lower case (e.g. *OfficeDeskLamp* with no separator). The setting is remembered per browser.
 - Integrations are shown with their readable name (ESPHome, Shelly, UniFi Protect …).

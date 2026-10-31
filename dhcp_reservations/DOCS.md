@@ -31,6 +31,8 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
   (Enter / ↑ / ↓ jump to the next row, Esc reverts). An empty Fixed IP removes the reservation; the network is derived from the IP.
 - **Names from HA:** reads the Home Assistant device registry (devices with a MAC connection) and proposes the name you gave the
   device in Home Assistant, otherwise the integration's device name. Devices known only via the UniFi integration are skipped.
+  UniFi devices (access points, switches, gateway) and UniFi Protect cameras are listed as *UniFi-managed* and never renamed –
+  UniFi is the golden record for their names, a change would be synced back into Home Assistant.
   Preview with checkbox per row; “near match” covers devices whose MAC differs only in the last byte (separate Wi-Fi/Ethernet MAC).
   *Area* and *Integration* can each be added as prefix or suffix (*Off / Prefix / Suffix*), with the separator `a b`, `a-b`, `a_b`, `a - b` or none –
   e.g. *Office Desk Lamp* or *Desk Lamp - ESPHome*. *Skip if already in the name* (default on) leaves out parts the name already contains;
