@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.18.0 – 2026-10-31
+- Columns **UniFi Status** (formerly the unnamed status dot) and **Home Assistant Status**: the header shows only an icon so the columns stay narrow (full name as tooltip and in *Columns*). Both can now be sorted and filtered (UniFi: online / offline; HA: OK, partly unavailable, unavailable, integration error, disabled, known / not in HA).
+- The built-in view *All* shows *Home Assistant Status* as second column.
+- **Versions** record the Home Assistant status and integrations of every device (info only). *Compare* and the device *History* show changes as *HA status* (e.g. “OK (shelly) → Unavailable (shelly)”); the version CSV contains it too.
+- Fix: with the filter pane hidden on a desktop, the table was squeezed into the narrow sidebar column.
+- New column **IP** with a pill *Fix* (DHCP reservation, or a static IP set on a UniFi device) or *DHCP*; sortable and filterable. It is the third column of the built-in view *All* (use *Discard changes* on *All* if you changed that view before).
+- **Light / dark switch** at the bottom of the filter pane: *Auto* (follows the system / browser) → *Light* → *Dark*, remembered per browser.
+- The **add-on version** is shown at the bottom left of the filter pane.
+- The toolbar always stays on one line: when the detail panel is open (or the window is narrow), the buttons collapse to icons instead of wrapping into a second row.
+- **Open in HA** opens the Home Assistant device page in a new tab.
+- **IP plan icons:** the *Show icons* checkbox is now a switch *No icons / UniFi / Home Assistant* on all IP plan views; *Home Assistant* shows the logo of the device's integration.
+- **CleanUp Proposal:** new strategy *Grouped by HA integration* – fixed IPs in blocks per Home Assistant integration (e.g. all Shelly, then all ESPHome), devices not in HA last.
+- **Home Assistant status:** buttons, events and updates no longer count – e.g. the UniFi integration's PoE *power cycle* buttons are unavailable on every port without PoE, so all switches and gateways showed *partly unavailable*. For a partly unavailable device, the detail panel lists the unavailable entities.
+
 ## 1.16.0 – 2026-10-31
 - **Home Assistant link per device** (matched by MAC): new section *Home Assistant* in the detail panel with the integration logo, the HA device name, area and status (OK / partly unavailable / unavailable / integration error / disabled) and **Open in HA ›**, which opens the device page in Home Assistant.
 - New column **Home Assistant** (integration logos + status dot) and sidebar filter *Home Assistant* (known / not known / unavailable, per integration). For clients, the UniFi integration's device trackers are ignored; for UniFi devices (access points, switches, gateway) the UniFi integration device is linked.

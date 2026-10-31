@@ -63,7 +63,7 @@ details:not([open]) summary svg{transform:rotate(180deg)}
 .link:disabled{color:var(--faint);cursor:default}
 
 /* ---------- table ---------- */
-main{display:flex;flex-direction:column;min-width:0;min-height:0}
+main{display:flex;flex-direction:column;min-width:0;min-height:0;container:main/inline-size}
 .banner{margin:10px 16px 0;padding:9px 12px;border-radius:6px;background:var(--bad-bg);color:var(--bad)}
 .tablewrap{flex:1;overflow:auto;min-height:0}
 table{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
@@ -73,6 +73,9 @@ thead tr.f th{top:38px;padding:2px 6px 8px;border-bottom:1px solid var(--line)}
 th .sort{all:unset;display:flex;align-items:center;gap:4px;padding:11px 10px 7px;cursor:pointer;color:var(--fg);font-size:13px}
 th .sort:hover{color:var(--accent)}
 thead tr.h th[data-k]{cursor:grab}
+th.ic-col .sort{display:inline-flex;align-items:center;gap:3px;color:var(--muted)}
+th.ic-col .sort svg{flex:none}
+thead tr.f th select.ic-sel{width:44px;min-width:44px;padding-left:4px;padding-right:2px}
 th.col-dragging{opacity:.45}
 th.drop-before{box-shadow:inset 2px 0 0 var(--accent)}
 th.drop-after{box-shadow:inset -2px 0 0 var(--accent)}
@@ -114,7 +117,15 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 .topbar .sp{flex:1}
 .topbar .grp{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn.icon-btn{display:inline-flex;align-items:center;gap:6px}
-@media (max-width:1250px){.topbar .btn.icon-btn:not(.primary) .lbl{display:none}.topbar .btn.icon-btn:not(.primary){padding:6px 9px}}
+/* the toolbar stays on one line: labels collapse to icons depending on the width of the table area (detail panel open or not) */
+@container main (min-width:560px){.topbar,.topbar .grp{flex-wrap:nowrap}.topbar>*,.topbar .grp>*{flex:none}.topbar .sp{flex:1}#count,#stand{white-space:nowrap}}
+@container main (max-width:1060px){.topbar .btn.icon-btn:not(.primary) .lbl{display:none}.topbar .btn.icon-btn:not(.primary){padding:6px 9px}}
+@container main (max-width:820px){#stand{display:none}.topbar .btn.icon-btn.primary .lbl{display:none}.topbar .btn.icon-btn.primary{padding:6px 9px}}
+@container main (max-width:640px){#count{display:none}}
+.side-foot{display:flex;align-items:center;gap:8px;padding:8px 14px calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));border-top:1px solid var(--line);color:var(--muted);font-size:12px}
+.side-foot .sp{flex:1}
+.theme-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line-strong);border-radius:6px;padding:3px 8px;color:var(--muted);cursor:pointer;font-size:12px}
+.theme-btn:hover{color:var(--fg);background:var(--hover)}
 .ver-save .check{white-space:nowrap}
 .btn[aria-pressed="true"]{background:var(--sel);border-color:var(--accent);color:var(--accent)}
 input.ie{width:100%;min-width:120px;padding:4px 7px;font-size:13px;background:var(--input);border:1px solid var(--line-strong);border-radius:5px}
@@ -301,6 +312,10 @@ dialog#dlgClean::backdrop{background:rgba(8,10,14,.55)}
 .pc .pi{display:block;height:16px;margin:-3px auto 3px;color:inherit}
 .pc .pi svg{width:15px;height:15px}
 .pc .pi img{width:20px;height:16px;object-fit:contain}
+.pc .pi .brand-ic-img{width:16px;height:16px;border-radius:3px}
+.pc .pi .brand-fb{width:16px;height:16px;font-size:10px}
+.seg.plan-icons{background:var(--panel)}
+.plan-icons-slot{margin-left:auto;display:inline-flex;align-items:center}
 .pc.ic{padding:6px 0 5px}
 .pc.np::after{content:"";position:absolute;left:3px;right:3px;bottom:2px;height:3px;border-radius:2px;background:var(--info)}
 .pc.src{box-shadow:inset 0 0 0 2px var(--warn)}
@@ -317,7 +332,7 @@ dialog#dlgClean::backdrop{background:rgba(8,10,14,.55)}
 .ha-logos .brand-fb{width:28px;height:28px;font-size:14px}
 .ha-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-left:2px;vertical-align:middle}
 .ha-card{padding:10px 14px;display:flex;flex-direction:column;gap:10px}
-.ha-row{display:flex;align-items:center;gap:10px}
+.ha-row{display:flex;align-items:flex-start;gap:10px}.ha-row .ha-logos{margin-top:4px}
 .ha-logos{display:flex;gap:4px;flex:none}
 .ha-info{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1;font-size:12.5px}
 .ha-info b{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -345,6 +360,9 @@ a.pchip:hover{background:var(--sel)}
 #impCols{display:block;line-height:1.9}
 .imp-help code{font-family:var(--mono);background:var(--chip);padding:0 4px;border-radius:3px;color:var(--fg)}
 .sumrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ippill{display:inline-block;font-size:11.5px;line-height:18px;padding:0 8px;border-radius:999px;font-weight:600;white-space:nowrap}
+.ippill.fix{background:var(--sel);color:var(--accent)}
+.ippill.dhcp{background:var(--chip);color:var(--muted)}
 .pill{font-size:12px;padding:2px 9px;border-radius:999px;background:var(--chip);color:var(--muted);cursor:pointer;border:1px solid transparent}
 .pill[aria-pressed="true"]{border-color:var(--accent);color:var(--fg)}
 .pill b{color:var(--fg)}
@@ -373,7 +391,9 @@ a.pchip:hover{background:var(--sel)}
 .menu-btn{display:none;color:var(--accent);padding:5px 8px;align-items:center}
 .brand-ic{background:none;border:0;padding:2px;margin:-2px 2px -2px -2px;color:var(--accent);cursor:pointer;border-radius:5px;display:inline-grid;place-items:center}
 .brand-ic:hover{background:var(--hover)}
+.ha-unav{font-size:12px;color:var(--muted);margin-top:2px}.ha-unav summary{cursor:pointer}.ha-unav code{display:block;font:11.5px var(--mono);padding:1px 0 1px 14px;word-break:break-all}
 body.side-off aside{display:none}
+body.side-off .app{grid-template-columns:minmax(0,1fr) auto}
 body.side-off .menu-btn{display:inline-flex}
 @media (prefers-reduced-motion:reduce){.spin{animation:none}#toast,.switch input,.switch input::after,summary svg{transition:none}}
 @media (max-width:1100px){.detail{position:fixed;inset:0 0 0 auto;width:min(400px,100vw);z-index:15;box-shadow:-8px 0 24px rgba(0,0,0,.25)}}
@@ -394,6 +414,7 @@ body.side-off .menu-btn{display:inline-flex}
       <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="q" placeholder="Search" aria-label="Search"></div>
     </div>
     <div class="side-scroll" id="facets"></div>
+    <div class="side-foot"><span id="appVer" title="IP Manager for UniFi – add-on version"></span><span class="sp"></span><button type="button" class="theme-btn" id="btnTheme"></button></div>
   </aside>
 
   <main>
@@ -616,12 +637,12 @@ body.side-off .menu-btn{display:inline-flex}
     <div class="imp-head"><h2 id="clTitle">CleanUp Proposal</h2><button class="x link" type="button" id="clClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="imp-body">
       <div class="cl-ctrl">
-        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button></span>
+        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button></span>
         <label>Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253"></label>
         <label>DHCP pool <b class="mono" id="clPool"></b></label>
         <span class="sp"></span><span id="clSum" class="sumrow" style="margin:0"></span>
       </div>
-      <div class="cl-tabs" role="tablist"><button type="button" role="tab" data-ct="cur" aria-selected="false">Current</button><button type="button" role="tab" data-ct="plan" aria-selected="true">Proposal</button><button type="button" role="tab" data-ct="chg" aria-selected="false">Changes</button><span class="sp"></span><label class="rc-opt plan-icons" title="Show the device icon in every cell"><input type="checkbox" class="planIconsCb"><span>Show icons</span></label></div>
+      <div class="cl-tabs" role="tablist"><button type="button" role="tab" data-ct="cur" aria-selected="false">Current</button><button type="button" role="tab" data-ct="plan" aria-selected="true">Proposal</button><button type="button" role="tab" data-ct="chg" aria-selected="false">Changes</button><span class="sp"></span><span class="plan-icons-slot"></span></div>
       <div id="clErr"></div>
       <div id="clGrid"></div>
       <div class="sec-title" style="margin-top:16px">Measures</div>
@@ -696,6 +717,7 @@ const pad2 = n => String(n).padStart(2, "0");
 const isoDate = ts => { const d = new Date(ts * 1000); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
 const isoDateTime = ts => { const d = new Date(ts * 1000); return `${isoDate(ts)} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`; };
 const rel = ts => { if (!ts) return "Never"; const d = Date.now() / 1000 - ts; if (d < 120) return "just now"; if (d < 3600) return Math.round(d / 60) + " min ago"; if (d < 86400) return Math.round(d / 3600) + " h ago"; return isoDate(ts); };
+const APP_VER = /^[0-9]/.test("__ADDON_VERSION__") ? "__ADDON_VERSION__" : "";
 const store = { get(k, d) { try { const v = localStorage.getItem("dhcpres." + k); return v ? JSON.parse(v) : d; } catch { return d; } }, set(k, v) { try { localStorage.setItem("dhcpres." + k, JSON.stringify(v)); } catch {} } };
 const connText = c => c.conn === "teleport" ? "Teleport" : c.conn === "wired" ? (c.uplink ? c.uplink + (c.port ? " Port " + c.port : "") : "Wired") : (c.uplink || "WiFi");
 function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove("show"), 2600); }
@@ -811,7 +833,15 @@ async function loadHa() {
   catch { state.haByMac = {}; state.haOk = false; }
 }
 const COLS = [
-  { key: "online", label: "", filter: "none", val: c => c.online ? 0 : 1, td: c => `<span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span>` },
+  { key: "online", label: "UniFi Status", icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 4v8a7 7 0 0 0 14 0V4"/><path d="M12 4v8"/></svg>', filter: "select", opts: [["", "All"], ["on", "Online"], ["off", "Offline"]], fval: c => c.online ? "on" : "off", val: c => c.online ? 0 : 1, td: c => `<span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span>` },
+  { key: "ha", label: "Home Assistant Status", icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8v10H3z"/><circle cx="12" cy="14" r="1.6" fill="currentColor"/><path d="M12 15.6V21M8.5 11.5l2.3 1.6M15.5 11.5l-2.3 1.6"/></svg>', filter: "select", opts: [["", "All"], ["ok", "OK"], ["partial", "Partly unavailable"], ["unavailable", "Unavailable"], ["error", "Integration error"], ["disabled", "Disabled"], ["any", "Known to HA"], ["none", "Not in HA"]],
+    fsel: (c, f) => { const ds = haOf(c); if (f === "none") return !ds.length; if (f === "any") return !!ds.length; return ds.length > 0 && haWorst(ds) === f; }, val: c => { const ds = haOf(c); return ds.length ? (HA_RANK[haWorst(ds)] ?? 4) + ds[0].domains.join() : "~"; }, fval: c => haOf(c).map(d => d.domains.join(" ") + " " + (HA_ST[d.status]?.[0] || "")).join(" "),
+    td: c => { const ds = haOf(c); if (!ds.length) return `<span class="muted">-</span>`; const doms = [...new Set(ds.flatMap(d => haDoms(c, d)))];
+      return `<span class="ha-cell" title="${esc(ds.map(d => `${d.name_by_user || d.name} · ${d.domains.join(", ")} · ${HA_ST[d.status]?.[0] || d.status}`).join("\n"))}">${doms.map(x => brandImg(x)).join("")}${haDot(haWorst(ds))}</span>`; } },
+  { key: "ipmode", label: "IP", filter: "select", opts: [["", "All"], ["fix", "Fix"], ["dhcp", "DHCP"]], val: c => ipMode(c) || "~", fval: c => ipMode(c),
+    td: c => { const m = ipMode(c); if (!m) return `<span class="muted">-</span>`;
+      const t = m === "dhcp" ? "Address from DHCP" : c.use_fixedip ? `DHCP reservation ${c.fixed_ip}` : "Static IP configured on the device";
+      return `<span class="ippill ${m}" title="${esc(t)}">${m === "fix" ? "Fix" : "DHCP"}</span>`; } },
   { key: "name", label: "Name", val: c => (c.name || c.hostname || c.mac || "").toLowerCase(), fval: c => [c.name, c.hostname].join(" "),
     td: c => `<div class="nm"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span>${inlineOn(c) ? `<input class="ie" data-f="name" data-k="${esc(keyOf(c))}" value="${esc(c.name)}" placeholder="${esc(c.hostname || c.device_name || "Name")}" aria-label="Name of ${esc(c.mac)}">` : `<span class="t">${esc(c.name || c.hostname || "Unknown")}</span>`}${c.is_device ? `<span class="h">${esc(c.name && c.device_name && c.device_name.trim() !== c.name ? c.device_name + " · " : "")}${esc(c.device_model)}</span>` : !c.name && c.mac ? `<span class="h">${esc(c.mac.slice(-5))}</span>` : (c.name && c.hostname && c.hostname !== c.name ? `<span class="h">${esc(c.hostname)}</span>` : "")}</div>` },
   { key: "mac", label: "MAC address", val: c => c.mac, td: c => `<span class="mono">${esc(c.mac || "–")}</span>` },
@@ -830,22 +860,21 @@ const COLS = [
     td: c => c._resNet ? `${esc(netName(c._resNet))}${net(c._resNet)?.vlan ? `<span class="vl">(${net(c._resNet).vlan})</span>` : ""}` : "" },
   { key: "ip", label: "IP address", val: c => ipNum(c.ip), fval: c => c.ip, td: c => `<span class="mono ${c.ip_is_last ? "muted" : ""}" title="${c.ip_is_last ? "Last known IP" : ""}">${esc(c.ip)}</span>` },
   { key: "_warn", label: "Issues", val: c => c._warn.length ? (c._serious ? 0 : 1) : 2, fval: c => c._warn.map(w => w[1]).join(" "), td: c => c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("") },
-  { key: "ha", label: "Home Assistant", val: c => { const ds = haOf(c); return ds.length ? (HA_RANK[haWorst(ds)] ?? 4) + ds[0].domains.join() : "~"; }, fval: c => haOf(c).map(d => d.domains.join(" ") + " " + (HA_ST[d.status]?.[0] || "")).join(" "),
-    td: c => { const ds = haOf(c); if (!ds.length) return `<span class="muted">-</span>`; const doms = [...new Set(ds.flatMap(d => haDoms(c, d)))];
-      return `<span class="ha-cell" title="${esc(ds.map(d => `${d.name_by_user || d.name} · ${d.domains.join(", ")} · ${HA_ST[d.status]?.[0] || d.status}`).join("\n"))}">${doms.map(x => brandImg(x)).join("")}${haDot(haWorst(ds))}</span>`; } },
   { key: "first_seen", label: "First seen", filter: "none", val: c => c.first_seen || 9e12, td: c => `<span class="muted" title="${c.first_seen ? isoDateTime(c.first_seen) : ""}">${c.first_seen ? isoDate(c.first_seen) : "–"}</span>` },
   { key: "last_seen", label: "Last seen", filter: "none", val: c => c.online ? -9e12 : -(c.last_seen || -1), td: c => `<span class="muted" title="${c.last_seen ? isoDateTime(c.last_seen) : ""}">${c.online ? "Online" : rel(c.last_seen)}</span>` },
   { key: "note", label: "Note", val: c => (c.note || "").toLowerCase(), td: c => `<div class="note" title="${esc(c.note)}">${esc(c.note)}</div>` },
 ];
 
+// Fix = DHCP reservation, or (UniFi devices) a static IP set on the device; Teleport clients have neither
+function ipMode(c) { if (c.use_fixedip || (c.is_device && c.dev_ip_mode === "static")) return "fix"; return c.conn === "teleport" ? "" : "dhcp"; }
 const orderedCols = () => { const o = state.colOrder; return [...COLS].sort((a, b) => (o.indexOf(a.key) + 1 || 999) - (o.indexOf(b.key) + 1 || 999)); };
 const visCols = () => orderedCols().filter(c => !state.hiddenCols.includes(c.key));
 function buildHead() {
-  $("#headRow").innerHTML = visCols().map(col => `<th data-k="${col.key}">${col.label ? `<button class="sort" type="button">${col.label}<span class="arr">▲</span></button>` : ""}</th>`).join("");
+  $("#headRow").innerHTML = visCols().map(col => `<th data-k="${col.key}" class="${col.icon ? "ic-col" : ""}">${col.label ? `<button class="sort" type="button" title="${col.label}" aria-label="${col.label}">${col.icon || col.label}<span class="arr">▲</span></button>` : ""}</th>`).join("");
   $("#filterRow").innerHTML = visCols().map(col => {
     const id = "flt_" + col.key;
     if (col.filter === "none") return `<th></th>`;
-    if (col.filter === "select") return `<th><select id="${id}" data-k="${col.key}" aria-label="Filter ${col.label}">${col.opts.map(o => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select></th>`;
+    if (col.filter === "select") return `<th><select id="${id}" data-k="${col.key}" class="${col.icon ? "ic-sel" : ""}" aria-label="Filter ${col.label}" title="Filter ${col.label}">${col.opts.map(o => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select></th>`;
     if (col.filter === "net") return `<th><select id="${id}" data-k="${col.key}" aria-label="Filter ${col.label}"><option value="">All</option>${state.networks.map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("")}<option value="__none">(empty)</option></select></th>`;
     return `<th><input id="${id}" data-k="${col.key}" placeholder="Filter" aria-label="Filter ${col.label}"></th>`;
   }).join("");
@@ -905,7 +934,7 @@ function baseFiltered() {
       const f = state.colFilters[col.key]; if (!f) continue;
       const v = col.fval ? col.fval(c) : col.val(c);
       if (col.filter === "net") { if (f === "__none" ? v : v !== f) return false; continue; }
-      if (col.filter === "select") { if (v !== f) return false; continue; }
+      if (col.filter === "select") { if (col.fsel ? !col.fsel(c, f) : v !== f) return false; continue; }
       if (!f.toLowerCase().split(/\s+/).every(t => String(v ?? "").toLowerCase().includes(t))) return false;
     }
     return true;
@@ -935,6 +964,8 @@ function persist() { store.set("view2", { sort: state.sort, colFilters: state.co
 
 // ---------- customize columns ----------
 const colName = c => c.label || "Status";
+// narrow icon columns: compact filter select
+
 function renderCols() {
   const allOn = !state.hiddenCols.length;
   $("#colList").innerHTML = `<label class="opt"><input type="checkbox" id="colAll" ${allOn ? "checked" : ""}><span>All</span></label>` +
@@ -1046,11 +1077,19 @@ function planNet(n) {
 }
 const PLAN = { sel: null };
 function openPlan() { if (!PLAN.sel || !net(PLAN.sel)) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; renderPlan(); $("#dlgPlan").showModal(); }
-const PLAN_ICONS = { on: store.get("planIcons", false) };
+// icons in the IP plan cells: none, the UniFi device icon, or the logo of the Home Assistant integration
+const PLAN_ICONS = { mode: store.get("planIconMode", store.get("planIcons", false) ? "unifi" : "off") };
+const iconSeg = () => `<span class="seg plan-icons" role="group" aria-label="Icons in the cells">${[["off", "No icons"], ["unifi", "UniFi"], ["ha", "Home Assistant"]].map(([k, t]) => `<button type="button" data-pim="${k}" aria-pressed="${PLAN_ICONS.mode === k}" title="${k === "off" ? "Only the address" : k === "unifi" ? "Device icon from UniFi" : "Logo of the Home Assistant integration (empty when the device is not in HA)"}">${t}</button>`).join("")}</span>`;
+function planIcon(c) {
+  if (!c || PLAN_ICONS.mode === "off") return "";
+  if (PLAN_ICONS.mode === "unifi") return `<span class="pi">${iconHtml(c)}</span>`;
+  const dom = [...new Set(haOf(c).flatMap(d => haDoms(c, d)))][0];
+  return dom ? `<span class="pi">${brandImg(dom, 16)}</span>` : "";
+}
 // one grid cell; c = device shown in it (for the icon)
 function cellHtml(p, x, cls, tip, c, extra = "") {
   const lbl = p.r.size > 256 ? ipStr(x).split(".").slice(2).join(".") : x - p.r.start;
-  const ic = PLAN_ICONS.on && c ? `<span class="pi">${iconHtml(c)}</span>` : "";
+  const ic = planIcon(c);
   return `<div class="pc ${cls}${ic ? " ic" : ""}" data-x="${x}" data-ip="${ipStr(x)}" data-mac="${esc(c?.mac || "")}" title="${esc(tip)}" ${extra}>${ic}${lbl}</div>`;
 }
 // current state of a network as grid cells
@@ -1073,10 +1112,10 @@ function currentCells(p, mark = {}) {
 }
 const legend = items => `<div class="plan-legend">${items.map(([cls, t]) => `<span><i class="pc ${cls}"></i>${t}</span>`).join("")}</div>`;
 const LEG_CUR = [["res", "Fixed IP, in use"], ["res off", "Fixed IP, not in use"], ["dyn", "Dynamic, in use"], ["conf", "Conflict"], ["gw", "Gateway"], ["pool", "Free, DHCP pool"], ["free", "Free"]];
-function syncIconBoxes() { document.querySelectorAll(".planIconsCb").forEach(cb => cb.checked = PLAN_ICONS.on); }
-document.addEventListener("change", e => {
-  if (!e.target.classList?.contains("planIconsCb")) return;
-  PLAN_ICONS.on = e.target.checked; store.set("planIcons", PLAN_ICONS.on); syncIconBoxes();
+function syncIconBoxes() { document.querySelectorAll(".plan-icons-slot").forEach(x => x.innerHTML = iconSeg()); }
+document.addEventListener("click", e => {
+  const b = e.target.closest?.("[data-pim]"); if (!b) return;
+  PLAN_ICONS.mode = b.dataset.pim; store.set("planIconMode", PLAN_ICONS.mode);
   if ($("#dlgPlan").open) renderPlan(); if ($("#dlgClean").open) renderClean();
 });
 function renderPlan() {
@@ -1088,7 +1127,7 @@ function renderPlan() {
     <td><span class="ubar ${pct >= 80 ? "hi" : ""}"><i style="width:${pct}%"></i></span>${pct} % <span class="muted">(${p.used}/${p.usable})</span></td></tr>`; }).join("");
   const p = ps.find(x => x.n.id === PLAN.sel);
   if (!p) { $("#planGridWrap").innerHTML = ""; return; }
-  $("#planGridWrap").innerHTML = `<div class="cl-tabs" style="border:0;margin:16px 0 0"><div class="sec-title" style="margin:0">${esc(p.n.name)} · ${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</div><span class="sp"></span><label class="rc-opt plan-icons" title="Show the device icon in every cell"><input type="checkbox" class="planIconsCb"><span>Show icons</span></label></div>
+  $("#planGridWrap").innerHTML = `<div class="cl-tabs" style="border:0;margin:16px 0 0"><div class="sec-title" style="margin:0">${esc(p.n.name)} · ${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</div><span class="sp"></span><span class="plan-icons-slot"></span></div>
     ${legend(LEG_CUR)}<div class="plan-grid">${currentCells(p)}</div>`;
   syncIconBoxes();
 }
@@ -1105,6 +1144,8 @@ $("#btnPlan").addEventListener("click", openPlan);
 
 // ---------- CleanUp Proposal ----------
 const CL = { strategy: "min", end: null, rows: [], m: { move: true, rc: false, pool: true }, tab: "plan", running: false, done: false, confirm: false, ha: null };
+const NOT_HA = "Not in Home Assistant";
+const haGroupKey = c => [...new Set(haOf(c).flatMap(d => haDoms(c, d)))].sort()[0] || NOT_HA;
 const groupKey = c => { const v = (c.oui || "").replace(/,?\s*(inc|ltd|llc|gmbh|co|corp|corporation|limited|technology|technologies|electronics|trading)\.?\b.*$/i, "").trim(); return v || (c.name || c.hostname || "Other").split(/[\s_-]/)[0] || "Other"; };
 function defaultEnd(p) {
   const first = p.r.start + 1, size = p.r.size, offs = size >= 64 ? [0.39, 0.59, 0.2, 0.78].map(f => Math.round(size * f / (size >= 200 ? 10 : 1)) * (size >= 200 ? 10 : 1)) : [Math.floor(size / 2)];
@@ -1129,8 +1170,9 @@ function buildClean() {
     for (const c of fixed) if (!plan.has(c.mac)) { const x = pick(); if (x < 0) { err = "Not enough room in the fixed range – raise the limit."; break; } plan.set(c.mac, x); taken.add(x); }
   } else {
     const groups = {};
-    for (const c of fixed) (groups[groupKey(c)] ||= []).push(c);
-    const order = Object.entries(groups).sort((a, b) => b[1].length - a[1].length || a[0].localeCompare(b[0]));
+    const key = CL.strategy === "ha" ? haGroupKey : groupKey;
+    for (const c of fixed) (groups[key(c)] ||= []).push(c);
+    const order = Object.entries(groups).sort((a, b) => (a[0] === NOT_HA) - (b[0] === NOT_HA) || b[1].length - a[1].length || a[0].localeCompare(b[0]));
     let cur = Math.max(first, p.r.start + 10);
     for (const [g, cs] of order) {
       cs.sort((a, b) => (a.name || a.hostname || "").localeCompare(b.name || b.hostname || "", "en", { numeric: true }));
@@ -1139,7 +1181,7 @@ function buildClean() {
     }
   }
   const prev = new Map(CL.rows.map(r => [r.c.mac, r.sel]));
-  CL.rows = fixed.filter(c => plan.has(c.mac) && plan.get(c.mac) !== ipNum(c.fixed_ip)).map(c => ({ c, nip: ipStr(plan.get(c.mac)), grp: CL.strategy === "group" ? c._grp : groupKey(c), sel: prev.get(c.mac) ?? true, status: "chg" }));
+  CL.rows = fixed.filter(c => plan.has(c.mac) && plan.get(c.mac) !== ipNum(c.fixed_ip)).map(c => ({ c, nip: ipStr(plan.get(c.mac)), grp: CL.strategy !== "min" ? c._grp : groupKey(c), sel: prev.get(c.mac) ?? true, status: "chg" }));
   return { n, p, first: first === p.gw ? first + 1 : first, end, poolS, poolE, plan, fixed, dynIn, err, poolChange: p.ps !== poolS || p.pe !== poolE };
 }
 async function openClean() {
@@ -1192,11 +1234,11 @@ function playMoves(sel) {
   sel.forEach((r, i) => {
     const a = wrap.querySelector(`.pc[data-x="${ipNum(r.c.fixed_ip)}"]`), z = wrap.querySelector(`.pc[data-x="${ipNum(r.nip)}"]`); if (!a || !z) return;
     const ra = a.getBoundingClientRect(), rz = z.getBoundingClientRect(), fly = a.cloneNode(true);
-    fly.className = "pc res cg-fly" + (PLAN_ICONS.on ? " ic" : ""); fly.removeAttribute("data-x");
+    fly.className = "pc res cg-fly" + (planIcon(r.c) ? " ic" : ""); fly.removeAttribute("data-x");
     Object.assign(fly.style, { left: ra.left - W.left + "px", top: ra.top - W.top + "px", width: ra.width + "px", height: ra.height + "px" });
     wrap.appendChild(fly);
     setTimeout(() => { a.classList.add("left"); fly.style.transform = `translate(${rz.left - ra.left}px, ${rz.top - ra.top}px)`; }, 250 + i * 180);
-    fly.addEventListener("transitionend", e => { if (e.propertyName !== "transform") return; fly.innerHTML = (PLAN_ICONS.on ? `<span class="pi">${iconHtml(r.c)}</span>` : "") + (ipNum(r.nip) - CL.b.p.r.start); fly.classList.add("mv"); fly.title = `${r.c.name || r.c.mac}: ${r.c.fixed_ip} → ${r.nip}`; }, { once: true });
+    fly.addEventListener("transitionend", e => { if (e.propertyName !== "transform") return; fly.innerHTML = planIcon(r.c) + (ipNum(r.nip) - CL.b.p.r.start); fly.classList.add("mv"); fly.title = `${r.c.name || r.c.mac}: ${r.c.fixed_ip} → ${r.nip}`; }, { once: true });
   });
 }
 function renderClean() {
@@ -1225,7 +1267,7 @@ function renderClean() {
   // measures
   const m = (k, title, desc, dis) => `<label class="measure"><input type="checkbox" data-cm="${k}" ${CL.m[k] && !dis ? "checked" : ""} ${dis || CL.running || CL.done ? "disabled" : ""}><span class="h">${title}</span><span class="d">${desc}</span></label>`;
   const nWifi = wifi.length, nOther = sel.filter(r => needsNewIp(r.c, r.nip) && !canReconnect(r.c)).length;
-  $("#clM1").innerHTML = m("move", `1 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} into .${first & 255} – .${end & 255}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."} Untick single devices below.${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range.", !CL.rows.length);
+  $("#clM1").innerHTML = m("move", `1 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} into .${first & 255} – .${end & 255}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."} Untick single devices below.${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range.", !CL.rows.length);
   $("#clMoves").hidden = !CL.rows.length;
   $("#clM2").innerHTML = m("rc", `2 · Reconnect ${nWifi} Wi-Fi ${nWifi === 1 ? "client" : "clients"} afterwards`, nWifi ? `So they take the new IP right away (one per second).${nOther ? ` ${nOther} wired or offline ${nOther === 1 ? "device takes" : "devices take"} it at the next DHCP renewal.` : ""}` : "No online Wi-Fi client is affected.", !nWifi || !CL.m.move);
   $("#clM3").innerHTML = m("pool", `3 · Change the DHCP pool ${p.ps >= 0 ? `.${p.ps & 255} – .${p.pe & 255}` : "(none)"} → .${poolS & 255} – .${poolE & 255}`, b.poolChange ? `${poolE - poolS + 1} addresses for dynamic clients (today ${p.dyn} in use). ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in the new fixed range and will get a pool address at the next renewal. ` : ""}Changed in UniFi as the last step – you confirm it once more.` : "The pool already matches.", !b.poolChange);
@@ -1414,8 +1456,8 @@ function renderInfo() {
     ${c.mac && !c.is_device && c.conn === "wired" && !c.online ? `<button class="btn" type="button" id="btnWol" style="width:100%"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:6px"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>Wake on LAN</button>` : ""}
     ${haOf(c).length ? `<div class="sec-title">Home Assistant</div><div class="card ha-card">${haOf(c).map(d => `<div class="ha-row">
         <span class="ha-logos">${haDoms(c, d).map(x => brandImg(x, 28)).join("")}</span>
-        <div class="ha-info"><b>${esc(d.name_by_user || d.name)}</b><span class="muted">${esc(haDoms(c, d).join(", "))}${d.area ? " · " + esc(d.area) : ""}</span><span>${haDot(d.status)} ${esc(HA_ST[d.status]?.[0] || d.status)}</span></div>
-        <a class="btn" href="/config/devices/device/${encodeURIComponent(d.id)}" target="_top" title="Open this device in Home Assistant">Open in HA ›</a></div>`).join("")}</div>` : ""}
+        <div class="ha-info"><b>${esc(d.name_by_user || d.name)}</b><span class="muted">${esc(haDoms(c, d).join(", "))}${d.area ? " · " + esc(d.area) : ""}</span><span>${haDot(d.status)} ${esc(HA_ST[d.status]?.[0] || d.status)}</span>${d.status === "partial" && d.unavailable?.length ? `<details class="ha-unav"><summary>${d.unavailable.length} unavailable ${d.unavailable.length === 1 ? "entity" : "entities"}</summary>${d.unavailable.map(e => `<code>${esc(e)}</code>`).join("")}</details>` : ""}</div>
+        <a class="btn" href="/config/devices/device/${encodeURIComponent(d.id)}" target="_blank" rel="noopener" title="Open this device in Home Assistant (new tab)">Open in HA ↗</a></div>`).join("")}</div>` : ""}
     ${c.mac && webIp(c) ? `<div class="sec-title">Network check</div><div class="card ports" id="portBox">${portsHtml(c)}</div>` : ""}
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
@@ -1798,7 +1840,7 @@ $("#impTpl").addEventListener("click", () => saveFile("dhcp-import-template.csv"
 // ---------- views (SharePoint-style) ----------
 const clone = o => JSON.parse(JSON.stringify(o ?? null));
 const BUILTIN_VIEWS = [
-  { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: [], colFilters: {}, facets: {}, sort: { key: "name", dir: 1 } } },
+  { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name"], colFilters: {}, facets: {}, sort: { key: "name", dir: 1 } } },
   { id: "dhcp", name: "DHCP Reservations", builtin: true, state: { hiddenCols: COLS.map(c => c.key).filter(k => !["mac", "name", "fixed_ip", "ip", "last_seen"].includes(k)), colOrder: ["mac", "name", "fixed_ip", "ip", "last_seen"], colFilters: {}, facets: { res: ["yes"] }, sort: { key: "fixed_ip", dir: 1 } } },
 ];
 const VIEWS = { custom: [], def: "all", current: store.get("currentView", null), loaded: false, armDelete: false };
@@ -2269,7 +2311,8 @@ for (const id of ["#cmpBack", "#rstBack"]) $(id).addEventListener("click", () =>
 // current table in the same shape as a stored version
 function currentAsVersion() {
   const clients = {};
-  for (const c of state.clients) if (c.mac) clients[c.mac] = { name: c.name, hostname: c.hostname, oui: c.oui, note: c.note, use_fixedip: c.use_fixedip, fixed_ip: c.fixed_ip, fixed_network_id: c.use_fixedip ? (c.fixed_network_id || c._resNet) : "", network_id: c.network_id, ip: c.ip, conn: c.conn, is_device: c.is_device, device_name: c.device_name, device_model: c.device_model, fixed_ap_enabled: c.fixed_ap_enabled, fixed_ap_mac: c.fixed_ap_mac, local_dns_record_enabled: c.local_dns_record_enabled, local_dns_record: c.local_dns_record, first_seen: c.first_seen, last_seen: c.last_seen };
+  for (const c of state.clients) if (c.mac) clients[c.mac] = { name: c.name, hostname: c.hostname, oui: c.oui, note: c.note, use_fixedip: c.use_fixedip, fixed_ip: c.fixed_ip, fixed_network_id: c.use_fixedip ? (c.fixed_network_id || c._resNet) : "", network_id: c.network_id, ip: c.ip, conn: c.conn, is_device: c.is_device, device_name: c.device_name, device_model: c.device_model, fixed_ap_enabled: c.fixed_ap_enabled, fixed_ap_mac: c.fixed_ap_mac, local_dns_record_enabled: c.local_dns_record_enabled, local_dns_record: c.local_dns_record, first_seen: c.first_seen, last_seen: c.last_seen,
+    ...(state.haOk ? (() => { const ds = haOf(c); return { ha_status: ds.length ? haWorst(ds) : "", ha_integrations: [...new Set(ds.flatMap(d => haDoms(c, d)))].sort().join(", ") }; })() : {}) };
   return { meta: { id: null, created: state.fetchedAt, label: "Current" }, networks: state.networks, aps: state.aps, clients };
 }
 function diffVersions(A, B) {
@@ -2291,6 +2334,11 @@ function diffVersions(A, B) {
       ch("Local DNS", a.local_dns_record_enabled ? a.local_dns_record : "", b.local_dns_record_enabled ? b.local_dns_record : "");
       if (a.ip && b.ip) ch("IP address", a.ip, b.ip, "ip");
       if (a.network_id && b.network_id) ch("Network", nl(A, a.network_id), nl(B, b.network_id), "moved");
+      // Home Assistant status: info only, when both sides recorded it
+      if (a.ha_status !== undefined && b.ha_status !== undefined) {
+        const hl = x => x.ha_status ? `${HA_ST[x.ha_status]?.[0] || x.ha_status}${x.ha_integrations ? " (" + x.ha_integrations + ")" : ""}` : "not in HA";
+        ch("Home Assistant", hl(a), hl(b), "ha");
+      }
     }
     if (cats.size) rows.push({ mac, a, b, cats, changes });
   }
@@ -2298,7 +2346,7 @@ function diffVersions(A, B) {
   const removedByHost = {};
   for (const r of rows) if (r.cats.has("removed") && r.a.hostname) (removedByHost[r.a.hostname.toLowerCase()] ||= []).push(r);
   for (const r of rows) if (r.cats.has("new") && r.b.hostname) { const twin = removedByHost[r.b.hostname.toLowerCase()]; if (twin) { r.twin = twin[0].mac; twin[0].twin = r.mac; } }
-  const order = { new: 0, removed: 1, changed: 2, ip: 3, moved: 4 };
+  const order = { new: 0, removed: 1, changed: 2, ip: 3, moved: 4, ha: 5 };
   const first = r => Math.min(...[...r.cats].map(c => order[c]));
   return rows.sort((x, y) => first(x) - first(y) || ((x.b || x.a).name || (x.b || x.a).hostname || x.mac).localeCompare((y.b || y.a).name || (y.b || y.a).hostname || y.mac, "en"));
 }
@@ -2353,14 +2401,14 @@ async function compareVersions(aId, bId) {
     renderCompare();
   } catch (e) { $("#cmpRows").innerHTML = `<tr><td colspan="4" class="err">${esc(e.message)}</td></tr>`; }
 }
-const CAT = { new: ["New device", "new"], removed: ["Removed", "err"], changed: ["Changed", "chg"], ip: ["IP changed", "same"], moved: ["Moved network", "same"] };
+const CAT = { new: ["New device", "new"], removed: ["Removed", "err"], changed: ["Changed", "chg"], ip: ["IP changed", "same"], moved: ["Moved network", "same"], ha: ["HA status", "same"] };
 function renderCompare() {
   const { rows, A, B, live } = VER.cmp, cnt = k => rows.filter(r => r.cats.has(k)).length;
-  const pills = [["all", "All", rows.length], ["new", "New devices", cnt("new")], ["removed", "Removed", cnt("removed")], ["changed", "Changed", cnt("changed")], ["ip", "IP changed", cnt("ip")], ["moved", "Moved network", cnt("moved")]];
+  const pills = [["all", "All", rows.length], ["new", "New devices", cnt("new")], ["removed", "Removed", cnt("removed")], ["changed", "Changed", cnt("changed")], ["ip", "IP changed", cnt("ip")], ["moved", "Moved network", cnt("moved")], ["ha", "HA status", cnt("ha")]];
   $("#cmpSum").innerHTML = pills.filter(p => p[0] === "all" || p[2]).map(([k, l, n]) => `<button type="button" class="pill" data-cf="${k}" aria-pressed="${VER.cmpFilter === k}">${l} <b>${n}</b></button>`).join("") +
     `<span class="pill">Devices <b>${Object.keys(A.clients).length}</b> → <b>${Object.keys(B.clients).length}</b></span>`;
   for (const b of $("#cmpSum").querySelectorAll("[data-cf]")) b.addEventListener("click", () => { VER.cmpFilter = b.dataset.cf; renderCompare(); });
-  const CO = { new: 0, removed: 1, changed: 2, ip: 3, moved: 4 };
+  const CO = { new: 0, removed: 1, changed: 2, ip: 3, moved: 4, ha: 5 };
   const list = tsorted("cmpRows", rows.filter(r => VER.cmpFilter === "all" || r.cats.has(VER.cmpFilter)), {
     cat: r => Math.min(...[...r.cats].map(k => CO[k])), dev: r => ((r.b || r.a).name || (r.b || r.a).hostname || r.mac).toLowerCase(), det: r => r.changes.map(x => x[0]).join(", ") });
   const nl = (v, id) => { const n = (v.networks || []).find(x => x.id === id); return n ? n.name + (n.vlan ? ` (${n.vlan})` : "") : ""; };
@@ -2388,8 +2436,8 @@ async function downloadVersionCsv(id) {
   const v = await api(`api/versions/${id}`), q = csvCell;
   const nl = nid => { const n = (v.networks || []).find(x => x.id === nid); return n ? n.name + (n.vlan ? ` (${n.vlan})` : "") : ""; };
   const al = mac => ((v.aps || []).find(a => a.mac === mac) || {}).name || mac;
-  const head = ["Name", "Hostname", "MAC", "Vendor", "Connection type", "Network", "Reserved", "Fixed IP", "Reservation VLAN", "IP address", "Locked to AP", "Local DNS", "Note", "First seen", "Last seen"];
-  const lines = Object.entries(v.clients).map(([mac, c]) => [c.name, c.hostname, mac, c.oui, CONN_LABEL[c.conn] || "", nl(c.network_id), c.use_fixedip ? "yes" : "no", c.use_fixedip ? c.fixed_ip : "", c.use_fixedip ? nl(c.fixed_network_id) : "", c.ip, c.fixed_ap_enabled ? al(c.fixed_ap_mac) : "", c.local_dns_record_enabled ? c.local_dns_record : "", c.note, c.first_seen ? isoDateTime(c.first_seen) : "", c.last_seen ? isoDateTime(c.last_seen) : ""].map(q).join(";"));
+  const head = ["Name", "Hostname", "MAC", "Vendor", "Connection type", "Network", "Reserved", "Fixed IP", "Reservation VLAN", "IP address", "Locked to AP", "Local DNS", "Note", "First seen", "Last seen", "HA status", "HA integrations"];
+  const lines = Object.entries(v.clients).map(([mac, c]) => [c.name, c.hostname, mac, c.oui, CONN_LABEL[c.conn] || "", nl(c.network_id), c.use_fixedip ? "yes" : "no", c.use_fixedip ? c.fixed_ip : "", c.use_fixedip ? nl(c.fixed_network_id) : "", c.ip, c.fixed_ap_enabled ? al(c.fixed_ap_mac) : "", c.local_dns_record_enabled ? c.local_dns_record : "", c.note, c.first_seen ? isoDateTime(c.first_seen) : "", c.last_seen ? isoDateTime(c.last_seen) : "", c.ha_status === undefined ? "" : (c.ha_status ? (HA_ST[c.ha_status]?.[0] || c.ha_status) : "not in HA"), c.ha_integrations || ""].map(q).join(";"));
   saveFile(`version-${id}.csv`, [head.map(q).join(";"), ...lines].join("\r\n"));
 }
 
@@ -2428,6 +2476,18 @@ $("#q").addEventListener("input", e => { state.q = e.target.value; renderAll(); 
 $("#btnReload").addEventListener("click", load);
 // filter pane: the blue icon hides / shows it (mobile: slide-in, desktop: collapse)
 const mobile = () => matchMedia("(max-width:760px)").matches;
+// ---------- theme: auto (follows the system / Home Assistant) → light → dark ----------
+const THEMES = { auto: ["Auto", '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor"/>'], light: ["Light", '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'], dark: ["Dark", '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>'] };
+function applyTheme(t) {
+  if (!THEMES[t]) t = "auto";
+  if (t === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+  const [lbl, ic] = THEMES[t], b = $("#btnTheme");
+  b.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ic}</svg>${lbl}`;
+  b.title = `Theme: ${lbl} – click to switch (Auto → Light → Dark)`; b.dataset.t = t;
+}
+$("#btnTheme").addEventListener("click", () => { const order = ["auto", "light", "dark"], t = order[(order.indexOf($("#btnTheme").dataset.t) + 1) % 3]; store.set("theme", t); applyTheme(t); });
+applyTheme(store.get("theme", "auto"));
+$("#appVer").textContent = APP_VER ? "Version " + APP_VER : "";
 $("#btnMenu").addEventListener("click", e => { e.stopPropagation(); if (mobile()) $("#side").classList.toggle("open"); else { document.body.classList.remove("side-off"); store.set("sideOff", false); } });
 $("#btnSide").addEventListener("click", () => { if (mobile()) $("#side").classList.remove("open"); else { document.body.classList.add("side-off"); store.set("sideOff", true); } });
 document.addEventListener("click", e => { if (mobile() && $("#side").classList.contains("open") && !e.target.closest("#side") && !e.target.closest("#btnMenu")) $("#side").classList.remove("open"); });

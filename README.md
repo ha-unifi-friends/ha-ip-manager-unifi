@@ -24,7 +24,7 @@ versions you can compare and restore.
 
 | | |
 |---|---|
-| **One table for everything** | Every client and UniFi device (APs, switches, gateway) with MAC, name, fixed IP, network/VLAN, connection type (WiFi, wired with switch port, Teleport), locked AP, first and last seen. Sort and filter every column. Reorder columns by drag & drop. |
+| **One table for everything** | Every client and UniFi device (APs, switches, gateway) with MAC, name, fixed IP, network/VLAN, connection type (WiFi, wired with switch port, Teleport), IP mode (*Fix* / *DHCP*), UniFi and Home Assistant status, locked AP, first and last seen. Sort and filter every column. Reorder columns by drag & drop. |
 | **Issue hints** | Duplicate IP, fixed IP outside its network, fixed IP inside the DHCP pool, device currently using a different IP, random/private MAC, device not on its locked AP, VLAN override. |
 | **Edit** | Name, note, fixed IP + network, lock to an access point, local DNS record. Add reservations for MACs the controller has never seen. Remove a reservation or forget the client. |
 | **Views** | SharePoint-style views store columns, order, filters and sort. Built-in *All* and *DHCP Reservations*. Views are shared by every browser. |
@@ -40,7 +40,7 @@ versions you can compare and restore.
 | **New-device alerts** | A Home Assistant notification and the event `clients_reservations_new_device` when a MAC appears that was never seen before – optionally only for certain networks. |
 | **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |
 | **Ping & port check** | Ping with round-trip times, and an on-demand check of ~30 common TCP ports per device; web UIs become links, Telnet/FTP are flagged. |
-| **Housekeeping** | Vendor lookup for unknown MAC prefixes, duplicate names / DNS names, *Inactive* filter (not seen > 30 / 90 / 365 days), hosts-file export, Wake on LAN. |
+| **Housekeeping** | Vendor lookup for unknown MAC prefixes, duplicate names / DNS names, *Inactive* filter (not seen > 30 / 90 / 365 days), hosts-file export, Wake on LAN, light / dark switch. |
 | **Safe bulk changes** | Every bulk action (CSV import, restore, replace subnet, names from HA) saves a version of the current settings first, so you can always go back via *Versions › Restore*. |
 
 ## Screenshots

@@ -34,6 +34,23 @@ VENDORS_PATH = os.environ.get("VENDORS_PATH", "/data/vendors.json")
 VENDOR_API = os.environ.get("VENDOR_API", "https://api.macvendors.com/")
 KNOWN_LOCK = threading.Lock()
 VENDOR_LOCK = threading.Lock()
+def _addon_version():
+    """Version from the add-on's config.yaml (copied into the image), else the BUILD_VERSION build arg."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    for p in (os.path.join(here, "config.yaml"), os.path.join(here, "..", "config.yaml")):
+        try:
+            with open(p, encoding="utf-8") as f:
+                for line in f:
+                    m = re.match(r'version:\s*"?([0-9A-Za-z.+-]+)"?', line)
+                    if m:
+                        return m.group(1)
+        except OSError:
+            pass
+    v = os.environ.get("BUILD_VERSION", "")
+    return v if re.fullmatch(r"[0-9A-Za-z.+-]{1,32}", v) else ""
+
+
+ADDON_VERSION = _addon_version()
 HIST_CACHE = {}  # version id -> (mtime, clients, networks, aps)
 SCAN_LOCK = threading.Lock()
 WATCH_INTERVAL = int(os.environ.get("WATCH_INTERVAL", "120"))
@@ -374,6 +391,8 @@ def merge_device(row, d, nets):
         "port": up.get("uplink_remote_port") or up.get("port_idx") if not wireless else None,
         "essid": "",
         "last_seen": d.get("last_seen") or row.get("last_seen") or 0,
+        # "static" when the IP is set on the device itself (Settings › IP configuration), "dhcp" otherwise
+        "dev_ip_mode": "static" if kind == "gateway" else str((d.get("config_network") or {}).get("type") or "").lower(),
     })
     if kind == "gateway":
         row["uplink"], row["port"] = "Internet (WAN)", None
@@ -584,7 +603,9 @@ def save_views(body):
 
 
 # Devices from the Home Assistant device registry that carry a MAC connection.
-HA_TEMPLATE = """{%- set ns = namespace(out=[]) -%}
+# Buttons, events and updates are stateless/actions: e.g. the UniFi integration's PoE power-cycle buttons are
+# 'unavailable' on every port without PoE – they say nothing about the device's health.
+HA_TEMPLATE = """{%- set ns = namespace(out=[]) -%}{%- set ns_skip = '(button|event|update|scene)[.]' -%}
 {%- for did in states | map(attribute='entity_id') | map('device_id') | reject('none') | unique -%}
 {%- set macs = device_attr(did, 'connections') | selectattr(0, 'eq', 'mac') | map(attribute=1) | map('lower') | list -%}
 {%- if macs -%}
@@ -592,8 +613,8 @@ HA_TEMPLATE = """{%- set ns = namespace(out=[]) -%}
   'domains': device_attr(did, 'config_entries') | map('config_entry_attr', 'domain') | reject('none') | list, 'area': area_name(did),
   'entry_states': device_attr(did, 'config_entries') | map('config_entry_attr', 'state') | reject('none') | map('string') | list,
   'disabled': device_attr(did, 'disabled_by') is not none,
-  'entities': device_entities(did) | length,
-  'unavailable': device_entities(did) | select('is_state', 'unavailable') | list | length}] -%}
+  'entities': device_entities(did) | reject('match', ns_skip) | list | length,
+  'unavailable_ids': device_entities(did) | reject('match', ns_skip) | select('is_state', 'unavailable') | list}] -%}
 {%- endif -%}
 {%- endfor -%}
 {{ ns.out | tojson }}"""
@@ -638,7 +659,8 @@ def ha_devices():
         if macs:
             out.append({"id": d.get("id"), "macs": macs, "name_by_user": d.get("name_by_user") or "",
                         "name": d.get("name") or "", "domains": d.get("domains") or [], "area": d.get("area") or "",
-                        "status": ha_status(d)})
+                        "status": ha_status(d),
+                        "unavailable": [str(x) for x in (d.get("unavailable_ids") or [])][:50]})
     log("HA devices with MAC:", len(out))
     return {"devices": out}
 
@@ -650,12 +672,43 @@ def ha_status(d):
     states = [str(x).lower() for x in d.get("entry_states") or []]
     if states and not any(x.endswith("loaded") and not x.endswith("not_loaded") for x in states):
         return "error"
-    n, u = d.get("entities"), d.get("unavailable") or 0
+    n = d.get("entities")
+    u = len(d["unavailable_ids"]) if isinstance(d.get("unavailable_ids"), list) else (d.get("unavailable") or 0)
     if n is None:
         return "unknown"
     if n and u >= n:
         return "unavailable"
     return "partial" if u else "ok"
+
+
+HA_RANK = {"error": 0, "unavailable": 1, "partial": 2, "disabled": 3, "unknown": 4, "ok": 5}
+
+
+def ha_by_mac():
+    """MAC -> Home Assistant devices, or None when Home Assistant cannot be read."""
+    try:
+        devs = ha_devices()["devices"]
+    except Exception as e:  # noqa: BLE001
+        log("Version without Home Assistant status:", e)
+        return None
+    out = {}
+    for d in devs:
+        for m in d["macs"]:
+            out.setdefault(m, []).append(d)
+    return out
+
+
+def ha_info(c, devs):
+    """Same rule as the UI: clients ignore the UniFi integration's trackers, UniFi devices use it."""
+    rel = []
+    for d in devs:
+        doms = d["domains"] if c.get("is_device") else [x for x in d["domains"] if x != "unifi"]
+        if doms:
+            rel.append((d, doms))
+    if not rel:
+        return {"ha_status": "", "ha_integrations": ""}
+    worst = min((d["status"] for d, _ in rel), key=lambda st: HA_RANK.get(st, 4))
+    return {"ha_status": worst, "ha_integrations": ", ".join(sorted({x for _, doms in rel for x in doms}))}
 
 
 def normalize_mac(v):
@@ -722,9 +775,12 @@ def create_version(api, kind="manual", label="", user=""):
     now = int(time.time())
     vid = time.strftime("%Y%m%d-%H%M%S", time.localtime(now)) + "-" + os.urandom(2).hex()
     clients = {}
+    ha = ha_by_mac()
     for c in snap["clients"]:
         if c.get("mac"):
             clients[c["mac"]] = {k: c.get(k) for k in VERSION_FIELDS}
+            if ha is not None:  # info only: how Home Assistant saw the device
+                clients[c["mac"]].update(ha_info(c, ha.get(c["mac"], [])))
     meta = {"id": vid, "created": now, "kind": kind if kind in ("manual", "daily", "auto") else "manual",
             "label": (label or "").strip()[:80], "user": (user or "")[:60], "pinned": False,
             "devices": len(clients), "reserved": sum(1 for c in clients.values() if c.get("use_fixedip"))}
@@ -1291,7 +1347,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if method == "GET" and (path == "/" or path.endswith("/index.html")):
                 with open(os.path.join(STATIC_DIR, "index.html"), "rb") as f:
-                    return self._send(200, body=f.read(), ctype="text/html; charset=utf-8")
+                    return self._send(200, body=f.read().replace(b"__ADDON_VERSION__", ADDON_VERSION.encode()), ctype="text/html; charset=utf-8")
             if method == "GET" and path.endswith("/api/snapshot"):
                 return self._send(200, build_snapshot(API))
             if method == "POST" and path.endswith("/api/client"):
