@@ -414,6 +414,7 @@ body.plan-sz-l .pc .pi .brand-fb{font-size:15px}
 .pc.np::after{content:"";position:absolute;left:3px;right:3px;bottom:2px;height:3px;border-radius:2px;background:var(--info)}
 .pc.src{box-shadow:inset 0 0 0 2px var(--warn)}
 .pc.dst{border:2px dashed var(--ok)}
+.pc.cfl{border:2px solid var(--warn)!important;background:color-mix(in srgb,var(--warn) 30%,transparent)!important;color:var(--warn)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--warn) 35%,transparent);font-weight:700;z-index:2}
 .cg-wrap{position:relative}
 .pc.left{opacity:.35;transition:opacity .4s}
 .cg-arrows{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:4}
@@ -1335,7 +1336,8 @@ function buildCleanFor(n, endX, prev) {
   const fixed = state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
   const devFixed = state.clients.filter(c => c.is_device && c.use_fixedip && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
   const taken = new Set([p.gw, ...devFixed.map(c => ipNum(c.fixed_ip))]);
-  const dynIn = state.clients.filter(c => c.online && c.ip && !(c.use_fixedip && c.fixed_ip === c.ip) && inFixed(ipNum(c.ip)));
+  // dynamic clients inside the new fixed block (UniFi devices with an IP set on the device are not dynamic)
+  const dynIn = state.clients.filter(c => c.online && c.ip && !(c.use_fixedip && c.fixed_ip === c.ip) && !(c.is_device && c.dev_ip_mode === "static") && inFixed(ipNum(c.ip)));
   const busyNow = new Set(dynIn.map(c => ipNum(c.ip)));
   const plan = new Map(); let err = "";
   if (CL.strategy === "min") {
@@ -1407,22 +1409,27 @@ function changeCells(b, sel) {
   const { p, poolS, poolE } = b, mark = {};
   if (CL.m.move) for (const r of sel) { mark[ipNum(r.c.fixed_ip)] = { cls: "src", tip: ` → moves to ${r.nip}` }; mark[ipNum(r.nip)] = { cls: "dst", tip: ` · new address of ${r.c.name || r.c.mac}` }; }
   if (CL.m.pool && b.poolChange) for (let x = poolS; x <= poolE; x++) mark[x] = { cls: ((mark[x]?.cls || "") + " np").trim(), tip: (mark[x]?.tip || "") + " · DHCP pool after the change" };
+  // conflicts: dynamic clients sitting in the new fixed block
+  for (const c of b.dynIn) { const x = ipNum(c.ip); mark[x] = { cls: ((mark[x]?.cls || "") + " cfl").trim(), tip: (mark[x]?.tip || "") + ` · CONFLICT: ${c.name || c.hostname || c.mac} uses this address dynamically – it gets a pool address at its next renewal` }; }
   return currentCells(p, mark);
 }
 function drawArrows(sel, wrap = $("#cgWrap")) {
   const svg = wrap?.querySelector(".cg-arrows"); if (!wrap || !svg) return;
   const W = wrap.getBoundingClientRect(), pos = x => { const el = wrap.querySelector(`.pc[data-x="${x}"]`); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left - W.left + r.width / 2, y: r.top - W.top + r.height / 2, el, r }; };
   svg.setAttribute("viewBox", `0 0 ${W.width} ${W.height}`); svg.setAttribute("width", W.width); svg.setAttribute("height", W.height);
-  const col = getComputedStyle(document.documentElement).getPropertyValue("--ok").trim() || "#39c46b";
+  const css = getComputedStyle(document.documentElement), col = css.getPropertyValue("--ok").trim() || "#39c46b", wcol = css.getPropertyValue("--warn").trim() || "#f5a623";
   const mid = "ah" + (wrap.dataset.netid || "");
-  let paths = `<defs><marker id="${mid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="${col}"/></marker></defs>`;
+  let paths = `<defs><marker id="${mid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="${col}"/></marker><marker id="${mid}w" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="${wcol}"/></marker></defs>`;
+  const busy = new Set(sel.flatMap(r => r.b.dynIn.map(c => c.ip)));
+  const later = [];
   for (const r of CL.m.move ? sel : []) {
     const a = pos(ipNum(r.c.fixed_ip)), z = pos(ipNum(r.nip)); if (!a || !z) continue;
     const mx = (a.x + z.x) / 2, my = (a.y + z.y) / 2, dx = z.x - a.x, dy = z.y - a.y, len = Math.hypot(dx, dy) || 1, bend = Math.min(80, len * 0.25);
     const cx = mx - dy / len * bend, cy = my + dx / len * bend;
-    paths += `<path d="M${a.x} ${a.y} Q${cx} ${cy} ${z.x} ${z.y}" fill="none" stroke="${col}" stroke-width="2" stroke-opacity=".85" marker-end="url(#${mid})"><title>${esc(r.c.name || r.c.mac)}: ${esc(r.c.fixed_ip)} → ${esc(r.nip)}</title></path>`;
+    const bad = busy.has(r.nip), dp = `<path d="M${a.x} ${a.y} Q${cx} ${cy} ${z.x} ${z.y}" fill="none" stroke="${bad ? wcol : col}" stroke-width="${bad ? 2.6 : 2}" stroke-opacity="${bad ? 1 : .85}" marker-end="url(#${mid}${bad ? "w" : ""})"><title>${esc(r.c.name || r.c.mac)}: ${esc(r.c.fixed_ip)} → ${esc(r.nip)}${bad ? " – CONFLICT: address is in use by a dynamic client" : ""}</title></path>`;
+    bad ? later.push(dp) : paths += dp;
   }
-  svg.innerHTML = paths;
+  svg.innerHTML = paths + later.join(""); // conflict arrows on top
 }
 function playMoves(sel, wrap = $("#cgWrap")) {
   if (!wrap || !CL.m.move) return;
@@ -1439,7 +1446,7 @@ function playMoves(sel, wrap = $("#cgWrap")) {
   });
 }
 const LEG_PLAN = [["res", "Fixed IP"], ["res mv", "Fixed IP, moved"], ["was", "Freed"], ["gw", "Gateway"], ["pool", "DHCP pool"], ["free", "Free (reserve here)"]];
-const LEG_CHG = [["res src", "Moves away"], ["free dst", "New address"], ["free np", "DHCP pool after the change"], ["dyn", "Dynamic, gets a pool address at renewal"]];
+const LEG_CHG = [["res src", "Moves away"], ["free dst", "New address"], ["free np", "DHCP pool after the change"], ["dyn", "Dynamic, gets a pool address at renewal"], ["dyn cfl", "Conflict: dynamic client in the new fixed block (orange arrow = move onto it)"]];
 const poolTxt = (s, e) => s >= 0 ? `.${s & 255} – .${e & 255}` : "(none)";
 function renderClean() {
   const b0 = buildClean(); if (!b0) return;

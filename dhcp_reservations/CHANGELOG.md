@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.23.3 – 2026-10-31
+- *Preview changes*: **conflicts are orange** – addresses in the new fixed block that a dynamic client currently uses get a bold orange frame, and a move onto such an address is drawn as an orange arrow on top of the others.
+- UniFi devices with an IP set on the device are no longer counted as dynamic conflicts.
+
 ## 1.23.2 – 2026-10-31
 - **Play** moved up into the *Preview changes* switch (appears when the preview is on).
 - CleanUp for all networks: new column **Conflicts** – dynamic clients that currently use an address inside the new fixed block (0 when none; hover for the devices). They get a pool address at their next DHCP renewal.
