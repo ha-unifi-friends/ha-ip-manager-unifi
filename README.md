@@ -18,7 +18,7 @@ which fixed IP in which VLAN. **IP Manager for UniFi** is a Home Assistant add-o
 UniFi Network, and it adds bulk tools that UniFi doesn't have: subnet migration, CSV import, names from Home Assistant, and
 versions you can compare and restore.
 
-▶️ **[Watch the 1½-minute demo video](docs/promo.mp4)**
+▶️ **[Watch the 1¾-minute demo video](docs/promo.mp4)**
 
 ## Features
 
