@@ -50,6 +50,7 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 - **Network rules** (Actions › Network rules): “Vendor / Name / Hostname contains … → network”. Devices in another network get the issue *Expected in …*.
 - **Export hosts file** (Actions): fixed IPs with local DNS record and a host name derived from the device name.
 - **Wake on LAN:** button for offline wired devices. Uses Home Assistant's `wake_on_lan` service when it is set up (`wake_on_lan:` in configuration.yaml) and additionally sends a magic packet to the subnet broadcast and the device IP. Waking devices in another VLAN only works if the network forwards the packet.
+- **Open ports:** *Check ports* in the detail panel tests about 30 common TCP ports on the device (on demand, one device at a time, in small batches). Web ports become links with the page title; Telnet and FTP are flagged as issues. The result reflects what Home Assistant's network can reach – from another VLAN it may differ. If UniFi Threat Management (IDS/IPS) is on, it may still log the check.
 - **Inactive filter:** not seen for > 30 / 90 / 365 days or never seen.
 - **CSV export** of the current filtered view.
 - **CSV import (bulk):** Actions → *Import CSV*. Required column `MAC`; optional `Name`, `Note`,

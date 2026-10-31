@@ -271,6 +271,16 @@ dialog#dlgPlan::backdrop,dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
 .plan-legend .pc:hover{outline:none}
 .rule-row{display:grid;grid-template-columns:130px 1fr 220px 34px;gap:8px;align-items:center;margin-bottom:8px}
 .rule-row input,.rule-row select{width:100%}
+.ports{padding:10px 14px;display:flex;flex-direction:column;gap:8px}
+.port-list{display:flex;flex-wrap:wrap;gap:6px}
+.pchip{display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--fg);text-decoration:none;max-width:100%}
+.pchip b{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace}
+.pchip .t{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}
+a.pchip{border-color:var(--accent);color:var(--accent)}
+a.pchip:hover{background:var(--sel)}
+.pchip.bad{border-color:var(--bad);color:var(--bad)}
+.ports .foot{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted)}
+.ports .foot .btn{margin-left:auto;padding:4px 10px;font-size:12px}
 .imp{display:flex;flex-direction:column;max-height:calc(100vh - 50px)}
 .imp-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
 .imp-head h2{margin:0;font-size:15px;flex:1}
@@ -637,6 +647,7 @@ function computeWarnings() {
     if (c.fixed_ap_enabled && c.online && c.ap_mac && c.ap_mac !== c.fixed_ap_mac) w.push(["warn", "Not on locked AP"]);
     if (c.vno_id) w.push(["info", "VLAN override"]);
     if (c.mac && !c.is_device && c.name && byName[c.name.trim().toLowerCase()]?.length > 1) w.push(["warn", "Duplicate name"]);
+    for (const o of state.scans?.[c.mac]?.open || []) if (o.port === 23 || o.port === 21) w.push(["warn", o.service + " open"]);
     if (c.local_dns_record_enabled && c.local_dns_record && byDns[c.local_dns_record.trim().toLowerCase()]?.length > 1) w.push(["bad", "Duplicate DNS name"]);
     if (c.mac && !c.is_device && c.conn !== "teleport") {
       const want = ruleNet(c), have = c._resNet || c.network_id;
@@ -657,8 +668,8 @@ const FACETS = [
   { id: "kind", title: "Type", get: c => c.is_device ? "dev" : "client", opts: () => [["client", "Clients"], ["dev", "UniFi devices"]] },
   { id: "conn", title: "Connection", get: c => c.conn, opts: () => [["wifi", "WiFi"], ["wired", "Wired"], ["teleport", "Teleport"]] },
   { id: "res", title: "Reservation", get: c => c.use_fixedip ? "yes" : "no", opts: () => [["yes", "With fixed IP"], ["no", "Without fixed IP"]] },
-  { id: "hint", title: "Issues", multi: c => [c._serious ? "problem" : "", ...c._warn.map(w => w[1] === "Random MAC" ? "random" : w[1] === "In DHCP pool" ? "pool" : w[1].startsWith("Expected in ") ? "wrongnet" : w[1].startsWith("Duplicate") ? "dup" : "")].filter(Boolean),
-    opts: () => [["problem", "Problems"], ["pool", "In DHCP pool"], ["random", "Random MAC"], ["dup", "Duplicates (IP / name / DNS)"], ["wrongnet", "Wrong network (rules)"]] },
+  { id: "hint", title: "Issues", multi: c => [c._serious ? "problem" : "", ...c._warn.map(w => w[1] === "Random MAC" ? "random" : w[1] === "In DHCP pool" ? "pool" : w[1].startsWith("Expected in ") ? "wrongnet" : w[1].startsWith("Duplicate") ? "dup" : /^(Telnet|FTP) open$/.test(w[1]) ? "insecure" : "")].filter(Boolean),
+    opts: () => [["problem", "Problems"], ["pool", "In DHCP pool"], ["random", "Random MAC"], ["dup", "Duplicates (IP / name / DNS)"], ["wrongnet", "Wrong network (rules)"], ["insecure", "Insecure ports (Telnet / FTP)"]] },
   { id: "seen", title: "Inactive", multi: c => { if (c.is_device || c.online || c.conn === "teleport") return []; if (!c.last_seen) return ["never"]; const d = (Date.now() / 1000 - c.last_seen) / 86400; return [d > 30 ? "30" : "", d > 90 ? "90" : "", d > 365 ? "365" : ""].filter(Boolean); },
     opts: () => [["30", "Not seen > 30 days"], ["90", "Not seen > 90 days"], ["365", "Not seen > 1 year"], ["never", "Never seen"]] },
   { id: "lock", title: "Locked to AP", get: c => c.fixed_ap_enabled ? c.fixed_ap_mac : (c.conn === "wifi" ? "none" : ""), opts: () => [...uniq(state.clients.filter(c => c.fixed_ap_enabled).map(c => c.fixed_ap_mac)).map(m => [m, apName(m)]), ["none", "Not locked"]] },
@@ -860,6 +871,29 @@ function wireGrips() {
   }
 }
 
+// ---------- port check ----------
+const PORTSCAN = { running: null };
+async function loadScans() { try { state.scans = (await api("api/portscans")).scans || {}; } catch { state.scans = {}; } }
+function portsHtml(c) {
+  const sc = state.scans?.[c.mac], ip = webIp(c), busy = PORTSCAN.running === c.mac;
+  const btn = `<button class="btn" type="button" id="btnScan" ${busy ? "disabled" : ""}>${busy ? '<span class="spin"></span> Checking …' : sc ? "Check again" : "Check ports"}</button>`;
+  if (!sc) return `<div class="foot"><span>Checks about 30 common TCP ports on ${esc(ip)} from Home Assistant's network.${c.online ? "" : " The device is offline."}</span>${btn}</div>`;
+  const chips = sc.open.map(o => {
+    const inner = `<b>${o.port}</b><span>${esc(o.service)}</span>${o.title ? `<span class="t" title="${esc(o.title)}">${esc(o.title)}</span>` : ""}`;
+    return o.scheme ? `<a class="pchip" href="${o.scheme}://${esc(sc.ip)}${(o.scheme === "http" && o.port === 80) || (o.scheme === "https" && o.port === 443) ? "" : ":" + o.port}/" target="_blank" rel="noopener noreferrer" title="Open in a new tab">${inner}</a>`
+      : `<span class="pchip ${o.port === 23 || o.port === 21 ? "bad" : ""}" title="${o.port === 23 || o.port === 21 ? "Unencrypted protocol" : ""}">${inner}</span>`;
+  }).join("");
+  return `<div class="port-list">${chips || '<span class="muted">No open ports found.</span>'}</div>
+    <div class="foot"><span>${isoDateTime(sc.ts)} · ${esc(sc.ip)}${sc.ip !== ip ? ` <span style="color:var(--warn)">(now ${esc(ip)})</span>` : ""}</span>${btn}</div>`;
+}
+async function scanPorts(c) {
+  if (PORTSCAN.running) return;
+  PORTSCAN.running = c.mac; if (state.sel === c) $("#portBox").innerHTML = portsHtml(c);
+  try { const r = await api("api/portscan", { mac: c.mac, ip: webIp(c) }); (state.scans ||= {})[c.mac] = r; toast(`${r.open.length} open ${r.open.length === 1 ? "port" : "ports"} on ${r.ip}`); computeWarnings(); renderTable(); }
+  catch (e) { toast("Port check failed: " + e.message); }
+  finally { PORTSCAN.running = null; if (state.sel?.mac === c.mac && $("#portBox")) $("#portBox").innerHTML = portsHtml(state.sel); }
+}
+
 // ---------- IP plan + utilization ----------
 const ipStr = x => [x >>> 24, (x >>> 16) & 255, (x >>> 8) & 255, x & 255].join(".");
 function subnetRange(sub) { const [b, bits] = String(sub || "").split("/"); const base = ipNum(b), n = 2 ** (32 - +bits); if (base < 0 || !(n > 0)) return null; const start = Math.floor(base / n) * n; return { start, end: start + n - 1, size: n }; }
@@ -1028,9 +1062,11 @@ function renderInfo() {
     </dl></div>
     ${webIp(c) ? `<div class="openrow"><a class="btn primary" href="http://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open the device's web interface in a new tab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Open http://${esc(webIp(c))}</a><a class="btn" href="https://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open with HTTPS">HTTPS</a></div>${!c.online ? `<p class="hint">The device is offline – the page may not load.</p>` : ""}` : ""}
     ${c.mac && !c.is_device && c.conn === "wired" && !c.online ? `<button class="btn" type="button" id="btnWol" style="width:100%"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:6px"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>Wake on LAN</button>` : ""}
+    ${c.mac && webIp(c) ? `<div class="sec-title">Open ports</div><div class="card ports" id="portBox">${portsHtml(c)}</div>` : ""}
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
+  $("#portBox")?.addEventListener("click", e => { if (e.target.closest("#btnScan")) scanPorts(c); });
   $("#btnWol")?.addEventListener("click", async e => {
     const b = e.currentTarget, ip = c.use_fixedip ? c.fixed_ip : c.ip, n = net(c._resNet) || net(c.network_id) || state.networks.find(x => inSubnet(ip, x.subnet));
     b.disabled = true;
@@ -2047,7 +2083,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#actMe
 
 const saved = store.get("view2", null);
 if (saved) { state.sort = saved.sort || state.sort; state.colFilters = saved.colFilters || {}; state.facets = saved.facets || {}; state.hiddenCols = (saved.hiddenCols || []).filter(k => COLS.some(c => c.key === k && k !== "name")); state.colOrder = (saved.colOrder || []).filter(k => COLS.some(c => c.key === k)); }
-buildHead(); renderAll(); loadRules().then(() => { if (state.clients.length) { computeWarnings(); renderAll(); } }); load(); loadViews(true); loadVersionsMeta();
+buildHead(); renderAll(); Promise.all([loadRules(), loadScans()]).then(() => { if (state.clients.length) { computeWarnings(); renderAll(); } }); load(); loadViews(true); loadVersionsMeta();
 })();
 </script>
 </body>

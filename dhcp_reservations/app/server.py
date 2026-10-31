@@ -26,6 +26,8 @@ VERSIONS_LOCK = threading.Lock()
 AUTO_RETENTION_DEFAULT = 30
 KNOWN_PATH = os.environ.get("KNOWN_PATH", "/data/known_devices.json")
 RULES_PATH = os.environ.get("RULES_PATH", "/data/rules.json")
+SCANS_PATH = os.environ.get("SCANS_PATH", "/data/portscans.json")
+SCAN_LOCK = threading.Lock()
 WATCH_INTERVAL = int(os.environ.get("WATCH_INTERVAL", "120"))
 
 
@@ -788,6 +790,93 @@ def save_rules(body):
     return {"rules": rules}
 
 
+# ---------------------------------------------------------------- port check
+# (port, service, scheme for a browser link or "")
+SCAN_PORTS = [
+    (21, "FTP", ""), (22, "SSH", ""), (23, "Telnet", ""), (25, "SMTP", ""), (53, "DNS", ""), (80, "HTTP", "http"),
+    (81, "HTTP", "http"), (139, "NetBIOS", ""), (443, "HTTPS", "https"), (445, "SMB", ""), (554, "RTSP", ""),
+    (631, "IPP printing", "http"), (1880, "Node-RED", "http"), (1883, "MQTT", ""), (3000, "HTTP", "http"),
+    (3389, "RDP", ""), (5000, "HTTP", "http"), (5001, "HTTPS", "https"), (5900, "VNC", ""), (6053, "ESPHome API", ""),
+    (7000, "AirPlay", ""), (8000, "HTTP", "http"), (8008, "HTTP", "http"), (8009, "Chromecast", ""), (8080, "HTTP", "http"),
+    (8081, "HTTP", "http"), (8123, "Home Assistant", "http"), (8443, "HTTPS", "https"), (8883, "MQTT (TLS)", ""),
+    (8888, "HTTP", "http"), (9000, "HTTP", "http"), (9100, "Printer (JetDirect)", ""), (32400, "Plex", "http"),
+]
+
+
+def _port_open(ip, port, timeout=0.7):
+    try:
+        with socket.create_connection((ip, port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
+def _http_title(scheme, ip, port):
+    ctx = ssl.create_default_context()
+    ctx.check_hostname = False
+    ctx.verify_mode = ssl.CERT_NONE
+    url = f"{scheme}://{ip}:{port}/"
+    try:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (port check)"})
+        with urllib.request.urlopen(req, timeout=2.5, context=ctx if scheme == "https" else None) as r:
+            html = r.read(65536).decode("utf-8", "replace")
+            server = r.headers.get("Server") or ""
+    except urllib.error.HTTPError as e:
+        try:
+            html = e.read(65536).decode("utf-8", "replace")
+        except Exception:  # noqa: BLE001
+            html = ""
+        server = (e.headers or {}).get("Server") or ""
+    except Exception:  # noqa: BLE001
+        return ""
+    m = re.search(r"<title[^>]*>(.*?)</title>", html, re.I | re.S)
+    t = re.sub(r"\s+", " ", m.group(1)).strip() if m else ""
+    return (t or server)[:80]
+
+
+def port_scan(body):
+    mac = clean_mac(body.get("mac"))
+    ip = str(body.get("ip") or "")
+    try:
+        if ipaddress.ip_address(ip).version != 4:
+            raise ValueError
+    except ValueError:
+        raise UnifiError("Invalid IP address.", 400)
+    if not SCAN_LOCK.acquire(blocking=False):
+        raise UnifiError("Another port check is running – try again in a few seconds.", 409)
+    try:
+        found = []
+        # small batches so an IDS/IPS does not see a burst
+        for i in range(0, len(SCAN_PORTS), 6):
+            batch = SCAN_PORTS[i:i + 6]
+            res = {}
+            threads = [threading.Thread(target=lambda p=p: res.__setitem__(p[0], _port_open(ip, p[0]))) for p in batch]
+            for t in threads:
+                t.start()
+            for t in threads:
+                t.join()
+            found += [p for p in batch if res.get(p[0])]
+            time.sleep(0.15)
+        out = []
+        for port, svc, scheme in found:
+            title = _http_title(scheme, ip, port) if scheme else ""
+            if not scheme and port in (80, 443):
+                scheme = "http" if port == 80 else "https"
+            out.append({"port": port, "service": svc, "scheme": scheme, "title": title})
+        rec = {"ip": ip, "ts": int(time.time()), "open": out}
+        scans = _read_json(SCANS_PATH, {})
+        scans[mac] = rec
+        _write_json(SCANS_PATH, scans)
+        log("Port check", mac, ip, "open:", ",".join(str(x["port"]) for x in out) or "none")
+        return rec
+    finally:
+        SCAN_LOCK.release()
+
+
+def load_scans():
+    return {"scans": _read_json(SCANS_PATH, {})}
+
+
 # ---------------------------------------------------------------- wake on LAN
 def wake_on_lan(body):
     mac = clean_mac(body.get("mac"))
@@ -902,6 +991,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, create_version(API, b.get("kind", "manual"), b.get("label", ""), self._user()))
             if method == "POST" and path.endswith("/api/version_settings"):
                 return self._send(200, save_settings(self._json_body()))
+            if method == "POST" and path.endswith("/api/portscan"):
+                return self._send(200, port_scan(self._json_body()))
+            if method == "GET" and path.endswith("/api/portscans"):
+                return self._send(200, load_scans())
             if method == "GET" and path.endswith("/api/rules"):
                 return self._send(200, load_rules())
             if method == "POST" and path.endswith("/api/rules"):
