@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.23.1 – 2026-10-31
+- **IP plan cell size Small / Large** (switch next to the icon switch, remembered): *Small* is a compact view – lower cells and 32 addresses per row when there is room; *Large* has tall cells with big icons. The height no longer changes with the icons: the address sits on the left, the icon on the right using the full inner height.
+- **Fixed IP, in use** is now a blue frame with a light transparent fill (like *Dynamic, in use*) instead of a solid block; *Fixed IP, not in use* has a dashed frame.
+
 ## 1.23.0 – 2026-10-31
 - **CleanUp Proposal for all networks at once:** select *All networks* and open *CleanUp Proposal*. Same strategy for every network; the fixed block is suggested per network or set as a percentage of each network (*Fixed block … %*). A table lists every network with something to tidy – fixed block, pool change, moves and tidiness before → after – each with a checkbox; the grids (and *Preview changes* with arrows) follow below. Every device stays in its network.
 - **Overall tidiness** (average over all networks, weighted by their fixed IPs) on the *All networks* card, in its title and before → after in the multi-network proposal.
