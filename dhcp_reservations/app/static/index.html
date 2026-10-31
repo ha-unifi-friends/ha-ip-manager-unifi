@@ -269,9 +269,28 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
 dialog#dlgPlan,dialog#dlgRules{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1180px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgRules{width:min(820px,calc(100vw - 32px))}
 dialog#dlgPlan::backdrop,dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
-.plan-stats td,.plan-stats th{white-space:nowrap}
-.plan-stats tr[data-net]{cursor:pointer}
-.plan-stats tr[data-net].on td{background:var(--sel)}
+dialog#dlgPlan{width:min(1360px,calc(100vw - 32px))}
+.plan-layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:18px;align-items:start}
+.plan-nets{position:sticky;top:0;display:grid;gap:6px}
+.pn{display:grid;gap:3px;text-align:left;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);cursor:pointer;font-size:12px}
+.pn:hover{border-color:var(--line-strong)}
+.pn.on{border-color:var(--accent);background:var(--sel)}
+.pn .l1{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.pn .l1 b{font-weight:600}
+.pn .l1 .sp{flex:1}
+.pn .l2,.pn .l3{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pn .l2 .mono{font-size:11.5px}
+.pn .l3 .w{color:var(--warn)}
+.pn .l4{display:flex;align-items:center;gap:6px;color:var(--muted)}
+.pn .l4 .ubar{flex:1;width:auto;margin:0}
+.tidy{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;white-space:nowrap}
+.tidy.good{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.tidy.mid{background:var(--warn-bg);color:var(--warn)}
+.tidy.bad{background:var(--bad-bg);color:var(--bad)}
+.plan-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.plan-head h3{margin:0;font-size:17px;font-weight:600}
+.plan-head h3 .muted{font-weight:400;font-size:14px}
+@media (max-width:860px){.plan-layout{grid-template-columns:minmax(0,1fr)}.plan-nets{position:static;grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}}
 .ubar{display:inline-block;width:90px;height:7px;border-radius:4px;background:var(--chip);vertical-align:middle;margin-right:7px;overflow:hidden}
 .ubar i{display:block;height:100%;background:var(--accent)}
 .ubar.hi i{background:var(--warn)}
@@ -325,8 +344,7 @@ dialog#dlgClean::backdrop{background:rgba(8,10,14,.55)}
 .seg.plan-icons{background:var(--chip);border:1px solid var(--line-strong);border-radius:999px;padding:2px}
 .seg.plan-icons button{border-radius:999px;padding:4px 12px}
 .seg.plan-icons button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
-.clean-slot{margin-left:12px;display:inline-flex}
-.clean-slot .btn{padding:4px 10px;font-size:12.5px}
+.clean-slot{display:inline-flex}
 .plan-icons-slot{margin-left:auto;display:inline-flex;align-items:center}
 .pc.ic{padding:6px 0 5px}
 .pc.np::after{content:"";position:absolute;left:3px;right:3px;bottom:2px;height:3px;border-radius:2px;background:var(--info)}
@@ -645,8 +663,7 @@ body.side-off .menu-btn{display:inline-flex}
   <div class="imp">
     <div class="imp-head"><h2 id="planTitle">IP plan</h2><button class="x link" type="button" id="planClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="imp-body">
-      <div class="imp-table" style="max-height:none;overflow:visible"><table class="plan-stats"><thead><tr><th>Network</th><th>Subnet</th><th>DHCP pool</th><th>Fixed IPs</th><th>in pool</th><th>Dynamic</th><th>Free outside pool</th><th>Utilization</th></tr></thead><tbody id="planStats"></tbody></table></div>
-      <div id="planGridWrap"></div>
+      <div class="plan-layout"><nav class="plan-nets" id="planStats" aria-label="Networks"></nav><div id="planGridWrap"></div></div>
     </div>
     <div class="imp-foot"><span class="hint">Click an address to open the device, or a free address to reserve it.</span><span class="sp"></span><button class="btn" type="button" id="btnClean" title="Suggest a tidier layout for the selected network"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M14 3 9.5 11.5"/><path d="M5 13.5h9l1.5 7.5H3.5z"/><path d="M8 17v4M11 17v4"/><path d="M18 3v3M16.5 4.5h3M20 9v2M19 10h2"/></svg>CleanUp Proposal</button><button class="btn" type="button" id="planDone">Close</button></div>
   </div>
@@ -1101,6 +1118,28 @@ function planNet(n) {
   }
   return { n, r, ps, pe, gw, cells, fixed, inPool, dyn, freeOut, used, usable, poolSize: ps >= 0 && pe >= ps ? pe - ps + 1 : 0 };
 }
+// Tidiness 0–100: fixed IPs outside the DHCP pool (50), close together (30 – gaps of up to 10 addresses, e.g. one block per
+// vendor, are fine; every further cluster costs), without conflicts / devices on another IP (20)
+function tidyScore(ips, ps, pe, bad) {
+  const n = ips.length; if (!n) return { score: 100, n, inPool: 0, compact: 1, bad: 0 };
+  const inPool = ips.filter(x => ps >= 0 && x >= ps && x <= pe).length;
+  const out = [...new Set(ips.filter(x => !(ps >= 0 && x >= ps && x <= pe)))].sort((a, b) => a - b);
+  let blocks = out.length ? 1 : 0; for (let i = 1; i < out.length; i++) if (out[i] - out[i - 1] > 10) blocks++;
+  const compact = out.length > 1 ? 1 - (blocks - 1) / (out.length - 1) : 1;
+  const score = Math.round(100 - 50 * inPool / n - 30 * (1 - compact) - 20 * Math.min(1, bad / n));
+  return { score: Math.max(0, score), n, inPool, compact, bad };
+}
+function tidiness(p) {
+  const ips = [], seen = new Set(); let bad = 0;
+  for (const [x, e] of p.cells) {
+    if (x === p.gw || x <= p.r.start || x >= p.r.end) continue;
+    for (const c of e.res) { if (!c.is_device) ips.push(x); }
+    if (e.res.length > 1 || (e.res.length && e.dyn.length)) bad++;
+    for (const c of e.res) if (c.online && c._ipMismatch && !seen.has(c.mac)) { seen.add(c.mac); bad++; }
+  }
+  return tidyScore(ips, p.ps, p.pe, bad);
+}
+const tidyBadge = (t, prefix = "") => `<span class="tidy ${t.score >= 80 ? "good" : t.score >= 50 ? "mid" : "bad"}" title="${esc(`Tidiness ${t.score}/100 – ${t.n} fixed IPs: ${t.inPool} inside the DHCP pool (-50 max), ${Math.round(t.compact * 100)} % close together (-30 max), ${t.bad} conflicts / devices on another IP (-20 max)`)}">${prefix}${t.score}</span>`;
 const PLAN = { sel: null };
 function openPlan() { if (!PLAN.sel || !net(PLAN.sel)) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; renderPlan(); $("#dlgPlan").showModal(); }
 // icons in the IP plan cells: none, the UniFi device icon, or the logo of the Home Assistant integration
@@ -1146,20 +1185,20 @@ document.addEventListener("click", e => {
 });
 function renderPlan() {
   const ps = state.networks.map(planNet).filter(Boolean);
-  $("#planStats").innerHTML = ps.map(p => { const pct = p.usable ? Math.round(p.used / p.usable * 100) : 0; return `<tr data-net="${esc(p.n.id)}" class="${p.n.id === PLAN.sel ? "on" : ""}">
-    <td><b>${esc(p.n.name)}</b>${p.n.vlan ? ` <span class="muted">(${p.n.vlan})</span>` : ""}</td><td class="mono">${esc(p.n.subnet)}</td>
-    <td class="mono">${p.poolSize ? `${esc(p.n.dhcp_start.split(".").pop())}–${esc(p.n.dhcp_stop.split(".").pop())} <span class="muted">(${p.poolSize})</span>` : "–"}</td>
-    <td>${p.fixed}</td><td>${p.inPool ? `<span style="color:var(--warn)">${p.inPool}</span>` : "0"}</td><td>${p.dyn}</td><td>${p.freeOut}</td>
-    <td><span class="ubar ${pct >= 80 ? "hi" : ""}"><i style="width:${pct}%"></i></span>${pct} % <span class="muted">(${p.used}/${p.usable})</span></td></tr>`; }).join("");
+  $("#planStats").innerHTML = ps.map(p => { const pct = p.usable ? Math.round(p.used / p.usable * 100) : 0, t = tidiness(p); return `<button type="button" class="pn ${p.n.id === PLAN.sel ? "on" : ""}" data-net="${esc(p.n.id)}" aria-pressed="${p.n.id === PLAN.sel}">
+    <span class="l1"><b>${esc(p.n.name)}</b>${p.n.vlan ? `<span class="muted">(${p.n.vlan})</span>` : ""}<span class="sp"></span>${tidyBadge(t, "Tidiness ")}</span>
+    <span class="l2"><span class="mono">${esc(p.n.subnet)}</span> · pool ${p.poolSize ? `<span class="mono">.${esc(p.n.dhcp_start.split(".").pop())}–.${esc(p.n.dhcp_stop.split(".").pop())}</span>` : "–"}</span>
+    <span class="l3">${p.fixed} fixed${p.inPool ? ` · <span class="w">${p.inPool} in pool</span>` : ""} · ${p.dyn} dynamic · ${p.freeOut} free</span>
+    <span class="l4"><span class="ubar ${pct >= 80 ? "hi" : ""}"><i style="width:${pct}%"></i></span>${pct} %</span></button>`; }).join("");
   const p = ps.find(x => x.n.id === PLAN.sel);
   if (!p) { $("#planGridWrap").innerHTML = ""; return; }
   BTN_CLEAN.remove(); // kept in a variable: it moves into the grid header below
-  $("#planGridWrap").innerHTML = `<div class="cl-tabs" style="border:0;margin:16px 0 0"><div class="sec-title" style="margin:0">${esc(p.n.name)} · ${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</div><span class="clean-slot"></span><span class="sp"></span><span class="plan-icons-slot"></span></div>
+  $("#planGridWrap").innerHTML = `<div class="cl-tabs plan-head" style="border:0;margin:0"><h3>${esc(p.n.name)}${p.n.vlan ? ` <span class="muted">(${p.n.vlan})</span>` : ""} <span class="muted mono">${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</span></h3><span class="clean-slot"></span><span class="sp"></span><span class="plan-icons-slot"></span></div>
     ${legend(LEG_CUR)}<div class="plan-grid">${currentCells(p)}</div>`;
   $("#planGridWrap .clean-slot").append(BTN_CLEAN);
   syncIconBoxes();
 }
-$("#planStats").addEventListener("click", e => { const tr = e.target.closest("tr[data-net]"); if (tr) { PLAN.sel = tr.dataset.net; renderPlan(); } });
+$("#planStats").addEventListener("click", e => { const b = e.target.closest("[data-net]"); if (b) { PLAN.sel = b.dataset.net; renderPlan(); } });
 $("#planGridWrap").addEventListener("click", e => {
   const d = e.target.closest(".pc[data-ip]"); if (!d || d.classList.contains("sys") || d.classList.contains("gw")) return;
   const c = d.dataset.mac && state.clients.find(x => x.mac === d.dataset.mac);
@@ -1279,7 +1318,10 @@ function renderClean() {
   for (const x of document.querySelectorAll("[data-cs]")) x.setAttribute("aria-pressed", String(x.dataset.cs === CL.strategy));
   const sel = CL.rows.filter(r => r.sel), wifi = sel.filter(r => needsNewIp(r.c, r.nip) && canReconnect(r.c));
   const haHits = sel.filter(r => CL.ha?.has(r.c.mac)).length;
-  $("#clSum").innerHTML = `<span class="pill">Fixed IPs <b>${b.fixed.length}</b></span><span class="pill">Moves <b>${sel.length}/${CL.rows.length}</b></span><span class="pill">Dynamic in fixed range <b>${dynIn.length}</b></span>`;
+  const selMac = new Map(sel.map(r => [r.c.mac, ipNum(r.nip)]));
+  const after = tidyScore(b.fixed.filter(c => !c.is_device).map(c => CL.m.move && selMac.has(c.mac) ? selMac.get(c.mac) : ipNum(c.fixed_ip)),
+    CL.m.pool && b.poolChange ? poolS : p.ps, CL.m.pool && b.poolChange ? poolE : p.pe, 0);
+  $("#clSum").innerHTML = `<span class="pill">Tidiness ${tidyBadge(tidiness(p))} → ${tidyBadge(after)}</span><span class="pill">Fixed IPs <b>${b.fixed.length}</b></span><span class="pill">Moves <b>${sel.length}/${CL.rows.length}</b></span><span class="pill">Dynamic in fixed range <b>${dynIn.length}</b></span>`;
   for (const t of document.querySelectorAll("[data-ct]")) t.setAttribute("aria-selected", String(t.dataset.ct === CL.tab));
   $("#clErr").innerHTML = err ? `<div class="err">${esc(err)}</div>` : "";
   // grid for the selected tab

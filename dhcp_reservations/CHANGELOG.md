@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.21.0 – 2026-10-31
+- **IP plan:** the networks are now a pane on the left – one card per network with subnet, DHCP pool, fixed / in pool / dynamic / free and utilization. The selected network's title is larger and sits next to the *CleanUp Proposal* button.
+- New **Tidiness score** (0–100) per network: fixed IPs outside the DHCP pool (up to 50 points), close together (30 – gaps of up to 10 addresses, e.g. one block per vendor, are fine) and without conflicts or devices on another IP (20). Green from 80, orange from 50, red below; the tooltip explains the points.
+- **CleanUp Proposal** shows the tidiness before → after the checked measures, e.g. *56 → 100*.
+
 ## 1.20.0 – 2026-10-31
 - The UniFi device icon now sits in the **UniFi Status** column, left of the online dot – the same layout as the Home Assistant column (logo + status). The *Name* column shows only the name.
 - The *Columns* button is gone: **Clear filters** and **Customize columns** are now at the bottom of the filter pane, next to the version.
