@@ -58,7 +58,7 @@ versions you can compare and restore.
 | | |
 |---|---|
 | **IP plan** | A full page next to the client list (switch *Clients / IP Plan*), filtered by the same sidebar filters (non-matching devices greyed out): networks as cards with utilization and a **Tidiness score** (0–100: fixed IPs outside the pool, close together, no conflicts), plus an address grid that shows conflicts at a glance, with *No icons / UniFi / Home Assistant* icons. Click an address to open the device – or a free one to reserve it – in the detail panel next to the plan. |
-| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *minimal*, *grouped by vendor* or *grouped by HA integration* – right in the IP plan as a tab, with *Preview changes* (arrows and animation) and applies the checked measures: moves, reconnect and the pool change (after a second confirmation). |
+| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *minimal*, *grouped by vendor* or *grouped by HA integration* – for one network or **all networks at once** (overall tidiness before → after) – right in the IP plan as a tab, with *Preview changes* (arrows and animation) and applies the checked measures: moves, reconnect and the pool change (after a second confirmation). |
 | **Replace subnet** | Move all fixed IPs from e.g. `192.168.30.x` to `192.168.31.x`, keeping the host part. A preview catches collisions before anything changes. |
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. Hosts-file export of fixed IPs and DNS records. |
 | **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |

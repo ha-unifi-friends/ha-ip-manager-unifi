@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.23.0 – 2026-10-31
+- **CleanUp Proposal for all networks at once:** select *All networks* and open *CleanUp Proposal*. Same strategy for every network; the fixed block is suggested per network or set as a percentage of each network (*Fixed block … %*). A table lists every network with something to tidy – fixed block, pool change, moves and tidiness before → after – each with a checkbox; the grids (and *Preview changes* with arrows) follow below. Every device stays in its network.
+- **Overall tidiness** (average over all networks, weighted by their fixed IPs) on the *All networks* card, in its title and before → after in the multi-network proposal.
+- Applying moves runs in a safe order: an address that is still reserved by another moving device is freed first, swaps go through a temporary free address (no more “already reserved” errors when renumbering in blocks). All pool changes are confirmed together at the end.
+- Clicking a device in the CleanUp grid opens its details next to the proposal; the arrows follow when the panel opens.
+- Icons in the *Clients / IP Plan* switch (list / grid). The header adapts to narrow widths (shorter labels instead of cutting off buttons).
+- Fix: in the single-network proposal the pool change was skipped after the moves since 1.22.0.
+
 ## 1.22.1 – 2026-10-31
 - **All networks** as first entry under *Networks*: all networks one below the other to scroll through (click a network title to show only that one), with totals and an average tidiness. *CleanUp Proposal* is disabled there – it works per network. The legend stays visible at the top while scrolling.
 - **Preview changes** is now a prominent switch with an eye icon in the CleanUp options (blue when on).

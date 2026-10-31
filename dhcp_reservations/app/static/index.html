@@ -129,7 +129,11 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 @container main (min-width:560px){.topbar,.topbar .grp{flex-wrap:nowrap}.topbar>*,.topbar .grp>*{flex:none}.topbar .sp{flex:1}#count,#stand{white-space:nowrap}}
 @container main (max-width:1060px){.topbar .btn.icon-btn:not(.primary) .lbl{display:none}.topbar .btn.icon-btn:not(.primary){padding:6px 9px}}
 @container main (max-width:820px){#stand{display:none}.topbar .btn.icon-btn.primary .lbl{display:none}.topbar .btn.icon-btn.primary{padding:6px 9px}}
-@container main (max-width:640px){#count{display:none}}
+@container main (max-width:640px){#count{display:none}.topbar .plan-icons-slot{display:none}}
+.plan-icons .sht{display:none}
+@container main (max-width:1240px){body.plan-mode #stand{display:none}.topbar .plan-icons .lng{display:none}.topbar .plan-icons .sht{display:inline}}
+@container main (max-width:1060px){body.plan-mode .topbar .btn.icon-btn.primary .lbl{display:none}body.plan-mode .topbar .btn.icon-btn.primary{padding:6px 9px}body.plan-mode .view-switch button{padding:5px 9px}.topbar .plan-tabs button[role="tab"]{padding:7px 10px 9px}}
+@container main (max-width:900px){body.plan-mode .view-switch button svg + *{display:none}body.plan-mode #btnReload{display:none}}
 .side-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 14px calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));border-top:1px solid var(--line);color:var(--muted);font-size:12px}
 .side-foot .sp{flex:1}
 .theme-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line-strong);border-radius:6px;padding:3px 8px;color:var(--muted);cursor:pointer;font-size:12px}
@@ -275,7 +279,7 @@ dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
 #planNets{padding-top:4px}
 #planNets .plan-hint{margin:10px 2px 4px;font-size:12px}
 .seg.view-switch{display:inline-flex;flex:none;background:var(--chip);border:1px solid var(--line-strong);border-radius:999px;padding:2px}
-.seg.view-switch button{border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap}
+.seg.view-switch button{border-radius:999px;padding:5px 12px;font-size:13px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
 .seg.view-switch button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
 body:not(.plan-mode) .plan-only{display:none!important}
 body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,body.plan-mode #btnInline{display:none}
@@ -301,6 +305,9 @@ body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,bo
 .plan-sec-h:hover b{color:var(--accent)}
 .plan-sec-h .mono{font-size:13px}
 .pn-all{border-style:dashed}
+.cl-nets{margin:4px 0 12px}
+.cl-nets tr.off td{opacity:.45}
+.cl-nets td{vertical-align:middle}
 .pn-all.on{border-style:solid}
 .plan-tabs button[role="tab"]:disabled{opacity:.4;cursor:not-allowed}
 .pc.dim:hover{opacity:.6}
@@ -503,7 +510,7 @@ body.side-off .menu-btn{display:inline-flex}
   <main>
     <div class="topbar">
       <button class="btn menu-btn" id="btnMenu" type="button" title="Show filters" aria-label="Show filters"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></button>
-      <div class="seg view-switch" role="group" aria-label="View"><button type="button" data-vw="clients" aria-pressed="true">Clients</button><button type="button" data-vw="plan" aria-pressed="false">IP Plan</button></div>
+      <div class="seg view-switch" role="group" aria-label="View"><button type="button" data-vw="clients" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg><span>Clients</span></button><button type="button" data-vw="plan" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>IP Plan</span></button></div>
       <div class="viewsel">
         <button class="btn view-btn" id="btnView" type="button" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="viewName">All</span><span class="mod" id="viewMod" hidden title="Unsaved changes">•</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="menu" id="viewMenu" role="menu" hidden></div>
@@ -547,8 +554,9 @@ body.side-off .menu-btn{display:inline-flex}
         <div id="planClean" hidden>
       <div class="cl-ctrl">
         <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button></span>
-        <label>Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253"></label>
-        <label>DHCP pool <b class="mono" id="clPool"></b></label>
+        <label class="cl-one">Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253"></label>
+        <label class="cl-one">DHCP pool <b class="mono" id="clPool"></b></label>
+        <label class="cl-multi" title="Size of the fixed block at the start of every network; empty = a suggestion per network">Fixed block <input type="number" id="clPct" min="10" max="90" step="5" placeholder="auto"> % of each network</label>
         <span class="sp"></span>
         <label class="prev-toggle" title="Show every move as an arrow and play the animation"><input type="checkbox" id="clPreview"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span>Preview changes</span><i class="sw" aria-hidden="true"></i></label>
         <span id="clSum" class="sumrow" style="margin:0;flex-basis:100%"></span>
@@ -1204,7 +1212,7 @@ document.querySelectorAll("[data-vw]").forEach(b => b.addEventListener("click", 
 function openPlan() { if (PLAN.sel !== ALL_NETS && (!PLAN.sel || !net(PLAN.sel))) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; PLAN.tab = "cur"; renderPlan(); }
 // icons in the IP plan cells: none, the UniFi device icon, or the logo of the Home Assistant integration
 const PLAN_ICONS = { mode: store.get("planIconMode", store.get("planIcons", false) ? "unifi" : "off") };
-const iconSeg = () => `<span class="seg plan-icons" role="group" aria-label="Icons in the cells">${[["off", "No icons"], ["unifi", "UniFi"], ["ha", "Home Assistant"]].map(([k, t]) => `<button type="button" data-pim="${k}" aria-pressed="${PLAN_ICONS.mode === k}" title="${k === "off" ? "Only the address" : k === "unifi" ? "Device icon from UniFi" : "Logo of the Home Assistant integration (empty when the device is not in HA)"}">${t}</button>`).join("")}</span>`;
+const iconSeg = () => `<span class="seg plan-icons" role="group" aria-label="Icons in the cells">${[["off", "No icons", "None"], ["unifi", "UniFi", "UniFi"], ["ha", "Home Assistant", "HA"]].map(([k, t, sh]) => `<button type="button" data-pim="${k}" aria-pressed="${PLAN_ICONS.mode === k}" title="${k === "off" ? "Only the address" : k === "unifi" ? "Device icon from UniFi" : "Logo of the Home Assistant integration (UniFi icon when the device is not in HA)"}"><span class="lng">${t}</span><span class="sht">${sh}</span></button>`).join("")}</span>`;
 function planIcon(c) {
   if (!c || PLAN_ICONS.mode === "off") return "";
   if (PLAN_ICONS.mode === "unifi") return `<span class="pi">${iconHtml(c)}</span>`;
@@ -1260,14 +1268,14 @@ function renderPlan() {
       <span class="l3"><span class="ubar ${pct >= 80 ? "hi" : ""}" title="Utilization ${pct} % (${used}/${usable})"><i style="width:${pct}%"></i></span>${pct} % · ${sum("fixed")} fixed${sum("inPool") ? ` · <span class="w">${sum("inPool")} in pool</span>` : ""} · ${sum("dyn")} dyn</span></button>`); }
   if (PLAN.sel !== ALL_NETS && !ps.some(x => x.n.id === PLAN.sel)) PLAN.sel = ps[0]?.n.id || null;
   const all = PLAN.sel === ALL_NETS;
-  if (all && PLAN.tab === "clean") PLAN.tab = "cur";
-  const ct = document.querySelector('[data-pt="clean"]'); ct.disabled = all; ct.title = all ? "Select a single network for a CleanUp Proposal" : "";
+  const ct = document.querySelector('[data-pt="clean"]'); ct.title = all ? "CleanUp Proposal for all networks at once" : "";
   const vis = rows(); PLAN.vis = vis.length === state.clients.length ? null : new Set(vis.map(c => c.mac));
   const p = ps.find(x => x.n.id === PLAN.sel);
-  $("#planNet").innerHTML = all ? `All networks <span class="muted">(${ps.length})</span>` : p ? `${esc(p.n.name)}${p.n.vlan ? ` <span class="muted">(${p.n.vlan})</span>` : ""} <span class="muted mono">${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</span>` : "";
-  const clean = PLAN.tab === "clean" && !!p;
+  $("#planNet").innerHTML = all ? `All networks <span class="muted">(${ps.length})</span> ${tidyBadge(tidyAvg(ps.map(q => tidiness(q))), "Overall tidiness ")}` : p ? `${esc(p.n.name)}${p.n.vlan ? ` <span class="muted">(${p.n.vlan})</span>` : ""} <span class="muted mono">${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</span>` : "";
+  const clean = PLAN.tab === "clean" && (!!p || all);
   for (const t of document.querySelectorAll("[data-pt]")) t.setAttribute("aria-selected", String(t.dataset.pt === (clean ? "clean" : "cur")));
   $("#planGridWrap").hidden = clean; $("#planClean").hidden = !clean; $("#planFootClean").hidden = !clean;
+  if (clean) { renderClean(); return; }
   if (all) {
     $("#planGridWrap").innerHTML = `<div class="plan-legend-bar">${legend(LEG_CUR)}</div>` + ps.map(q => `<section class="plan-sec" data-netid="${esc(q.n.id)}">
       <button type="button" class="plan-sec-h" data-open-net="${esc(q.n.id)}" title="Show only this network"><b>${esc(q.n.name)}</b>${q.n.vlan ? ` <span class="muted">(${q.n.vlan})</span>` : ""} <span class="muted mono">${esc(q.n.subnet)}</span> ${tidyBadge(tidiness(q), "Tidiness ")}<span class="muted">›</span></button>
@@ -1302,10 +1310,10 @@ function defaultEnd(p) {
   for (const o of offs) { const end = p.r.start + o - 1; if (end - first + 1 >= need && (p.r.end - 1) - end >= pool) return end; }
   return p.r.start + offs[0] - 1;
 }
-function buildClean() {
-  const n = net(PLAN.sel), p = planNet(n); if (!p) return null;
-  if (CL.end == null) CL.end = defaultEnd(p);
-  const first = p.r.start + 1, last = p.r.end - 1, end = Math.min(Math.max(CL.end, first + 1), last - 1);
+// one network's proposal; end = last address of the fixed block
+function buildCleanFor(n, endX, prev) {
+  const p = planNet(n); if (!p) return null;
+  const first = p.r.start + 1, last = p.r.end - 1, end = Math.min(Math.max(endX ?? defaultEnd(p), first + 1), last - 1);
   const poolS = end + 1, poolE = last, inFixed = x => x >= first && x <= end && x !== p.gw;
   const fixed = state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
   const devFixed = state.clients.filter(c => c.is_device && c.use_fixedip && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
@@ -1329,11 +1337,33 @@ function buildClean() {
       cur = p.r.start + Math.ceil((cur - p.r.start + 1) / 10) * 10;
     }
   }
-  const prev = new Map(CL.rows.map(r => [r.c.mac, r.sel]));
-  CL.rows = fixed.filter(c => plan.has(c.mac) && plan.get(c.mac) !== ipNum(c.fixed_ip)).map(c => ({ c, nip: ipStr(plan.get(c.mac)), grp: CL.strategy !== "min" ? c._grp : groupKey(c), sel: prev.get(c.mac) ?? true, status: "chg" }));
-  return { n, p, first: first === p.gw ? first + 1 : first, end, poolS, poolE, plan, fixed, dynIn, err, poolChange: p.ps !== poolS || p.pe !== poolE };
+  const b = { n, p, first: first === p.gw ? first + 1 : first, end, poolS, poolE, plan, fixed, dynIn, err, poolChange: p.ps !== poolS || p.pe !== poolE };
+  b.rows = fixed.filter(c => plan.has(c.mac) && plan.get(c.mac) !== ipNum(c.fixed_ip)).map(c => ({ c, b, nip: ipStr(plan.get(c.mac)), grp: CL.strategy !== "min" ? c._grp : groupKey(c), sel: prev.get(c.mac) ?? true, status: "chg" }));
+  return b;
 }
-function resetClean() { Object.assign(CL, { end: null, rows: [], tab: "plan", preview: false, played: false, running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true } }); }
+// tidiness after the checked measures of one network
+function tidyAfter(b) {
+  const selMac = new Map(b.rows.filter(r => r.sel).map(r => [r.c.mac, ipNum(r.nip)]));
+  return tidyScore(b.fixed.map(c => CL.m.move && selMac.has(c.mac) ? selMac.get(c.mac) : ipNum(c.fixed_ip)), CL.m.pool && b.poolChange ? b.poolS : b.p.ps, CL.m.pool && b.poolChange ? b.poolE : b.p.pe, 0);
+}
+// average over networks, weighted by their fixed IPs
+const tidyAvg = ts => { const w = ts.reduce((a, t) => a + t.n, 0); return { score: w ? Math.round(ts.reduce((a, t) => a + t.score * t.n, 0) / w) : 100, n: w, inPool: ts.reduce((a, t) => a + t.inPool, 0), compact: 1, bad: ts.reduce((a, t) => a + t.bad, 0) }; };
+// builds CL.bs (one entry per network in the proposal) and CL.rows (all moves); returns the single network in single mode
+function buildClean() {
+  if (CL.frozen && CL.bs.length) return CL.bs[0]; // during / after applying: keep the rows and their results
+  const prev = new Map(CL.rows.map(r => [r.c.mac, r.sel]));
+  if (!CL.multi) {
+    const b = buildCleanFor(net(PLAN.sel), CL.end, prev); if (!b) return null;
+    b.inc = true; CL.end = b.end; CL.bs = [b]; CL.rows = b.rows; return b;
+  }
+  CL.bs = state.networks.map(n => { const p = planNet(n); if (!p) return null; return buildCleanFor(n, CL.pct ? p.r.start + Math.round(p.r.size * CL.pct / 100) - 1 : null, prev); })
+    // only networks with something to tidy: moves, or a pool that currently covers fixed IPs (a mere pool extension is not offered)
+    .filter(b => b && b.fixed.length && (b.rows.length || (b.poolChange && tidiness(b.p).inPool > 0)));
+  for (const b of CL.bs) b.inc = CL.inc[b.n.id] ?? true;
+  CL.rows = CL.bs.filter(b => b.inc).flatMap(b => b.rows);
+  return CL.bs[0] || { multiEmpty: true };
+}
+function resetClean() { Object.assign(CL, { frozen: false, end: null, pct: null, inc: {}, bs: [], multi: PLAN.sel === ALL_NETS, rows: [], tab: "plan", preview: false, played: false, running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true } }); }
 async function openClean() {
   resetClean(); PLAN.tab = "clean"; renderPlan();
   if (!CL.ha) { try { CL.ha = new Set((await api("api/ha_devices")).devices.flatMap(d => d.macs)); renderClean(); } catch { CL.ha = new Set(); } }
@@ -1362,22 +1392,23 @@ function changeCells(b, sel) {
   if (CL.m.pool && b.poolChange) for (let x = poolS; x <= poolE; x++) mark[x] = { cls: ((mark[x]?.cls || "") + " np").trim(), tip: (mark[x]?.tip || "") + " · DHCP pool after the change" };
   return currentCells(p, mark);
 }
-function drawArrows(sel) {
-  const wrap = $("#cgWrap"), svg = $("#cgArrows"); if (!wrap || !svg) return;
+function drawArrows(sel, wrap = $("#cgWrap")) {
+  const svg = wrap?.querySelector(".cg-arrows"); if (!wrap || !svg) return;
   const W = wrap.getBoundingClientRect(), pos = x => { const el = wrap.querySelector(`.pc[data-x="${x}"]`); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left - W.left + r.width / 2, y: r.top - W.top + r.height / 2, el, r }; };
   svg.setAttribute("viewBox", `0 0 ${W.width} ${W.height}`); svg.setAttribute("width", W.width); svg.setAttribute("height", W.height);
   const col = getComputedStyle(document.documentElement).getPropertyValue("--ok").trim() || "#39c46b";
-  let paths = `<defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="${col}"/></marker></defs>`;
+  const mid = "ah" + (wrap.dataset.netid || "");
+  let paths = `<defs><marker id="${mid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="${col}"/></marker></defs>`;
   for (const r of CL.m.move ? sel : []) {
     const a = pos(ipNum(r.c.fixed_ip)), z = pos(ipNum(r.nip)); if (!a || !z) continue;
     const mx = (a.x + z.x) / 2, my = (a.y + z.y) / 2, dx = z.x - a.x, dy = z.y - a.y, len = Math.hypot(dx, dy) || 1, bend = Math.min(80, len * 0.25);
     const cx = mx - dy / len * bend, cy = my + dx / len * bend;
-    paths += `<path d="M${a.x} ${a.y} Q${cx} ${cy} ${z.x} ${z.y}" fill="none" stroke="${col}" stroke-width="2" stroke-opacity=".85" marker-end="url(#ah)"><title>${esc(r.c.name || r.c.mac)}: ${esc(r.c.fixed_ip)} → ${esc(r.nip)}</title></path>`;
+    paths += `<path d="M${a.x} ${a.y} Q${cx} ${cy} ${z.x} ${z.y}" fill="none" stroke="${col}" stroke-width="2" stroke-opacity=".85" marker-end="url(#${mid})"><title>${esc(r.c.name || r.c.mac)}: ${esc(r.c.fixed_ip)} → ${esc(r.nip)}</title></path>`;
   }
   svg.innerHTML = paths;
 }
-function playMoves(sel) {
-  const wrap = $("#cgWrap"); if (!wrap || !CL.m.move) return;
+function playMoves(sel, wrap = $("#cgWrap")) {
+  if (!wrap || !CL.m.move) return;
   wrap.querySelectorAll(".cg-fly").forEach(x => x.remove()); wrap.querySelectorAll(".pc.left").forEach(x => x.classList.remove("left"));
   const W = wrap.getBoundingClientRect();
   sel.forEach((r, i) => {
@@ -1387,91 +1418,152 @@ function playMoves(sel) {
     Object.assign(fly.style, { left: ra.left - W.left + "px", top: ra.top - W.top + "px", width: ra.width + "px", height: ra.height + "px" });
     wrap.appendChild(fly);
     setTimeout(() => { a.classList.add("left"); fly.style.transform = `translate(${rz.left - ra.left}px, ${rz.top - ra.top}px)`; }, 250 + i * 180);
-    fly.addEventListener("transitionend", e => { if (e.propertyName !== "transform") return; fly.innerHTML = planIcon(r.c) + `<span class="ix">${ipNum(r.nip) - CL.b.p.r.start}</span>`; fly.classList.add("mv"); fly.title = `${r.c.name || r.c.mac}: ${r.c.fixed_ip} → ${r.nip}`; }, { once: true });
+    fly.addEventListener("transitionend", e => { if (e.propertyName !== "transform") return; fly.innerHTML = planIcon(r.c) + `<span class="ix">${ipNum(r.nip) - r.b.p.r.start}</span>`; fly.classList.add("mv"); fly.title = `${r.c.name || r.c.mac}: ${r.c.fixed_ip} → ${r.nip}`; }, { once: true });
   });
 }
+const LEG_PLAN = [["res", "Fixed IP"], ["res mv", "Fixed IP, moved"], ["was", "Freed"], ["gw", "Gateway"], ["pool", "DHCP pool"], ["free", "Free (reserve here)"]];
+const LEG_CHG = [["res src", "Moves away"], ["free dst", "New address"], ["free np", "DHCP pool after the change"], ["dyn", "Dynamic, gets a pool address at renewal"]];
+const poolTxt = (s, e) => s >= 0 ? `.${s & 255} – .${e & 255}` : "(none)";
 function renderClean() {
-  const b = buildClean(); if (!b) return;
-  CL.b = b;
-  const { n, p, first, end, poolS, poolE, dynIn, err } = b;
-  $("#clFrom").textContent = "." + (first & 255); $("#clEnd").value = end & 255; $("#clEnd").min = (first & 255) + 1; $("#clEnd").max = ((p.r.end - 2) & 255);
-  $("#clPool").textContent = `.${poolS & 255} – .${poolE & 255}`;
+  const b0 = buildClean(); if (!b0) return;
+  const multi = CL.multi, bs = CL.bs, inc = bs.filter(b => b.inc);
+  CL.b = multi ? null : b0;
+  for (const el of document.querySelectorAll("#planClean .cl-one")) el.hidden = multi;
+  for (const el of document.querySelectorAll("#planClean .cl-multi")) el.hidden = !multi;
+  if (!multi) {
+    const { first, end, poolS, poolE, p } = b0;
+    $("#clFrom").textContent = "." + (first & 255); $("#clEnd").value = end & 255; $("#clEnd").min = (first & 255) + 1; $("#clEnd").max = ((p.r.end - 2) & 255);
+    $("#clPool").textContent = `.${poolS & 255} – .${poolE & 255}`;
+  } else { $("#clPct").value = CL.pct ?? ""; $("#clPct").disabled = CL.running || CL.done; }
   for (const x of document.querySelectorAll("[data-cs]")) x.setAttribute("aria-pressed", String(x.dataset.cs === CL.strategy));
   const sel = CL.rows.filter(r => r.sel), wifi = sel.filter(r => needsNewIp(r.c, r.nip) && canReconnect(r.c));
   const haHits = sel.filter(r => CL.ha?.has(r.c.mac)).length;
-  const selMac = new Map(sel.map(r => [r.c.mac, ipNum(r.nip)]));
-  const after = tidyScore(b.fixed.filter(c => !c.is_device).map(c => CL.m.move && selMac.has(c.mac) ? selMac.get(c.mac) : ipNum(c.fixed_ip)),
-    CL.m.pool && b.poolChange ? poolS : p.ps, CL.m.pool && b.poolChange ? poolE : p.pe, 0);
-  $("#clSum").innerHTML = `<span class="pill">Tidiness ${tidyBadge(tidiness(p))} → ${tidyBadge(after)}</span><span class="pill">Fixed IPs <b>${b.fixed.length}</b></span><span class="pill">Moves <b>${sel.length}/${CL.rows.length}</b></span><span class="pill">Dynamic in fixed range <b>${dynIn.length}</b></span>`;
-  CL.tab = CL.preview ? "chg" : "plan"; $("#clPreview").checked = !!CL.preview; $("#clPreview").disabled = CL.running;
-  $("#clErr").innerHTML = err ? `<div class="err">${esc(err)}</div>` : "";
-  // grid for the selected tab
-  if (CL.tab === "cur") $("#clGrid").innerHTML = legend(LEG_CUR) + `<div class="plan-grid">${currentCells(p)}</div>`;
-  else if (CL.tab === "plan") $("#clGrid").innerHTML = legend([["res", "Fixed IP"], ["res mv", "Fixed IP, moved"], ["was", "Freed"], ["gw", "Gateway"], ["pool", "DHCP pool"], ["free", "Free (reserve here)"]]) + `<div class="plan-grid">${futureCells(b, sel)}</div>`;
+  const pools = inc.filter(b => b.poolChange), dynIn = inc.flatMap(b => b.dynIn), fixedN = inc.reduce((a, b) => a + b.fixed.length, 0);
+  // tidiness: one network, or all networks (untouched ones keep their score)
+  let before, after;
+  if (!multi) { before = tidiness(b0.p); after = tidyAfter(b0); }
   else {
-    $("#clGrid").innerHTML = legend([["res src", "Moves away"], ["free dst", "New address"], ["free np", "DHCP pool after the change"], ["dyn", "Dynamic, gets a pool address at renewal"]]) +
-      `<div class="cg-wrap" id="cgWrap"><div class="plan-grid">${changeCells(b, sel)}</div><svg class="cg-arrows" id="cgArrows"></svg></div>
-       <div class="cg-bar"><button class="btn" type="button" id="cgPlay">▶ Play moves</button><span>${CL.m.move ? `${sel.length} ${sel.length === 1 ? "move" : "moves"}` : "Moves are unticked"}${CL.m.pool && b.poolChange ? ` · pool .${p.ps & 255}–.${p.pe & 255} → .${poolS & 255}–.${poolE & 255}` : ""}${dynIn.length ? ` · ${dynIn.length} dynamic in the new fixed range` : ""}</span></div>`;
-    requestAnimationFrame(() => { drawArrows(sel); if (!CL.played) { CL.played = true; playMoves(sel); } });
+    const ps = state.networks.map(planNet).filter(Boolean), byId = new Map(inc.map(b => [b.n.id, b]));
+    before = tidyAvg(ps.map(p => tidiness(p))); after = tidyAvg(ps.map(p => byId.has(p.n.id) ? tidyAfter(byId.get(p.n.id)) : tidiness(p)));
   }
+  $("#clSum").innerHTML = `<span class="pill">${multi ? "Overall tidiness" : "Tidiness"} ${tidyBadge(before)} → ${tidyBadge(after)}</span>${multi ? `<span class="pill">Networks <b>${inc.length}/${bs.length}</b></span>` : ""}<span class="pill">Fixed IPs <b>${fixedN}</b></span><span class="pill">Moves <b>${sel.length}/${CL.rows.length}</b></span>${multi ? `<span class="pill">Pool changes <b>${CL.m.pool ? pools.length : 0}</b></span>` : ""}<span class="pill">Dynamic in fixed range <b>${dynIn.length}</b></span>`;
+  CL.tab = CL.preview ? "chg" : "plan"; $("#clPreview").checked = !!CL.preview; $("#clPreview").disabled = CL.running;
+  const errs = inc.filter(b => b.err);
+  $("#clErr").innerHTML = errs.map(b => `<div class="err">${multi ? esc(b.n.name) + ": " : ""}${esc(b.err)}</div>`).join("");
+  // grid(s)
+  const grid = b => {
+    const s2 = sel.filter(r => r.b === b);
+    if (CL.tab === "plan") return `<div class="plan-grid">${futureCells(b, s2)}</div>`;
+    return `<div class="cg-wrap" data-netid="${esc(b.n.id)}"${multi ? "" : ' id="cgWrap"'}><div class="plan-grid">${changeCells(b, s2)}</div><svg class="cg-arrows"></svg></div>`;
+  };
+  const leg = `<div class="plan-legend-bar">${legend(CL.tab === "plan" ? LEG_PLAN : LEG_CHG)}</div>`;
+  const bar = CL.tab === "chg" ? `<div class="cg-bar"><button class="btn" type="button" id="cgPlay">▶ Play moves</button><span>${CL.m.move ? `${sel.length} ${sel.length === 1 ? "move" : "moves"}` : "Moves are unticked"}${CL.m.pool && pools.length ? ` · ${multi ? `${pools.length} pool ${pools.length === 1 ? "change" : "changes"}` : `pool ${poolTxt(b0.p.ps, b0.p.pe)} → ${poolTxt(b0.poolS, b0.poolE)}`}` : ""}${dynIn.length ? ` · ${dynIn.length} dynamic in the new fixed range` : ""}</span></div>` : "";
+  if (!multi) $("#clGrid").innerHTML = leg + grid(b0) + bar;
+  else if (!bs.length) $("#clGrid").innerHTML = `<p class="hint" style="padding:12px 0">Nothing to clean up – every network already has its fixed IPs in one block outside the DHCP pool.</p>`;
+  else {
+    const tbl = `<div class="imp-table cl-nets"><table><thead><tr><th style="width:34px"></th><th>Network</th><th>Fixed block</th><th>DHCP pool</th><th>Moves</th><th>Tidiness</th></tr></thead><tbody>${bs.map(b => `<tr class="${b.inc ? "" : "off"}">
+      <td><label class="opt"><input type="checkbox" data-cn="${esc(b.n.id)}" ${b.inc ? "checked" : ""} ${CL.running || CL.done ? "disabled" : ""} aria-label="Include ${esc(b.n.name)}"></label></td>
+      <td><b>${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span>${b.err ? ` <span class="tag bad">${esc(b.err)}</span>` : ""}</td>
+      <td class="mono">.${b.first & 255} – .${b.end & 255}</td>
+      <td class="mono">${b.poolChange ? `${poolTxt(b.p.ps, b.p.pe)} → <b>${poolTxt(b.poolS, b.poolE)}</b>` : `<span class="muted">${poolTxt(b.p.ps, b.p.pe)} (stays)</span>`}</td>
+      <td>${b.rows.filter(r => r.sel).length}/${b.rows.length}</td>
+      <td>${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</td></tr>`).join("")}</tbody></table></div>`;
+    $("#clGrid").innerHTML = tbl + leg + inc.map(b => `<section class="plan-sec"><div class="plan-sec-h" style="cursor:default"><b>${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span> ${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</div>${grid(b)}</section>`).join("") + bar;
+  }
+  markSel();
+  if (CL.tab === "chg") requestAnimationFrame(() => { for (const w of document.querySelectorAll("#clGrid .cg-wrap")) { const s2 = sel.filter(r => r.b.n.id === w.dataset.netid); drawArrows(s2, w); if (!CL.played) playMoves(s2, w); } CL.played = true; });
   syncIconBoxes();
   // measures
   const m = (k, title, desc, dis) => `<label class="measure"><input type="checkbox" data-cm="${k}" ${CL.m[k] && !dis ? "checked" : ""} ${dis || CL.running || CL.done ? "disabled" : ""}><span class="h">${title}</span><span class="d">${desc}</span></label>`;
   const nWifi = wifi.length, nOther = sel.filter(r => needsNewIp(r.c, r.nip) && !canReconnect(r.c)).length;
-  $("#clM1").innerHTML = m("move", `1 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} into .${first & 255} – .${end & 255}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."} Untick single devices below.${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range.", !CL.rows.length);
+  const where = multi ? `in ${inc.length} ${inc.length === 1 ? "network" : "networks"}` : `into .${b0.first & 255} – .${b0.end & 255}`;
+  $("#clM1").innerHTML = m("move", `1 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}${multi ? " Every device stays in its network." : ""} Untick single devices below.${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range.", !CL.rows.length);
   $("#clMoves").hidden = !CL.rows.length;
   $("#clM2").innerHTML = m("rc", `2 · Reconnect ${nWifi} Wi-Fi ${nWifi === 1 ? "client" : "clients"} afterwards`, nWifi ? `So they take the new IP right away (one per second).${nOther ? ` ${nOther} wired or offline ${nOther === 1 ? "device takes" : "devices take"} it at the next DHCP renewal.` : ""}` : "No online Wi-Fi client is affected.", !nWifi || !CL.m.move);
-  $("#clM3").innerHTML = m("pool", `3 · Change the DHCP pool ${p.ps >= 0 ? `.${p.ps & 255} – .${p.pe & 255}` : "(none)"} → .${poolS & 255} – .${poolE & 255}`, b.poolChange ? `${poolE - poolS + 1} addresses for dynamic clients (today ${p.dyn} in use). ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in the new fixed range and will get a pool address at the next renewal. ` : ""}Changed in UniFi as the last step – you confirm it once more.` : "The pool already matches.", !b.poolChange);
+  $("#clM3").innerHTML = multi
+    ? m("pool", `3 · Change the DHCP pool in ${pools.length} ${pools.length === 1 ? "network" : "networks"}`, pools.length ? `${pools.map(b => `${esc(b.n.name)} ${poolTxt(b.p.ps, b.p.pe)} → ${poolTxt(b.poolS, b.poolE)}`).join(" · ")}. ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in a new fixed range and will get a pool address at the next renewal. ` : ""}Changed in UniFi as the last step – you confirm it once more.` : "All pools already match.", !pools.length)
+    : m("pool", `3 · Change the DHCP pool ${poolTxt(b0.p.ps, b0.p.pe)} → .${b0.poolS & 255} – .${b0.poolE & 255}`, b0.poolChange ? `${b0.poolE - b0.poolS + 1} addresses for dynamic clients (today ${b0.p.dyn} in use). ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in the new fixed range and will get a pool address at the next renewal. ` : ""}Changed in UniFi as the last step – you confirm it once more.` : "The pool already matches.", !b0.poolChange);
   // moves (children of measure 1)
-  const view = tsorted("clRows", CL.rows, { dev: r => (r.c.name || r.c.hostname || "").toLowerCase(), mac: r => r.c.mac, ip: r => r.c.fixed_ip, nip: r => r.nip, grp: r => r.grp, status: r => r.status });
+  const view = tsorted("clRows", CL.rows, { dev: r => (r.c.name || r.c.hostname || "").toLowerCase(), mac: r => r.c.mac, ip: r => ipNum(r.c.fixed_ip), nip: r => ipNum(r.nip), grp: r => (multi ? r.b.n.name + " " : "") + r.grp, status: r => r.status });
   $("#clRows").innerHTML = view.map(r => `<tr><td><label class="opt"><input type="checkbox" data-ci="${CL.rows.indexOf(r)}" ${r.sel ? "checked" : ""} ${CL.running || CL.done || !CL.m.move ? "disabled" : ""}></label></td>
-    <td>${esc(r.c.name || r.c.hostname || "–")}</td><td class="mono">${esc(r.c.mac)}</td><td class="mono">${esc(r.c.fixed_ip)}</td><td class="mono"><b>${esc(r.nip)}</b></td><td>${esc(r.grp)}</td>
+    <td>${esc(r.c.name || r.c.hostname || "–")}</td><td class="mono">${esc(r.c.mac)}</td><td class="mono">${esc(r.c.fixed_ip)}</td><td class="mono"><b>${esc(r.nip)}</b></td><td>${multi ? `<span class="muted">${esc(r.b.n.name)} ·</span> ` : ""}${esc(r.grp)}</td>
     <td><div class="chg-list">${r.status === "ok" ? '<span class="st ok">✓ Moved</span>' : r.status === "fail" ? `<span class="st err">Failed</span><span class="msg">${esc(r.result || "")}</span>` : '<span class="st chg">Move</span>'}${CL.ha?.has(r.c.mac) ? '<span style="color:var(--warn)">Known to Home Assistant – check IP-based integrations</span>' : ""}${r.status === "chg" && needsNewIp(r.c, r.nip) ? (canReconnect(r.c) ? (CL.m.rc ? '<span class="rc-note">↻ Will be reconnected</span>' : '<span class="muted">Wi-Fi – new IP at next renewal (or reconnect)</span>') : `<span class="muted">${esc(renewNote(r.c))}</span>`) : ""}</div></td></tr>`).join("");
   const vis = CL.rows.filter(() => !CL.running && !CL.done && CL.m.move), nS = vis.filter(r => r.sel).length, all = $("#clAll");
   all.disabled = !vis.length; all.checked = vis.length > 0 && nS === vis.length; all.indeterminate = nS > 0 && nS < vis.length;
   // footer
-  const btn = $("#clApply"), todo = (CL.m.move ? sel.length : 0) + (CL.m.pool && b.poolChange ? 1 : 0);
-  if (CL.confirm) { btn.textContent = `Confirm: change pool to .${poolS & 255} – .${poolE & 255}`; btn.disabled = CL.running; }
+  const btn = $("#clApply"), todo = (CL.m.move ? sel.length : 0) + (CL.m.pool ? pools.length : 0);
+  const poolList = pools.map(b => `${b.n.name} ${ipStr(b.poolS)} – ${ipStr(b.poolE)}`);
+  if (CL.confirm) { btn.textContent = multi ? `Confirm: change ${pools.length} ${pools.length === 1 ? "pool" : "pools"}` : `Confirm: change pool to .${b0.poolS & 255} – .${b0.poolE & 255}`; btn.disabled = CL.running; }
   else if (CL.done) { btn.textContent = "Close"; btn.disabled = false; }
   else {
-    const parts = [CL.m.move && sel.length ? `${sel.length} ${sel.length === 1 ? "move" : "moves"}` : "", CL.m.pool && b.poolChange ? "pool change" : ""].filter(Boolean);
-    btn.textContent = CL.running ? "Applying …" : parts.length ? "Apply " + parts.join(" + ") : "Nothing to apply"; btn.disabled = CL.running || !todo || !!err;
+    const parts = [CL.m.move && sel.length ? `${sel.length} ${sel.length === 1 ? "move" : "moves"}` : "", CL.m.pool && pools.length ? (pools.length > 1 ? `${pools.length} pool changes` : "pool change") : ""].filter(Boolean);
+    btn.textContent = CL.running ? "Applying …" : parts.length ? "Apply " + parts.join(" + ") : "Nothing to apply"; btn.disabled = CL.running || !todo || !!errs.length;
   }
-  $("#clConfirm").innerHTML = CL.confirm ? `<div class="cl-confirm"><b>Change the DHCP pool of ${esc(n.name)} to ${esc(ipStr(poolS))} – ${esc(ipStr(poolE))}?</b><br>This changes the network configuration in UniFi. Clients with a dynamic address outside the new pool get a new one at their next renewal. Click the button again to confirm, or Cancel to keep the pool.</div>` : "";
+  $("#clConfirm").innerHTML = CL.confirm ? `<div class="cl-confirm"><b>Change the DHCP ${poolList.length === 1 ? "pool" : "pools"}: ${esc(poolList.join(" · "))}?</b><br>This changes the network configuration in UniFi. Clients with a dynamic address outside the new pool get a new one at their next renewal. Click the button again to confirm, or Cancel to keep the ${poolList.length === 1 ? "pool" : "pools"}.</div>` : "";
 }
 async function applyClean() {
-  const b = CL.b;
   if (CL.done) { backToPlan(); return; }
+  const inc = CL.bs.filter(b => b.inc), pools = CL.m.pool ? inc.filter(b => b.poolChange) : [];
   if (CL.confirm) {
-    CL.running = true; renderClean();
-    try { await api("api/pool", { network_id: b.n.id, start: ipStr(b.poolS), stop: ipStr(b.poolE) }); toast(`DHCP pool changed to .${b.poolS & 255} – .${b.poolE & 255}`); }
-    catch (e) { toast("Pool change failed: " + e.message); }
+    CL.running = true; renderClean(); let ok = 0;
+    for (const b of pools) {
+      try { await api("api/pool", { network_id: b.n.id, start: ipStr(b.poolS), stop: ipStr(b.poolE) }); ok++; }
+      catch (e) { toast(`Pool change in ${b.n.name} failed: ` + e.message); }
+    }
+    if (ok) toast(pools.length === 1 ? `DHCP pool changed to .${pools[0].poolS & 255} – .${pools[0].poolE & 255}` : `${ok} of ${pools.length} DHCP pools changed`);
     CL.running = false; CL.confirm = false; CL.done = true; renderClean(); load(); return;
   }
   const todo = CL.m.move ? CL.rows.filter(r => r.sel && r.status === "chg") : [];
-  CL.running = true; renderClean();
-  if (!await autoVersion(`Before cleanup of ${b.n.name}`)) { CL.running = false; renderClean(); return; }
+  CL.running = true; CL.frozen = true; renderClean();
+  if (!await autoVersion(CL.multi ? `Before cleanup of ${inc.length} networks` : `Before cleanup of ${inc[0].n.name}`)) { CL.running = false; CL.frozen = false; renderClean(); return; }
   $("#clProg").hidden = !todo.length; let i = 0;
-  for (const r of todo) {
-    const c = r.c;
-    try { await api("api/client", clientBody(c, { use_fixedip: true, fixed_ip: r.nip, network_id: b.n.id })); r.status = "ok"; }
-    catch (e) { r.status = "fail"; r.result = e.message; }
-    $("#clProg i").style.width = (++i / todo.length * 100) + "%";
+  const put = async (r, ip) => api("api/client", clientBody(r.c, { use_fixedip: true, fixed_ip: ip, network_id: r.b.n.id }));
+  // order the moves so no target address is still reserved by another device; swaps / cycles go through a temporary free address
+  const held = new Map(state.clients.filter(c => c.use_fixedip && c.fixed_ip).map(c => [c.fixed_ip, c.mac]));
+  let pending = [...todo];
+  while (pending.length) {
+    const ready = pending.filter(r => !held.has(r.nip) || held.get(r.nip) === r.c.mac);
+    let batch = ready, viaTmp = null;
+    if (!ready.length) { // cycle: park the first device on a free address
+      const r = pending[0], p = r.b.p, planned = new Set([...r.b.plan.values()]);
+      for (let x = p.r.end - 1; x > p.r.start; x--) { const ip = ipStr(x); if (x !== p.gw && !held.has(ip) && !planned.has(x)) { viaTmp = ip; break; } }
+      if (!viaTmp) { for (const q of pending) { q.status = "fail"; q.result = "No free address to resolve the swap"; } break; }
+      try { await put(r, viaTmp); held.delete(r.c.fixed_ip); held.set(viaTmp, r.c.mac); r.c._tmp = viaTmp; } catch (e) { r.status = "fail"; r.result = e.message; pending = pending.slice(1); }
+      continue;
+    }
+    for (const r of batch) {
+      const from = r.c._tmp || r.c.fixed_ip;
+      try { await put(r, r.nip); r.status = "ok"; held.delete(from); held.set(r.nip, r.c.mac); }
+      catch (e) { r.status = "fail"; r.result = e.message; }
+      delete r.c._tmp;
+      $("#clProg i").style.width = (++i / todo.length * 100) + "%";
+    }
+    pending = pending.filter(r => !batch.includes(r));
   }
   let rcTxt = "";
   if (CL.m.rc) { const aff = todo.filter(r => r.status === "ok" && needsNewIp(r.c, r.nip)), wifi = aff.filter(r => canReconnect(r.c)); if (wifi.length) rcTxt = rcSummary(await reconnectAll(wifi.map(r => r.c)), aff.length - wifi.length); }
   const ok = todo.filter(r => r.status === "ok").length;
   if (todo.length) toast(`${ok} of ${todo.length} moved` + (rcTxt ? ` · ${rcTxt}` : ""));
   CL.running = false;
-  if (CL.m.pool && b.poolChange) { CL.confirm = true; CL.preview = false; } else CL.done = true;
+  if (pools.length) { CL.confirm = true; CL.preview = false; } else CL.done = true;
   renderClean(); if (rcTxt) setTimeout(() => load(), 20000);
 }
 $("#clEnd").addEventListener("change", e => { const p = CL.b?.p; if (!p || CL.running || CL.done) return; CL.end = p.r.start - (p.r.start & 255) + +e.target.value; renderClean(); });
+$("#clPct").addEventListener("change", e => { if (CL.running || CL.done) return; const v = +e.target.value; CL.pct = e.target.value === "" ? null : Math.min(90, Math.max(10, v || 40)); renderClean(); });
+$("#clGrid").addEventListener("change", e => { const id = e.target.dataset?.cn; if (id == null || CL.running || CL.done) return; CL.inc[id] = e.target.checked; CL.played = true; renderClean(); });
 document.querySelectorAll("[data-cs]").forEach(x => x.addEventListener("click", () => { if (CL.running || CL.done) return; CL.strategy = x.dataset.cs; CL.rows = []; renderClean(); }));
 $("#clPreview").addEventListener("change", e => { CL.preview = e.target.checked; CL.played = false; renderClean(); });
 $("#planClean").addEventListener("change", e => { const k = e.target.dataset?.cm; if (k) { CL.m[k] = e.target.checked; CL.played = true; renderClean(); } });
-$("#clGrid").addEventListener("click", e => { if (e.target.closest("#cgPlay")) { const sel = CL.rows.filter(r => r.sel); drawArrows(sel); playMoves(sel); } });
-window.addEventListener("resize", () => { if (isPlan() && PLAN.tab === "clean" && CL.tab === "chg") drawArrows(CL.rows.filter(r => r.sel)); });
+const cgEach = fn => { const sel = CL.rows.filter(r => r.sel); for (const w of document.querySelectorAll("#clGrid .cg-wrap")) fn(sel.filter(r => r.b.n.id === w.dataset.netid), w); };
+$("#clGrid").addEventListener("click", e => {
+  if (e.target.closest("#cgPlay")) { cgEach((s2, w) => { drawArrows(s2, w); playMoves(s2, w); }); return; }
+  const d = e.target.closest(".pc[data-mac]"), c = d?.dataset.mac && state.clients.find(x => x.mac === d.dataset.mac);
+  if (c) openPanel(c); // the proposal stays open next to the detail panel
+});
+// redraw the arrows whenever the grid changes size (window, detail panel, filter pane)
+new ResizeObserver(() => { if (!(isPlan() && PLAN.tab === "clean" && CL.tab === "chg")) return;
+  document.querySelectorAll("#clGrid .cg-fly").forEach(x => x.remove()); document.querySelectorAll("#clGrid .pc.left").forEach(x => x.classList.remove("left"));
+  cgEach((s2, w) => drawArrows(s2, w)); }).observe($("#clGrid"));
 $("#clRows").addEventListener("change", e => { const i = e.target.dataset.ci; if (i != null) { CL.rows[+i].sel = e.target.checked; CL.played = true; renderClean(); } });
 $("#clAll").addEventListener("change", e => { CL.rows.forEach(r => r.sel = e.target.checked); renderClean(); });
 bindSort("clRows", () => renderClean());
@@ -1559,7 +1651,7 @@ function openPanel(c, tab) {
 // only move the highlight – re-building the table on a click made Safari jump back to the top
 function markSel() {
   const k = state.sel ? keyOf(state.sel) : null;
-  for (const el of document.querySelectorAll("#planGridWrap .pc")) el.classList.toggle("selc", !!state.sel?.mac && el.dataset.mac === state.sel.mac);
+  for (const el of document.querySelectorAll("#planGridWrap .pc, #clGrid .pc")) el.classList.toggle("selc", !!state.sel?.mac && el.dataset.mac === state.sel.mac);
   for (const tr of $("#tbody").querySelectorAll("tr[data-k]")) tr.classList.toggle("sel", tr.dataset.k === k);
 }
 function closePanel() {
