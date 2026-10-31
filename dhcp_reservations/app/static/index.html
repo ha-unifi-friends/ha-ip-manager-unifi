@@ -373,6 +373,7 @@ body.plan-mode .topbar{border-bottom:2px solid var(--accent)}
 .cl-ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px;margin-bottom:10px}
 .cl-ctrl label{font-size:12.5px;color:var(--muted);display:inline-flex;align-items:center;gap:6px}
 .cl-ctrl input[type=number]{width:70px}
+#clEnd{width:96px}
 .seg{display:inline-flex;background:var(--bg);border:1px solid var(--line-strong);border-radius:999px;padding:2px;gap:2px}
 .seg button{border:0;background:transparent;color:var(--muted);padding:4px 12px;border-radius:999px;cursor:pointer;font-size:12.5px}
 .seg button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
@@ -586,7 +587,7 @@ body.side-off .menu-btn{display:inline-flex}
         <div id="planClean" hidden>
       <div class="cl-ctrl">
         <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button></span>
-        <label class="cl-one">Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253"></label>
+        <label class="cl-one">Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253" title="Empty = automatic suggestion"></label><button class="link cl-one" type="button" id="clEndAuto" hidden title="Back to the automatic suggestion">Auto</button>
         <label class="cl-one">DHCP pool <b class="mono" id="clPool"></b></label>
         <label class="cl-multi" title="Size of the fixed block at the start of every network; empty = a suggestion per network">Fixed block <input type="number" id="clPct" min="10" max="90" step="5" placeholder="auto"> % of each network</label>
         <span class="sp"></span>
@@ -1443,7 +1444,7 @@ function buildClean() {
   if (CL.frozen && CL.bs.length) return CL.bs[0]; // during / after applying: keep the rows and their results
   const prev = new Map(CL.rows.map(r => [r.c.mac, r.sel]));
   if (!CL.multi) {
-    const b = buildCleanFor(net(PLAN.sel), CL.end, prev); if (!b) return null;
+    const b = buildCleanFor(net(PLAN.sel), CL.endSet ? CL.end : null, prev); if (!b) return null;
     b.inc = true; CL.end = b.end; CL.bs = [b]; CL.rows = b.rows; return b;
   }
   CL.bs = state.networks.map(n => { const p = planNet(n); if (!p) return null; return buildCleanFor(n, CL.pct ? p.r.start + Math.round(p.r.size * CL.pct / 100) - 1 : null, prev); })
@@ -1453,7 +1454,7 @@ function buildClean() {
   CL.rows = CL.bs.filter(b => b.inc).flatMap(b => b.rows);
   return CL.bs[0] || { multiEmpty: true };
 }
-function resetClean() { Object.assign(CL, { frozen: false, end: null, pct: null, inc: {}, bs: [], multi: PLAN.sel === ALL_NETS, rows: [], tab: "plan", preview: false, played: false, running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true, rcc: true } }); }
+function resetClean() { Object.assign(CL, { frozen: false, end: null, endSet: false, pct: null, inc: {}, bs: [], multi: PLAN.sel === ALL_NETS, rows: [], tab: "plan", preview: false, played: false, running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true, rcc: true } }); }
 async function openClean() {
   resetClean(); PLAN.tab = "clean"; renderPlan();
   if (!CL.ha) { try { CL.ha = new Set((await api("api/ha_devices")).devices.flatMap(d => d.macs)); renderClean(); } catch { CL.ha = new Set(); } }
@@ -1529,7 +1530,7 @@ function renderClean() {
   for (const el of document.querySelectorAll("#planClean .cl-multi")) el.hidden = !multi;
   if (!multi) {
     const { first, end, poolS, poolE, p } = b0;
-    $("#clFrom").textContent = "." + (first & 255); $("#clEnd").value = end & 255; $("#clEnd").min = (first & 255) + 1; $("#clEnd").max = ((p.r.end - 2) & 255);
+    $("#clFrom").textContent = "." + (first & 255); $("#clEnd").value = CL.endSet ? end & 255 : ""; $("#clEnd").placeholder = "auto · " + (end & 255); $("#clEndAuto").hidden = !CL.endSet || CL.running || CL.done; $("#clEnd").min = (first & 255) + 1; $("#clEnd").max = ((p.r.end - 2) & 255);
     $("#clPool").textContent = `.${poolS & 255} – .${poolE & 255}`;
   } else { $("#clPct").value = CL.pct ?? ""; $("#clPct").disabled = CL.running || CL.done; }
   for (const x of document.querySelectorAll("[data-cs]")) x.setAttribute("aria-pressed", String(x.dataset.cs === CL.strategy));
@@ -1657,7 +1658,8 @@ async function applyClean() {
   setTimeout(() => load(), 15000);
 }
 const unconfirm = () => { if (CL.confirm && !CL.running) { CL.confirm = false; CL.frozen = false; } };
-$("#clEnd").addEventListener("change", e => { unconfirm(); const p = CL.b?.p; if (!p || CL.running || CL.done) return; CL.end = p.r.start - (p.r.start & 255) + +e.target.value; renderClean(); });
+$("#clEnd").addEventListener("change", e => { unconfirm(); const p = CL.b?.p; if (!p || CL.running || CL.done) return; if (e.target.value === "") CL.endSet = false; else { CL.end = p.r.start - (p.r.start & 255) + +e.target.value; CL.endSet = true; } renderClean(); });
+$("#clEndAuto").addEventListener("click", () => { if (CL.running || CL.done) return; unconfirm(); CL.endSet = false; renderClean(); });
 $("#clPct").addEventListener("change", e => { unconfirm(); if (CL.running || CL.done) return; const v = +e.target.value; CL.pct = e.target.value === "" ? null : Math.min(90, Math.max(10, v || 40)); renderClean(); });
 $("#clGrid").addEventListener("change", e => { const id = e.target.dataset?.cn; if (id == null || CL.running || CL.done) return; unconfirm(); CL.inc[id] = e.target.checked; CL.played = true; renderClean(); });
 document.querySelectorAll("[data-cs]").forEach(x => x.addEventListener("click", () => { if (CL.running || CL.done) return; unconfirm(); CL.strategy = x.dataset.cs; CL.rows = []; renderClean(); }));

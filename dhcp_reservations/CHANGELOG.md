@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.24.1 – 2026-10-31
+
+- CleanUp: *Fixed IPs up to* can go back to the automatic suggestion – clear the field or click *Auto*. The suggestion is shown greyed in the empty field (`auto · 99`). Before, clearing the field set the end to .2.
+
 ## 1.24.0 – 2026-10-31
 
 - **CleanUp never moves the Home Assistant host.** All integrations point to its address, so renumbering it would break them. The app reads the host's addresses from the Supervisor (new `hassio_api` permission, info calls only) and also recognises clients named *homeassistant*, *hassio* or *home-assistant*. The fixed block always reaches up to its address, so it never ends up in the DHCP pool either.
