@@ -213,6 +213,14 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .hint a{color:var(--accent)}
 .imp-foot .notes{display:flex;flex-direction:column;gap:3px;min-width:0}
 .vnote{display:flex;align-items:center;gap:6px}
+.imp-table th[data-sk]{cursor:pointer;user-select:none;white-space:nowrap}
+.imp-table th[data-sk]:hover{color:var(--fg)}
+.imp-table th.sa::after{content:"▲";font-size:9px;margin-left:5px;color:var(--accent)}
+.imp-table th.sd::after{content:"▼";font-size:9px;margin-left:5px;color:var(--accent)}
+.rc-opt{display:flex;align-items:center;gap:7px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.rc-opt input{margin:0}
+.rc-note{color:var(--accent)}
+#rcRow{display:flex;flex-direction:column;gap:2px}
 .openrow{display:flex;gap:8px}
 .openrow .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;text-decoration:none;padding:9px 12px}
 .openrow .btn:not(.primary){color:var(--fg)}
@@ -354,6 +362,8 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
           <div class="field"><label for="fNet">Network</label><select id="fNet" form="formEdit"></select></div>
           <div class="field"><label for="fIp">IP address</label><input id="fIp" class="mono" autocomplete="off" inputmode="decimal" form="formEdit"></div>
           <div class="hint" id="ipHint"></div>
+          <div id="rcRow" hidden><label class="rc-opt"><input type="checkbox" id="fReconnect" checked><span>Reconnect device after saving</span></label><span class="hint">So it gets the new IP right away (Wi-Fi only).</span></div>
+          <div class="hint" id="rcHint" hidden></div>
         </div>
       </div>
       <div class="form card" id="apCard">
@@ -388,11 +398,12 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
       <div id="impPreview" hidden>
         <div class="sumrow" id="impSum"></div>
         <div class="imp-help" id="impCols"></div>
-        <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="impAll" aria-label="Select all"></label></th><th>Row</th><th>Status</th><th>MAC</th><th>Device</th><th>Changes</th></tr></thead><tbody id="impRows"></tbody></table></div>
+        <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="impAll" aria-label="Select all"></label></th><th data-sk="row">Row</th><th data-sk="status">Status</th><th data-sk="mac">MAC</th><th data-sk="dev">Device</th><th data-sk="chg">Changes</th></tr></thead><tbody id="impRows"></tbody></table></div>
       </div>
     </div>
     <div class="imp-foot">
       <div class="notes"><span class="hint" id="impNote">Rows with errors or without changes are not applied.</span><span class="hint vnote"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>A version of the current settings is saved first – undo anytime via Versions › Restore.</span></div>
+      <label class="rc-opt" id="impRcWrap" hidden title="Disconnects the affected Wi-Fi clients briefly (one per second) so they request their new IP right away"><input type="checkbox" id="impRc"><span id="impRcTxt">Reconnect affected Wi-Fi clients</span></label>
       <div class="prog" id="impProg" hidden><i></i></div>
       <span class="sp"></span>
       <button class="btn" type="button" id="impCancel">Cancel</button>
@@ -421,11 +432,12 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
       <div class="imp-help">Moves every fixed IP in the source subnet to the same host address in the target subnet (e.g. 192.168.30.52 → 192.168.31.52). The target network must already exist in UniFi. Devices pick up the new address at their next DHCP renewal or reconnect.</div>
       <div id="subPreview" hidden>
         <div class="sumrow" id="subSum"></div>
-        <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="subAll" aria-label="Select all"></label></th><th>Device</th><th>MAC</th><th>Fixed IP</th><th>New IP</th><th>Network</th><th>Status</th></tr></thead><tbody id="subRows"></tbody></table></div>
+        <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="subAll" aria-label="Select all"></label></th><th data-sk="dev">Device</th><th data-sk="mac">MAC</th><th data-sk="ip">Fixed IP</th><th data-sk="nip">New IP</th><th data-sk="net">Network</th><th data-sk="status">Status</th></tr></thead><tbody id="subRows"></tbody></table></div>
       </div>
     </div>
     <div class="imp-foot">
       <div class="notes"><span class="hint">Rows with errors are never applied.</span><span class="hint vnote"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>A version of the current settings is saved first – undo anytime via Versions › Restore.</span></div>
+      <label class="rc-opt" id="subRcWrap" hidden title="Disconnects the affected Wi-Fi clients briefly (one per second) so they request their new IP right away"><input type="checkbox" id="subRc"><span id="subRcTxt">Reconnect affected Wi-Fi clients</span></label>
       <div class="prog" id="subProg" hidden><i></i></div>
       <span class="sp"></span>
       <button class="btn" type="button" id="subCancel">Cancel</button>
@@ -440,7 +452,7 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
       <div class="imp-help">Matches Home Assistant devices to UniFi clients by MAC address. The proposed name is the name you set in Home Assistant, otherwise the device name of its integration (devices known only through the UniFi integration are skipped, they already carry the UniFi name). “Near match” means the MAC differs only in the last byte, typical for devices with separate Wi-Fi and Ethernet MACs; those are not selected by default.</div>
       <div class="err" id="haErr" hidden></div>
       <div class="sumrow" id="haSum"></div>
-      <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="haAll" aria-label="Select all"></label></th><th>MAC</th><th>Current name</th><th>Name in Home Assistant</th><th>Integration · Area</th><th>Status</th></tr></thead><tbody id="haRows"></tbody></table></div>
+      <div class="imp-table"><table><thead><tr><th style="width:34px"><label class="opt" title="Select all"><input type="checkbox" id="haAll" aria-label="Select all"></label></th><th data-sk="mac">MAC</th><th data-sk="cur">Current name</th><th data-sk="ha">Name in Home Assistant</th><th data-sk="int">Integration · Area</th><th data-sk="status">Status</th></tr></thead><tbody id="haRows"></tbody></table></div>
     </div>
     <div class="imp-foot">
       <div class="notes"><span class="hint">Only the name changes; fixed IP, note and other settings stay as they are.</span><span class="hint vnote"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>A version of the current settings is saved first – undo anytime via Versions › Restore.</span></div>
@@ -470,7 +482,7 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
       <div class="imp-head"><button class="btn sm" type="button" id="cmpBack">← Versions</button><h2 id="cmpTitle">Compare</h2><button class="btn sm" type="button" id="cmpCsv">Export CSV</button></div>
       <div class="imp-body">
         <div class="sumrow" id="cmpSum"></div>
-        <div class="imp-table"><table><thead><tr><th>Change</th><th>Device</th><th>Details</th><th></th></tr></thead><tbody id="cmpRows"></tbody></table></div>
+        <div class="imp-table"><table><thead><tr><th data-sk="cat">Change</th><th data-sk="dev">Device</th><th data-sk="det">Details</th><th></th></tr></thead><tbody id="cmpRows"></tbody></table></div>
       </div>
     </div>
     <div id="verRestore" hidden>
@@ -863,11 +875,19 @@ function updateHint() {
     const sug = suggestIp(n.id); if (sug && sug !== ip) h += ` · <a href="#" id="useSug">Free: ${sug}</a>`;
   }
   $("#ipHint").innerHTML = h;
+  syncReconnect();
   $("#useSug")?.addEventListener("click", e => { e.preventDefault(); $("#fIp").value = suggestIp($("#fNet").value); updateHint(); });
 }
-function syncToggles() { $("#apField").hidden = !$("#fLock").checked; $("#fixedFields").hidden = !$("#fFixed").checked; $("#dnsField").hidden = !$("#fDnsOn").checked; }
+function syncReconnect() {
+  const c = state.sel, ip = $("#fFixed").checked ? $("#fIp").value.trim() : "";
+  const need = !!c && ipNum(ip) >= 0 && needsNewIp(c, ip);
+  $("#rcRow").hidden = !(need && canReconnect(c));
+  $("#rcHint").hidden = !(need && !canReconnect(c)); $("#rcHint").textContent = need ? renewNote(c) + "." : "";
+}
+function syncToggles() { $("#apField").hidden = !$("#fLock").checked; $("#fixedFields").hidden = !$("#fFixed").checked; $("#dnsField").hidden = !$("#fDnsOn").checked; syncReconnect(); }
 function onNetChange() { const n = net($("#fNet").value); if (n && !inSubnet($("#fIp").value, n.subnet)) $("#fIp").value = suggestIp(n.id); updateHint(); }
 function fillForm(c) {
+  $("#fReconnect").checked = true;
   $("#fMac").value = c?.mac || ""; $("#fMac").readOnly = !!c;
   $("#fName").value = c?.name || c?.hostname || ""; $("#fNote").value = c?.note || "";
   $("#fFixed").checked = c ? c.use_fixedip : true;
@@ -897,7 +917,10 @@ $("#formEdit").addEventListener("submit", async e => {
   if (body.use_fixedip && ipNum(body.fixed_ip) < 0) return showErr("Please enter a valid IP address.");
   const btn = $("#btnSave"); btn.disabled = true; btn.textContent = "Saving …";
   try {
-    await api("api/client", body); toast("Saved");
+    await api("api/client", body);
+    const rc = !$("#rcRow").hidden && !$("#fixedFields").hidden && $("#fReconnect").checked;
+    if (rc) { try { await api("api/reconnect", { mac: body.mac }); toast("Saved · reconnecting – the new IP shows up in a few seconds"); setTimeout(() => load(), 15000); } catch (e2) { toast("Saved, but reconnect failed: " + e2.message); } }
+    else toast("Saved");
     state.sel = state.sel || { mac: body.mac }; await load();
     const c = state.clients.find(x => x.mac === body.mac); if (c) openPanel(c, "info");
   } catch (err) { showErr(err.message); }
@@ -1052,6 +1075,50 @@ function buildPlans(rows) {
   return { plans };
 }
 
+// ---- sortable preview tables (click a header; again = reverse)
+const TSORT = {};
+function tcmp(x, y) {
+  x = x ?? ""; y = y ?? "";
+  if (typeof x === "number" && typeof y === "number") return x - y;
+  const ix = ipNum(String(x)), iy = ipNum(String(y));
+  if (ix >= 0 && iy >= 0) return ix - iy;
+  return String(x).localeCompare(String(y), "en", { numeric: true, sensitivity: "base" });
+}
+function tsorted(id, list, getters) {
+  const s = TSORT[id]; markSort(id);
+  if (!s || !getters[s.k]) return list;
+  const g = getters[s.k]; return [...list].sort((a, b) => tcmp(g(a), g(b)) * s.d);
+}
+function markSort(id) {
+  const s = TSORT[id];
+  for (const th of $("#" + id).closest("table").querySelectorAll("th[data-sk]")) {
+    th.classList.toggle("sa", !!s && s.k === th.dataset.sk && s.d === 1);
+    th.classList.toggle("sd", !!s && s.k === th.dataset.sk && s.d === -1);
+    th.setAttribute("aria-sort", s && s.k === th.dataset.sk ? (s.d === 1 ? "ascending" : "descending") : "none");
+  }
+}
+function bindSort(id, render) {
+  $("#" + id).closest("table").querySelector("thead").addEventListener("click", e => {
+    const th = e.target.closest("th[data-sk]"); if (!th) return;
+    const s = TSORT[id]; TSORT[id] = s && s.k === th.dataset.sk ? { k: s.k, d: -s.d } : { k: th.dataset.sk, d: 1 };
+    render();
+  });
+}
+// ---- reconnect (UniFi kick-sta): only online Wi-Fi clients whose current IP differs from the new fixed IP
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const needsNewIp = (c, ip) => !!c && !!ip && !!c.online && !!c.ip && c.ip !== ip;
+const canReconnect = c => !!c && !!c.mac && !c.is_device && c.conn === "wifi" && !!c.online;
+const renewNote = c => canReconnect(c) ? "" : c.conn === "wired" ? "Wired – takes the new IP at its next DHCP renewal" : "Takes the new IP at its next DHCP renewal";
+async function reconnectAll(cs) {
+  let ok = 0, fail = 0;
+  for (let i = 0; i < cs.length; i++) {
+    try { await api("api/reconnect", { mac: cs[i].mac }); ok++; } catch { fail++; }
+    if (i < cs.length - 1) await sleep(1000);
+  }
+  return { ok, fail };
+}
+const rcSummary = (r, pending) => [r.ok ? `${r.ok} reconnected` : "", r.fail ? `${r.fail} reconnect failed` : "", pending ? `${pending} renewal pending` : ""].filter(Boolean).join(", ");
+const ST_ORDER = { err: 0, fail: 1, new: 2, chg: 3, ok: 4, same: 5, skip: 6 };
 const ST_LABEL = { skip: "Skipped", new: "New", chg: "Change", same: "Unchanged", err: "Error", ok: "✓ Applied", fail: "Failed" };
 function renderImport() {
   const ps = IMP.plans, cnt = k => ps.filter(p => p.status === k).length;
@@ -1059,13 +1126,20 @@ function renderImport() {
   if (IMP.done) pills.push(["ok", "Applied", cnt("ok")], ["fail", "Failed", cnt("fail")]);
   $("#impSum").innerHTML = pills.filter(x => x[0] === "all" || x[2]).map(([k, l, n]) => `<button type="button" class="pill" data-pf="${k}" aria-pressed="${IMP.filter === k}">${l} <b>${n}</b></button>`).join("");
   $("#impCols").innerHTML = `Detected columns: ${IMP.cols.mapped.map(k => `<code>${esc(k)}</code>`).join(" ")}${IMP.cols.ignored.length ? ` · ignored: ${IMP.cols.ignored.map(h => esc(h)).join(", ")}` : ""}`;
-  const list = ps.filter(p => IMP.filter === "all" || p.status === IMP.filter);
+  const list = tsorted("impRows", ps.filter(p => IMP.filter === "all" || p.status === IMP.filter), {
+    row: p => p.line, status: p => ST_ORDER[p.status] ?? 9, mac: p => p.mac || "", dev: p => (p.c ? (p.c.name || p.c.hostname || "") : (p.d?.name || "")).toLowerCase(),
+    chg: p => p.errs.length ? "0" + p.errs[0] : p.changes.map(x => x[0]).join(", ") || "~" });
   const selectable = p => !IMP.done && !IMP.running && (p.status === "new" || p.status === "chg");
+  const rcAff = impRenew(), rcOn = $("#impRc").checked;
+  $("#impRcWrap").hidden = IMP.done || !rcAff.wifi.length;
+  $("#impRcTxt").textContent = `Reconnect ${rcAff.wifi.length} Wi-Fi ${rcAff.wifi.length === 1 ? "client" : "clients"} afterwards`;
+  const rcLine = p => !p.sel || !p.d || !needsNewIp(p.c, p.d.use_fixedip ? p.d.fixed_ip : "") || IMP.done ? "" :
+    canReconnect(p.c) ? (rcOn ? `<span class="rc-note">↻ Will be reconnected</span>` : `<span class="muted">Wi-Fi – reconnect to apply now, or wait for its next DHCP renewal</span>`) : `<span class="muted">${esc(renewNote(p.c))}</span>`;
   $("#impRows").innerHTML = list.map((p, i) => `<tr><td><label class="opt"><input type="checkbox" data-pi="${ps.indexOf(p)}" ${p.sel ? "checked" : ""} ${selectable(p) ? "" : "disabled"} aria-label="Apply row ${p.line}"></label></td><td class="muted">${p.line}</td><td><span class="st ${p.status === "fail" ? "err" : p.status}">${ST_LABEL[p.status]}</span></td><td class="mono">${esc(p.mac || "–")}</td><td>${esc(p.c ? (p.c.name || p.c.hostname || "") : (p.d?.name || ""))}</td><td><div class="chg-list">${
     (p.skip ? `<span class="muted">${esc(p.skip)}</span>` : "") +
     p.errs.map(e => `<span class="msg">${esc(e)}</span>`).join("") +
     (p.errs.length ? "" : p.changes.map(([l, f, t]) => `<span>${esc(l)}: ${f ? `<span class="from">${esc(f)}</span> → ` : ""}<span class="to">${esc(t || "(empty)")}</span></span>`).join("")) +
-    (p.result ? `<span class="msg">${esc(p.result)}</span>` : "")}</div></td></tr>`).join("") || `<tr><td colspan="6" class="muted">No rows in this view.</td></tr>`;
+    (p.result ? `<span class="msg">${esc(p.result)}</span>` : "") + (p.errs.length ? "" : rcLine(p))}</div></td></tr>`).join("") || `<tr><td colspan="6" class="muted">No rows in this view.</td></tr>`;
   for (const cb of $("#impRows").querySelectorAll("input[data-pi]")) cb.addEventListener("change", () => { ps[+cb.dataset.pi].sel = cb.checked; renderImport(); });
   const vis = list.filter(selectable), all = $("#impAll"), nSel = vis.filter(p => p.sel).length;
   all.disabled = !vis.length; all.checked = vis.length > 0 && nSel === vis.length; all.indeterminate = nSel > 0 && nSel < vis.length;
@@ -1076,12 +1150,16 @@ function renderImport() {
   if (IMP.done) { btn.disabled = false; btn.textContent = "Close"; }
   else { btn.disabled = IMP.running || !todo; btn.textContent = IMP.running ? "Applying …" : `Apply ${todo} ${todo === 1 ? "entry" : "entries"}`; }
 }
+function impRenew() {
+  const rows = IMP.plans.filter(p => (p.status === "new" || p.status === "chg") && p.sel && p.d && needsNewIp(p.c, p.d.use_fixedip ? p.d.fixed_ip : ""));
+  return { rows, wifi: rows.filter(p => canReconnect(p.c)) };
+}
 async function autoVersion(label) {
   try { await api("api/versions", { kind: "auto", label }); return true; }
   catch (e) { toast(`Could not save the automatic version (“${label}”): ${e.message}. Nothing was changed.`); return false; }
 }
 function openImport() {
-  Object.assign(IMP, { plans: [], filter: "all", running: false, done: false, mode: "csv" });
+  Object.assign(IMP, { plans: [], filter: "all", running: false, done: false, mode: "csv" }); $("#impRc").checked = false;
   $("#impTitle").textContent = "Import CSV"; $("#impTpl").hidden = false; $("#impCols").hidden = false;
   $("#impPreview").hidden = true; $("#impDrop").hidden = false; $("#impHelp").hidden = false; $("#impProg").hidden = true; $("#impFile").value = "";
   $("#impApply").disabled = true; $("#impApply").textContent = "Apply";
@@ -1113,10 +1191,17 @@ async function applyImport() {
     catch (e) { p.status = "fail"; p.result = e.message; }
     $("#impProg i").style.width = (++i / todo.length * 100) + "%";
   }
+  let rcTxt = "";
+  if ($("#impRc").checked && !$("#impRcWrap").hidden) {
+    const aff = todo.filter(p => p.status === "ok" && needsNewIp(p.c, p.d.use_fixedip ? p.d.fixed_ip : ""));
+    const wifi = aff.filter(p => canReconnect(p.c));
+    if (wifi.length) { toast(`Reconnecting ${wifi.length} Wi-Fi ${wifi.length === 1 ? "client" : "clients"} …`); rcTxt = rcSummary(await reconnectAll(wifi.map(p => p.c)), aff.length - wifi.length); }
+  }
   IMP.running = false; IMP.done = true;
   const ok = todo.filter(p => p.status === "ok").length, fail = todo.length - ok;
   IMP.filter = fail ? "fail" : "all";
-  toast(fail ? `${ok} applied, ${fail} failed` : `${ok} ${ok === 1 ? "entry" : "entries"} applied`);
+  toast((fail ? `${ok} applied, ${fail} failed` : `${ok} ${ok === 1 ? "entry" : "entries"} applied`) + (rcTxt ? ` · ${rcTxt}` : ""));
+  if (rcTxt) setTimeout(() => load(), 20000);
   renderImport(); load();
 }
 $("#impFile").addEventListener("change", e => readImport(e.target.files[0]));
@@ -1125,6 +1210,8 @@ drop.addEventListener("dragover", e => { e.preventDefault(); drop.classList.add(
 drop.addEventListener("dragleave", () => drop.classList.remove("over"));
 drop.addEventListener("drop", e => { e.preventDefault(); drop.classList.remove("over"); readImport(e.dataTransfer.files[0]); });
 $("#impApply").addEventListener("click", applyImport);
+$("#impRc").addEventListener("change", () => renderImport());
+bindSort("impRows", () => renderImport());
 for (const id of ["#impCancel", "#impClose"]) $(id).addEventListener("click", () => { if (!IMP.running) $("#dlgImport").close(); });
 $("#dlgImport").addEventListener("cancel", e => { if (IMP.running) e.preventDefault(); });
 $("#impTpl").addEventListener("click", () => saveFile("dhcp-import-template.csv", ["MAC", "Name", "Fixed IP", "Reservation VLAN", "Locked to AP", "Local DNS", "Note"].join(";") + "\r\n"));
@@ -1303,12 +1390,22 @@ function renderSub() {
   $("#subSum").innerHTML = (SUB.msg || []).map(m => `<span class="st err">${esc(m)}</span>`).join(" ") +
     (rows.length ? `<span class="pill">Found <b>${rows.length}</b></span><span class="pill">Movable <b>${ok}</b></span>${err ? `<span class="pill">Errors <b>${err}</b></span>` : ""}` : "");
   const selectable = r => !SUB.running && !SUB.done && r.status === "chg";
-  $("#subRows").innerHTML = rows.map((r, i) => `<tr><td><label class="opt"><input type="checkbox" data-si="${i}" ${r.sel ? "checked" : ""} ${selectable(r) ? "" : "disabled"} aria-label="Move ${esc(r.c.name || r.c.mac)}"></label></td>
+  const view = tsorted("subRows", rows, { dev: r => (r.c.name || r.c.hostname || "").toLowerCase(), mac: r => r.c.mac, ip: r => r.c.fixed_ip, nip: r => r.nip, net: r => r.n ? r.n.name : "", status: r => ST_ORDER[r.status] ?? 9 });
+  const aff = subRenew(), rcOn = $("#subRc").checked;
+  $("#subRcWrap").hidden = SUB.done || !aff.wifi.length;
+  $("#subRcTxt").textContent = `Reconnect ${aff.wifi.length} Wi-Fi ${aff.wifi.length === 1 ? "client" : "clients"} afterwards`;
+  const rcLine = r => SUB.done || r.status !== "chg" || !r.sel || !needsNewIp(r.c, r.nip) ? "" :
+    canReconnect(r.c) ? (rcOn ? `<span class="rc-note">↻ Will be reconnected</span>` : `<span class="muted">Wi-Fi – reconnect to apply now, or wait for its next DHCP renewal</span>`) : `<span class="muted">${esc(renewNote(r.c))}</span>`;
+  $("#subRows").innerHTML = view.map(r => `<tr><td><label class="opt"><input type="checkbox" data-si="${rows.indexOf(r)}" ${r.sel ? "checked" : ""} ${selectable(r) ? "" : "disabled"} aria-label="Move ${esc(r.c.name || r.c.mac)}"></label></td>
     <td>${esc(r.c.name || r.c.hostname || "–")}</td><td class="mono">${esc(r.c.mac)}</td><td class="mono">${esc(r.c.fixed_ip)}</td><td class="mono"><b>${esc(r.nip)}</b></td>
     <td>${r.n ? esc(r.n.name) + (r.n.vlan ? ` <span class="muted">(${r.n.vlan})</span>` : "") : "–"}</td>
-    <td><div class="chg-list">${r.status === "ok" ? '<span class="st ok">✓ Moved</span>' : r.status === "fail" ? '<span class="st err">Failed</span>' : r.status === "err" ? '<span class="st err">Error</span>' : '<span class="st chg">Move</span>'}${r.errs.map(e => `<span class="msg">${esc(e)}</span>`).join("")}${r.warns.map(w => `<span class="muted">${esc(w)}</span>`).join("")}${r.result ? `<span class="msg">${esc(r.result)}</span>` : ""}</div></td></tr>`).join("");
-  for (const cb of $("#subRows").querySelectorAll("input[data-si]")) cb.addEventListener("change", () => { rows[+cb.dataset.si].sel = cb.checked; renderSubFoot(); syncSubAll(); });
+    <td><div class="chg-list">${r.status === "ok" ? '<span class="st ok">✓ Moved</span>' : r.status === "fail" ? '<span class="st err">Failed</span>' : r.status === "err" ? '<span class="st err">Error</span>' : '<span class="st chg">Move</span>'}${r.errs.map(e => `<span class="msg">${esc(e)}</span>`).join("")}${r.warns.map(w => `<span class="muted">${esc(w)}</span>`).join("")}${r.result ? `<span class="msg">${esc(r.result)}</span>` : ""}${rcLine(r)}</div></td></tr>`).join("");
+  for (const cb of $("#subRows").querySelectorAll("input[data-si]")) cb.addEventListener("change", () => { rows[+cb.dataset.si].sel = cb.checked; if (SUB.running || SUB.done) { renderSubFoot(); syncSubAll(); } else renderSub(); });
   syncSubAll(); renderSubFoot();
+}
+function subRenew() {
+  const rows = SUB.rows.filter(r => r.status === "chg" && r.sel && needsNewIp(r.c, r.nip));
+  return { rows, wifi: rows.filter(r => canReconnect(r.c)) };
 }
 function syncSubAll() {
   const vis = SUB.rows.filter(r => r.status === "chg" && !SUB.running && !SUB.done), n = vis.filter(r => r.sel).length, all = $("#subAll");
@@ -1321,7 +1418,7 @@ function renderSubFoot() {
 }
 $("#subAll").addEventListener("change", e => { SUB.rows.forEach(r => { if (r.status === "chg") r.sel = e.target.checked; }); renderSub(); });
 function openSub() {
-  Object.assign(SUB, { rows: [], running: false, done: false, msg: [] });
+  Object.assign(SUB, { rows: [], running: false, done: false, msg: [] }); $("#subRc").checked = false;
   fillSubNets(); fillSubPicks(); $("#subFrom").value = ""; $("#subTo").value = ""; $("#subProg").hidden = true; $("#subProg i").style.width = "0";
   renderSub(); $("#dlgSub").showModal(); $("#subFrom").focus();
 }
@@ -1341,12 +1438,20 @@ async function applySub() {
     } catch (e) { r.status = "fail"; r.result = e.message; }
     $("#subProg i").style.width = (++i / todo.length * 100) + "%";
   }
+  let rcTxt = "";
+  if ($("#subRc").checked && !$("#subRcWrap").hidden) {
+    const aff = todo.filter(r => r.status === "ok" && needsNewIp(r.c, r.nip)), wifi = aff.filter(r => canReconnect(r.c));
+    if (wifi.length) { toast(`Reconnecting ${wifi.length} Wi-Fi ${wifi.length === 1 ? "client" : "clients"} …`); rcTxt = rcSummary(await reconnectAll(wifi.map(r => r.c)), aff.length - wifi.length); }
+  }
   SUB.running = false; SUB.done = true;
   const ok = todo.filter(r => r.status === "ok").length;
-  toast(ok === todo.length ? `${ok} ${ok === 1 ? "reservation" : "reservations"} moved` : `${ok} moved, ${todo.length - ok} failed`);
+  toast((ok === todo.length ? `${ok} ${ok === 1 ? "reservation" : "reservations"} moved` : `${ok} moved, ${todo.length - ok} failed`) + (rcTxt ? ` · ${rcTxt}` : ""));
+  if (rcTxt) setTimeout(() => load(), 20000);
   renderSub(); load();
 }
 $("#subApply").addEventListener("click", applySub);
+$("#subRc").addEventListener("change", () => renderSub());
+bindSort("subRows", () => renderSub());
 for (const id of ["#subCancel", "#subClose"]) $(id).addEventListener("click", () => { if (!SUB.running) $("#dlgSub").close(); });
 $("#dlgSub").addEventListener("cancel", e => { if (SUB.running) e.preventDefault(); });
 
@@ -1435,7 +1540,10 @@ function renderHa() {
   if (HAN.done) pills.push(["ok", "Renamed", cnt("ok")], ["fail", "Failed", cnt("fail")]);
   $("#haSum").innerHTML = pills.filter(p => p[0] === "all" || p[2]).map(([k, l, n]) => `<button type="button" class="pill" data-hf="${k}" aria-pressed="${HAN.filter === k}">${l} <b>${n}</b></button>`).join("");
   for (const b of $("#haSum").querySelectorAll("[data-hf]")) b.addEventListener("click", () => { HAN.filter = b.dataset.hf; renderHa(); });
-  const list = rows.filter(r => HAN.filter === "all" || r.status === HAN.filter);
+  const HST = { rename: 0, near: 1, fail: 2, ok: 3, same: 4, missing: 5 };
+  const list = tsorted("haRows", rows.filter(r => HAN.filter === "all" || r.status === HAN.filter), {
+    mac: r => r.c ? r.c.mac : r.haMac, cur: r => r.c ? (r.c.name || r.c.hostname || "").toLowerCase() : "", ha: r => r.h.proposed.toLowerCase(),
+    int: r => r.h.d.domains.join(", ") + " " + (r.h.d.area || ""), status: r => HST[r.status] ?? 9 });
   const selectable = r => !HAN.running && !HAN.done && (r.status === "rename" || r.status === "near");
   const ST = { rename: '<span class="st chg">Rename</span>', near: '<span class="st new">Near match</span>', same: '<span class="st same">Same name</span>', missing: '<span class="st skip">Not in UniFi</span>', ok: '<span class="st ok">✓ Renamed</span>', fail: '<span class="st err">Failed</span>' };
   $("#haRows").innerHTML = list.map(r => `<tr><td><label class="opt"><input type="checkbox" data-hi="${rows.indexOf(r)}" ${r.sel ? "checked" : ""} ${selectable(r) ? "" : "disabled"} aria-label="Rename ${esc(r.h.proposed)}"></label></td>
@@ -1454,6 +1562,7 @@ function renderHaFoot() {
   if (HAN.done) { b.disabled = false; b.textContent = "Close"; return; }
   b.disabled = HAN.running || !n; b.textContent = HAN.running ? "Renaming …" : `Rename ${n} ${n === 1 ? "client" : "clients"}`;
 }
+bindSort("haRows", () => renderHa());
 $("#haAll").addEventListener("change", e => { haVisibleSelectable().forEach(r => r.sel = e.target.checked); renderHa(); });
 async function openHa() {
   Object.assign(HAN, { rows: [], filter: "rename", running: false, done: false });
@@ -1673,7 +1782,9 @@ function renderCompare() {
   $("#cmpSum").innerHTML = pills.filter(p => p[0] === "all" || p[2]).map(([k, l, n]) => `<button type="button" class="pill" data-cf="${k}" aria-pressed="${VER.cmpFilter === k}">${l} <b>${n}</b></button>`).join("") +
     `<span class="pill">Devices <b>${Object.keys(A.clients).length}</b> → <b>${Object.keys(B.clients).length}</b></span>`;
   for (const b of $("#cmpSum").querySelectorAll("[data-cf]")) b.addEventListener("click", () => { VER.cmpFilter = b.dataset.cf; renderCompare(); });
-  const list = rows.filter(r => VER.cmpFilter === "all" || r.cats.has(VER.cmpFilter));
+  const CO = { new: 0, removed: 1, changed: 2, ip: 3, moved: 4 };
+  const list = tsorted("cmpRows", rows.filter(r => VER.cmpFilter === "all" || r.cats.has(VER.cmpFilter)), {
+    cat: r => Math.min(...[...r.cats].map(k => CO[k])), dev: r => ((r.b || r.a).name || (r.b || r.a).hostname || r.mac).toLowerCase(), det: r => r.changes.map(x => x[0]).join(", ") });
   const nl = (v, id) => { const n = (v.networks || []).find(x => x.id === id); return n ? n.name + (n.vlan ? ` (${n.vlan})` : "") : ""; };
   const devTxt = c => [c.oui, CONN_LABEL[c.conn], nl(B, c.network_id) || nl(A, c.network_id), c.ip].filter(Boolean).map(esc).join(" · ");
   $("#cmpRows").innerHTML = list.map(r => {
@@ -1688,6 +1799,7 @@ function renderCompare() {
     return `<tr><td>${tags}</td><td><b>${esc(c.name || c.hostname || "Unknown")}</b><div class="mono muted" style="font-size:11.5px">${esc(r.mac)}</div></td><td><div class="chg-list">${det}</div></td><td>${open}</td></tr>`;
   }).join("") || `<tr><td colspan="4" class="muted">${rows.length ? "No rows in this view." : "No differences."}</td></tr>`;
 }
+bindSort("cmpRows", () => renderCompare());
 $("#cmpRows").addEventListener("click", e => { const b = e.target.closest("[data-open]"); if (!b) return; const c = state.clients.find(x => x.mac === b.dataset.open); $("#dlgVer").close(); if (c) openPanel(c); });
 $("#cmpCsv").addEventListener("click", () => {
   const { rows, A, B } = VER.cmp, q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';

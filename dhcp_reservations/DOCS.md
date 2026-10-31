@@ -43,6 +43,8 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 - **Customize columns:** show, hide and reorder columns (drag a column header in the table, or the grip in the Columns panel); remembered in the browser.
 - **UniFi devices:** access points, switches and the gateway are listed with live status, IP and uplink (filter *Type*).
 - **Issue “In DHCP pool”:** the fixed IP lies inside the network's DHCP range. UniFi accepts this, but keeping fixed IPs outside the pool avoids conflicts with an address that was already leased before the reservation, and keeps the pool size meaningful.
+- **Reconnect:** when a fixed IP changes, online Wi-Fi clients can be reconnected (UniFi *kick-sta*) so they take the new IP right away – a checkbox in the edit panel (on by default) and in Replace subnet / CSV import / restore (off by default, one client per second). Wired and offline devices take the new IP at their next DHCP renewal.
+- **Sorting in previews:** click a column header in any preview table to sort; click again to reverse.
 - **CSV export** of the current filtered view.
 - **CSV import (bulk):** Actions → *Import CSV*. Required column `MAC`; optional `Name`, `Note`,
   `Fixed IP`, `Reservation VLAN` (name or VLAN ID, empty = derived from the IP), `Reserved` (yes/no),

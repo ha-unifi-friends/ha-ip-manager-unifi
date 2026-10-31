@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.10.0 – 2026-10-31
+- **Reconnect** (UniFi *kick-sta*): online Wi-Fi clients whose IP changes can be disconnected briefly so they request the new IP right away.
+  - Edit: *Reconnect device after saving* (on by default) when the new fixed IP differs from the device's current IP. Wired devices show that they take the new IP at their next DHCP renewal.
+  - Replace subnet and CSV import / restore: *Reconnect N Wi-Fi clients afterwards* in the footer (off by default); the preview shows per row whether the device will be reconnected. Clients are reconnected one per second; the table refreshes after about 20 s.
+- Preview tables (CSV import, restore, replace subnet, names from HA, compare) can be **sorted by clicking a column header**; click again to reverse.
+
 ## 1.9.8 – 2026-10-31
 - Detail panel: the *Edit reservation* button is replaced by **Open `http://<IP>`** (plus *HTTPS*), which opens the device's web interface in a new tab. It uses the current IP when the device is online, otherwise the fixed IP. Editing stays on the *Settings* tab.
 

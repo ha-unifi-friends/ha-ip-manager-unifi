@@ -398,6 +398,14 @@ def remove_reservation(api, mac):
     return {"ok": True}
 
 
+def reconnect_client(api, mac):
+    """Kick a Wi-Fi client so it reconnects and requests a new DHCP lease (UniFi "Reconnect")."""
+    mac = clean_mac(mac)
+    api.call("POST", "/cmd/stamgr", {"cmd": "kick-sta", "mac": mac})
+    log("Reconnect", mac)
+    return {"ok": True}
+
+
 def forget_client(api, mac):
     mac = clean_mac(mac)
     api.call("POST", "/cmd/stamgr", {"cmd": "forget-sta", "macs": [mac]})
@@ -738,6 +746,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, create_version(API, b.get("kind", "manual"), b.get("label", ""), self._user()))
             if method == "POST" and path.endswith("/api/version_settings"):
                 return self._send(200, save_settings(self._json_body()))
+            if method == "POST" and path.endswith("/api/reconnect"):
+                return self._send(200, reconnect_client(API, self._json_body().get("mac")))
             if method == "POST" and path.endswith("/api/forget"):
                 return self._send(200, forget_client(API, self._json_body().get("mac")))
             self._send(404, {"error": "Nicht gefunden"})

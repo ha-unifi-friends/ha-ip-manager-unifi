@@ -33,13 +33,14 @@ versions you can compare and restore.
 | **Names from Home Assistant** | Proposes the names from the HA device registry, matched by MAC. Includes a "near match" for devices with separate WiFi/Ethernet MACs. |
 | **Versions** | Snapshot the table manually, daily, and automatically before every bulk action. **Compare** two versions (new / removed / changed devices; spots a device that came back with a new random MAC). **Restore** through a preview. A *Changed since …* filter shows what changed since a version, and each device has a **history** timeline: which change, in which version. |
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. |
+| **Reconnect** | After a fixed IP change, online Wi-Fi clients can be reconnected right away so they pick up the new address – per device or for a whole subnet move. |
 | **Safe bulk changes** | Every bulk action (CSV import, restore, replace subnet, names from HA) saves a version of the current settings first, so you can always go back via *Versions › Restore*. |
 
 ## Screenshots
 
 <table>
   <tr>
-    <td width="50%" valign="top"><img src="docs/screenshots/replace-subnet.png" alt="Replace subnet with collision check"><br><b>Replace subnet</b> – preview with collision check: an address that is already reserved is an error, an address in use is a warning.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/replace-subnet.png" alt="Replace subnet with collision check"><br><b>Replace subnet</b> – preview with collision check (an address that is already reserved is an error, an address in use is a warning) and optional reconnect of the affected Wi-Fi clients.</td>
     <td width="50%" valign="top"><img src="docs/screenshots/csv-import.png" alt="CSV import with validation"><br><b>CSV import</b> – every row is validated before anything changes: duplicate IP, IP outside the network, invalid MAC, unknown AP.</td>
   </tr>
   <tr>
