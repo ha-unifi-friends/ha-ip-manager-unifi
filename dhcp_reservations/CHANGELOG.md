@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.25.0 – 2026-11-01
+
+- **Pick a free IP visually:** new *Select* button next to the IP field in the device settings. It opens the IP plan of the chosen network – click a free address to select it and confirm with *OK* (double-click takes it right away, *Cancel* keeps the field as it was); the icon switch (None / UniFi / Home Assistant) and the cell size work as in the IP plan; the DHCP pool, fixed IPs, dynamic clients, the gateway and the Home Assistant host are shown as in the IP plan, and the hover box tells who uses each neighbour. The address in the field and the device itself are outlined.
+
 ## 1.24.1 – 2026-10-31
 
 - CleanUp: *Fixed IPs up to* can go back to the automatic suggestion – clear the field or click *Auto*. The suggestion is shown greyed in the empty field (`auto · 99`). Before, clearing the field set the end to .2.
