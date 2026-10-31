@@ -58,7 +58,7 @@ versions you can compare and restore.
 | | |
 |---|---|
 | **IP plan** | A full page next to the client list (switch *Clients / IP Plan*), filtered by the same sidebar filters (non-matching devices greyed out): networks as cards with utilization and a **Tidiness score** (0–100: fixed IPs outside the pool, close together, no conflicts), plus an address grid that shows conflicts at a glance, with *No icons / UniFi / Home Assistant* icons. Click an address to open the device – or a free one to reserve it – in the detail panel next to the plan. |
-| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *minimal*, *grouped by vendor* or *grouped by HA integration* – for one network or **all networks at once** (overall tidiness before → after) – right in the IP plan as a tab, with *Preview changes* (arrows and animation) and applies the checked measures: moves, reconnect and the pool change (after a second confirmation). |
+| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *minimal*, *grouped by HA integration* or *grouped by vendor* – for one network or **all networks at once** (overall tidiness before → after), right in the IP plan as a tab. *Preview changes* shows every move as an arrow, **conflicts in pink** (dynamic clients in the new fixed block), and a hover card shows the concrete change per address. After one confirmation it runs in a safe order: save a version → change the pools → reconnect conflicting Wi-Fi clients → move the fixed IPs → reconnect the moved clients. |
 | **Replace subnet** | Move all fixed IPs from e.g. `192.168.30.x` to `192.168.31.x`, keeping the host part. A preview catches collisions before anything changes. |
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. Hosts-file export of fixed IPs and DNS records. |
 | **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |
@@ -95,7 +95,7 @@ versions you can compare and restore.
   </tr>
   <tr>
     <td width="50%" valign="top"><img src="docs/screenshots/names-from-ha.png" alt="Names from Home Assistant"><br><b>Names from Home Assistant</b> – rename UniFi clients after your HA device names, with area / integration as prefix or suffix.</td>
-    <td width="50%" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal grouped by HA integration"><br><b>CleanUp Proposal grouped by HA integration</b> – tab of the IP plan with <i>Preview changes</i>: every move as an arrow, Tidiness before → after.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal for all networks"><br><b>CleanUp Proposal for all networks</b> – grouped by HA integration, <i>Preview changes</i> with arrows, conflicts in pink and the hover card for an address.</td>
   </tr>
 </table>
 
@@ -113,7 +113,8 @@ versions you can compare and restore.
 
 <table>
   <tr>
-    <td colspan="2" valign="top"><img src="docs/screenshots/ip-plan.png" alt="IP plan"><br><b>IP plan</b> – networks with utilization and Tidiness score, and an address grid: fixed IPs in use / not in use, dynamic leases, conflicts, DHCP pool and free addresses.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/ip-plan.png" alt="IP plan"><br><b>IP plan</b> – full page next to the client list: networks with utilization and Tidiness, large cells with Home Assistant logos.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/ip-plan-all.png" alt="IP plan, all networks"><br><b>All networks</b> – compact view (32 addresses per row) with the overall tidiness; the sidebar filters grey out non-matching devices.</td>
   </tr>
   <tr>
     <td width="50%" valign="top"><img src="docs/screenshots/replace-subnet.png" alt="Replace subnet with collision check"><br><b>Replace subnet</b> – preview with collision check and optional reconnect of the affected WiFi clients.</td>
