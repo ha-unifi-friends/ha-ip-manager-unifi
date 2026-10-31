@@ -1,7 +1,7 @@
-name: "Clients & Reservations"
-version: "1.14.0"
+name: "IP Manager for UniFi"
+version: "1.15.0"
 slug: dhcp_reservations
-description: UniFi clients, devices and DHCP reservations – views, bulk import and subnet migration
+description: "UniFi clients, fixed IPs and DHCP reservations – IP plan, cleanup, views, bulk changes, versions (unofficial)"
 url: https://github.com/raphaelkoeppel/ha-unifi-clients-reservations
 arch:
   - aarch64
@@ -13,7 +13,7 @@ homeassistant_api: true
 ingress: true
 ingress_port: 8099
 panel_icon: mdi:ip-network
-panel_title: "Clients & Reservations"
+panel_title: "IP Manager"
 options:
   unifi_host: 192.168.1.1
   username: ""

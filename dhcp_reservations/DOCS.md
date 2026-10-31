@@ -1,4 +1,4 @@
-# Clients & Reservations
+# IP Manager for UniFi
 
 Shows every known UniFi client with MAC, name, fixed IP and VLAN in one table, styled like
 UniFi Network › Client Devices. Every column can be sorted (click the header) and filtered

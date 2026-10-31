@@ -79,7 +79,7 @@ class UnifiError(Exception):
         self.hint = hint
 
 
-CONFIG_PATH_HINT = "Settings › Add-ons (Apps) › Clients & Reservations › Configuration"
+CONFIG_PATH_HINT = "Settings › Add-ons (Apps) › IP Manager for UniFi › Configuration"
 
 
 def _norm_fp(v):
@@ -901,7 +901,7 @@ def _check_new_devices(snap):
         try:
             ha_call("/services/persistent_notification/create", {
                 "title": f"New device{'s' if len(out) > 1 else ''} in the network ({len(out)})",
-                "message": "\n".join(lines) + "\n\nOpen *Clients & Reservations* to name it or give it a fixed IP.",
+                "message": "\n".join(lines) + "\n\nOpen *IP Manager for UniFi* to name it or give it a fixed IP.",
                 "notification_id": "clients_reservations_new_" + (out[0]["mac"].replace(":", "") if len(out) == 1 else str(now))})
         except UnifiError as e:
             log("Notification failed:", e)

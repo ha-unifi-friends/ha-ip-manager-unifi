@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="dhcp_reservations/logo.png" alt="Clients & Reservations" height="80">
+  <img src="dhcp_reservations/logo.png" alt="IP Manager for UniFi" height="80">
 </p>
 
 <p align="center">
@@ -14,7 +14,7 @@
 ![Overview](docs/screenshots/overview.png)
 
 UniFi Network spreads DHCP reservations over individual client pages, and there is no single place to check which device has
-which fixed IP in which VLAN. **Clients & Reservations** is a Home Assistant add-on that gives you exactly that view. It is styled like
+which fixed IP in which VLAN. **IP Manager for UniFi** is a Home Assistant add-on that gives you exactly that view. It is styled like
 UniFi Network, and it adds bulk tools that UniFi doesn't have: subnet migration, CSV import, names from Home Assistant, and
 versions you can compare and restore.
 
@@ -93,9 +93,9 @@ versions you can compare and restore.
 
 1. Click the button above, **or** go to *Settings → Add-ons → Add-on Store → ⋮ → Repositories* and add
    `https://github.com/raphaelkoeppel/ha-unifi-clients-reservations`
-2. Install **Clients & Reservations**. Home Assistant builds the image locally, so this takes a minute.
+2. Install **IP Manager for UniFi**. Home Assistant builds the image locally, so this takes a minute.
 3. On the *Configuration* tab, enter the gateway IP, username and password, then start the add-on.
-4. Turn on *Show in sidebar*, or open it via *Open Web UI*.
+4. Turn on *Show in sidebar* (the panel is called *IP Manager*), or open it via *Open Web UI*.
 
 ## Configuration
 

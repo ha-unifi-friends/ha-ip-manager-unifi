@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.15.0 – 2026-10-31
+- Renamed to **IP Manager for UniFi** (sidebar panel: *IP Manager*). Nothing else changes: the add-on slug, the stored versions, views and settings, and the event `clients_reservations_new_device` stay the same.
+
 ## 1.14.0 – 2026-10-31
 Security hardening after a code review (SAST-style).
 - **Certificate pinning** for the UniFi controller: new option `certificate_fingerprint` (SHA-256). At start the add-on logs the controller's fingerprint so it can be copied; with a pin, the connection (and the UniFi login) is only accepted if the certificate matches.
