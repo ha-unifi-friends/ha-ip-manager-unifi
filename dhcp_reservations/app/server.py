@@ -673,7 +673,35 @@ def ha_devices():
                         "status": ha_status(d),
                         "unavailable": [str(x) for x in (d.get("unavailable_ids") or [])][:50]})
     log("HA devices with MAC:", len(out))
-    return {"devices": out}
+    return {"devices": out, "host": ha_host()}
+
+
+_HA_HOST = {"t": 0, "v": {"ips": [], "macs": []}}
+
+
+def ha_host():
+    """IPs (and MACs, when the Supervisor reports them) of the machine Home Assistant runs on – it is never renumbered."""
+    if time.time() - _HA_HOST["t"] < 300:
+        return _HA_HOST["v"]
+    ips, macs = [], []
+    token = supervisor_token()
+    if token:
+        try:
+            req = urllib.request.Request("http://supervisor/network/info", headers={"Authorization": f"Bearer {token}"})
+            data = json.loads(urllib.request.urlopen(req, timeout=10).read().decode()).get("data") or {}
+            for itf in data.get("interfaces") or []:
+                for a in ((itf.get("ipv4") or {}).get("address") or []):
+                    ip = str(a).split("/")[0]
+                    if ip and ip not in ips:
+                        ips.append(ip)
+                m = normalize_mac(itf.get("mac") or itf.get("mac_address") or "")
+                if m and m not in macs:
+                    macs.append(m)
+        except Exception as e:  # noqa: BLE001
+            log("Home Assistant host address not readable:", e)
+    _HA_HOST.update(t=time.time(), v={"ips": ips, "macs": macs})
+    log("Home Assistant host:", ", ".join(ips) or "unknown")
+    return _HA_HOST["v"]
 
 
 def ha_status(d):

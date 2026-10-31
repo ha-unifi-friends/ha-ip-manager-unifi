@@ -10,7 +10,7 @@
   --bg:#ffffff; --side:#f6f6f8; --panel:#f6f6f8; --card:#ffffff; --fg:#212327; --muted:#808893; --faint:#b6bbc3;
   --line:#e8e9ec; --line-strong:#d6d8dd; --hover:#f4f5f6; --sel:#e9f2ff; --accent:#006fff; --accent-hover:#3d8bff;
   --ok:#00a35a; --warn:#d28b00; --warn-bg:#fff4dc; --bad:#e5343d; --bad-bg:#fdeaeb; --info:#6b6ff0; --info-bg:#eeeefd;
-  --input:#ffffff; --chip:#eef0f3; --cfl:#d6247f;
+  --input:#ffffff; --chip:#eef0f3; --cfl:#d6247f; --hab:#0b9ad6; --gwc:#8a3ffc;
   --sans:"UI Sans","Lato",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   color-scheme:light;
@@ -19,12 +19,12 @@
   --bg:#1c1d20; --side:#1c1d20; --panel:#232427; --card:#2a2b2f; --fg:#f2f3f5; --muted:#8c929c; --faint:#5b6068;
   --line:#2c2e33; --line-strong:#3a3d43; --hover:#25272b; --sel:#1f2b3d; --accent:#4797ff; --accent-hover:#6aabff;
   --ok:#39c46b; --warn:#f5a623; --warn-bg:#3b2d14; --bad:#ff5a5f; --bad-bg:#3d1f22; --info:#9b9ef8; --info-bg:#2a2b4a;
-  --input:#2a2b2f; --chip:#2d2f34; --cfl:#ff4fa8; color-scheme:dark}}
+  --input:#2a2b2f; --chip:#2d2f34; --cfl:#ff4fa8; --hab:#18bcf2; --gwc:#b77bff; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1c1d20; --side:#1c1d20; --panel:#232427; --card:#2a2b2f; --fg:#f2f3f5; --muted:#8c929c; --faint:#5b6068;
   --line:#2c2e33; --line-strong:#3a3d43; --hover:#25272b; --sel:#1f2b3d; --accent:#4797ff; --accent-hover:#6aabff;
   --ok:#39c46b; --warn:#f5a623; --warn-bg:#3b2d14; --bad:#ff5a5f; --bad-bg:#3d1f22; --info:#9b9ef8; --info-bg:#2a2b4a;
-  --input:#2a2b2f; --chip:#2d2f34; --cfl:#ff4fa8; color-scheme:dark}
+  --input:#2a2b2f; --chip:#2d2f34; --cfl:#ff4fa8; --hab:#18bcf2; --gwc:#b77bff; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;height:100%}
@@ -360,7 +360,7 @@ body.plan-mode .topbar{border-bottom:2px solid var(--accent)}
 .pc.res.off{background:transparent;color:var(--accent);border:1.5px dashed var(--accent);font-weight:400}
 .pc.dyn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
 .pc.conf{background:var(--bad);color:#fff}
-.pc.gw{background:var(--ok);color:#fff}
+.pc.gw{border:2px solid var(--gwc);background:color-mix(in srgb,var(--gwc) 30%,transparent);color:var(--fg);font-weight:700}
 .pc.sys{background:transparent;color:var(--faint);cursor:default}
 .pc.sys:hover{outline:none}
 .pc.selc{outline:3px solid var(--fg);outline-offset:-2px;z-index:1}
@@ -430,6 +430,10 @@ body.plan-sz-l .pc .pi .brand-fb{font-size:15px}
 .pc-tip .tt-cfl{margin-top:6px;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--cfl) 16%,transparent);border:1px solid var(--cfl);color:var(--fg)}
 .pc-tip .tt-cfl::before{content:"Conflict";display:block;font-weight:700;color:var(--cfl);margin-bottom:2px}
 .pc-tip .tt-note{color:var(--muted);margin-top:6px}
+.pc.hah,.pc.hah.res,.pc.hah.res.off{border:2px solid var(--hab);background:color-mix(in srgb,var(--hab) 30%,transparent);color:var(--fg);font-weight:700}
+.pc.hah.res.off{border-style:dashed;background:transparent;color:var(--hab)}
+.tt-gw{margin-top:6px;padding:5px 8px;border-radius:8px;background:color-mix(in srgb,var(--gwc) 16%,transparent);color:var(--gwc);font-size:12px}
+.tt-ha{margin-top:6px;padding:5px 8px;border-radius:8px;background:color-mix(in srgb,var(--hab) 16%,transparent);color:var(--hab);font-size:12px}
 .pc.cfl{border:2px solid var(--cfl)!important;background:color-mix(in srgb,var(--cfl) 32%,transparent)!important;color:var(--cfl)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--cfl) 40%,transparent);font-weight:700;z-index:2}
 .tag.cfl{background:color-mix(in srgb,var(--cfl) 22%,transparent);color:var(--cfl);font-weight:700}
 .cg-wrap{position:relative}
@@ -955,9 +959,13 @@ const haDoms = (c, d) => c.is_device ? d.domains : d.domains.filter(x => x !== "
 const haOf = c => (c.mac && state.haByMac?.[c.mac] || []).filter(d => haDoms(c, d).length);
 const haWorst = ds => ds.reduce((a, d) => (HA_RANK[d.status] ?? 4) < (HA_RANK[a] ?? 9) ? d.status : a, null);
 const brandImg = (dom, size = 18) => /^[a-z0-9_]+$/.test(dom) ? `<img class="brand-ic-img" src="https://brands.home-assistant.io/_/${dom}/icon.png" width="${size}" height="${size}" alt="" title="${dom}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;brand-fb&quot; title=&quot;${dom}&quot;>${dom[0].toUpperCase()}</span>'">` : "";
+// the machine Home Assistant runs on: every integration points to it, so CleanUp never renumbers it
+const HA_HOST_NAME = /^(homeassistant|home-assistant|hassio|hass)(\.|$)/i;
+const isHaHost = c => !!c && (state.haHost?.macs?.includes(c.mac) || (state.haHost?.ips || []).some(ip => ip === c.ip || ip === c.fixed_ip)
+  || [c.name, c.hostname].some(n => HA_HOST_NAME.test(String(n || "").trim())));
 const haDot = st => `<span class="ha-dot" style="background:${HA_ST[st]?.[1] || "var(--muted)"}" title="${HA_ST[st]?.[0] || st}"></span>`;
 async function loadHa() {
-  try { const d = await api("api/ha_devices"); const m = {}; for (const x of d.devices || []) for (const mac of x.macs) (m[mac] ||= []).push(x); state.haByMac = m; state.haOk = true; }
+  try { const d = await api("api/ha_devices"); const m = {}; for (const x of d.devices || []) for (const mac of x.macs) (m[mac] ||= []).push(x); state.haByMac = m; state.haHost = d.host || { ips: [], macs: [] }; state.haOk = true; }
   catch { state.haByMac = {}; state.haOk = false; }
 }
 const COLS = [
@@ -1254,20 +1262,24 @@ function planIcon(c) {
 function cellHtml(p, x, cls, tip, c, extra = "") {
   const lbl = p.r.size > 256 ? ipStr(x).split(".").slice(2).join(".") : x - p.r.start;
   const ic = planIcon(c);
+  if (/\bgw\b/.test(cls) && !/never moved/.test(tip)) tip += " · never moved";
+  if (c && isHaHost(c) && (c.fixed_ip === ipStr(x) || c.ip === ipStr(x)) && !/\b(gw|sys)\b/.test(cls)) { cls += " hah"; tip += " · Home Assistant host – never moved"; }
   return `<div class="pc ${cls}${ic ? " ic" : ""}" data-x="${x}" data-ip="${ipStr(x)}" data-mac="${esc(c?.mac || "")}" data-tip="${esc(tip)}" ${extra}>${ic}<span class="ix">${lbl}</span></div>`;
 }
 // ---------- rich hover box for plan cells ----------
 function cellTipHtml(el) {
   const ip = el.dataset.ip, x = ipNum(ip), n = state.networks.find(q => q.subnet && inSubnet(ip, q.subnet));
   const inClean = !!el.closest("#clGrid");
-  const st = (el.dataset.tip || "").split(" · ").slice(1).filter(t => !/^CONFLICT/.test(t) && !/^→ moves to|^new address of/.test(t));
+  const st = (el.dataset.tip || "").split(" · ").slice(1).filter(t => !/^CONFLICT/.test(t) && !/^→ moves to|^new address of|^Home Assistant host/.test(t));
   const devs = [...new Set([el.dataset.mac, ...state.clients.filter(c => (c.use_fixedip && c.fixed_ip === ip) || (c.online && c.ip === ip)).map(c => c.mac)].filter(Boolean))].map(m => state.clients.find(c => c.mac === m)).filter(Boolean);
   const devHtml = c => { const ha = haOf(c), doms = [...new Set(ha.flatMap(d => haDoms(c, d)))];
     return `<div class="tt-dev"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span><div><b>${esc(c.name || c.hostname || "Unknown")}</b><span class="m">${esc(c.mac)}</span>${c.oui ? `<div class="muted">${esc(c.oui)}</div>` : ""}</div></div>
     <div class="tt-kv"><span>Status</span><span>${c.online ? '<span style="color:var(--ok)">Online</span>' : "Offline"}${c.conn ? " · " + esc(CONN_LABEL[c.conn] || c.conn) : ""}</span>
     <span>Fixed IP</span><span class="mono">${c.use_fixedip ? esc(c.fixed_ip) : "–"}</span><span>Current IP</span><span class="mono">${esc(c.ip || "–")}${c.ip_is_last ? " (last)" : ""}</span>
     ${doms.length ? `<span>Home Assistant</span><span>${doms.map(d => brandImg(d, 14)).join("")} ${esc(doms.map(domTitle).join(", "))} · ${esc(HA_ST[haWorst(ha)]?.[0] || "")}</span>` : ""}</div>`; };
-  let chg = "";
+  const gwNet = state.networks.find(q => q.gateway === ip);
+  let chg = gwNet ? `<div class="tt-gw">Gateway of ${esc(gwNet.name || "this network")} (from the network settings) – CleanUp never moves it.</div>` : "";
+  chg += devs.some(isHaHost) ? '<div class="tt-ha">Home Assistant host – integrations point to this address, so CleanUp never moves it.</div>' : "";
   if (inClean && CL.rows?.length) {
     for (const r of CL.rows.filter(r => r.sel && CL.m.move)) {
       if (r.c.fixed_ip === ip) chg += `<div class="tt-chg">↗ <b>${esc(r.c.name || r.c.mac)}</b> moves away: <b>${esc(ip)}</b> → <b>${esc(r.nip)}</b></div>`;
@@ -1308,7 +1320,7 @@ function currentCells(p, mark = {}) {
   return out.join("");
 }
 const legend = items => `<div class="plan-legend">${items.map(([cls, t]) => `<span><i class="pc ${cls}"></i>${t}</span>`).join("")}</div>`;
-const LEG_CUR = [["res", "Fixed IP, in use"], ["res off", "Fixed IP, not in use"], ["dyn", "Dynamic, in use"], ["conf", "Conflict"], ["gw", "Gateway"], ["pool", "Free, DHCP pool"], ["free", "Free"]];
+const LEG_CUR = [["res", "Fixed IP, in use"], ["res off", "Fixed IP, not in use"], ["res hah", "Home Assistant host"], ["dyn", "Dynamic, in use"], ["conf", "Conflict"], ["gw", "Gateway"], ["pool", "Free, DHCP pool"], ["free", "Free"]];
 PLAN_ICONS.size = store.get("planSize", "s");
 document.body.classList.toggle("plan-sz-l", PLAN_ICONS.size === "l");
 const sizeSeg = () => `<span class="seg plan-size" role="group" aria-label="Cell size">${[["s", "Small", "S"], ["l", "Large", "L"]].map(([k, t, sh]) => `<button type="button" data-psz="${k}" aria-pressed="${PLAN_ICONS.size === k}" title="${k === "s" ? "Compact cells – more of the network at a glance" : "Large cells – bigger icons"}"><span class="lng">${t}</span><span class="sht">${sh}</span></button>`).join("")}</span>`;
@@ -1383,23 +1395,29 @@ function defaultEnd(p) {
 // one network's proposal; end = last address of the fixed block
 function buildCleanFor(n, endX, prev) {
   const p = planNet(n); if (!p) return null;
-  const first = p.r.start + 1, last = p.r.end - 1, end = Math.min(Math.max(endX ?? defaultEnd(p), first + 1), last - 1);
+  const first = p.r.start + 1, last = p.r.end - 1;
+  // the Home Assistant host keeps its address: the fixed block always reaches up to it, so it never ends up in the pool
+  const pinMax = Math.max(-1, ...state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device && isHaHost(c)).map(c => ipNum(c.fixed_ip)).filter(x => x > first && x < last));
+  const end = Math.min(Math.max(endX ?? defaultEnd(p), first + 1, pinMax), last - 1);
   const poolS = end + 1, poolE = last, inFixed = x => x >= first && x <= end && x !== p.gw;
   const fixed = state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
   const devFixed = state.clients.filter(c => c.is_device && c.use_fixedip && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
-  const taken = new Set([p.gw, ...devFixed.map(c => ipNum(c.fixed_ip))]);
+  const isGwDev = c => c.device_kind === "gateway" || (ipNum(c.fixed_ip) === p.gw && c.online && c.ip === c.fixed_ip);
+  const keep = c => isHaHost(c) || isGwDev(c);
+  const pinned = fixed.filter(keep), movable = fixed.filter(c => !keep(c));
+  const taken = new Set([p.gw, ...devFixed.map(c => ipNum(c.fixed_ip)), ...pinned.map(c => ipNum(c.fixed_ip))]);
   // dynamic clients inside the new fixed block (UniFi devices with an IP set on the device are not dynamic)
   const dynIn = state.clients.filter(c => c.online && c.ip && !(c.use_fixedip && c.fixed_ip === c.ip) && !(c.is_device && c.dev_ip_mode === "static") && inFixed(ipNum(c.ip)));
   const busyNow = new Set(dynIn.map(c => ipNum(c.ip)));
   const plan = new Map(); let err = "";
   if (CL.strategy === "min") {
-    for (const c of fixed) { const x = ipNum(c.fixed_ip); if (inFixed(x) && !taken.has(x)) { plan.set(c.mac, x); taken.add(x); } }
+    for (const c of movable) { const x = ipNum(c.fixed_ip); if (inFixed(x) && !taken.has(x)) { plan.set(c.mac, x); taken.add(x); } }
     const pick = () => { for (const avoid of [true, false]) for (let x = first; x <= end; x++) if (x !== p.gw && !taken.has(x) && (!avoid || !busyNow.has(x))) return x; return -1; };
-    for (const c of fixed) if (!plan.has(c.mac)) { const x = pick(); if (x < 0) { err = "Not enough room in the fixed range – raise the limit."; break; } plan.set(c.mac, x); taken.add(x); }
+    for (const c of movable) if (!plan.has(c.mac)) { const x = pick(); if (x < 0) { err = "Not enough room in the fixed range – raise the limit."; break; } plan.set(c.mac, x); taken.add(x); }
   } else {
     const groups = {};
     const key = CL.strategy === "ha" ? haGroupKey : groupKey;
-    for (const c of fixed) (groups[key(c)] ||= []).push(c);
+    for (const c of movable) (groups[key(c)] ||= []).push(c);
     const order = Object.entries(groups).sort((a, b) => (a[0] === NOT_HA) - (b[0] === NOT_HA) || b[1].length - a[1].length || a[0].localeCompare(b[0]));
     let cur = Math.max(first, p.r.start + 10);
     for (const [g, cs] of order) {
@@ -1408,7 +1426,8 @@ function buildCleanFor(n, endX, prev) {
       cur = p.r.start + Math.ceil((cur - p.r.start + 1) / 10) * 10;
     }
   }
-  const b = { n, p, first: first === p.gw ? first + 1 : first, end, poolS, poolE, plan, fixed, dynIn, err, poolChange: p.ps !== poolS || p.pe !== poolE };
+  for (const c of pinned) plan.set(c.mac, ipNum(c.fixed_ip));
+  const b = { n, p, first: first === p.gw ? first + 1 : first, end, poolS, poolE, plan, fixed, pinned, dynIn, err, poolChange: p.ps !== poolS || p.pe !== poolE };
   b.rows = fixed.filter(c => plan.has(c.mac) && plan.get(c.mac) !== ipNum(c.fixed_ip)).map(c => ({ c, b, nip: ipStr(plan.get(c.mac)), grp: CL.strategy !== "min" ? c._grp : groupKey(c), sel: prev.get(c.mac) ?? true, status: "chg" }));
   return b;
 }
@@ -1499,8 +1518,8 @@ function playMoves(sel, wrap = $("#cgWrap")) {
     fly.addEventListener("transitionend", e => { if (e.propertyName !== "transform") return; fly.innerHTML = planIcon(r.c) + `<span class="ix">${ipNum(r.nip) - r.b.p.r.start}</span>`; fly.classList.add("mv"); fly.title = `${r.c.name || r.c.mac}: ${r.c.fixed_ip} → ${r.nip}`; }, { once: true });
   });
 }
-const LEG_PLAN = [["res", "Fixed IP"], ["res mv", "Fixed IP, moved"], ["was", "Freed"], ["gw", "Gateway"], ["pool", "DHCP pool"], ["free", "Free (reserve here)"], ["dyn cfl", "Conflict: dynamic client in the new fixed block"]];
-const LEG_CHG = [["res src", "Moves away"], ["free dst", "New address"], ["free np", "DHCP pool after the change"], ["dyn", "Dynamic, gets a pool address at renewal"], ["dyn cfl", "Conflict: dynamic client in the new fixed block (pink arrow = move onto it)"]];
+const LEG_PLAN = [["res", "Fixed IP"], ["res mv", "Fixed IP, moved"], ["res hah", "Home Assistant host (stays)"], ["gw", "Gateway (stays)"], ["was", "Freed"], ["pool", "DHCP pool"], ["free", "Free (reserve here)"], ["dyn cfl", "Conflict: dynamic client in the new fixed block"]];
+const LEG_CHG = [["gw", "Gateway"], ["res hah", "Home Assistant host"], ["res src", "Moves away"], ["free dst", "New address"], ["free np", "DHCP pool after the change"], ["dyn", "Dynamic, gets a pool address at renewal"], ["dyn cfl", "Conflict: dynamic client in the new fixed block (pink arrow = move onto it)"]];
 const poolTxt = (s, e) => s >= 0 ? `.${s & 255} – .${e & 255}` : "(none)";
 function renderClean() {
   const b0 = buildClean(); if (!b0) return;
@@ -1555,8 +1574,10 @@ function renderClean() {
   // measures
   const m = (k, title, desc, dis) => `<label class="measure"><input type="checkbox" data-cm="${k}" ${CL.m[k] && !dis ? "checked" : ""} ${dis || CL.running || CL.done ? "disabled" : ""}><span class="h">${title}</span><span class="d">${desc}</span></label>`;
   const nWifi = wifi.length, nOther = sel.filter(r => needsNewIp(r.c, r.nip) && !canReconnect(r.c)).length;
+  const pins = CL.bs.filter(b => b.inc).flatMap(b => (b.pinned || []).filter(isHaHost));
+  const pinTxt = pins.length ? ` <b style="color:var(--hab)">Home Assistant host (${pins.map(c => esc(c.name || c.hostname || c.mac) + ", " + esc(c.fixed_ip)).join("; ")}) keeps its address.</b>` : "";
   const where = multi ? `in ${inc.length} ${inc.length === 1 ? "network" : "networks"}` : `into .${b0.first & 255} – .${b0.end & 255}`;
-  $("#clM1").innerHTML = m("move", `4 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}${multi ? " Every device stays in its network." : ""} Untick single devices below.${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range.", !CL.rows.length);
+  $("#clM1").innerHTML = m("move", `4 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}${multi ? " Every device stays in its network." : ""} Untick single devices below.${pinTxt}${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range." + pinTxt, !CL.rows.length);
   $("#clMoves").hidden = !CL.rows.length;
   $("#clMV").innerHTML = `<label class="measure"><input type="checkbox" checked disabled><span class="h">1 · Save a version of the current settings</span><span class="d">Always first – undo anytime via <i>Versions › Restore</i>.</span></label>`;
   const cflWifi = dynIn.filter(canReconnect), cflOther = dynIn.length - cflWifi.length;

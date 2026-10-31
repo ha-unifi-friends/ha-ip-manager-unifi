@@ -1,5 +1,5 @@
 name: "IP Manager for UniFi"
-version: "1.23.6"
+version: "1.24.0"
 slug: dhcp_reservations
 description: "UniFi clients, fixed IPs and DHCP reservations – IP plan, cleanup, views, bulk changes, versions (unofficial)"
 url: https://github.com/ha-unifi-friends/ha-ip-manager-unifi
@@ -10,6 +10,7 @@ init: false
 startup: application
 boot: auto
 homeassistant_api: true
+hassio_api: true
 ingress: true
 ingress_port: 8099
 panel_icon: mdi:ip-network

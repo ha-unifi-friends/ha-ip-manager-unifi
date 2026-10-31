@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.24.0 – 2026-10-31
+
+- **CleanUp never moves the Home Assistant host.** All integrations point to its address, so renumbering it would break them. The app reads the host's addresses from the Supervisor (new `hassio_api` permission, info calls only) and also recognises clients named *homeassistant*, *hassio* or *home-assistant*. The fixed block always reaches up to its address, so it never ends up in the DHCP pool either.
+- The gateway (from the network settings) has its own colour (violet) in all plan grids and legends and a note in the hover box; a gateway that UniFi only lists as a client is never moved either.
+- The Home Assistant host is shown in Home Assistant blue in the IP plan, the CleanUp grids and the hover box, with its own legend entry.
+
 ## 1.23.6 – 2026-10-31
 - Wording: Home Assistant calls add-ons **apps** since 2026.2 – texts, hints and documentation now say *app* (e.g. *Settings › Apps › IP Manager for UniFi › Configuration*, *app log*). Nothing else changes; existing installations update as usual.
 
