@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.23.4 – 2026-10-31
+- **Hover box in the IP plan:** a larger card per address – network, device(s) with icon, MAC, vendor, online status, fixed and current IP, Home Assistant integration – and in the CleanUp Proposal the concrete changes: who moves away or arrives (from → to, reconnect), conflicts (pink) and whether the address joins or leaves the DHCP pool.
+- **Conflicts are pink** everywhere in the CleanUp Proposal – cells, arrows, the *Conflicts* column and summary – so they stand out from the orange dynamic leases.
+- Conflicts are now also shown with *Preview changes* off (in the resulting plan), not only in the preview.
+- The summary pill *Dynamic in fixed range* is now called *Conflicts*.
+
 ## 1.23.3 – 2026-10-31
 - *Preview changes*: **conflicts are orange** – addresses in the new fixed block that a dynamic client currently uses get a bold orange frame, and a move onto such an address is drawn as an orange arrow on top of the others.
 - UniFi devices with an IP set on the device are no longer counted as dynamic conflicts.

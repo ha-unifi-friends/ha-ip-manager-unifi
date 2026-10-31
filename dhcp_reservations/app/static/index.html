@@ -10,7 +10,7 @@
   --bg:#ffffff; --side:#f6f6f8; --panel:#f6f6f8; --card:#ffffff; --fg:#212327; --muted:#808893; --faint:#b6bbc3;
   --line:#e8e9ec; --line-strong:#d6d8dd; --hover:#f4f5f6; --sel:#e9f2ff; --accent:#006fff; --accent-hover:#3d8bff;
   --ok:#00a35a; --warn:#d28b00; --warn-bg:#fff4dc; --bad:#e5343d; --bad-bg:#fdeaeb; --info:#6b6ff0; --info-bg:#eeeefd;
-  --input:#ffffff; --chip:#eef0f3;
+  --input:#ffffff; --chip:#eef0f3; --cfl:#d6247f;
   --sans:"UI Sans","Lato",system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
   color-scheme:light;
@@ -19,12 +19,12 @@
   --bg:#1c1d20; --side:#1c1d20; --panel:#232427; --card:#2a2b2f; --fg:#f2f3f5; --muted:#8c929c; --faint:#5b6068;
   --line:#2c2e33; --line-strong:#3a3d43; --hover:#25272b; --sel:#1f2b3d; --accent:#4797ff; --accent-hover:#6aabff;
   --ok:#39c46b; --warn:#f5a623; --warn-bg:#3b2d14; --bad:#ff5a5f; --bad-bg:#3d1f22; --info:#9b9ef8; --info-bg:#2a2b4a;
-  --input:#2a2b2f; --chip:#2d2f34; color-scheme:dark}}
+  --input:#2a2b2f; --chip:#2d2f34; --cfl:#ff4fa8; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#1c1d20; --side:#1c1d20; --panel:#232427; --card:#2a2b2f; --fg:#f2f3f5; --muted:#8c929c; --faint:#5b6068;
   --line:#2c2e33; --line-strong:#3a3d43; --hover:#25272b; --sel:#1f2b3d; --accent:#4797ff; --accent-hover:#6aabff;
   --ok:#39c46b; --warn:#f5a623; --warn-bg:#3b2d14; --bad:#ff5a5f; --bad-bg:#3d1f22; --info:#9b9ef8; --info-bg:#2a2b4a;
-  --input:#2a2b2f; --chip:#2d2f34; color-scheme:dark}
+  --input:#2a2b2f; --chip:#2d2f34; --cfl:#ff4fa8; color-scheme:dark}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html,body{margin:0;height:100%}
@@ -414,7 +414,23 @@ body.plan-sz-l .pc .pi .brand-fb{font-size:15px}
 .pc.np::after{content:"";position:absolute;left:3px;right:3px;bottom:2px;height:3px;border-radius:2px;background:var(--info)}
 .pc.src{box-shadow:inset 0 0 0 2px var(--warn)}
 .pc.dst{border:2px dashed var(--ok)}
-.pc.cfl{border:2px solid var(--warn)!important;background:color-mix(in srgb,var(--warn) 30%,transparent)!important;color:var(--warn)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--warn) 35%,transparent);font-weight:700;z-index:2}
+.pc-tip{position:fixed;z-index:60;width:300px;max-width:calc(100vw - 16px);background:var(--card);color:var(--fg);border:1px solid var(--line-strong);border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,.35);padding:12px 14px;font-size:12.5px;line-height:1.45;pointer-events:none}
+.pc-tip .tt-h{display:flex;align-items:baseline;gap:8px;margin-bottom:6px}
+.pc-tip .tt-ip{font:600 15px var(--mono)}
+.pc-tip .tt-net{color:var(--muted);font-size:12px}
+.pc-tip .tt-dev{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.pc-tip .tt-dev .dev{width:34px;height:34px;flex:none}
+.pc-tip .tt-dev b{display:block;font-size:13.5px}
+.pc-tip .tt-dev .m{color:var(--muted);font:11.5px var(--mono)}
+.pc-tip .tt-kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;padding:6px 0;border-top:1px solid var(--line)}
+.pc-tip .tt-kv span:nth-child(odd){color:var(--muted)}
+.pc-tip .tt-chg{margin-top:6px;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--ok) 14%,transparent);border:1px solid color-mix(in srgb,var(--ok) 45%,transparent)}
+.pc-tip .tt-chg b{font-family:var(--mono)}
+.pc-tip .tt-cfl{margin-top:6px;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--cfl) 16%,transparent);border:1px solid var(--cfl);color:var(--fg)}
+.pc-tip .tt-cfl::before{content:"Conflict";display:block;font-weight:700;color:var(--cfl);margin-bottom:2px}
+.pc-tip .tt-note{color:var(--muted);margin-top:6px}
+.pc.cfl{border:2px solid var(--cfl)!important;background:color-mix(in srgb,var(--cfl) 32%,transparent)!important;color:var(--cfl)!important;box-shadow:0 0 0 2px color-mix(in srgb,var(--cfl) 40%,transparent);font-weight:700;z-index:2}
+.tag.cfl{background:color-mix(in srgb,var(--cfl) 22%,transparent);color:var(--cfl);font-weight:700}
 .cg-wrap{position:relative}
 .pc.left{opacity:.35;transition:opacity .4s}
 .cg-arrows{position:absolute;inset:0;pointer-events:none;overflow:visible;z-index:4}
@@ -780,6 +796,7 @@ body.side-off .menu-btn{display:inline-flex}
   </div>
 </dialog>
 <div id="toast" role="status" aria-live="polite"></div>
+<div id="pcTip" class="pc-tip" role="tooltip" hidden></div>
 
 <script>
 (() => {
@@ -1234,7 +1251,39 @@ function planIcon(c) {
 function cellHtml(p, x, cls, tip, c, extra = "") {
   const lbl = p.r.size > 256 ? ipStr(x).split(".").slice(2).join(".") : x - p.r.start;
   const ic = planIcon(c);
-  return `<div class="pc ${cls}${ic ? " ic" : ""}" data-x="${x}" data-ip="${ipStr(x)}" data-mac="${esc(c?.mac || "")}" title="${esc(tip)}" ${extra}>${ic}<span class="ix">${lbl}</span></div>`;
+  return `<div class="pc ${cls}${ic ? " ic" : ""}" data-x="${x}" data-ip="${ipStr(x)}" data-mac="${esc(c?.mac || "")}" data-tip="${esc(tip)}" ${extra}>${ic}<span class="ix">${lbl}</span></div>`;
+}
+// ---------- rich hover box for plan cells ----------
+function cellTipHtml(el) {
+  const ip = el.dataset.ip, x = ipNum(ip), n = state.networks.find(q => q.subnet && inSubnet(ip, q.subnet));
+  const inClean = !!el.closest("#clGrid");
+  const st = (el.dataset.tip || "").split(" · ").slice(1).filter(t => !/^CONFLICT/.test(t) && !/^→ moves to|^new address of/.test(t));
+  const devs = [...new Set([el.dataset.mac, ...state.clients.filter(c => (c.use_fixedip && c.fixed_ip === ip) || (c.online && c.ip === ip)).map(c => c.mac)].filter(Boolean))].map(m => state.clients.find(c => c.mac === m)).filter(Boolean);
+  const devHtml = c => { const ha = haOf(c), doms = [...new Set(ha.flatMap(d => haDoms(c, d)))];
+    return `<div class="tt-dev"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span><div><b>${esc(c.name || c.hostname || "Unknown")}</b><span class="m">${esc(c.mac)}</span>${c.oui ? `<div class="muted">${esc(c.oui)}</div>` : ""}</div></div>
+    <div class="tt-kv"><span>Status</span><span>${c.online ? '<span style="color:var(--ok)">Online</span>' : "Offline"}${c.conn ? " · " + esc(CONN_LABEL[c.conn] || c.conn) : ""}</span>
+    <span>Fixed IP</span><span class="mono">${c.use_fixedip ? esc(c.fixed_ip) : "–"}</span><span>Current IP</span><span class="mono">${esc(c.ip || "–")}${c.ip_is_last ? " (last)" : ""}</span>
+    ${doms.length ? `<span>Home Assistant</span><span>${doms.map(d => brandImg(d, 14)).join("")} ${esc(doms.map(domTitle).join(", "))} · ${esc(HA_ST[haWorst(ha)]?.[0] || "")}</span>` : ""}</div>`; };
+  let chg = "";
+  if (inClean && CL.rows?.length) {
+    for (const r of CL.rows.filter(r => r.sel && CL.m.move)) {
+      if (r.c.fixed_ip === ip) chg += `<div class="tt-chg">↗ <b>${esc(r.c.name || r.c.mac)}</b> moves away: <b>${esc(ip)}</b> → <b>${esc(r.nip)}</b></div>`;
+      if (r.nip === ip) chg += `<div class="tt-chg">↘ <b>${esc(r.c.name || r.c.mac)}</b> moves here: <b>${esc(r.c.fixed_ip)}</b> → <b>${esc(ip)}</b>${needsNewIp(r.c, r.nip) && canReconnect(r.c) && CL.m.rc ? " · reconnected" : ""}</div>`;
+    }
+    const b = CL.bs?.find(b => b.n.id === n?.id);
+    const dc = b?.dynIn.find(c => c.ip === ip);
+    if (dc) chg += `<div class="tt-cfl"><b>${esc(dc.name || dc.hostname || dc.mac)}</b> uses this address dynamically but it lies in the new fixed block. It gets a pool address at its next renewal${canReconnect(dc) ? " – or reconnect it now" : ""}.</div>`;
+    if (b && CL.m.pool && b.poolChange) { const inNew = x >= b.poolS && x <= b.poolE, inOld = b.p.ps >= 0 && x >= b.p.ps && x <= b.p.pe; if (inNew !== inOld) chg += `<div class="tt-note">${inNew ? "Becomes part of the DHCP pool" : "Leaves the DHCP pool – now in the fixed block"}.</div>`; }
+  }
+  return `<div class="tt-h"><span class="tt-ip">${esc(ip)}</span><span class="tt-net">${n ? esc(n.name) + (n.vlan ? ` · VLAN ${n.vlan}` : "") : ""}</span></div>
+    ${st.length ? `<div class="tt-note" style="margin:0 0 6px">${st.map(esc).join(" · ")}</div>` : ""}${devs.map(devHtml).join("")}${chg}${!devs.length && !chg ? `<div class="tt-note">Click to reserve this address.</div>` : ""}`;
+}
+{
+  const tip = $("#pcTip"); let cur = null;
+  const place = e => { const r = tip.getBoundingClientRect(); let x = e.clientX + 16, y = e.clientY + 16; if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 16; if (y + r.height > innerHeight - 8) y = Math.max(8, e.clientY - r.height - 16); tip.style.left = x + "px"; tip.style.top = y + "px"; };
+  document.addEventListener("mouseover", e => { const el = e.target.closest?.(".plan-grid .pc[data-tip]"); if (el === cur) return; cur = el; if (!el || el.classList.contains("sys")) { tip.hidden = true; return; } tip.innerHTML = cellTipHtml(el); tip.hidden = false; place(e); });
+  document.addEventListener("mousemove", e => { if (!tip.hidden) place(e); });
+  document.addEventListener("scroll", () => { tip.hidden = true; cur = null; }, true);
 }
 // current state of a network as grid cells
 function currentCells(p, mark = {}) {
@@ -1391,7 +1440,7 @@ function futureCells(b, sel) {
   const { p, plan, poolS, poolE } = b, moved = new Set(CL.m.move ? sel.map(r => r.c.mac) : []), newAt = new Map(), out = [];
   for (const c of b.fixed) { const x = moved.has(c.mac) ? plan.get(c.mac) : ipNum(c.fixed_ip); (newAt.get(x) || newAt.set(x, []).get(x)).push(c); }
   const was = new Set(CL.m.move ? sel.map(r => ipNum(r.c.fixed_ip)) : []);
-  const pS = CL.m.pool ? poolS : p.ps, pE = CL.m.pool ? poolE : p.pe;
+  const pS = CL.m.pool ? poolS : p.ps, pE = CL.m.pool ? poolE : p.pe, dynAt = new Map(b.dynIn.map(c => [ipNum(c.ip), c]));
   for (let x = p.r.start; x < p.r.start + Math.min(p.r.size, 1024); x++) {
     const at = newAt.get(x) || [], dev = state.clients.find(c => c.is_device && c.use_fixedip && ipNum(c.fixed_ip) === x);
     let cls = "free", tip = ipStr(x), c = at[0] || dev || null;
@@ -1401,6 +1450,8 @@ function futureCells(b, sel) {
     else if (c) { cls = "res" + (moved.has(c.mac) ? " mv" : ""); tip += ` · ${c.name || c.hostname || c.mac}${moved.has(c.mac) ? ` (moved from ${c.fixed_ip})` : ""}`; }
     else if (was.has(x)) { cls = "was"; tip += " · freed by a move"; }
     else if (x >= pS && x <= pE && pS >= 0) { cls = "pool"; tip += " · DHCP pool"; }
+    const dc = dynAt.get(x);
+    if (dc) { cls += " cfl"; c = c || dc; tip += ` · CONFLICT: ${dc.name || dc.hostname || dc.mac} uses this address dynamically – it gets a pool address at its next renewal`; }
     out.push(cellHtml(p, x, cls, tip, c));
   }
   return out.join("");
@@ -1417,7 +1468,7 @@ function drawArrows(sel, wrap = $("#cgWrap")) {
   const svg = wrap?.querySelector(".cg-arrows"); if (!wrap || !svg) return;
   const W = wrap.getBoundingClientRect(), pos = x => { const el = wrap.querySelector(`.pc[data-x="${x}"]`); if (!el) return null; const r = el.getBoundingClientRect(); return { x: r.left - W.left + r.width / 2, y: r.top - W.top + r.height / 2, el, r }; };
   svg.setAttribute("viewBox", `0 0 ${W.width} ${W.height}`); svg.setAttribute("width", W.width); svg.setAttribute("height", W.height);
-  const css = getComputedStyle(document.documentElement), col = css.getPropertyValue("--ok").trim() || "#39c46b", wcol = css.getPropertyValue("--warn").trim() || "#f5a623";
+  const css = getComputedStyle(document.documentElement), col = css.getPropertyValue("--ok").trim() || "#39c46b", wcol = css.getPropertyValue("--cfl").trim() || "#ff4fa8";
   const mid = "ah" + (wrap.dataset.netid || "");
   let paths = `<defs><marker id="${mid}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="${col}"/></marker><marker id="${mid}w" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="${wcol}"/></marker></defs>`;
   const busy = new Set(sel.flatMap(r => r.b.dynIn.map(c => c.ip)));
@@ -1445,8 +1496,8 @@ function playMoves(sel, wrap = $("#cgWrap")) {
     fly.addEventListener("transitionend", e => { if (e.propertyName !== "transform") return; fly.innerHTML = planIcon(r.c) + `<span class="ix">${ipNum(r.nip) - r.b.p.r.start}</span>`; fly.classList.add("mv"); fly.title = `${r.c.name || r.c.mac}: ${r.c.fixed_ip} → ${r.nip}`; }, { once: true });
   });
 }
-const LEG_PLAN = [["res", "Fixed IP"], ["res mv", "Fixed IP, moved"], ["was", "Freed"], ["gw", "Gateway"], ["pool", "DHCP pool"], ["free", "Free (reserve here)"]];
-const LEG_CHG = [["res src", "Moves away"], ["free dst", "New address"], ["free np", "DHCP pool after the change"], ["dyn", "Dynamic, gets a pool address at renewal"], ["dyn cfl", "Conflict: dynamic client in the new fixed block (orange arrow = move onto it)"]];
+const LEG_PLAN = [["res", "Fixed IP"], ["res mv", "Fixed IP, moved"], ["was", "Freed"], ["gw", "Gateway"], ["pool", "DHCP pool"], ["free", "Free (reserve here)"], ["dyn cfl", "Conflict: dynamic client in the new fixed block"]];
+const LEG_CHG = [["res src", "Moves away"], ["free dst", "New address"], ["free np", "DHCP pool after the change"], ["dyn", "Dynamic, gets a pool address at renewal"], ["dyn cfl", "Conflict: dynamic client in the new fixed block (pink arrow = move onto it)"]];
 const poolTxt = (s, e) => s >= 0 ? `.${s & 255} – .${e & 255}` : "(none)";
 function renderClean() {
   const b0 = buildClean(); if (!b0) return;
@@ -1470,7 +1521,7 @@ function renderClean() {
     const ps = state.networks.map(planNet).filter(Boolean), byId = new Map(inc.map(b => [b.n.id, b]));
     before = tidyAvg(ps.map(p => tidiness(p))); after = tidyAvg(ps.map(p => byId.has(p.n.id) ? tidyAfter(byId.get(p.n.id)) : tidiness(p)));
   }
-  $("#clSum").innerHTML = `<span class="pill">${multi ? "Overall tidiness" : "Tidiness"} ${tidyBadge(before)} → ${tidyBadge(after)}</span>${multi ? `<span class="pill">Networks <b>${inc.length}/${bs.length}</b></span>` : ""}<span class="pill">Fixed IPs <b>${fixedN}</b></span><span class="pill">Moves <b>${sel.length}/${CL.rows.length}</b></span>${multi ? `<span class="pill">Pool changes <b>${CL.m.pool ? pools.length : 0}</b></span>` : ""}<span class="pill">Dynamic in fixed range <b>${dynIn.length}</b></span>`;
+  $("#clSum").innerHTML = `<span class="pill">${multi ? "Overall tidiness" : "Tidiness"} ${tidyBadge(before)} → ${tidyBadge(after)}</span>${multi ? `<span class="pill">Networks <b>${inc.length}/${bs.length}</b></span>` : ""}<span class="pill">Fixed IPs <b>${fixedN}</b></span><span class="pill">Moves <b>${sel.length}/${CL.rows.length}</b></span>${multi ? `<span class="pill">Pool changes <b>${CL.m.pool ? pools.length : 0}</b></span>` : ""}<span class="pill" title="Dynamic clients that use an address inside the new fixed block">Conflicts <b${dynIn.length ? ' style="color:var(--cfl)"' : ""}>${dynIn.length}</b></span>`;
   CL.tab = CL.preview ? "chg" : "plan"; $("#clPreview").checked = !!CL.preview; $("#clPreview").disabled = CL.running; $("#cgPlay").hidden = CL.tab !== "chg" || !CL.m.move;
   const errs = inc.filter(b => b.err);
   $("#clErr").innerHTML = errs.map(b => `<div class="err">${multi ? esc(b.n.name) + ": " : ""}${esc(b.err)}</div>`).join("");
@@ -1491,7 +1542,7 @@ function renderClean() {
       <td class="mono">.${b.first & 255} – .${b.end & 255}</td>
       <td class="mono">${b.poolChange ? `${poolTxt(b.p.ps, b.p.pe)} → <b>${poolTxt(b.poolS, b.poolE)}</b>` : `<span class="muted">${poolTxt(b.p.ps, b.p.pe)} (stays)</span>`}</td>
       <td>${b.rows.filter(r => r.sel).length}/${b.rows.length}</td>
-      <td>${b.dynIn.length ? `<span class="tag warn" title="${esc(b.dynIn.map(c => `${c.name || c.hostname || c.mac} (${c.ip})`).join("\n"))}">${b.dynIn.length}</span>` : `<span class="muted">0</span>`}</td>
+      <td>${b.dynIn.length ? `<span class="tag cfl" title="${esc(b.dynIn.map(c => `${c.name || c.hostname || c.mac} (${c.ip})`).join("\n"))}">${b.dynIn.length}</span>` : `<span class="muted">0</span>`}</td>
       <td>${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</td></tr>`).join("")}</tbody></table></div>`;
     $("#clGrid").innerHTML = tbl + leg + inc.map(b => `<section class="plan-sec"><div class="plan-sec-h" style="cursor:default"><b>${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span> ${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</div>${grid(b)}</section>`).join("") + bar;
   }
