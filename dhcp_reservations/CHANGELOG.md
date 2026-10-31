@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.13.0 – 2026-10-31
+- **CleanUp Proposal** (IP plan › *CleanUp Proposal* for the selected network): suggests a tidy layout – fixed IPs in a block at the start (e.g. .2 – .99), the DHCP pool behind it (e.g. .100 – .254), sized from the current number of fixed and dynamic clients.
+  - *Proposal* tab: the IP plan after the cleanup (moved addresses highlighted, freed addresses dashed) and the measures, each with a checkbox: move fixed IPs, reconnect affected Wi-Fi clients, change the DHCP pool.
+  - Strategies: *Minimal* (only fixed IPs in the future pool, on the gateway or used twice move) or *Grouped by vendor* (renumber in blocks of ten per vendor). The end of the fixed range can be adjusted.
+  - *Moves* tab: like Replace subnet – checkbox per device, sortable, hint for devices known to Home Assistant (IP-based integrations may need an update).
+  - The DHCP pool is changed in UniFi as the last step and only after a second confirmation. A version is saved before anything changes.
+
 ## 1.12.1 – 2026-10-31
 - **Ping** in the detail panel (section *Network check*, next to the port check): 4 ICMP echos from Home Assistant's network with replies and min / avg / max round-trip time.
 - **Vendor lookup**: the detail panel links the MAC to maclookup.app (*Lookup vendor*, only the vendor prefix is sent); random / private MACs are marked as such instead.

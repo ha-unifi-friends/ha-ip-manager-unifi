@@ -407,6 +407,29 @@ def remove_reservation(api, mac):
     return {"ok": True}
 
 
+def set_dhcp_pool(api, body):
+    """Changes the DHCP range of a network (only dhcpd_start / dhcpd_stop are touched)."""
+    nid, start, stop = str(body.get("network_id") or ""), str(body.get("start") or ""), str(body.get("stop") or "")
+    raw = next((n for n in api.call("GET", "/rest/networkconf") if n.get("_id") == nid), None)
+    if not raw:
+        raise UnifiError("Network not found.", 404)
+    info = net_info(raw)
+    try:
+        net = ipaddress.ip_network(info["subnet"])
+        a, b = ipaddress.ip_address(start), ipaddress.ip_address(stop)
+    except (ValueError, TypeError):
+        raise UnifiError("Invalid DHCP range.", 400)
+    gw = ipaddress.ip_address(info["gateway"]) if info.get("gateway") else None
+    if a not in net or b not in net or a > b or a in (net.network_address, net.broadcast_address) \
+            or b in (net.network_address, net.broadcast_address) or (gw is not None and a <= gw <= b):
+        raise UnifiError(f"{start} – {stop} is not a valid range in {info['subnet']} (gateway {gw}).", 400)
+    upd = dict(raw)
+    upd["dhcpd_start"], upd["dhcpd_stop"] = start, stop
+    api.call("PUT", f"/rest/networkconf/{nid}", upd)
+    log("DHCP pool", info["name"], f"{info.get('dhcp_start')}-{info.get('dhcp_stop')} ->", f"{start}-{stop}")
+    return {"ok": True, "network_id": nid, "start": start, "stop": stop}
+
+
 def reconnect_client(api, mac):
     """Kick a Wi-Fi client so it reconnects and requests a new DHCP lease (UniFi "Reconnect")."""
     mac = clean_mac(mac)
@@ -1116,6 +1139,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, create_version(API, b.get("kind", "manual"), b.get("label", ""), self._user()))
             if method == "POST" and path.endswith("/api/version_settings"):
                 return self._send(200, save_settings(self._json_body()))
+            if method == "POST" and path.endswith("/api/pool"):
+                return self._send(200, set_dhcp_pool(API, self._json_body()))
             if method == "POST" and path.endswith("/api/ping"):
                 return self._send(200, ping(self._json_body()))
             if method == "GET" and path.endswith("/api/vendors"):

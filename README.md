@@ -35,6 +35,7 @@ versions you can compare and restore.
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. |
 | **Reconnect** | After a fixed IP change, online Wi-Fi clients can be reconnected right away so they pick up the new address – per device or for a whole subnet move. |
 | **IP plan** | Utilization per network (fixed / in pool / dynamic / free outside the pool) and an address grid that shows conflicts at a glance. Click a free address to reserve it. |
+| **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it), shows the resulting IP plan and applies the checked measures – moves, reconnect and the pool change (after a second confirmation). |
 | **New-device alerts** | A Home Assistant notification and the event `clients_reservations_new_device` when a MAC appears that was never seen before – optionally only for certain networks. |
 | **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |
 | **Ping & port check** | Ping with round-trip times, and an on-demand check of ~30 common TCP ports per device; web UIs become links, Telnet/FTP are flagged. |
@@ -46,6 +47,9 @@ versions you can compare and restore.
 <table>
   <tr>
     <td colspan="2" valign="top"><img src="docs/screenshots/ip-plan.png" alt="IP plan"><br><b>IP plan</b> – utilization per network and an address grid: fixed IPs in use / not in use, dynamic leases, conflicts, DHCP pool and free addresses.</td>
+  </tr>
+  <tr>
+    <td colspan="2" valign="top"><img src="docs/screenshots/cleanup-proposal.png" alt="CleanUp Proposal"><br><b>CleanUp Proposal</b> – the IP plan after the cleanup and the measures, each with a checkbox; moves in a separate tab.</td>
   </tr>
   <tr>
     <td width="50%" valign="top"><img src="docs/screenshots/replace-subnet.png" alt="Replace subnet with collision check"><br><b>Replace subnet</b> – preview with collision check (an address that is already reserved is an error, an address in use is a warning) and optional reconnect of the affected Wi-Fi clients.</td>
