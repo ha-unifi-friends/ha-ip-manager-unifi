@@ -213,6 +213,9 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .hint a{color:var(--accent)}
 .imp-foot .notes{display:flex;flex-direction:column;gap:3px;min-width:0}
 .vnote{display:flex;align-items:center;gap:6px}
+.link.jump{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;text-align:left;font-size:12px}
+.link.jump:hover{text-decoration:underline}
+@media (min-width:900px){dialog .imp-foot{flex-wrap:nowrap}dialog .imp-foot .notes{flex:1 1 auto}dialog .imp-foot .btn{flex:none}}
 .imp-table th[data-sk]{cursor:pointer;user-select:none;white-space:nowrap}
 .imp-table th[data-sk]:hover{color:var(--fg)}
 .imp-table th.sa::after{content:"▲";font-size:9px;margin-left:5px;color:var(--accent)}
@@ -1322,6 +1325,7 @@ function setTab(t) {
   $("#paneInfo").hidden = t !== "info"; $("#paneEdit").hidden = t !== "edit";
 }
 function openPanel(c, tab) {
+  if (state.returnTo && c?.mac !== state.returnMac) state.returnTo = null; // user moved on to another device
   closeCols(); state.sel = c; $("#detail").hidden = false; $("#side").classList.remove("open");
   $("#dTitle").textContent = c ? (c.name || c.hostname || c.mac || "Client") : "New reservation";
   $("#tabInfo").hidden = !c; $("#tabs");
@@ -1330,7 +1334,21 @@ function openPanel(c, tab) {
   setTab(c ? (tab || "info") : "edit");
   renderTable();
 }
-function closePanel() { state.sel = null; $("#detail").hidden = true; renderTable(); }
+function closePanel() {
+  state.sel = null; $("#detail").hidden = true; renderTable();
+  // came from a dialog via "Open …" → go back to it, with its state kept
+  const back = state.returnTo; state.returnTo = null;
+  if (back && !back.open) { back.showModal(); if (back.id === "dlgSub") renderSub(); else if (back.id === "dlgImport") renderImport(); }
+}
+// "Open <device>" links in preview rows (conflicts): open the device, Close returns to the dialog
+const jumpLinks = cs => (cs || []).filter(c => c?.mac).map(c => `<button type="button" class="link jump" data-jump="${esc(c.mac)}">Open ${esc(c.name || c.hostname || c.mac)} ›</button>`).join("");
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-jump]"); if (!b) return;
+  const c = state.clients.find(x => x.mac === b.dataset.jump), dlg = b.closest("dialog");
+  if (!c) return;
+  openPanel(c);
+  if (dlg) { dlg.close(); state.returnTo = dlg; state.returnMac = c.mac; }
+});
 // address for the "open in browser" button: current IP when online, otherwise the fixed IP, otherwise the last known IP
 const webIp = c => c.conn === "teleport" ? "" : (c.online && c.ip) || (c.use_fixedip && c.fixed_ip) || c.ip || "";
 function renderInfo() {
@@ -1593,7 +1611,7 @@ function buildPlans(rows) {
   for (const p of plans) if (p.d && !p.resSame) { for (const ip in owner) if (owner[ip] === p.mac) delete owner[ip]; }
   for (const p of plans) if (p.d?.use_fixedip && !p.errs.length && !p.resSame) {
     const o = owner[p.d.fixed_ip];
-    if (o && o !== p.mac) { const oc = state.clients.find(c => c.mac === o); p.errs.push(`${p.d.fixed_ip} is already reserved for ${oc?.name || o}`); }
+    if (o && o !== p.mac) { const oc = state.clients.find(c => c.mac === o); p.errs.push(`${p.d.fixed_ip} is already reserved for ${oc?.name || o}`); if (oc) (p.links ||= []).push(oc); }
     else owner[p.d.fixed_ip] = p.mac;
   }
   for (const p of plans) { p.status = p.skip ? "skip" : p.errs.length ? "err" : !p.c ? "new" : p.changes.length ? "chg" : "same"; p.sel = p.status === "new" || p.status === "chg"; }
@@ -1664,7 +1682,7 @@ function renderImport() {
     (p.skip ? `<span class="muted">${esc(p.skip)}</span>` : "") +
     p.errs.map(e => `<span class="msg">${esc(e)}</span>`).join("") +
     (p.errs.length ? "" : p.changes.map(([l, f, t]) => `<span>${esc(l)}: ${f ? `<span class="from">${esc(f)}</span> → ` : ""}<span class="to">${esc(t || "(empty)")}</span></span>`).join("")) +
-    (p.result ? `<span class="msg">${esc(p.result)}</span>` : "") + (p.errs.length ? "" : rcLine(p))}</div></td></tr>`).join("") || `<tr><td colspan="6" class="muted">No rows in this view.</td></tr>`;
+    (p.result ? `<span class="msg">${esc(p.result)}</span>` : "") + (p.errs.length ? "" : rcLine(p)) + jumpLinks(p.links)}</div></td></tr>`).join("") || `<tr><td colspan="6" class="muted">No rows in this view.</td></tr>`;
   for (const cb of $("#impRows").querySelectorAll("input[data-pi]")) cb.addEventListener("change", () => { ps[+cb.dataset.pi].sel = cb.checked; renderImport(); });
   const vis = list.filter(selectable), all = $("#impAll"), nSel = vis.filter(p => p.sel).length;
   all.disabled = !vis.length; all.checked = vis.length > 0 && nSel === vis.length; all.indeterminate = nSel > 0 && nSel < vis.length;
@@ -1684,7 +1702,7 @@ async function autoVersion(label) {
   catch (e) { toast(`Could not save the automatic version (“${label}”): ${e.message}. Nothing was changed.`); return false; }
 }
 function openImport() {
-  Object.assign(IMP, { plans: [], filter: "all", running: false, done: false, mode: "csv" }); $("#impRc").checked = false;
+  Object.assign(IMP, { plans: [], filter: "all", running: false, done: false, mode: "csv" }); $("#impRc").checked = true;
   $("#impTitle").textContent = "Import CSV"; $("#impTpl").hidden = false; $("#impCols").hidden = false;
   $("#impPreview").hidden = true; $("#impDrop").hidden = false; $("#impHelp").hidden = false; $("#impProg").hidden = true; $("#impFile").value = "";
   $("#impApply").disabled = true; $("#impApply").textContent = "Apply";
@@ -1877,18 +1895,18 @@ function buildSubRows() {
   const rows = movers.map(c => {
     const nip = toIp((to.base | (ipNum(c.fixed_ip) & ~to.mask)) >>> 0);
     const n = sel ? net(sel) : state.networks.find(x => inSubnet(nip, x.subnet));
-    const errs = [], warns = [];
+    const errs = [], warns = [], links = [];
     if (!n) errs.push(`No UniFi network contains ${nip}. Create the network first or pick one.`);
     else if (!inSubnet(nip, n.subnet)) errs.push(`${nip} is not in ${n.name} (${n.subnet})`);
     else if (nip === n.gateway) errs.push(`${nip} is the gateway of ${n.name}`);
     const twin = movers.find(x => x !== c && x.fixed_ip === c.fixed_ip);
-    if (twin) errs.push(`${c.fixed_ip} is reserved twice (also ${twin.name || twin.mac}). Fix the duplicate first.`);
+    if (twin) { errs.push(`${c.fixed_ip} is reserved twice (also ${twin.name || twin.mac}). Fix the duplicate first.`); links.push(twin); }
     const other = state.clients.find(x => x.use_fixedip && x.fixed_ip === nip && !moving.has(x.mac));
-    if (other) errs.push(`${nip} is already reserved for ${other.name || other.mac}`);
+    if (other) { errs.push(`${nip} is already reserved for ${other.name || other.mac}`); links.push(other); }
     const user = state.clients.find(x => x.online && x.ip === nip && x.mac !== c.mac);
-    if (user && !other) warns.push(`currently used by ${user.name || user.hostname || user.mac}`);
+    if (user && !other) { warns.push(`currently used by ${user.name || user.hostname || user.mac}`); links.push(user); }
     if (n && n.dhcp_start && ipNum(nip) >= ipNum(n.dhcp_start) && ipNum(nip) <= ipNum(n.dhcp_stop)) warns.push("in DHCP pool");
-    return { c, nip, n, errs, warns, sel: !errs.length, status: errs.length ? "err" : "chg" };
+    return { c, nip, n, errs, warns, links, sel: !errs.length, status: errs.length ? "err" : "chg" };
   }).sort((a, b) => ipNum(a.c.fixed_ip) - ipNum(b.c.fixed_ip));
   if (!rows.length) msg.push(`No fixed IPs found in ${fromStr}.`);
   return { msg, rows };
@@ -1924,7 +1942,7 @@ function renderSub() {
   $("#subRows").innerHTML = view.map(r => `<tr><td><label class="opt"><input type="checkbox" data-si="${rows.indexOf(r)}" ${r.sel ? "checked" : ""} ${selectable(r) ? "" : "disabled"} aria-label="Move ${esc(r.c.name || r.c.mac)}"></label></td>
     <td>${esc(r.c.name || r.c.hostname || "–")}</td><td class="mono">${esc(r.c.mac)}</td><td class="mono">${esc(r.c.fixed_ip)}</td><td class="mono"><b>${esc(r.nip)}</b></td>
     <td>${r.n ? esc(r.n.name) + (r.n.vlan ? ` <span class="muted">(${r.n.vlan})</span>` : "") : "–"}</td>
-    <td><div class="chg-list">${r.status === "ok" ? '<span class="st ok">✓ Moved</span>' : r.status === "fail" ? '<span class="st err">Failed</span>' : r.status === "err" ? '<span class="st err">Error</span>' : '<span class="st chg">Move</span>'}${r.errs.map(e => `<span class="msg">${esc(e)}</span>`).join("")}${r.warns.map(w => `<span class="muted">${esc(w)}</span>`).join("")}${r.result ? `<span class="msg">${esc(r.result)}</span>` : ""}${rcLine(r)}</div></td></tr>`).join("");
+    <td><div class="chg-list">${r.status === "ok" ? '<span class="st ok">✓ Moved</span>' : r.status === "fail" ? '<span class="st err">Failed</span>' : r.status === "err" ? '<span class="st err">Error</span>' : '<span class="st chg">Move</span>'}${r.errs.map(e => `<span class="msg">${esc(e)}</span>`).join("")}${r.warns.map(w => `<span class="muted">${esc(w)}</span>`).join("")}${r.result ? `<span class="msg">${esc(r.result)}</span>` : ""}${rcLine(r)}${jumpLinks(r.links)}</div></td></tr>`).join("");
   for (const cb of $("#subRows").querySelectorAll("input[data-si]")) cb.addEventListener("change", () => { rows[+cb.dataset.si].sel = cb.checked; if (SUB.running || SUB.done) { renderSubFoot(); syncSubAll(); } else renderSub(); });
   syncSubAll(); renderSubFoot();
 }
@@ -1943,7 +1961,7 @@ function renderSubFoot() {
 }
 $("#subAll").addEventListener("change", e => { SUB.rows.forEach(r => { if (r.status === "chg") r.sel = e.target.checked; }); renderSub(); });
 function openSub() {
-  Object.assign(SUB, { rows: [], running: false, done: false, msg: [] }); $("#subRc").checked = false;
+  Object.assign(SUB, { rows: [], running: false, done: false, msg: [] }); $("#subRc").checked = true;
   fillSubNets(); fillSubPicks(); $("#subFrom").value = ""; $("#subTo").value = ""; $("#subProg").hidden = true; $("#subProg i").style.width = "0";
   renderSub(); $("#dlgSub").showModal(); $("#subFrom").focus();
 }
@@ -2360,6 +2378,7 @@ $("#rstPreview").addEventListener("click", async () => {
   }
   const r = buildPlans(rows); if (r.error) return toast(r.error);
   $("#dlgVer").close();
+  $("#impRc").checked = true;
   Object.assign(IMP, { plans: r.plans, running: false, done: false, mode: "restore", restoreOf: m.label || isoDateTime(m.created) });
   IMP.filter = r.plans.some(p => p.status === "chg" || p.status === "new") ? "all" : "same";
   $("#impTitle").textContent = `Restore: ${verTitle(m)}`; $("#impTpl").hidden = true; $("#impCols").hidden = true;

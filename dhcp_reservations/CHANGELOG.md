@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.1 – 2026-10-31
+- Replace subnet, CSV import and restore: *Reconnect Wi-Fi clients afterwards* is now on by default.
+- Conflicts in the previews (address already reserved, address in use, duplicate) link to the other device: *Open <device> ›* shows its details, and closing the panel returns to the dialog with everything still filled in.
+- Dialog footers keep the buttons on one line on wide screens.
+
 ## 1.15.0 – 2026-10-31
 - Renamed to **IP Manager for UniFi** (sidebar panel: *IP Manager*). Nothing else changes: the add-on slug, the stored versions, views and settings, and the event `clients_reservations_new_device` stay the same.
 
