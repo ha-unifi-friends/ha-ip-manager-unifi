@@ -45,6 +45,12 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 - **Issue “In DHCP pool”:** the fixed IP lies inside the network's DHCP range. UniFi accepts this, but keeping fixed IPs outside the pool avoids conflicts with an address that was already leased before the reservation, and keeps the pool size meaningful.
 - **Reconnect:** when a fixed IP changes, online Wi-Fi clients can be reconnected (UniFi *kick-sta*) so they take the new IP right away – a checkbox in the edit panel (on by default) and in Replace subnet / CSV import / restore (off by default, one client per second). Wired and offline devices take the new IP at their next DHCP renewal.
 - **Sorting in previews:** click a column header in any preview table to sort; click again to reverse.
+- **IP plan:** utilization per network and an address grid (fixed / dynamic / conflict / gateway / free in pool / free). Click a device to open it or a free address to reserve it.
+- **New-device notifications:** every 2 minutes the add-on looks for MACs it has never seen and creates a Home Assistant notification and the event `clients_reservations_new_device` (data: mac, name, hostname, vendor, ip, network, vlan, connection, random_mac) – use it in automations, e.g. to send a push message. The first run only learns the current devices.
+- **Network rules** (Actions › Network rules): “Vendor / Name / Hostname contains … → network”. Devices in another network get the issue *Expected in …*.
+- **Export hosts file** (Actions): fixed IPs with local DNS record and a host name derived from the device name.
+- **Wake on LAN:** button for offline wired devices. Uses Home Assistant's `wake_on_lan` service when it is set up (`wake_on_lan:` in configuration.yaml) and additionally sends a magic packet to the subnet broadcast and the device IP. Waking devices in another VLAN only works if the network forwards the packet.
+- **Inactive filter:** not seen for > 30 / 90 / 365 days or never seen.
 - **CSV export** of the current filtered view.
 - **CSV import (bulk):** Actions → *Import CSV*. Required column `MAC`; optional `Name`, `Note`,
   `Fixed IP`, `Reservation VLAN` (name or VLAN ID, empty = derived from the IP), `Reserved` (yes/no),
@@ -63,6 +69,9 @@ UniFi Network › Client Devices. Every column can be sorted (click the header) 
 | `verify_ssl` | Keep `false` while the gateway uses a self-signed certificate |
 | `daily_version` | Save one version of the table per day (default on) |
 | `auto_version_retention_days` | Days to keep automatic versions (daily / before bulk actions), default 30 |
+| `notify_new_devices` | Notify Home Assistant about devices with a MAC never seen before (default on) |
+| `notify_networks` | Only watch these networks (names or VLAN IDs); empty = all |
+| `notify_random_mac` | Also notify about random/private MACs (default off) |
 
 Use a dedicated local UniFi account for this add-on rather than sharing one with another
 integration, so the sessions don't log each other out.

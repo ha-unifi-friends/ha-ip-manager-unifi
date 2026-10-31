@@ -244,6 +244,33 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 /* ---------- CSV-Import ---------- */
 dialog#dlgImport{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
+dialog#dlgPlan,dialog#dlgRules{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1180px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog#dlgRules{width:min(820px,calc(100vw - 32px))}
+dialog#dlgPlan::backdrop,dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
+.plan-stats td,.plan-stats th{white-space:nowrap}
+.plan-stats tr[data-net]{cursor:pointer}
+.plan-stats tr[data-net].on td{background:var(--sel)}
+.ubar{display:inline-block;width:90px;height:7px;border-radius:4px;background:var(--chip);vertical-align:middle;margin-right:7px;overflow:hidden}
+.ubar i{display:block;height:100%;background:var(--accent)}
+.ubar.hi i{background:var(--warn)}
+.plan-grid{display:grid;grid-template-columns:repeat(16,minmax(0,1fr));gap:3px;margin-top:10px}
+.pc{position:relative;font:11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;text-align:center;padding:8px 0;border-radius:4px;background:var(--card);color:var(--muted);border:1px solid transparent;cursor:pointer;overflow:hidden}
+.pc:hover{outline:2px solid var(--accent);outline-offset:-1px}
+.pc.free{border-color:color-mix(in srgb,var(--ok) 40%,transparent);color:var(--fg)}
+.pc.pool{background:repeating-linear-gradient(135deg,var(--card) 0 5px,var(--hover) 5px 10px);border-color:var(--line)}
+.pc.res{background:var(--accent);color:#fff}
+.pc.res.off{background:var(--sel);color:var(--accent);border-color:var(--accent)}
+.pc.dyn{background:var(--warn-bg);color:var(--warn);border-color:var(--warn)}
+.pc.conf{background:var(--bad);color:#fff}
+.pc.gw{background:var(--ok);color:#fff}
+.pc.sys{background:transparent;color:var(--faint);cursor:default}
+.pc.sys:hover{outline:none}
+.plan-legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--muted);margin-top:10px}
+.plan-legend span{display:inline-flex;align-items:center;gap:6px}
+.plan-legend .pc{width:22px;padding:4px 0;cursor:default}
+.plan-legend .pc:hover{outline:none}
+.rule-row{display:grid;grid-template-columns:130px 1fr 220px 34px;gap:8px;align-items:center;margin-bottom:8px}
+.rule-row input,.rule-row select{width:100%}
 .imp{display:flex;flex-direction:column;max-height:calc(100vh - 50px)}
 .imp-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line)}
 .imp-head h2{margin:0;font-size:15px;flex:1}
@@ -314,6 +341,7 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
         <span id="stand"></span>
         <button class="btn" id="btnReload" type="button">Refresh</button>
         <button class="btn icon-btn" id="btnCols" type="button" aria-label="Customize columns" title="Columns"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg><span class="lbl">Columns</span></button>
+        <button class="btn icon-btn" id="btnPlan" type="button" title="IP plan and utilization per network"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span class="lbl">IP plan</span></button>
         <button class="btn icon-btn" id="btnVer" type="button" title="Save, compare and restore versions of the table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span class="lbl">Versions</span></button>
         <button class="btn icon-btn" id="btnInline" type="button" aria-pressed="false" title="Edit name and fixed IP directly in the table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span class="lbl">Inline edit</span></button>
         <div class="viewsel actsel">
@@ -323,6 +351,8 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
           <button class="mi" role="menuitem" id="btnSub" type="button" title="Replace subnet"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg><span>Replace subnet…</span></button>
           <button class="mi" role="menuitem" id="btnImp" type="button" title="Import CSV"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Import CSV…</span></button>
           <button class="mi" role="menuitem" id="btnExp" type="button" title="Export CSV"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Export CSV</span></button>
+          <button class="mi" role="menuitem" id="btnHosts" type="button" title="Export fixed IPs and local DNS records as a hosts file"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg><span>Export hosts file</span></button>
+          <button class="mi" role="menuitem" id="btnRules" type="button" title="Which devices belong in which network"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg><span>Network rules…</span></button>
           </div>
         </div>
         <button class="btn primary icon-btn" id="btnNew" type="button" title="Add reservation"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg><span class="lbl">Add reservation</span></button>
@@ -503,6 +533,28 @@ dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
     </div>
   </div>
 </dialog>
+<dialog id="dlgPlan" aria-labelledby="planTitle">
+  <div class="imp">
+    <div class="imp-head"><h2 id="planTitle">IP plan</h2><button class="x link" type="button" id="planClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="imp-body">
+      <div class="imp-table"><table class="plan-stats"><thead><tr><th>Network</th><th>Subnet</th><th>DHCP pool</th><th>Fixed IPs</th><th>in pool</th><th>Dynamic</th><th>Free outside pool</th><th>Utilization</th></tr></thead><tbody id="planStats"></tbody></table></div>
+      <div id="planGridWrap"></div>
+    </div>
+    <div class="imp-foot"><span class="hint">Click an address to open the device, or a free address to reserve it.</span><span class="sp"></span><button class="btn" type="button" id="planDone">Close</button></div>
+  </div>
+</dialog>
+<dialog id="dlgRules" aria-labelledby="rulesTitle">
+  <div class="imp">
+    <div class="imp-head"><h2 id="rulesTitle">Network rules</h2><button class="x link" type="button" id="rulesClose" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="imp-body">
+      <div class="imp-help"><p style="margin:0">Say which devices belong in which network, e.g. <i>Vendor contains “Espressif” → IoT</i>. Devices that match a rule but sit in another network get the issue <b>Expected in …</b> (filter <i>Issues › Wrong network</i>). The first matching rule wins; text is matched case-insensitively.</p></div>
+      <div id="ruleRows"></div>
+      <button class="btn" type="button" id="ruleAdd">+ Add rule</button>
+      <div class="hint" id="ruleSum" style="margin-top:10px"></div>
+    </div>
+    <div class="imp-foot"><span class="sp"></span><button class="btn" type="button" id="rulesCancel">Cancel</button><button class="btn primary" type="button" id="rulesSave">Save rules</button></div>
+  </div>
+</dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 
 <script>
@@ -556,9 +608,18 @@ async function api(path, body) {
 }
 
 // ---------- issues ----------
+function ruleNet(c) {
+  for (const r of state.rules || []) {
+    const v = (r.field === "vendor" ? c.oui : r.field === "name" ? c.name : c.hostname) || "";
+    if (v.toLowerCase().includes(r.contains.toLowerCase())) return r.network_id;
+  }
+  return "";
+}
 function computeWarnings() {
-  const byIp = {};
+  const byIp = {}, byName = {}, byDns = {};
   for (const c of state.clients) if (c.use_fixedip && c.fixed_ip) (byIp[c.fixed_ip] ||= []).push(c);
+  for (const c of state.clients) if (c.mac && !c.is_device && c.name) (byName[c.name.trim().toLowerCase()] ||= []).push(c);
+  for (const c of state.clients) if (c.local_dns_record_enabled && c.local_dns_record) (byDns[c.local_dns_record.trim().toLowerCase()] ||= []).push(c);
   state.clients.forEach((c, i) => {
     c._key = c.mac || "tp" + i;
     const w = [];
@@ -575,6 +636,12 @@ function computeWarnings() {
     }
     if (c.fixed_ap_enabled && c.online && c.ap_mac && c.ap_mac !== c.fixed_ap_mac) w.push(["warn", "Not on locked AP"]);
     if (c.vno_id) w.push(["info", "VLAN override"]);
+    if (c.mac && !c.is_device && c.name && byName[c.name.trim().toLowerCase()]?.length > 1) w.push(["warn", "Duplicate name"]);
+    if (c.local_dns_record_enabled && c.local_dns_record && byDns[c.local_dns_record.trim().toLowerCase()]?.length > 1) w.push(["bad", "Duplicate DNS name"]);
+    if (c.mac && !c.is_device && c.conn !== "teleport") {
+      const want = ruleNet(c), have = c._resNet || c.network_id;
+      if (want && have && want !== have && net(want)) w.push(["warn", "Expected in " + net(want).name]);
+    }
     if (c.mac && !c.is_device && isRandomMac(c.mac)) w.push([c.use_fixedip ? "warn" : "info", "Random MAC"]);
     c._warn = w; c._serious = w.some(x => x[0] !== "info");
   });
@@ -590,8 +657,10 @@ const FACETS = [
   { id: "kind", title: "Type", get: c => c.is_device ? "dev" : "client", opts: () => [["client", "Clients"], ["dev", "UniFi devices"]] },
   { id: "conn", title: "Connection", get: c => c.conn, opts: () => [["wifi", "WiFi"], ["wired", "Wired"], ["teleport", "Teleport"]] },
   { id: "res", title: "Reservation", get: c => c.use_fixedip ? "yes" : "no", opts: () => [["yes", "With fixed IP"], ["no", "Without fixed IP"]] },
-  { id: "hint", title: "Issues", multi: c => [c._serious ? "problem" : "", ...c._warn.map(w => w[1] === "Random MAC" ? "random" : w[1] === "In DHCP pool" ? "pool" : "")].filter(Boolean),
-    opts: () => [["problem", "Problems"], ["pool", "In DHCP pool"], ["random", "Random MAC"]] },
+  { id: "hint", title: "Issues", multi: c => [c._serious ? "problem" : "", ...c._warn.map(w => w[1] === "Random MAC" ? "random" : w[1] === "In DHCP pool" ? "pool" : w[1].startsWith("Expected in ") ? "wrongnet" : w[1].startsWith("Duplicate") ? "dup" : "")].filter(Boolean),
+    opts: () => [["problem", "Problems"], ["pool", "In DHCP pool"], ["random", "Random MAC"], ["dup", "Duplicates (IP / name / DNS)"], ["wrongnet", "Wrong network (rules)"]] },
+  { id: "seen", title: "Inactive", multi: c => { if (c.is_device || c.online || c.conn === "teleport") return []; if (!c.last_seen) return ["never"]; const d = (Date.now() / 1000 - c.last_seen) / 86400; return [d > 30 ? "30" : "", d > 90 ? "90" : "", d > 365 ? "365" : ""].filter(Boolean); },
+    opts: () => [["30", "Not seen > 30 days"], ["90", "Not seen > 90 days"], ["365", "Not seen > 1 year"], ["never", "Never seen"]] },
   { id: "lock", title: "Locked to AP", get: c => c.fixed_ap_enabled ? c.fixed_ap_mac : (c.conn === "wifi" ? "none" : ""), opts: () => [...uniq(state.clients.filter(c => c.fixed_ap_enabled).map(c => c.fixed_ap_mac)).map(m => [m, apName(m)]), ["none", "Not locked"]] },
   { id: "uplink", title: "Access Points / Switches", get: c => c.conn === "teleport" || c.device_kind === "gateway" ? "" : c.uplink, opts: () => uniq(state.clients.map(c => c.conn === "teleport" || c.device_kind === "gateway" ? "" : c.uplink)).map(v => [v, v]) },
   { id: "ssid", title: "WiFi Broadcasts", get: c => c.essid, opts: () => uniq(state.clients.map(c => c.essid)).map(v => [v, v]) },
@@ -791,6 +860,115 @@ function wireGrips() {
   }
 }
 
+// ---------- IP plan + utilization ----------
+const ipStr = x => [x >>> 24, (x >>> 16) & 255, (x >>> 8) & 255, x & 255].join(".");
+function subnetRange(sub) { const [b, bits] = String(sub || "").split("/"); const base = ipNum(b), n = 2 ** (32 - +bits); if (base < 0 || !(n > 0)) return null; const start = Math.floor(base / n) * n; return { start, end: start + n - 1, size: n }; }
+const bcastOf = sub => { const r = subnetRange(sub); return r ? ipStr(r.end) : ""; };
+function planNet(n) {
+  const r = subnetRange(n.subnet); if (!r) return null;
+  const ps = n.dhcp_start ? ipNum(n.dhcp_start) : -1, pe = n.dhcp_stop ? ipNum(n.dhcp_stop) : -1, gw = ipNum(n.gateway);
+  const cells = new Map();
+  const add = (ip, c, how) => { const x = ipNum(ip); if (x < r.start || x > r.end) return; const e = cells.get(x) || { res: [], dyn: [] }; e[how].push(c); cells.set(x, e); };
+  for (const c of state.clients) {
+    if (c.conn === "teleport") continue;
+    if (c.use_fixedip && c.fixed_ip) add(c.fixed_ip, c, "res");
+    if (c.ip && c.online && !(c.use_fixedip && c.fixed_ip === c.ip)) add(c.ip, c, "dyn");
+  }
+  let fixed = 0, inPool = 0, dyn = 0, freeOut = 0, used = 0;
+  const usable = Math.max(0, r.size - 2);
+  for (let x = r.start + 1; x < r.end; x++) {
+    const e = cells.get(x), pool = x >= ps && x <= pe && ps >= 0;
+    if (e?.res.length) { fixed += e.res.length; if (pool) inPool += e.res.length; }
+    if (e?.dyn.length) dyn += e.dyn.length;
+    if (e && (e.res.length || e.dyn.length) || x === gw) used++;
+    else if (!pool) freeOut++;
+  }
+  return { n, r, ps, pe, gw, cells, fixed, inPool, dyn, freeOut, used, usable, poolSize: ps >= 0 && pe >= ps ? pe - ps + 1 : 0 };
+}
+const PLAN = { sel: null };
+function openPlan() { if (!PLAN.sel || !net(PLAN.sel)) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; renderPlan(); $("#dlgPlan").showModal(); }
+function renderPlan() {
+  const ps = state.networks.map(planNet).filter(Boolean);
+  $("#planStats").innerHTML = ps.map(p => { const pct = p.usable ? Math.round(p.used / p.usable * 100) : 0; return `<tr data-net="${esc(p.n.id)}" class="${p.n.id === PLAN.sel ? "on" : ""}">
+    <td><b>${esc(p.n.name)}</b>${p.n.vlan ? ` <span class="muted">(${p.n.vlan})</span>` : ""}</td><td class="mono">${esc(p.n.subnet)}</td>
+    <td class="mono">${p.poolSize ? `${esc(p.n.dhcp_start.split(".").pop())}–${esc(p.n.dhcp_stop.split(".").pop())} <span class="muted">(${p.poolSize})</span>` : "–"}</td>
+    <td>${p.fixed}</td><td>${p.inPool ? `<span style="color:var(--warn)">${p.inPool}</span>` : "0"}</td><td>${p.dyn}</td><td>${p.freeOut}</td>
+    <td><span class="ubar ${pct >= 80 ? "hi" : ""}"><i style="width:${pct}%"></i></span>${pct} % <span class="muted">(${p.used}/${p.usable})</span></td></tr>`; }).join("");
+  const p = ps.find(x => x.n.id === PLAN.sel);
+  if (!p) { $("#planGridWrap").innerHTML = ""; return; }
+  const max = Math.min(p.r.size, 1024), cells = [];
+  for (let x = p.r.start; x < p.r.start + max; x++) {
+    const e = p.cells.get(x), pool = x >= p.ps && x <= p.pe && p.ps >= 0, last = x - p.r.start;
+    let cls = "free", tip = ipStr(x);
+    if (x === p.r.start || x === p.r.end) { cls = "sys"; tip += x === p.r.start ? " · network address" : " · broadcast"; }
+    else if (x === p.gw) { cls = "gw"; tip += " · gateway"; }
+    else if (e && (e.res.length > 1 || (e.res.length && e.dyn.length))) { cls = "conf"; tip += " · CONFLICT: " + [...e.res.map(c => (c.name || c.mac) + " (fixed)"), ...e.dyn.map(c => (c.name || c.hostname || c.mac) + " (in use)")].join(", "); }
+    else if (e?.res.length) { const c = e.res[0]; cls = "res" + (c.online && c.ip === c.fixed_ip ? "" : " off"); tip += ` · fixed: ${c.name || c.hostname || c.mac}${c.online && c.ip === c.fixed_ip ? "" : " (not using it now)"}`; }
+    else if (e?.dyn.length) { cls = "dyn"; tip += " · in use (dynamic): " + e.dyn.map(c => c.name || c.hostname || c.mac).join(", "); }
+    else if (pool) { cls = "pool"; tip += " · free (DHCP pool)"; }
+    else tip += " · free";
+    const mac = e ? (e.res[0] || e.dyn[0])?.mac || "" : "";
+    cells.push(`<div class="pc ${cls}" data-ip="${ipStr(x)}" data-mac="${esc(mac)}" title="${esc(tip)}">${p.r.size > 256 ? ipStr(x).split(".").slice(2).join(".") : last}</div>`);
+  }
+  const L = (cls, t) => `<span><i class="pc ${cls}"></i>${t}</span>`;
+  $("#planGridWrap").innerHTML = `<div class="sec-title" style="margin-top:16px">${esc(p.n.name)} · ${esc(p.n.subnet)}${p.r.size > 1024 ? " · first 1024 addresses" : ""}</div>
+    <div class="plan-legend">${L("res", "Fixed IP, in use")}${L("res off", "Fixed IP, not in use")}${L("dyn", "Dynamic, in use")}${L("conf", "Conflict")}${L("gw", "Gateway")}${L("pool", "Free, DHCP pool")}${L("free", "Free")}</div>
+    <div class="plan-grid">${cells.join("")}</div>`;
+}
+$("#planStats").addEventListener("click", e => { const tr = e.target.closest("tr[data-net]"); if (tr) { PLAN.sel = tr.dataset.net; renderPlan(); } });
+$("#planGridWrap").addEventListener("click", e => {
+  const d = e.target.closest(".pc[data-ip]"); if (!d || d.classList.contains("sys") || d.classList.contains("gw")) return;
+  const c = d.dataset.mac && state.clients.find(x => x.mac === d.dataset.mac);
+  $("#dlgPlan").close();
+  if (c) { openPanel(c); return; }
+  openPanel(null); $("#fFixed").checked = true; syncToggles(); $("#fNet").value = PLAN.sel; $("#fIp").value = d.dataset.ip; updateHint(); $("#fMac").focus();
+});
+for (const id of ["#planClose", "#planDone"]) $(id).addEventListener("click", () => $("#dlgPlan").close());
+$("#btnPlan").addEventListener("click", openPlan);
+
+// ---------- hosts file ----------
+const hostName = v => String(v || "").normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9.-]+/g, "-").replace(/^-+|-+$/g, "").replace(/-{2,}/g, "-");
+function exportHosts() {
+  const seen = new Set(), lines = [`# Clients & Reservations – fixed IPs and local DNS records`, `# exported ${isoDateTime(Date.now() / 1000)}`, ""];
+  const list = state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device).sort((a, b) => ipNum(a.fixed_ip) - ipNum(b.fixed_ip));
+  for (const c of list) {
+    const names = uniq([c.local_dns_record_enabled ? c.local_dns_record : "", hostName(c.name || c.hostname)].map(x => (x || "").trim().toLowerCase())).filter(n => n && !seen.has(n));
+    names.forEach(n => seen.add(n));
+    if (names.length) lines.push(`${c.fixed_ip.padEnd(16)} ${names.join(" ")}`);
+  }
+  saveFile("hosts.txt", lines.join("\n") + "\n", true); toast(`hosts file with ${lines.length - 3} entries exported`);
+}
+$("#btnHosts").addEventListener("click", exportHosts);
+
+// ---------- network rules ----------
+const RULES = { rows: [] };
+async function loadRules() { try { state.rules = (await api("api/rules")).rules || []; } catch { state.rules = []; } }
+function openRules() { RULES.rows = (state.rules || []).map(r => ({ ...r })); if (!RULES.rows.length) RULES.rows.push({ field: "vendor", contains: "", network_id: "" }); renderRules(); $("#dlgRules").showModal(); }
+function renderRules() {
+  const nets = state.networks.map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("");
+  $("#ruleRows").innerHTML = RULES.rows.map((r, i) => `<div class="rule-row" data-i="${i}">
+    <select data-k="field" aria-label="Field"><option value="vendor">Vendor</option><option value="name">Name</option><option value="hostname">Hostname</option></select>
+    <input data-k="contains" placeholder="contains, e.g. Espressif" value="${esc(r.contains)}" aria-label="Contains">
+    <select data-k="network_id" aria-label="Network"><option value="">→ belongs in …</option>${nets}</select>
+    <button class="btn" type="button" data-del="${i}" title="Remove rule" aria-label="Remove rule">✕</button></div>`).join("");
+  $("#ruleRows").querySelectorAll(".rule-row").forEach(row => { const r = RULES.rows[+row.dataset.i]; row.querySelector('[data-k="field"]').value = r.field; row.querySelector('[data-k="network_id"]').value = r.network_id; });
+  ruleSummary();
+}
+function ruleSummary() {
+  const keep = state.rules; state.rules = RULES.rows.filter(r => r.contains && r.network_id);
+  let n = 0; for (const c of state.clients) if (c.mac && !c.is_device && c.conn !== "teleport") { const w = ruleNet(c), h = c._resNet || c.network_id; if (w && h && w !== h) n++; }
+  state.rules = keep; $("#ruleSum").textContent = `${n} ${n === 1 ? "device is" : "devices are"} currently in another network than these rules expect.`;
+}
+$("#ruleRows").addEventListener("input", e => { const row = e.target.closest(".rule-row"); if (!row || !e.target.dataset.k) return; RULES.rows[+row.dataset.i][e.target.dataset.k] = e.target.value; ruleSummary(); });
+$("#ruleRows").addEventListener("click", e => { const b = e.target.closest("[data-del]"); if (!b) return; RULES.rows.splice(+b.dataset.del, 1); renderRules(); });
+$("#ruleAdd").addEventListener("click", () => { RULES.rows.push({ field: "vendor", contains: "", network_id: "" }); renderRules(); $("#ruleRows .rule-row:last-child input").focus(); });
+$("#rulesSave").addEventListener("click", async () => {
+  try { state.rules = (await api("api/rules", { rules: RULES.rows.filter(r => r.contains.trim() && r.network_id) })).rules; computeWarnings(); renderAll(); $("#dlgRules").close(); toast(`${state.rules.length} ${state.rules.length === 1 ? "rule" : "rules"} saved`); }
+  catch (e) { toast("Could not save rules: " + e.message); }
+});
+for (const id of ["#rulesCancel", "#rulesClose"]) $(id).addEventListener("click", () => $("#dlgRules").close());
+$("#btnRules").addEventListener("click", openRules);
+
 async function load() {
   state.loading = true; const b = $("#btnReload"); b.disabled = true; b.innerHTML = '<span class="spin"></span> Loading';
   try {
@@ -849,9 +1027,17 @@ function renderInfo() {
       ${kv("Note", esc(c.note))}
     </dl></div>
     ${webIp(c) ? `<div class="openrow"><a class="btn primary" href="http://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open the device's web interface in a new tab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Open http://${esc(webIp(c))}</a><a class="btn" href="https://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open with HTTPS">HTTPS</a></div>${!c.online ? `<p class="hint">The device is offline – the page may not load.</p>` : ""}` : ""}
+    ${c.mac && !c.is_device && c.conn === "wired" && !c.online ? `<button class="btn" type="button" id="btnWol" style="width:100%"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:6px"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>Wake on LAN</button>` : ""}
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
+  $("#btnWol")?.addEventListener("click", async e => {
+    const b = e.currentTarget, ip = c.use_fixedip ? c.fixed_ip : c.ip, n = net(c._resNet) || net(c.network_id) || state.networks.find(x => inSubnet(ip, x.subnet));
+    b.disabled = true;
+    try { const r = await api("api/wol", { mac: c.mac, ip, broadcast: n ? bcastOf(n.subnet) : "" }); toast("Magic packet sent via " + r.via.join(", ")); }
+    catch (err) { toast("Wake on LAN failed: " + err.message); }
+    finally { b.disabled = false; }
+  });
   $("#tabEdit").hidden = !c.mac;
 }
 
@@ -951,8 +1137,8 @@ function exportCsv() {
   const lines = rows().map(c => [c.name, c.hostname, c.mac, c.oui, CONN_LABEL[c.conn], connText(c), c.fixed_ap_enabled ? apName(c.fixed_ap_mac) : "", netLabel(c.network_id) || c.network_name, c.essid, c.use_fixedip ? "yes" : "no", c.fixed_ip, netLabel(c._resNet), c.ip, c.online ? "yes" : "no", c.last_seen ? isoDateTime(c.last_seen) : "", c._warn.map(w => w[1]).join("; "), c.local_dns_record_enabled ? c.local_dns_record : "", c.note].map(q).join(";"));
     saveFile("dhcp-reservations.csv", [head.map(q).join(";"), ...lines].join("\r\n"));
 }
-function saveFile(name, text) {
-  const blob = new Blob(["\ufeff" + text], { type: "text/csv" });
+function saveFile(name, text, plain) {
+  const blob = new Blob([plain ? text : "\ufeff" + text], { type: plain ? "text/plain" : "text/csv" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 // ---------- CSV import ----------
@@ -1861,7 +2047,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#actMe
 
 const saved = store.get("view2", null);
 if (saved) { state.sort = saved.sort || state.sort; state.colFilters = saved.colFilters || {}; state.facets = saved.facets || {}; state.hiddenCols = (saved.hiddenCols || []).filter(k => COLS.some(c => c.key === k && k !== "name")); state.colOrder = (saved.colOrder || []).filter(k => COLS.some(c => c.key === k)); }
-buildHead(); renderAll(); load(); loadViews(true); loadVersionsMeta();
+buildHead(); renderAll(); loadRules().then(() => { if (state.clients.length) { computeWarnings(); renderAll(); } }); load(); loadViews(true); loadVersionsMeta();
 })();
 </script>
 </body>

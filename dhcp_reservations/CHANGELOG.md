@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.11.0 – 2026-10-31
+- **IP plan** (header): utilization per network (subnet, DHCP pool, fixed IPs in/outside the pool, dynamic leases, free addresses outside the pool, utilization bar) and an address grid per network – fixed IP in use / not in use, dynamic, conflict, gateway, free in pool, free. Click a device to open it, or a free address to reserve it.
+- **New-device notifications**: the add-on checks every 2 minutes for MACs it has never seen and creates a Home Assistant notification plus the event `clients_reservations_new_device` (for your own automations). Options `notify_new_devices` (default on), `notify_networks` (names or VLAN IDs, empty = all) and `notify_random_mac` (default off). On the first start all current devices are learned silently.
+- **Duplicates**: new issues *Duplicate name* and *Duplicate DNS name*; filter *Issues › Duplicates (IP / name / DNS)*.
+- **Export hosts file** (Actions): fixed IPs with their local DNS record and a host name derived from the device name – for `/etc/hosts`, Pi-hole or AdGuard.
+- **Network rules** (Actions): e.g. *Vendor contains “Espressif” → IoT*. Devices that match a rule but sit in another network get the issue *Expected in …*; filter *Issues › Wrong network*.
+- **Wake on LAN** button in the detail panel for offline wired devices (via Home Assistant's `wake_on_lan` service if set up, plus a magic packet to the subnet broadcast and the device IP).
+- New sidebar filter **Inactive**: not seen for more than 30 / 90 / 365 days, or never seen – combine with *Reservation › With fixed IP* to find stale reservations.
+
 ## 1.10.0 – 2026-10-31
 - **Reconnect** (UniFi *kick-sta*): online Wi-Fi clients whose IP changes can be disconnected briefly so they request the new IP right away.
   - Edit: *Reconnect device after saving* (on by default) when the new fixed IP differs from the device's current IP. Wired devices show that they take the new IP at their next DHCP renewal.

@@ -34,11 +34,18 @@ versions you can compare and restore.
 | **Versions** | Snapshot the table manually, daily, and automatically before every bulk action. **Compare** two versions (new / removed / changed devices; spots a device that came back with a new random MAC). **Restore** through a preview. A *Changed since …* filter shows what changed since a version, and each device has a **history** timeline: which change, in which version. |
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. |
 | **Reconnect** | After a fixed IP change, online Wi-Fi clients can be reconnected right away so they pick up the new address – per device or for a whole subnet move. |
+| **IP plan** | Utilization per network (fixed / in pool / dynamic / free outside the pool) and an address grid that shows conflicts at a glance. Click a free address to reserve it. |
+| **New-device alerts** | A Home Assistant notification and the event `clients_reservations_new_device` when a MAC appears that was never seen before – optionally only for certain networks. |
+| **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |
+| **Housekeeping** | Duplicate names / DNS names, *Inactive* filter (not seen > 30 / 90 / 365 days), hosts-file export, Wake on LAN. |
 | **Safe bulk changes** | Every bulk action (CSV import, restore, replace subnet, names from HA) saves a version of the current settings first, so you can always go back via *Versions › Restore*. |
 
 ## Screenshots
 
 <table>
+  <tr>
+    <td colspan="2" valign="top"><img src="docs/screenshots/ip-plan.png" alt="IP plan"><br><b>IP plan</b> – utilization per network and an address grid: fixed IPs in use / not in use, dynamic leases, conflicts, DHCP pool and free addresses.</td>
+  </tr>
   <tr>
     <td width="50%" valign="top"><img src="docs/screenshots/replace-subnet.png" alt="Replace subnet with collision check"><br><b>Replace subnet</b> – preview with collision check (an address that is already reserved is an error, an address in use is a warning) and optional reconnect of the affected Wi-Fi clients.</td>
     <td width="50%" valign="top"><img src="docs/screenshots/csv-import.png" alt="CSV import with validation"><br><b>CSV import</b> – every row is validated before anything changes: duplicate IP, IP outside the network, invalid MAC, unknown AP.</td>
@@ -61,7 +68,7 @@ versions you can compare and restore.
   </tr>
   <tr>
     <td valign="top"><img src="docs/screenshots/history.png" alt="Device history"><br><b>Detail panel</b> – open the device in the browser, and its <b>history</b>: what changed, in which version.</td>
-    <td valign="top"></td>
+    <td valign="top"><img src="docs/screenshots/network-rules.png" alt="Network rules"><br><b>Network rules</b> – which devices belong in which network; violations show up as issues.</td>
   </tr>
 </table>
 
@@ -91,6 +98,9 @@ versions you can compare and restore.
 | `verify_ssl` | `false` | Keep off while the console uses its self-signed certificate |
 | `daily_version` | `true` | Save one version of the table per day |
 | `auto_version_retention_days` | `30` | Days to keep automatic versions; manual, pinned and baseline versions are kept until deleted |
+| `notify_new_devices` | `true` | Notify Home Assistant about devices with a never-seen MAC |
+| `notify_networks` | `[]` | Only watch these networks (names or VLAN IDs); empty = all |
+| `notify_random_mac` | `false` | Also notify about random/private MACs (phones, tablets) |
 
 **Security notes**
 

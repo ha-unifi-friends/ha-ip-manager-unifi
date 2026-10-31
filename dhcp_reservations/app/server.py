@@ -3,6 +3,7 @@
 Talks directly to the UniFi OS API of the gateway (Python standard library only).
 """
 import ipaddress
+import socket
 import json
 import os
 import re
@@ -23,6 +24,9 @@ VERSIONS_DIR = os.environ.get("VERSIONS_DIR", "/data/versions")
 SETTINGS_PATH = os.environ.get("SETTINGS_PATH", "/data/settings.json")
 VERSIONS_LOCK = threading.Lock()
 AUTO_RETENTION_DEFAULT = 30
+KNOWN_PATH = os.environ.get("KNOWN_PATH", "/data/known_devices.json")
+RULES_PATH = os.environ.get("RULES_PATH", "/data/rules.json")
+WATCH_INTERVAL = int(os.environ.get("WATCH_INTERVAL", "120"))
 
 
 def daily_enabled():
@@ -657,6 +661,158 @@ def ensure_daily():
             create_version(API, "daily", "Daily")
 
 
+# ---------------------------------------------------------------- Home Assistant calls
+def ha_call(path, body):
+    """POST to the Home Assistant Core API through the Supervisor."""
+    token = supervisor_token()
+    base = os.environ.get("HA_API", "http://supervisor/core/api")
+    if not token and "HA_API" not in os.environ:
+        raise UnifiError("Home Assistant API is not available to the add-on.", 500)
+    req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",
+                                 headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
+    try:
+        raw = urllib.request.urlopen(req, timeout=20).read().decode()
+    except urllib.error.HTTPError as e:
+        raise UnifiError(f"Home Assistant API returned HTTP {e.code}.", 502)
+    except (urllib.error.URLError, OSError) as e:
+        raise UnifiError(f"Home Assistant not reachable: {e}", 502)
+    try:
+        return json.loads(raw) if raw else {}
+    except ValueError:
+        return {}
+
+
+# ---------------------------------------------------------------- new-device notifications
+def is_random_mac(mac):
+    try:
+        return bool(int(mac.split(":")[0], 16) & 2)
+    except (ValueError, AttributeError, IndexError):
+        return False
+
+
+def notify_options():
+    try:
+        o = load_options()
+    except (OSError, ValueError):
+        o = {}
+    nets = o.get("notify_networks") or []
+    if isinstance(nets, str):
+        nets = [x for x in re.split(r"[,;]", nets)]
+    return {"on": o.get("notify_new_devices", True) is not False,
+            "nets": [str(x).strip().lower() for x in nets if str(x).strip()],
+            "random": o.get("notify_random_mac", False) is True}
+
+
+def _net_matches(net, wanted):
+    if not wanted:
+        return True
+    if not net:
+        return False
+    keys = {str(net.get("name") or "").lower(), str(net.get("vlan") or "").lower(), str(net.get("subnet") or "").lower()}
+    return any(w in keys for w in wanted)
+
+
+def check_new_devices(api):
+    """Remembers every client MAC; notifies Home Assistant about MACs it has not seen before."""
+    snap = build_snapshot(api)
+    nets = {n["id"]: n for n in snap["networks"]}
+    known = _read_json(KNOWN_PATH, None)
+    clients = [c for c in snap["clients"] if c.get("mac") and not c.get("is_device")]
+    if known is None:  # first run: learn silently
+        _write_json(KNOWN_PATH, {c["mac"]: int(time.time()) for c in clients})
+        log("Known devices initialised:", len(clients))
+        return []
+    new = [c for c in clients if c["mac"] not in known]
+    if not new:
+        return []
+    now = int(time.time())
+    for c in new:
+        known[c["mac"]] = now
+    _write_json(KNOWN_PATH, known)
+    opt = notify_options()
+    out = []
+    for c in new:
+        n = nets.get(c.get("network_id") or "") or nets.get(c.get("fixed_network_id") or "")
+        if not opt["on"] or not _net_matches(n, opt["nets"]) or (is_random_mac(c["mac"]) and not opt["random"]):
+            continue
+        info = {"mac": c["mac"], "name": c.get("name") or "", "hostname": c.get("hostname") or "", "vendor": c.get("oui") or "",
+                "ip": c.get("ip") or "", "network": (n or {}).get("name") or c.get("network_name") or "",
+                "vlan": (n or {}).get("vlan"), "connection": c.get("conn") or "", "random_mac": is_random_mac(c["mac"])}
+        out.append(info)
+        try:
+            ha_call("/events/clients_reservations_new_device", info)
+        except UnifiError as e:
+            log("Event failed:", e)
+    if out:
+        lines = [f"- **{x['name'] or x['hostname'] or 'Unknown'}** · `{x['mac']}` · {x['vendor'] or 'unknown vendor'} · "
+                 f"{x['network'] or '?'}{' (' + str(x['vlan']) + ')' if x['vlan'] else ''} · {x['ip'] or 'no IP'}" for x in out]
+        try:
+            ha_call("/services/persistent_notification/create", {
+                "title": f"New device{'s' if len(out) > 1 else ''} in the network ({len(out)})",
+                "message": "\n".join(lines) + "\n\nOpen *Clients & Reservations* to name it or give it a fixed IP.",
+                "notification_id": "clients_reservations_new_" + (out[0]["mac"].replace(":", "") if len(out) == 1 else str(now))})
+        except UnifiError as e:
+            log("Notification failed:", e)
+        log("New devices:", ", ".join(x["mac"] for x in out))
+    return out
+
+
+def watch_worker():
+    time.sleep(20)
+    while True:
+        try:
+            if API:
+                check_new_devices(API)
+        except Exception as e:  # noqa: BLE001
+            log("New-device check failed:", e)
+        time.sleep(WATCH_INTERVAL)
+
+
+# ---------------------------------------------------------------- network rules
+RULE_FIELDS = ("vendor", "name", "hostname")
+
+
+def load_rules():
+    r = _read_json(RULES_PATH, [])
+    return {"rules": r if isinstance(r, list) else []}
+
+
+def save_rules(body):
+    rules = []
+    for r in (body or {}).get("rules") or []:
+        f, v, n = str(r.get("field") or ""), str(r.get("contains") or "").strip(), str(r.get("network_id") or "")
+        if f in RULE_FIELDS and v and n:
+            rules.append({"field": f, "contains": v[:60], "network_id": n})
+    _write_json(RULES_PATH, rules[:200])
+    log("Rules saved:", len(rules))
+    return {"rules": rules}
+
+
+# ---------------------------------------------------------------- wake on LAN
+def wake_on_lan(body):
+    mac = clean_mac(body.get("mac"))
+    ip, bcast = str(body.get("ip") or ""), str(body.get("broadcast") or "")
+    sent = []
+    try:  # Home Assistant runs on the host network and reaches its own LAN segment
+        ha_call("/services/wake_on_lan/send_magic_packet", {"mac": mac, **({"broadcast_address": bcast} if bcast else {})})
+        sent.append("Home Assistant (wake_on_lan)")
+    except UnifiError as e:
+        log("HA wake_on_lan not available:", e)
+    pkt = b"\xff" * 6 + bytes.fromhex(mac.replace(":", "")) * 16
+    for target in [t for t in (bcast, ip) if t]:
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                sock.sendto(pkt, (target, 9))
+            sent.append(target)
+        except OSError as e:
+            log("WoL to", target, "failed:", e)
+    if not sent:
+        raise UnifiError("Could not send the magic packet.", 502)
+    log("Wake on LAN", mac, "via", ", ".join(sent))
+    return {"ok": True, "via": sent}
+
+
 def daily_worker():
     """Creates one 'Daily' version per day while the option is on."""
     while True:
@@ -746,6 +902,14 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, create_version(API, b.get("kind", "manual"), b.get("label", ""), self._user()))
             if method == "POST" and path.endswith("/api/version_settings"):
                 return self._send(200, save_settings(self._json_body()))
+            if method == "GET" and path.endswith("/api/rules"):
+                return self._send(200, load_rules())
+            if method == "POST" and path.endswith("/api/rules"):
+                return self._send(200, save_rules(self._json_body()))
+            if method == "POST" and path.endswith("/api/wol"):
+                return self._send(200, wake_on_lan(self._json_body()))
+            if method == "POST" and path.endswith("/api/check_new"):
+                return self._send(200, {"new": check_new_devices(API)})
             if method == "POST" and path.endswith("/api/reconnect"):
                 return self._send(200, reconnect_client(API, self._json_body().get("mac")))
             if method == "POST" and path.endswith("/api/forget"):
@@ -770,6 +934,7 @@ def main():
     API = Unifi(load_options())
     log(f"Starting on port {PORT}, controller {API.base}, site {API.site}")
     threading.Thread(target=daily_worker, daemon=True).start()
+    threading.Thread(target=watch_worker, daemon=True).start()
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
 
 

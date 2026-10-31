@@ -19,3 +19,12 @@ configuration:
   auto_version_retention_days:
     name: Keep automatic versions (days)
     description: Daily versions and the versions saved before bulk actions are deleted after this many days. Manual, pinned and baseline versions are kept.
+  notify_new_devices:
+    name: Notify about new devices
+    description: Creates a Home Assistant notification (and the event clients_reservations_new_device) when a device with an unknown MAC appears.
+  notify_networks:
+    name: Only these networks
+    description: Network names or VLAN IDs to watch, e.g. Trusted or 10. Empty = all networks.
+  notify_random_mac:
+    name: Also notify about random MACs
+    description: Phones and tablets with a private Wi-Fi address show up with a new MAC per network; off by default to avoid noise.
