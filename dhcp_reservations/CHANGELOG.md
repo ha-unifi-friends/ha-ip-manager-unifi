@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.13.2 – 2026-10-31
+- IP plan: all networks are always listed; the whole dialog scrolls instead of the network table.
+- The blue icon top left now hides and shows the filter pane – on phones as a slide-in menu (hamburger), on desktop to gain room for the table (remembered per browser).
+- CleanUp Proposal: *Cancel*, *✕*, Esc and *Close* return to the IP plan.
+
 ## 1.13.1 – 2026-10-31
 - CleanUp Proposal: tabs **Current / Proposal / Changes** to switch quickly between today's layout and the proposal. *Changes* draws an arrow from every old to the new address, marks the future DHCP pool and plays the moves as an animation (*▶ Play moves*).
 - The moves are now listed directly below measure 1 (instead of in a separate tab); *Reconnect* is on by default.
