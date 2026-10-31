@@ -28,3 +28,6 @@ configuration:
   notify_random_mac:
     name: Also notify about random MACs
     description: Phones and tablets with a private Wi-Fi address show up with a new MAC per network; off by default to avoid noise.
+  vendor_lookup:
+    name: Look up unknown vendors
+    description: Fills an empty Vendor via macvendors.com (only the 3-byte vendor prefix is sent, max. 1 request per second, results are cached).

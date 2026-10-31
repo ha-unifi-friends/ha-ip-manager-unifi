@@ -4,6 +4,7 @@ Talks directly to the UniFi OS API of the gateway (Python standard library only)
 """
 import ipaddress
 import socket
+import struct
 import json
 import os
 import re
@@ -27,6 +28,8 @@ AUTO_RETENTION_DEFAULT = 30
 KNOWN_PATH = os.environ.get("KNOWN_PATH", "/data/known_devices.json")
 RULES_PATH = os.environ.get("RULES_PATH", "/data/rules.json")
 SCANS_PATH = os.environ.get("SCANS_PATH", "/data/portscans.json")
+VENDORS_PATH = os.environ.get("VENDORS_PATH", "/data/vendors.json")
+VENDOR_API = os.environ.get("VENDOR_API", "https://api.macvendors.com/")
 SCAN_LOCK = threading.Lock()
 WATCH_INTERVAL = int(os.environ.get("WATCH_INTERVAL", "120"))
 
@@ -714,9 +717,9 @@ def _net_matches(net, wanted):
     return any(w in keys for w in wanted)
 
 
-def check_new_devices(api):
+def check_new_devices(api, snap=None):
     """Remembers every client MAC; notifies Home Assistant about MACs it has not seen before."""
-    snap = build_snapshot(api)
+    snap = snap or build_snapshot(api)
     nets = {n["id"]: n for n in snap["networks"]}
     known = _read_json(KNOWN_PATH, None)
     clients = [c for c in snap["clients"] if c.get("mac") and not c.get("is_device")]
@@ -759,14 +762,69 @@ def check_new_devices(api):
     return out
 
 
+# ---------------------------------------------------------------- vendor lookup (only the 3-byte OUI is sent)
+def vendor_lookup_enabled():
+    try:
+        return load_options().get("vendor_lookup", True) is not False
+    except (OSError, ValueError):
+        return True
+
+
+def fill_vendors(snap, limit=40):
+    """Looks up the vendor of OUIs UniFi does not know (macvendors.com, max. 1 request per second)."""
+    if not vendor_lookup_enabled():
+        return 0
+    cache = _read_json(VENDORS_PATH, {})
+    now, todo = int(time.time()), []
+    for c in snap["clients"]:
+        mac = c.get("mac") or ""
+        if not mac or c.get("oui") or c.get("is_device") or is_random_mac(mac):
+            continue
+        oui = mac[:8]
+        hit = cache.get(oui)
+        if hit and (hit.get("vendor") or now - hit.get("ts", 0) < 30 * 86400):
+            continue
+        if oui not in todo:
+            todo.append(oui)
+    done = 0
+    for oui in todo[:limit]:
+        vendor = None
+        try:
+            req = urllib.request.Request(VENDOR_API + oui, headers={"User-Agent": "clients-reservations-addon"})
+            vendor = urllib.request.urlopen(req, timeout=10).read().decode("utf-8", "replace").strip()[:80]
+        except urllib.error.HTTPError as e:
+            if e.code == 404:
+                vendor = ""
+            elif e.code == 429:
+                log("Vendor lookup: rate limited, trying again later")
+                break
+        except (urllib.error.URLError, OSError) as e:
+            log("Vendor lookup not reachable:", e)
+            break
+        if vendor is not None:
+            cache[oui] = {"vendor": vendor, "ts": now}
+            done += 1
+        time.sleep(1.1)
+    if done:
+        _write_json(VENDORS_PATH, cache)
+        log("Vendor lookup:", done, "prefixes")
+    return done
+
+
+def load_vendors():
+    return {"vendors": {k: v.get("vendor", "") for k, v in _read_json(VENDORS_PATH, {}).items() if v.get("vendor")}}
+
+
 def watch_worker():
     time.sleep(20)
     while True:
         try:
             if API:
-                check_new_devices(API)
+                snap = build_snapshot(API)
+                check_new_devices(API, snap)
+                fill_vendors(snap)
         except Exception as e:  # noqa: BLE001
-            log("New-device check failed:", e)
+            log("Background check failed:", e)
         time.sleep(WATCH_INTERVAL)
 
 
@@ -875,6 +933,73 @@ def port_scan(body):
 
 def load_scans():
     return {"scans": _read_json(SCANS_PATH, {})}
+
+
+# ---------------------------------------------------------------- ping (ICMP echo)
+def _icmp_checksum(data):
+    if len(data) % 2:
+        data += b"\0"
+    s = sum(int.from_bytes(data[i:i + 2], "big") for i in range(0, len(data), 2))
+    s = (s >> 16) + (s & 0xFFFF)
+    s += s >> 16
+    return ~s & 0xFFFF
+
+
+def ping(body, count=4, timeout=1.0):
+    ip = str(body.get("ip") or "")
+    try:
+        if ipaddress.ip_address(ip).version != 4:
+            raise ValueError
+    except ValueError:
+        raise UnifiError("Invalid IP address.", 400)
+    try:
+        sock = socket.socket(socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_ICMP)
+        raw = True
+    except PermissionError:
+        try:  # unprivileged ICMP (needs net.ipv4.ping_group_range)
+            sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_ICMP)
+            raw = False
+        except OSError:
+            raise UnifiError("Ping is not permitted in this container.", 500)
+    ident = os.getpid() & 0xFFFF
+    times = []
+    with sock:
+        sock.settimeout(timeout)
+        for seq in range(count):
+            payload = struct.pack("!d", time.time()) + b"clients-reservations"
+            hdr = struct.pack("!BBHHH", 8, 0, 0, ident, seq)
+            pkt = struct.pack("!BBHHH", 8, 0, _icmp_checksum(hdr + payload), ident, seq) + payload
+            t0 = time.perf_counter()
+            try:
+                sock.sendto(pkt, (ip, 0))
+            except OSError as e:
+                raise UnifiError(f"Ping failed: {e}", 502)
+            got = None
+            while True:
+                left = timeout - (time.perf_counter() - t0)
+                if left <= 0:
+                    break
+                sock.settimeout(left)
+                try:
+                    data, addr = sock.recvfrom(2048)
+                except socket.timeout:
+                    break
+                if addr[0] != ip:
+                    continue
+                icmp = data[(data[0] & 0x0F) * 4:] if raw else data
+                if len(icmp) >= 8 and icmp[0] == 0:
+                    rseq = struct.unpack("!H", icmp[6:8])[0]
+                    if rseq == seq and (not raw or struct.unpack("!H", icmp[4:6])[0] == ident):
+                        got = (time.perf_counter() - t0) * 1000
+                        break
+            times.append(round(got, 2) if got is not None else None)
+            if seq < count - 1:
+                time.sleep(max(0.0, 0.3 - (time.perf_counter() - t0)))
+    ok = [t for t in times if t is not None]
+    res = {"ip": ip, "sent": count, "received": len(ok), "times": times,
+           "min": min(ok) if ok else None, "avg": round(sum(ok) / len(ok), 2) if ok else None, "max": max(ok) if ok else None}
+    log("Ping", ip, f"{len(ok)}/{count}")
+    return res
 
 
 # ---------------------------------------------------------------- wake on LAN
@@ -991,6 +1116,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, create_version(API, b.get("kind", "manual"), b.get("label", ""), self._user()))
             if method == "POST" and path.endswith("/api/version_settings"):
                 return self._send(200, save_settings(self._json_body()))
+            if method == "POST" and path.endswith("/api/ping"):
+                return self._send(200, ping(self._json_body()))
+            if method == "GET" and path.endswith("/api/vendors"):
+                return self._send(200, load_vendors())
             if method == "POST" and path.endswith("/api/portscan"):
                 return self._send(200, port_scan(self._json_body()))
             if method == "GET" and path.endswith("/api/portscans"):

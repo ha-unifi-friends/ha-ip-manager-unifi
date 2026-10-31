@@ -37,8 +37,8 @@ versions you can compare and restore.
 | **IP plan** | Utilization per network (fixed / in pool / dynamic / free outside the pool) and an address grid that shows conflicts at a glance. Click a free address to reserve it. |
 | **New-device alerts** | A Home Assistant notification and the event `clients_reservations_new_device` when a MAC appears that was never seen before – optionally only for certain networks. |
 | **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |
-| **Port check** | On-demand check of ~30 common TCP ports per device; web UIs become links, Telnet/FTP are flagged. |
-| **Housekeeping** | Duplicate names / DNS names, *Inactive* filter (not seen > 30 / 90 / 365 days), hosts-file export, Wake on LAN. |
+| **Ping & port check** | Ping with round-trip times, and an on-demand check of ~30 common TCP ports per device; web UIs become links, Telnet/FTP are flagged. |
+| **Housekeeping** | Vendor lookup for unknown MAC prefixes, duplicate names / DNS names, *Inactive* filter (not seen > 30 / 90 / 365 days), hosts-file export, Wake on LAN. |
 | **Safe bulk changes** | Every bulk action (CSV import, restore, replace subnet, names from HA) saves a version of the current settings first, so you can always go back via *Versions › Restore*. |
 
 ## Screenshots
@@ -72,7 +72,7 @@ versions you can compare and restore.
     <td valign="top"><img src="docs/screenshots/network-rules.png" alt="Network rules"><br><b>Network rules</b> – which devices belong in which network; violations show up as issues.</td>
   </tr>
   <tr>
-    <td valign="top"><img src="docs/screenshots/open-ports.png" alt="Open ports"><br><b>Open ports</b> – web UIs as links with their page title; insecure protocols flagged.</td>
+    <td valign="top"><img src="docs/screenshots/open-ports.png" alt="Open ports"><br><b>Network check</b> – ping, plus open ports: web UIs as links with their page title; insecure protocols flagged.</td>
     <td valign="top"></td>
   </tr>
 </table>
@@ -106,6 +106,7 @@ versions you can compare and restore.
 | `notify_new_devices` | `true` | Notify Home Assistant about devices with a never-seen MAC |
 | `notify_networks` | `[]` | Only watch these networks (names or VLAN IDs); empty = all |
 | `notify_random_mac` | `false` | Also notify about random/private MACs (phones, tablets) |
+| `vendor_lookup` | `true` | Fill unknown vendors via macvendors.com (only the 3-byte prefix is sent, cached) |
 
 **Security notes**
 

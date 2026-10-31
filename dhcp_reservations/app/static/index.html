@@ -271,6 +271,8 @@ dialog#dlgPlan::backdrop,dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
 .plan-legend .pc:hover{outline:none}
 .rule-row{display:grid;grid-template-columns:130px 1fr 220px 34px;gap:8px;align-items:center;margin-bottom:8px}
 .rule-row input,.rule-row select{width:100%}
+.oui-link{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font:12px Inter,system-ui,sans-serif;color:var(--accent);text-decoration:none}
+.oui-link:hover{text-decoration:underline}
 .ports{padding:10px 14px;display:flex;flex-direction:column;gap:8px}
 .port-list{display:flex;flex-wrap:wrap;gap:6px}
 .pchip{display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--fg);text-decoration:none;max-width:100%}
@@ -710,7 +712,7 @@ const COLS = [
   { key: "name", label: "Name", val: c => (c.name || c.hostname || c.mac || "").toLowerCase(), fval: c => [c.name, c.hostname].join(" "),
     td: c => `<div class="nm"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span>${inlineOn(c) ? `<input class="ie" data-f="name" data-k="${esc(keyOf(c))}" value="${esc(c.name)}" placeholder="${esc(c.hostname || c.device_name || "Name")}" aria-label="Name of ${esc(c.mac)}">` : `<span class="t">${esc(c.name || c.hostname || "Unknown")}</span>`}${c.is_device ? `<span class="h">${esc(c.name && c.device_name && c.device_name.trim() !== c.name ? c.device_name + " · " : "")}${esc(c.device_model)}</span>` : !c.name && c.mac ? `<span class="h">${esc(c.mac.slice(-5))}</span>` : (c.name && c.hostname && c.hostname !== c.name ? `<span class="h">${esc(c.hostname)}</span>` : "")}</div>` },
   { key: "mac", label: "MAC address", val: c => c.mac, td: c => `<span class="mono">${esc(c.mac || "–")}</span>` },
-  { key: "oui", label: "Vendor", val: c => (c.oui || "").toLowerCase(), td: c => esc(c.oui) },
+  { key: "oui", label: "Vendor", val: c => (c.oui || "").toLowerCase(), td: c => esc(c.oui) + (c.oui_src ? ` <span class="muted" title="Looked up via macvendors.com – UniFi does not know this vendor">(lookup)</span>` : "") },
   { key: "conn", label: "Connection type", filter: "select", opts: [["", "All"], ["wifi", "WiFi"], ["wired", "Wired"], ["teleport", "Teleport"]], val: c => c.conn, fval: c => c.conn,
     td: c => `<span class="ctype ${c.conn}">${ICON[c.conn]}${CONN_LABEL[c.conn]}</span>` },
   { key: "uplink", label: "Connection", val: c => connText(c).toLowerCase(), fval: c => connText(c), td: c => esc(connText(c)) },
@@ -872,18 +874,35 @@ function wireGrips() {
 }
 
 // ---------- port check ----------
-const PORTSCAN = { running: null };
+const PORTSCAN = { running: null, pinging: null, ping: {} };
+function pingHtml(c) {
+  const busy = PORTSCAN.pinging === c.mac, r = PORTSCAN.ping[c.mac];
+  const btn = `<button class="btn" type="button" id="btnPing" ${busy ? "disabled" : ""}>${busy ? '<span class="spin"></span> Pinging …' : "Ping"}</button>`;
+  let txt = `<span>Ping ${esc(webIp(c))} (4 × ICMP echo)</span>`;
+  if (r) {
+    const col = r.received === r.sent ? "var(--ok)" : r.received ? "var(--warn)" : "var(--bad)";
+    txt = `<span><b style="color:${col}">${r.received}/${r.sent} replies</b>${r.received ? ` · avg ${r.avg} ms <span class="muted">(min ${r.min} / max ${r.max})</span>` : " · no answer"} · ${esc(r.ip)}</span>`;
+  }
+  return `<div class="foot" style="border-bottom:1px solid var(--line);padding-bottom:8px">${txt}${btn}</div>`;
+}
+async function pingDev(c) {
+  if (PORTSCAN.pinging) return;
+  PORTSCAN.pinging = c.mac; if (state.sel === c) $("#portBox").innerHTML = portsHtml(c);
+  try { PORTSCAN.ping[c.mac] = await api("api/ping", { ip: webIp(c) }); }
+  catch (e) { toast("Ping failed: " + e.message); }
+  finally { PORTSCAN.pinging = null; if (state.sel?.mac === c.mac && $("#portBox")) $("#portBox").innerHTML = portsHtml(state.sel); }
+}
 async function loadScans() { try { state.scans = (await api("api/portscans")).scans || {}; } catch { state.scans = {}; } }
 function portsHtml(c) {
   const sc = state.scans?.[c.mac], ip = webIp(c), busy = PORTSCAN.running === c.mac;
   const btn = `<button class="btn" type="button" id="btnScan" ${busy ? "disabled" : ""}>${busy ? '<span class="spin"></span> Checking …' : sc ? "Check again" : "Check ports"}</button>`;
-  if (!sc) return `<div class="foot"><span>Checks about 30 common TCP ports on ${esc(ip)} from Home Assistant's network.${c.online ? "" : " The device is offline."}</span>${btn}</div>`;
+  if (!sc) return pingHtml(c) + `<div class="foot"><span>Checks about 30 common TCP ports on ${esc(ip)} from Home Assistant's network.${c.online ? "" : " The device is offline."}</span>${btn}</div>`;
   const chips = sc.open.map(o => {
     const inner = `<b>${o.port}</b><span>${esc(o.service)}</span>${o.title ? `<span class="t" title="${esc(o.title)}">${esc(o.title)}</span>` : ""}`;
     return o.scheme ? `<a class="pchip" href="${o.scheme}://${esc(sc.ip)}${(o.scheme === "http" && o.port === 80) || (o.scheme === "https" && o.port === 443) ? "" : ":" + o.port}/" target="_blank" rel="noopener noreferrer" title="Open in a new tab">${inner}</a>`
       : `<span class="pchip ${o.port === 23 || o.port === 21 ? "bad" : ""}" title="${o.port === 23 || o.port === 21 ? "Unencrypted protocol" : ""}">${inner}</span>`;
   }).join("");
-  return `<div class="port-list">${chips || '<span class="muted">No open ports found.</span>'}</div>
+  return pingHtml(c) + `<div class="port-list">${chips || '<span class="muted">No open ports found.</span>'}</div>
     <div class="foot"><span>${isoDateTime(sc.ts)} · ${esc(sc.ip)}${sc.ip !== ip ? ` <span style="color:var(--warn)">(now ${esc(ip)})</span>` : ""}</span>${btn}</div>`;
 }
 async function scanPorts(c) {
@@ -1009,6 +1028,7 @@ async function load() {
     const d = await api("api/snapshot");
     state.networks = d.networks; state.netById = Object.fromEntries(d.networks.map(n => [n.id, n]));
     state.aps = d.aps || []; state.clients = d.clients; state.fetchedAt = d.fetched_at;
+    try { const v = (await api("api/vendors")).vendors || {}; for (const c of state.clients) if (!c.oui && c.mac && v[c.mac.slice(0, 8)]) { c.oui = v[c.mac.slice(0, 8)]; c.oui_src = "lookup"; } } catch {}
     computeWarnings(); if (typeof computeBaseCats === "function") computeBaseCats(); buildHead(); $("#banner").hidden = true;
     if (state.sel) { const again = state.clients.find(c => keyOf(c) === keyOf(state.sel)); again ? (state.sel = again, renderInfo()) : closePanel(); }
   } catch (e) { $("#banner").textContent = "Could not load data: " + e.message; $("#banner").hidden = false; }
@@ -1037,7 +1057,7 @@ function renderInfo() {
   const n = net(c.network_id), rn = net(c._resNet);
   const kv = (k, v, cls = "") => v === "" || v == null ? "" : `<dt>${k}</dt><dd class="${cls}">${v}</dd>`;
   $("#paneInfo").innerHTML = `
-    <div class="card devcard"><div class="big ${c.icon_id ? "pic" : ""}">${iconHtml(c, true)}</div><div><div class="v">${esc(c.is_device ? `${KIND_LABEL[c.device_kind]} · ${c.device_model}` : (c.oui || CONN_LABEL[c.conn]))}</div><div class="mono muted">${esc(c.mac || "no MAC")}</div></div></div>
+    <div class="card devcard"><div class="big ${c.icon_id ? "pic" : ""}">${iconHtml(c, true)}</div><div><div class="v">${esc(c.is_device ? `${KIND_LABEL[c.device_kind]} · ${c.device_model}` : (c.oui || CONN_LABEL[c.conn]))}</div><div class="mono muted">${esc(c.mac || "no MAC")}${c.mac ? (isRandomMac(c.mac) && !c.is_device ? ` <span class="muted" style="font-family:inherit;font-size:11px" title="Locally administered (random / private) address – it has no registered vendor">· random MAC</span>` : ` <a class="oui-link" href="https://maclookup.app/macaddress/${esc(c.mac.slice(0, 8).replace(/:/g, "").toUpperCase())}" target="_blank" rel="noopener noreferrer" title="Look up the vendor of ${esc(c.mac.slice(0, 8))} on maclookup.app (only the vendor prefix is sent)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Lookup vendor</a>`) : ""}</div>${c.oui_src ? `<div class="muted" style="font-size:11px">Vendor from macvendors.com</div>` : ""}</div></div>
     ${c._warn.length ? `<div>${c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("")}</div>` : ""}
     <div class="card"><dl class="kv" style="margin:0">
       ${c.is_device ? kv("UniFi name", esc(c.device_name)) : ""}
@@ -1062,11 +1082,11 @@ function renderInfo() {
     </dl></div>
     ${webIp(c) ? `<div class="openrow"><a class="btn primary" href="http://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open the device's web interface in a new tab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Open http://${esc(webIp(c))}</a><a class="btn" href="https://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open with HTTPS">HTTPS</a></div>${!c.online ? `<p class="hint">The device is offline – the page may not load.</p>` : ""}` : ""}
     ${c.mac && !c.is_device && c.conn === "wired" && !c.online ? `<button class="btn" type="button" id="btnWol" style="width:100%"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:6px"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>Wake on LAN</button>` : ""}
-    ${c.mac && webIp(c) ? `<div class="sec-title">Open ports</div><div class="card ports" id="portBox">${portsHtml(c)}</div>` : ""}
+    ${c.mac && webIp(c) ? `<div class="sec-title">Network check</div><div class="card ports" id="portBox">${portsHtml(c)}</div>` : ""}
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
-  $("#portBox")?.addEventListener("click", e => { if (e.target.closest("#btnScan")) scanPorts(c); });
+  $("#portBox")?.addEventListener("click", e => { if (e.target.closest("#btnScan")) scanPorts(c); else if (e.target.closest("#btnPing")) pingDev(c); });
   $("#btnWol")?.addEventListener("click", async e => {
     const b = e.currentTarget, ip = c.use_fixedip ? c.fixed_ip : c.ip, n = net(c._resNet) || net(c.network_id) || state.networks.find(x => inSubnet(ip, x.subnet));
     b.disabled = true;

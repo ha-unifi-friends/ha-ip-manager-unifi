@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.12.1 – 2026-10-31
+- **Ping** in the detail panel (section *Network check*, next to the port check): 4 ICMP echos from Home Assistant's network with replies and min / avg / max round-trip time.
+- **Vendor lookup**: the detail panel links the MAC to maclookup.app (*Lookup vendor*, only the vendor prefix is sent); random / private MACs are marked as such instead.
+- Empty vendors are filled in the background via macvendors.com (option `vendor_lookup`, default on): only the 3-byte prefix is sent, max. 1 request per second, results are cached in the add-on. Such vendors show “(lookup)” in the table.
+
 ## 1.12.0 – 2026-10-31
 - **Open ports** in the detail panel: *Check ports* tests about 30 common TCP ports (FTP, SSH, Telnet, HTTP/HTTPS and typical web UI ports such as 5000/5001, 8080, 8123, 8443, MQTT, RTSP, SMB, RDP, VNC, printers …) on demand, from Home Assistant's network. Web ports become links (with the page title); the result is stored per device.
 - New issues *Telnet open* / *FTP open* and the filter *Issues › Insecure ports*.
