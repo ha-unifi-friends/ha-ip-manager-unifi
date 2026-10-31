@@ -1,0 +1,36 @@
+configuration:
+  unifi_host:
+    name: Controlador UniFi
+    description: IP o nombre de host del gateway (sin https://)
+  username:
+    name: Usuario
+    description: Cuenta local de UniFi (no una cuenta cloud de Ubiquiti)
+  password:
+    name: Contraseña
+  site:
+    name: Sitio
+    description: Nombre interno del sitio, normalmente "default". El nombre que muestra UniFi también sirve; con un solo sitio se encuentra automáticamente.
+  verify_ssl:
+    name: Verificar certificado
+    description: Déjalo desactivado mientras el gateway use un certificado autofirmado
+  certificate_fingerprint:
+    name: Huella del certificado (SHA-256)
+    description: Fija el certificado autofirmado del controlador – el registro de la app muestra al arrancar el valor para pegar aquí. Si se indica, la conexión solo se acepta si el certificado coincide (verify_ssl ya no hace falta).
+  daily_version:
+    name: Versión automática diaria
+    description: Guarda una versión de la tabla al día (aparece como "Diaria" en Versiones).
+  auto_version_retention_days:
+    name: Conservar versiones automáticas (días)
+    description: Las versiones diarias y las guardadas antes de acciones masivas se borran tras estos días. Las versiones manuales, fijadas y de referencia se conservan.
+  notify_new_devices:
+    name: Avisar de dispositivos nuevos
+    description: Crea una notificación de Home Assistant (y el evento clients_reservations_new_device) cuando aparece un dispositivo con una MAC desconocida.
+  notify_networks:
+    name: Solo estas redes
+    description: Nombres de red o ID de VLAN a vigilar, p. ej. Trusted o 10. Vacío = todas las redes.
+  notify_random_mac:
+    name: Avisar también de MAC aleatorias
+    description: Móviles y tabletas con dirección Wi-Fi privada aparecen con una MAC nueva por red; desactivado por defecto para evitar ruido.
+  vendor_lookup:
+    name: Buscar fabricantes desconocidos
+    description: Rellena un fabricante vacío mediante macvendors.com (solo se envía el prefijo de 3 bytes del fabricante, máx. 1 consulta por segundo, resultados en caché).

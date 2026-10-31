@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.27.0 – 2026-11-01
+
+- **Languages:** new language selector at the bottom of the sidebar next to the theme switch – *Auto* (browser language), English, Deutsch, Schwiizerdütsch (Mundart), Français, Italiano, Español. The translations live in `app/static/i18n/<lang>.json` (key = English text, `{0}`, `{1}` … = placeholders) – corrections and new languages are welcome as pull requests.
+- The app's configuration page in Home Assistant is translated too (German, French, Italian, Spanish).
+- Dates and times follow the chosen language.
+
 ## 1.26.0 – 2026-11-01
 
 - **Gateway:** the fixed IP settings are locked in its edit panel – its address comes from the network settings in UniFi. A note says so; *Remove reservation only* is hidden.

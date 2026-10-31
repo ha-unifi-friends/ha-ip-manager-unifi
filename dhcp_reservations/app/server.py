@@ -1384,6 +1384,13 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         # Ingress strips the prefix; match on the path suffix to be safe.
         try:
+            m = re.search(r"/i18n/([A-Za-z-]{2,5})\.json$", path) if method == "GET" else None
+            if m:
+                f = os.path.join(STATIC_DIR, "i18n", m.group(1) + ".json")
+                if not os.path.isfile(f):
+                    return self._send(404, body=b"{}", ctype="application/json")
+                with open(f, "rb") as fh:
+                    return self._send(200, body=fh.read(), ctype="application/json; charset=utf-8")
             if method == "GET" and (path == "/" or path.endswith("/index.html")):
                 with open(os.path.join(STATIC_DIR, "index.html"), "rb") as f:
                     return self._send(200, body=f.read().replace(b"__ADDON_VERSION__", ADDON_VERSION.encode()), ctype="text/html; charset=utf-8")

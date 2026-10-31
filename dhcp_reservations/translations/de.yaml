@@ -1,0 +1,36 @@
+configuration:
+  unifi_host:
+    name: UniFi-Controller
+    description: IP oder Hostname des Gateways (ohne https://)
+  username:
+    name: Benutzername
+    description: Lokales UniFi-Konto (kein Ubiquiti-Cloud-Konto)
+  password:
+    name: Passwort
+  site:
+    name: Site
+    description: Interner Site-Name, meist "default". Der in UniFi angezeigte Name geht auch; bei nur einer Site wird sie automatisch gefunden.
+  verify_ssl:
+    name: Zertifikat prüfen
+    description: Ausgeschaltet lassen, solange das Gateway ein selbst signiertes Zertifikat nutzt
+  certificate_fingerprint:
+    name: Zertifikats-Fingerabdruck (SHA-256)
+    description: Pinnt das selbst signierte Zertifikat des Controllers – das App-Protokoll zeigt beim Start den Wert zum Einfügen. Wenn gesetzt, wird die Verbindung nur akzeptiert, wenn das Zertifikat passt (verify_ssl ist dann nicht nötig).
+  daily_version:
+    name: Tägliche automatische Version
+    description: Speichert pro Tag eine Version der Tabelle (unter Versionen als "Täglich" angezeigt).
+  auto_version_retention_days:
+    name: Automatische Versionen aufbewahren (Tage)
+    description: Tägliche Versionen und die vor Sammelaktionen gespeicherten Versionen werden nach so vielen Tagen gelöscht. Manuelle, angeheftete und Baseline-Versionen bleiben.
+  notify_new_devices:
+    name: Über neue Geräte benachrichtigen
+    description: Erstellt eine Home-Assistant-Benachrichtigung (und das Event clients_reservations_new_device), wenn ein Gerät mit unbekannter MAC auftaucht.
+  notify_networks:
+    name: Nur diese Netzwerke
+    description: Netzwerknamen oder VLAN-IDs, z. B. Trusted oder 10. Leer = alle Netzwerke.
+  notify_random_mac:
+    name: Auch bei zufälligen MACs benachrichtigen
+    description: Handys und Tablets mit privater WLAN-Adresse erscheinen pro Netzwerk mit neuer MAC; standardmäßig aus, um Rauschen zu vermeiden.
+  vendor_lookup:
+    name: Unbekannte Hersteller nachschlagen
+    description: Füllt einen leeren Hersteller über macvendors.com (nur das 3-Byte-Herstellerpräfix wird gesendet, max. 1 Anfrage pro Sekunde, Ergebnisse werden zwischengespeichert).

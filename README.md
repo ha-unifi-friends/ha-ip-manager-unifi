@@ -193,6 +193,10 @@ A small Python service (standard library only) inside the app talks to the UniFi
 
 For the Home Assistant features, the service reads the device registry through the Supervisor API (read-only), reads the host's own addresses (`network/info`, so CleanUp never moves the Home Assistant host) and creates notifications. Views and versions are stored in the app's `/data` folder, so they are included in Home Assistant backups.
 
+## Languages
+
+The UI is available in English, Deutsch, Schwiizerdütsch (Mundart), Français, Italiano and Español – pick it at the bottom of the sidebar (*Auto* follows the browser). Translations are plain JSON files in [`dhcp_reservations/app/static/i18n/`](dhcp_reservations/app/static/i18n/): the key is the English text, `{0}`, `{1}` … are placeholders for numbers, names or addresses and may be reordered. Corrections and new languages are welcome as pull requests.
+
 ## Contributing
 
 The project lives in the GitHub organization [ha-unifi-friends](https://github.com/ha-unifi-friends) – ideas, bug reports and pull requests are welcome. Please open an [issue](https://github.com/ha-unifi-friends/ha-ip-manager-unifi/issues) first for larger changes.

@@ -1,0 +1,36 @@
+configuration:
+  unifi_host:
+    name: Contrôleur UniFi
+    description: IP ou nom d'hôte de la passerelle (sans https://)
+  username:
+    name: Nom d'utilisateur
+    description: Compte UniFi local (pas un compte cloud Ubiquiti)
+  password:
+    name: Mot de passe
+  site:
+    name: Site
+    description: Nom interne du site, généralement "default". Le nom affiché dans UniFi fonctionne aussi ; avec un seul site, il est trouvé automatiquement.
+  verify_ssl:
+    name: Vérifier le certificat
+    description: Laisser désactivé tant que la passerelle utilise un certificat auto-signé
+  certificate_fingerprint:
+    name: Empreinte du certificat (SHA-256)
+    description: Épingle le certificat auto-signé du contrôleur – le journal de l'app affiche au démarrage la valeur à coller ici. Si renseignée, la connexion n'est acceptée que si le certificat correspond (verify_ssl n'est alors pas nécessaire).
+  daily_version:
+    name: Version automatique quotidienne
+    description: Enregistre une version du tableau par jour (affichée comme "Quotidienne" sous Versions).
+  auto_version_retention_days:
+    name: Conserver les versions automatiques (jours)
+    description: Les versions quotidiennes et celles enregistrées avant les actions groupées sont supprimées après ce nombre de jours. Les versions manuelles, épinglées et de référence sont conservées.
+  notify_new_devices:
+    name: Notifier les nouveaux appareils
+    description: Crée une notification Home Assistant (et l'événement clients_reservations_new_device) lorsqu'un appareil avec une MAC inconnue apparaît.
+  notify_networks:
+    name: Uniquement ces réseaux
+    description: Noms de réseau ou ID de VLAN à surveiller, p. ex. Trusted ou 10. Vide = tous les réseaux.
+  notify_random_mac:
+    name: Notifier aussi les MAC aléatoires
+    description: Les téléphones et tablettes avec une adresse Wi-Fi privée apparaissent avec une nouvelle MAC par réseau ; désactivé par défaut pour éviter le bruit.
+  vendor_lookup:
+    name: Rechercher les fabricants inconnus
+    description: Complète un fabricant vide via macvendors.com (seul le préfixe fabricant de 3 octets est envoyé, max. 1 requête par seconde, résultats mis en cache).

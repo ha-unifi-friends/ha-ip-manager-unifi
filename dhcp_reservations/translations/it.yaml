@@ -1,0 +1,36 @@
+configuration:
+  unifi_host:
+    name: Controller UniFi
+    description: IP o nome host del gateway (senza https://)
+  username:
+    name: Nome utente
+    description: Account UniFi locale (non un account cloud Ubiquiti)
+  password:
+    name: Password
+  site:
+    name: Sito
+    description: Nome interno del sito, di solito "default". Funziona anche il nome mostrato in UniFi; con un solo sito viene trovato automaticamente.
+  verify_ssl:
+    name: Verifica certificato
+    description: Lascia disattivato finché il gateway usa un certificato autofirmato
+  certificate_fingerprint:
+    name: Impronta del certificato (SHA-256)
+    description: Fissa il certificato autofirmato del controller – il log dell'app mostra all'avvio il valore da incollare qui. Se impostato, la connessione viene accettata solo se il certificato corrisponde (verify_ssl non serve).
+  daily_version:
+    name: Versione automatica giornaliera
+    description: Salva una versione della tabella al giorno (mostrata come "Giornaliera" in Versioni).
+  auto_version_retention_days:
+    name: Conserva versioni automatiche (giorni)
+    description: Le versioni giornaliere e quelle salvate prima delle azioni di massa vengono eliminate dopo questi giorni. Le versioni manuali, fissate e di riferimento restano.
+  notify_new_devices:
+    name: Notifica nuovi dispositivi
+    description: Crea una notifica di Home Assistant (e l'evento clients_reservations_new_device) quando compare un dispositivo con un MAC sconosciuto.
+  notify_networks:
+    name: Solo queste reti
+    description: Nomi di rete o ID VLAN da controllare, es. Trusted o 10. Vuoto = tutte le reti.
+  notify_random_mac:
+    name: Notifica anche MAC casuali
+    description: Telefoni e tablet con indirizzo Wi-Fi privato compaiono con un nuovo MAC per rete; disattivato di default per evitare rumore.
+  vendor_lookup:
+    name: Cerca produttori sconosciuti
+    description: Compila un produttore vuoto tramite macvendors.com (viene inviato solo il prefisso del produttore di 3 byte, max. 1 richiesta al secondo, risultati in cache).
