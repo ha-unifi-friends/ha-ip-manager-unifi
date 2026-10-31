@@ -142,10 +142,23 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 @container main (max-width:900px){body.plan-mode .view-switch button svg + *{display:none}body.plan-mode #btnReload{display:none}}
 .side-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 14px calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));border-top:1px solid var(--line);color:var(--muted);font-size:12px}
 .side-foot .sp{flex:1}
+.foot-row{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;width:100%;min-width:0}
+.foot-row #appVer{white-space:nowrap;flex:none}
+.lang-wrap{position:relative;flex:none}
+.lang-btn{gap:5px}
+.lang-btn .car{opacity:.6}
+.flag{width:20px;height:14px;border-radius:2px;flex:none;display:block;box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.flag.globe{box-shadow:none;width:16px;height:16px}
+.lang-menu{position:absolute;bottom:calc(100% + 6px);right:0;z-index:40;min-width:200px;background:var(--card);border:1px solid var(--line-strong);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:5px;display:grid;gap:1px}
+.lang-menu[hidden]{display:none}
+.lang-menu button{display:flex;align-items:center;gap:10px;background:none;border:0;border-radius:6px;padding:7px 10px;color:var(--fg);font-size:13px;text-align:left;cursor:pointer}
+.lang-menu button:hover{background:var(--hover)}
+.lang-menu button[aria-checked="true"]{color:var(--accent);font-weight:600}
+.lang-menu button .ck{margin-left:auto;opacity:0}
+.lang-menu button[aria-checked="true"] .ck{opacity:1}
+.foot-row .theme-btn{flex:none;padding:4px 7px}
 .theme-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line-strong);border-radius:6px;padding:3px 8px;color:var(--muted);cursor:pointer;font-size:12px}
 html.i18n-wait body{visibility:hidden}
-.lang-sel{appearance:none;-webkit-appearance:none;background:none;border:1px solid var(--line-strong);border-radius:6px;padding:3px 8px;color:var(--muted);cursor:pointer;font-size:12px;max-width:130px}
-.lang-sel:hover{color:var(--fg);background:var(--hover)}
 .theme-btn:hover{color:var(--fg);background:var(--hover)}
 .ver-save .check{white-space:nowrap}
 .btn[aria-pressed="true"]{background:var(--sel);border-color:var(--accent);color:var(--accent)}
@@ -653,7 +666,7 @@ window.I18N = (() => {
       <details id="planNets" open hidden><summary>Networks<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary><nav class="plan-nets" id="planStats" aria-label="Networks"></nav><p class="hint plan-hint">Click an address to open the device, or a free one to reserve it. Devices outside the filters below are greyed out.</p></details>
       <div id="facets"></div>
     </div>
-    <div class="side-foot"><div class="side-links"><button class="link" type="button" id="lnkClear" disabled>Clear filters</button><button class="link" type="button" id="lnkCols">Customize columns</button></div><span id="appVer" title="IP Manager for UniFi – app version"></span><span class="sp"></span><select class="lang-sel" id="selLang" aria-label="Language" title="Language"></select><button type="button" class="theme-btn" id="btnTheme"></button></div>
+    <div class="side-foot"><div class="side-links"><button class="link" type="button" id="lnkClear" disabled>Clear filters</button><button class="link" type="button" id="lnkCols">Customize columns</button></div><div class="foot-row"><span id="appVer" title="IP Manager for UniFi – app version"></span><span class="sp"></span><span class="lang-wrap"><button type="button" class="theme-btn lang-btn" id="btnLang" aria-haspopup="menu" aria-expanded="false" title="Language"></button><div class="lang-menu" id="langMenu" role="menu" hidden></div></span><button type="button" class="theme-btn" id="btnTheme"></button></div></div>
   </aside>
 
   <main>
@@ -3117,11 +3130,33 @@ function applyTheme(t) {
   if (!THEMES[t]) t = "auto";
   if (t === "auto") delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
   const [lbl, ic] = THEMES[t], b = $("#btnTheme");
-  b.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ic}</svg>${lbl}`;
+  b.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${ic}</svg>`; b.setAttribute("aria-label", "Theme: " + lbl);
   b.title = `Theme: ${lbl} – click to switch (Auto → Light → Dark)`; b.dataset.t = t;
 }
-$("#selLang").innerHTML = I18N.LANGS.map(([k, n]) => `<option value="${k}" translate="no"${k === I18N.pref ? " selected" : ""}>${k === "auto" ? "🌐 Auto" : n}</option>`).join("");
-$("#selLang").addEventListener("change", e => I18N.set(e.target.value));
+// language: flags (SVG, so they look the same on every OS)
+let flagN = 0;
+function flagSvg(k) {
+  const W = 'viewBox="0 0 60 40" class="flag" aria-hidden="true"';
+  if (k === "auto") return '<svg viewBox="0 0 24 24" class="flag globe" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></svg>';
+  if (k === "en") { const id = "uk" + (++flagN); return `<svg ${W} preserveAspectRatio="none"><clipPath id="${id}"><path d="M30 20h30v20zv20H0zH0V0zV0h30z"/></clipPath><rect width="60" height="40" fill="#012169"/><path d="M0 0l60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0l60 40M60 0L0 40" clip-path="url(#${id})" stroke="#C8102E" stroke-width="4"/><path d="M30 0v40M0 20h60" stroke="#fff" stroke-width="12"/><path d="M30 0v40M0 20h60" stroke="#C8102E" stroke-width="7"/></svg>`; }
+  if (k === "de-DE") return `<svg ${W}><rect width="60" height="13.4" fill="#000"/><rect y="13.3" width="60" height="13.4" fill="#DD0000"/><rect y="26.6" width="60" height="13.4" fill="#FFCE00"/></svg>`;
+  if (k === "de-CH") return `<svg ${W}><rect width="60" height="40" fill="#DA291C"/><path d="M26 9h8v7h7v8h-7v7h-8v-7h-7v-8h7z" fill="#fff"/></svg>`;
+  if (k === "fr-FR") return `<svg ${W}><rect width="20" height="40" fill="#002395"/><rect x="20" width="20" height="40" fill="#fff"/><rect x="40" width="20" height="40" fill="#ED2939"/></svg>`;
+  if (k === "it-IT") return `<svg ${W}><rect width="20" height="40" fill="#009246"/><rect x="20" width="20" height="40" fill="#fff"/><rect x="40" width="20" height="40" fill="#CE2B37"/></svg>`;
+  if (k === "es-ES") return `<svg ${W}><rect width="60" height="40" fill="#AA151B"/><rect y="10" width="60" height="20" fill="#F1BF00"/></svg>`;
+  return "";
+}
+{
+  const cur = I18N.LANGS.find(([k]) => k === I18N.pref) || I18N.LANGS[0];
+  $("#btnLang").innerHTML = flagSvg(cur[0]) + '<svg class="car" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>';
+  $("#btnLang").setAttribute("aria-label", "Language: " + cur[1]); $("#btnLang").title = "Language: " + cur[1];
+  $("#langMenu").innerHTML = I18N.LANGS.map(([k, n]) => `<button type="button" role="menuitemradio" data-lang="${k}" aria-checked="${k === I18N.pref}" translate="no">${flagSvg(k)}<span>${k === "auto" ? "Auto" : n}</span><svg class="ck" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 5 5 9-10"/></svg></button>`).join("");
+  const close = () => { $("#langMenu").hidden = true; $("#btnLang").setAttribute("aria-expanded", "false"); };
+  $("#btnLang").addEventListener("click", e => { e.stopPropagation(); const m = $("#langMenu"); m.hidden = !m.hidden; $("#btnLang").setAttribute("aria-expanded", String(!m.hidden)); });
+  $("#langMenu").addEventListener("click", e => { const b = e.target.closest("[data-lang]"); if (!b) return; close(); if (b.dataset.lang !== I18N.pref) I18N.set(b.dataset.lang); });
+  document.addEventListener("click", e => { if (!e.target.closest(".lang-wrap")) close(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") close(); });
+}
 $("#btnTheme").addEventListener("click", () => { const order = ["auto", "light", "dark"], t = order[(order.indexOf($("#btnTheme").dataset.t) + 1) % 3]; store.set("theme", t); applyTheme(t); });
 applyTheme(store.get("theme", "auto"));
 $("#appVer").textContent = APP_VER ? "v" + APP_VER : "";

@@ -779,5 +779,8 @@
  "use addresses in the new fixed block – reconnected after the pool change, they get pool addresses and free them.": "usan direcciones del nuevo bloque fijo – al reconectarse tras el cambio de pool, obtienen direcciones del pool y las liberan.",
  "fixed": "fijas",
  "pool": "pool",
- "pools": "pools"
+ "pools": "pools",
+ "Theme: {0}": "Tema: {0}",
+ "Language: {0}": "Idioma: {0}",
+ "Language": "Idioma"
 }

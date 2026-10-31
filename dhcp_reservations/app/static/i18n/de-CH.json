@@ -779,5 +779,8 @@
  "use addresses in the new fixed block – reconnected after the pool change, they get pool addresses and free them.": "bruuched Adrässe im neue fixe Block – nach de Pool-Änderig neu verbunde, überchömed si Pool-Adrässe und gänd si frei.",
  "fixed": "fix",
  "pool": "Pool",
- "pools": "Pools"
+ "pools": "Pools",
+ "Theme: {0}": "Design: {0}",
+ "Language: {0}": "Sprach: {0}",
+ "Language": "Sprach"
 }

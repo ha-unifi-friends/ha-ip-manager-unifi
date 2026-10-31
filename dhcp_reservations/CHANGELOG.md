@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.27.1 – 2026-11-01
+
+- The sidebar footer (version, language, theme) stays on one line in every language: the language is picked with a flag button (menu with flag and name, 🌐 = Auto), the theme switch shows only its icon (the tooltip names the theme).
+
 ## 1.27.0 – 2026-11-01
 
 - **Languages:** new language selector at the bottom of the sidebar next to the theme switch – *Auto* (browser language), English, Deutsch, Schwiizerdütsch (Mundart), Français, Italiano, Español. The translations live in `app/static/i18n/<lang>.json` (key = English text, `{0}`, `{1}` … = placeholders) – corrections and new languages are welcome as pull requests.
