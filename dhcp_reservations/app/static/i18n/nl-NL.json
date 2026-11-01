@@ -783,5 +783,12 @@
  "Theme: {0}": "Thema: {0}",
  "Language: {0}": "Taal: {0}",
  "Language": "Taal",
- "Network check & link": "Netwerkcontrole & link"
+ "Network check & link": "Netwerkcontrole & link",
+ "keeps its address.": "behoudt zijn adres.",
+ "It stays inside the DHCP pool as a reservation, so the pool keeps its size.": "Hij blijft als reservering in de DHCP-pool, zodat de pool zijn grootte behoudt.",
+ "Gateway – its address comes from the network settings in UniFi": "Gateway – het adres komt uit de netwerkinstellingen in UniFi",
+ "Home Assistant host – change its address in its edit panel": "Home Assistant-host – wijzig het adres in het bewerkpaneel",
+ "The gateway's address comes from the network settings in UniFi.": "Het adres van de gateway komt uit de netwerkinstellingen in UniFi.",
+ "UniFi did not confirm in time and the client still exists – try again in a minute.": "UniFi heeft niet op tijd bevestigd en de client bestaat nog – probeer het over een minuut opnieuw.",
+ "Client forgotten": "Client vergeten"
 }

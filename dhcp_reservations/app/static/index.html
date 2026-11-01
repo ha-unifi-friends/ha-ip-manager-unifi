@@ -139,9 +139,11 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 .plan-icons .sht,.plan-size .sht{display:none}
 @container main (max-width:1400px){body.plan-mode #stand{display:none}.topbar .plan-icons .lng,.topbar .plan-size .lng{display:none}.topbar .plan-icons .sht,.topbar .plan-size .sht{display:inline}}
 @container main (max-width:1060px){body.plan-mode .topbar .btn.icon-btn.primary .lbl{display:none}body.plan-mode .topbar .btn.icon-btn.primary{padding:6px 9px}body.plan-mode .view-switch button{padding:5px 9px}.topbar .plan-tabs button[role="tab"]{padding:8px 10px 10px}}
-@container main (max-width:900px){body.plan-mode .view-switch button svg + *{display:none}body.plan-mode #btnReload{display:none}}
+@container main (max-width:900px){body.plan-mode .view-switch button svg + *{display:none}body.plan-mode #btnVer{display:none}}
 .side-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 14px calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));border-top:1px solid var(--line);color:var(--muted);font-size:12px}
 .side-foot .sp{flex:1}
+#btnReload.busy svg{animation:sp .8s linear infinite}
+@container main (max-width:700px){#btnVer{display:none}}
 .foot-row{display:flex;flex-wrap:nowrap;align-items:center;gap:8px;width:100%;min-width:0}
 .foot-row #appVer{white-space:nowrap;flex:none}
 .lang-wrap{position:relative;flex:none}
@@ -471,7 +473,7 @@ body.plan-sz-l .pc .pi .brand-fb{font-size:15px}
 .pc-tip .tt-chg{margin-top:6px;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--ok) 14%,transparent);border:1px solid color-mix(in srgb,var(--ok) 45%,transparent)}
 .pc-tip .tt-chg b{font-family:var(--mono)}
 .pc-tip .tt-cfl{margin-top:6px;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--cfl) 16%,transparent);border:1px solid var(--cfl);color:var(--fg)}
-.pc-tip .tt-cfl::before{content:"Conflict";display:block;font-weight:700;color:var(--cfl);margin-bottom:2px}
+.pc-tip .tt-cfl .h{display:block;font-weight:700;color:var(--cfl);margin-bottom:2px}
 .pc-tip .tt-note{color:var(--muted);margin-top:6px}
 .pc.hah,.pc.hah.res,.pc.hah.res.off{border:2px solid var(--hab);background:color-mix(in srgb,var(--hab) 30%,transparent);color:var(--fg);font-weight:700}
 .pc.hah.res.off{border-style:dashed;background:transparent;color:var(--hab)}
@@ -622,12 +624,14 @@ window.I18N = (() => {
     }
     return r == null ? s : lead + r + trail;
   }
-  const mine = new WeakMap(); // text nodes we wrote – not translated again
+  const mine = new WeakMap(), mineAttr = new WeakMap(); // text nodes / attributes we wrote – not translated again
   const SKIP = "script,style,code,textarea,.mono,[translate=no]";
   const ATTRS = ["title", "placeholder", "aria-label", "alt"];
   function el(e) {
     if (e.closest("[translate=no]")) return;
-    for (const a of ATTRS) { const v = e.getAttribute(a); if (v) { const n = tr(v); if (n !== v) e.setAttribute(a, n); } }
+    const w = mineAttr.get(e) || {};
+    for (const a of ATTRS) { const v = e.getAttribute(a); if (!v || w[a] === v) continue; const n = tr(v); if (n !== v) { w[a] = n; e.setAttribute(a, n); } }
+    mineAttr.set(e, w);
   }
   function node(n) {
     if (n.nodeType === 3) { const p = n.parentElement; if (!p || p.closest(SKIP)) return; const v = n.nodeValue; if (mine.get(n) === v) return; const x = tr(v); if (x !== v) { n.nodeValue = x; mine.set(n, x); } return; }
@@ -647,7 +651,7 @@ window.I18N = (() => {
     } }).observe(document.body, { subtree: true, childList: true, characterData: true, attributes: true, attributeFilter: ATTRS });
   }
   const ready = lang === "en" ? Promise.resolve() :
-    fetch("i18n/" + lang + ".json").then(r => r.ok ? r.json() : {}).then(load).catch(() => {});
+    fetch("i18n/" + lang + ".json?v=__ADDON_VERSION__").then(r => r.ok ? r.json() : {}).then(load).catch(() => {});
   document.documentElement.lang = lang;
   if (lang !== "en") document.documentElement.classList.add("i18n-wait");
   ready.then(() => { const go = () => { start(); document.documentElement.classList.remove("i18n-wait"); }; document.body ? go() : document.addEventListener("DOMContentLoaded", go); });
@@ -685,7 +689,7 @@ window.I18N = (() => {
       <span class="plan-icons-slot plan-only"></span>
       <div class="grp">
         <span id="stand"></span>
-        <button class="btn" id="btnReload" type="button">Refresh</button>
+        <button class="btn icon-btn keep" id="btnReload" type="button" title="Refresh"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg><span class="lbl">Refresh</span></button>
         <button class="btn icon-btn" id="btnVer" type="button" title="Save, compare and restore versions of the table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span class="lbl">Versions</span></button>
         <button class="btn icon-btn" id="btnInline" type="button" aria-pressed="false" title="Edit name and fixed IP directly in the table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span class="lbl">Inline edit</span></button>
         <div class="viewsel actsel">
@@ -757,7 +761,7 @@ window.I18N = (() => {
   </section>
 
   <section class="detail" id="detail" hidden aria-label="Client details">
-    <div class="d-head"><span id="dTitle"></span><button class="x" id="dClose" type="button" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="d-head"><span id="dTitle" translate="no"></span><button class="x" id="dClose" type="button" aria-label="Close"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
     <div class="tabs" role="tablist">
       <button type="button" role="tab" id="tabInfo" aria-selected="true" title="Overview"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>Overview</button>
       <button type="button" role="tab" id="tabEdit" aria-selected="false" title="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
@@ -1117,13 +1121,20 @@ const haWorst = ds => ds.reduce((a, d) => (HA_RANK[d.status] ?? 4) < (HA_RANK[a]
 const brandImg = (dom, size = 18) => /^[a-z0-9_]+$/.test(dom) ? `<img class="brand-ic-img" src="https://brands.home-assistant.io/_/${dom}/icon.png" width="${size}" height="${size}" alt="" title="${dom}" loading="lazy" referrerpolicy="no-referrer" onerror="this.outerHTML='<span class=&quot;brand-fb&quot; title=&quot;${dom}&quot;>${dom[0].toUpperCase()}</span>'">` : "";
 // the machine Home Assistant runs on: every integration points to it, so CleanUp never renumbers it
 const HA_HOST_NAME = /^(homeassistant|home-assistant|hassio|hass)(\.|$)/i;
-const isHaHost = c => !!c && (state.haHost?.macs?.includes(c.mac) || (state.haHost?.ips || []).some(ip => ip === c.ip || ip === c.fixed_ip)
-  || [c.name, c.hostname].some(n => HA_HOST_NAME.test(String(n || "").trim())));
+const isHaHost = c => {
+  if (!c) return false;
+  const h = state.haHost || {};
+  if (h.macs?.length || h.ips?.length) // the Supervisor told us – trust only that
+    return !!(h.macs?.includes(c.mac) || (h.ips || []).some(ip => ip === c.fixed_ip || (c.online && ip === c.ip)));
+  return [c.name, c.hostname].some(n => HA_HOST_NAME.test(String(n || "").trim())); // fallback: name only
+};
 const haDot = st => `<span class="ha-dot" style="background:${HA_ST[st]?.[1] || "var(--muted)"}" title="${HA_ST[st]?.[0] || st}"></span>`;
 async function loadHa() {
   try { const d = await api("api/ha_devices"); const m = {}; for (const x of d.devices || []) for (const mac of x.macs) (m[mac] ||= []).push(x); state.haByMac = m; state.haHost = d.host || { ips: [], macs: [] }; state.haOk = true; }
-  catch { state.haByMac = {}; state.haOk = false; }
+  catch { state.haByMac = {}; state.haOk = false; try { state.haHost = await api("api/ha_host"); } catch {} }
 }
+// columns that show the user's own data (names, notes, networks …) – never translated
+const USER_COLS = new Set(["name", "ip", "fixed_ip", "mac", "oui", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_resNet", "note"]);
 const COLS = [
   { key: "online", label: "UniFi Status", icon: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 4v8a7 7 0 0 0 14 0V4"/><path d="M12 4v8"/></svg>', filter: "select", opts: [["", "All"], ["on", "Online"], ["off", "Offline"]], fval: c => c.online ? "on" : "off", val: c => c.online ? 0 : 1, td: c => `<span class="st-cell"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span><span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span></span>` },
   { key: "ha", label: "Home Assistant Status", icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8v10H3z"/><circle cx="12" cy="14" r="1.6" fill="currentColor"/><path d="M12 15.6V21M8.5 11.5l2.3 1.6M15.5 11.5l-2.3 1.6"/></svg>', filter: "select", opts: [["", "All"], ["ok", "OK"], ["partial", "Partly unavailable"], ["unavailable", "Unavailable"], ["error", "Integration error"], ["disabled", "Disabled"], ["any", "Known to HA"], ["none", "Not in HA"]],
@@ -1169,7 +1180,7 @@ function buildHead() {
     const id = "flt_" + col.key;
     if (col.filter === "none") return `<th></th>`;
     if (col.filter === "select") return `<th><select id="${id}" data-k="${col.key}" class="${col.icon ? "ic-sel" : ""}" aria-label="Filter ${col.label}" title="Filter ${col.label}">${col.opts.map(o => `<option value="${o[0]}">${o[1]}</option>`).join("")}</select></th>`;
-    if (col.filter === "net") return `<th><select id="${id}" data-k="${col.key}" aria-label="Filter ${col.label}"><option value="">All</option>${state.networks.map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("")}<option value="__none">(empty)</option></select></th>`;
+    if (col.filter === "net") return `<th><select id="${id}" data-k="${col.key}" aria-label="Filter ${col.label}"><option value="">All</option>${state.networks.map(n => `<option translate="no" value="${esc(n.id)}">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("")}<option value="__none">(empty)</option></select></th>`;
     return `<th><input id="${id}" data-k="${col.key}" placeholder="Filter" aria-label="Filter ${col.label}"></th>`;
   }).join("");
   for (const el of $("#filterRow").querySelectorAll("input,select")) {
@@ -1249,7 +1260,7 @@ function renderTable() {
   const list = rows(), tb = $("#tbody"), tw = $(".tablewrap"), keep = [tw.scrollTop, tw.scrollLeft];
   if (!state.clients.length) tb.innerHTML = `<tr><td class="empty" colspan="${visCols().length}">${state.loading ? '<span class="spin"></span> Loading data from the controller …' : "No clients found."}</td></tr>`;
   else if (!list.length) tb.innerHTML = `<tr><td class="empty" colspan="${visCols().length}">No client matches the filters.</td></tr>`;
-  else tb.innerHTML = list.map(c => `<tr data-k="${esc(keyOf(c))}" class="${state.sel && keyOf(state.sel) === keyOf(c) ? "sel" : ""}">${visCols().map(col => `<td>${col.td(c)}</td>`).join("")}</tr>`).join("");
+  else tb.innerHTML = list.map(c => `<tr data-k="${esc(keyOf(c))}" class="${state.sel && keyOf(state.sel) === keyOf(c) ? "sel" : ""}">${visCols().map(col => `<td${USER_COLS.has(col.key) ? ' translate="no"' : ""}>${col.td(c)}</td>`).join("")}</tr>`).join("");
   if (tw.scrollTop !== keep[0] || tw.scrollLeft !== keep[1]) { tw.scrollTop = keep[0]; tw.scrollLeft = keep[1]; } // never jump on a re-render
   $("#count").textContent = list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`;
   $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" }) : "";
@@ -1430,7 +1441,7 @@ function cellTipHtml(el) {
   const st = (el.dataset.tip || "").split(" · ").slice(1).filter(t => !/^CONFLICT/.test(t) && !/^→ moves to|^new address of|^Home Assistant host/.test(t));
   const devs = [...new Set([el.dataset.mac, ...state.clients.filter(c => (c.use_fixedip && c.fixed_ip === ip) || (c.online && c.ip === ip)).map(c => c.mac)].filter(Boolean))].map(m => state.clients.find(c => c.mac === m)).filter(Boolean);
   const devHtml = c => { const ha = haOf(c), doms = [...new Set(ha.flatMap(d => haDoms(c, d)))];
-    return `<div class="tt-dev"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span><div><b>${esc(c.name || c.hostname || "Unknown")}</b><span class="m">${esc(c.mac)}</span>${c.oui ? `<div class="muted">${esc(c.oui)}</div>` : ""}</div></div>
+    return `<div class="tt-dev"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span><div><b translate="no">${esc(c.name || c.hostname || "Unknown")}</b><span class="m">${esc(c.mac)}</span>${c.oui ? `<div class="muted">${esc(c.oui)}</div>` : ""}</div></div>
     <div class="tt-kv"><span>Status</span><span>${c.online ? '<span style="color:var(--ok)">Online</span>' : "Offline"}${c.conn ? " · " + esc(CONN_LABEL[c.conn] || c.conn) : ""}</span>
     <span>Fixed IP</span><span class="mono">${c.use_fixedip ? esc(c.fixed_ip) : "–"}</span><span>Current IP</span><span class="mono">${esc(c.ip || "–")}${c.ip_is_last ? " (last)" : ""}</span>
     ${doms.length ? `<span>Home Assistant</span><span>${doms.map(d => brandImg(d, 14)).join("")} ${esc(doms.map(domTitle).join(", "))} · ${esc(HA_ST[haWorst(ha)]?.[0] || "")}</span>` : ""}</div>`; };
@@ -1444,7 +1455,7 @@ function cellTipHtml(el) {
     }
     const b = CL.bs?.find(b => b.n.id === n?.id);
     const dc = b?.dynIn.find(c => c.ip === ip);
-    if (dc) chg += `<div class="tt-cfl"><b>${esc(dc.name || dc.hostname || dc.mac)}</b> uses this address dynamically but it lies in the new fixed block. It gets a pool address at its next renewal${canReconnect(dc) ? " – or reconnect it now" : ""}.</div>`;
+    if (dc) chg += `<div class="tt-cfl"><span class="h">Conflict</span><b translate="no">${esc(dc.name || dc.hostname || dc.mac)}</b> uses this address dynamically but it lies in the new fixed block. It gets a pool address at its next renewal${canReconnect(dc) ? " – or reconnect it now" : ""}.</div>`;
     if (b && CL.m.pool && b.poolChange) { const inNew = x >= b.poolS && x <= b.poolE, inOld = b.p.ps >= 0 && x >= b.p.ps && x <= b.p.pe; if (inNew !== inOld) chg += `<div class="tt-note">${inNew ? "Becomes part of the DHCP pool" : "Leaves the DHCP pool – now in the fixed block"}.</div>`; }
   }
   return `<div class="tt-h"><span class="tt-ip">${esc(ip)}</span><span class="tt-net">${n ? esc(n.name) + (n.vlan ? ` · VLAN ${n.vlan}` : "") : ""}</span></div>
@@ -1497,7 +1508,7 @@ document.addEventListener("click", e => {
 function renderPlan() {
   const ps = state.networks.map(planNet).filter(Boolean);
   $("#planStats").innerHTML = ps.map(p => { const pct = p.usable ? Math.round(p.used / p.usable * 100) : 0, t = tidiness(p); return `<button type="button" class="pn ${p.n.id === PLAN.sel ? "on" : ""}" data-net="${esc(p.n.id)}" aria-pressed="${p.n.id === PLAN.sel}">
-    <span class="l1"><b>${esc(p.n.name)}</b>${p.n.vlan ? `<span class="muted">(${p.n.vlan})</span>` : ""}<span class="sp"></span>${tidyBadge(t, "Tidiness ")}</span>
+    <span class="l1"><b translate="no">${esc(p.n.name)}</b>${p.n.vlan ? `<span class="muted">(${p.n.vlan})</span>` : ""}<span class="sp"></span>${tidyBadge(t, "Tidiness ")}</span>
     <span class="l2"><span class="mono">${esc(p.n.subnet)}</span> · pool ${p.poolSize ? `<span class="mono">.${esc(p.n.dhcp_start.split(".").pop())}–.${esc(p.n.dhcp_stop.split(".").pop())}</span>` : "–"}</span>
     <span class="l3"><span class="ubar ${pct >= 80 ? "hi" : ""}" title="Utilization ${pct} % (${p.used}/${p.usable})"><i style="width:${pct}%"></i></span>${pct} % · <span>${p.fixed} fixed</span>${p.inPool ? ` · <span class="w">${p.inPool} in pool</span>` : ""} · ${p.dyn} dyn</span></button>`; }).join("");
   // "All networks" card on top: totals, utilization over all, tidiness weighted by the fixed IPs per network
@@ -1557,7 +1568,10 @@ function buildCleanFor(n, endX, prev) {
   const first = p.r.start + 1, last = p.r.end - 1;
   // the Home Assistant host keeps its address: the fixed block always reaches up to it, so it never ends up in the pool
   const pinMax = Math.max(-1, ...state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device && isHaHost(c)).map(c => ipNum(c.fixed_ip)).filter(x => x > first && x < last));
-  const end = Math.min(Math.max(endX ?? defaultEnd(p), first + 1, pinMax), last - 1);
+  let end = Math.min(Math.max(endX ?? defaultEnd(p), first + 1), last - 1);
+  // the fixed block may grow up to the Home Assistant host only automatically and only if the pool keeps a useful size;
+  // otherwise the host simply stays inside the pool as a reservation (allowed by UniFi)
+  if (endX == null && pinMax > end && last - pinMax >= Math.max(30, 3 * p.dyn)) end = pinMax;
   const poolS = end + 1, poolE = last, inFixed = x => x >= first && x <= end && x !== p.gw;
   const fixed = state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
   const devFixed = state.clients.filter(c => c.is_device && c.use_fixedip && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
@@ -1719,13 +1733,13 @@ function renderClean() {
   else {
     const tbl = `<div class="imp-table cl-nets"><table><thead><tr><th style="width:34px"></th><th>Network</th><th>Fixed block</th><th>DHCP pool</th><th>Moves</th><th title="Dynamic clients that currently use an address inside the new fixed block – they get a pool address at their next DHCP renewal">Conflicts</th><th>Tidiness</th></tr></thead><tbody>${bs.map(b => `<tr class="${b.inc ? "" : "off"}">
       <td><label class="opt"><input type="checkbox" data-cn="${esc(b.n.id)}" ${b.inc ? "checked" : ""} ${CL.running || CL.done ? "disabled" : ""} aria-label="Include ${esc(b.n.name)}"></label></td>
-      <td><b>${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span>${b.err ? ` <span class="tag bad">${esc(b.err)}</span>` : ""}</td>
+      <td><b translate="no">${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span>${b.err ? ` <span class="tag bad">${esc(b.err)}</span>` : ""}</td>
       <td class="mono">.${b.first & 255} – .${b.end & 255}</td>
       <td class="mono">${b.poolChange ? `${poolTxt(b.p.ps, b.p.pe)} → <b>${poolTxt(b.poolS, b.poolE)}</b>` : `<span class="muted">${poolTxt(b.p.ps, b.p.pe)} (stays)</span>`}</td>
       <td>${b.rows.filter(r => r.sel).length}/${b.rows.length}</td>
       <td>${b.dynIn.length ? `<span class="tag cfl" title="${esc(b.dynIn.map(c => `${c.name || c.hostname || c.mac} (${c.ip})`).join("\n"))}">${b.dynIn.length}</span>` : `<span class="muted">0</span>`}</td>
       <td>${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</td></tr>`).join("")}</tbody></table></div>`;
-    $("#clGrid").innerHTML = tbl + leg + inc.map(b => `<section class="plan-sec"><div class="plan-sec-h" style="cursor:default"><b>${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span> ${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</div>${grid(b)}</section>`).join("") + bar;
+    $("#clGrid").innerHTML = tbl + leg + inc.map(b => `<section class="plan-sec"><div class="plan-sec-h" style="cursor:default"><b translate="no">${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span> ${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</div>${grid(b)}</section>`).join("") + bar;
   }
   markSel();
   if (CL.tab === "chg") requestAnimationFrame(() => { for (const w of document.querySelectorAll("#clGrid .cg-wrap")) { const s2 = sel.filter(r => r.b.n.id === w.dataset.netid); drawArrows(s2, w); if (!CL.played) playMoves(s2, w); } CL.played = true; });
@@ -1734,7 +1748,8 @@ function renderClean() {
   const m = (k, title, desc, dis) => `<label class="measure"><input type="checkbox" data-cm="${k}" ${CL.m[k] && !dis ? "checked" : ""} ${dis || CL.running || CL.done ? "disabled" : ""}><span class="h">${title}</span><span class="d">${desc}</span></label>`;
   const nWifi = wifi.length, nOther = sel.filter(r => needsNewIp(r.c, r.nip) && !canReconnect(r.c)).length;
   const pins = CL.bs.filter(b => b.inc).flatMap(b => (b.pinned || []).filter(isHaHost));
-  const pinTxt = pins.length ? ` <b style="color:var(--hab)">Home Assistant host (${pins.map(c => esc(c.name || c.hostname || c.mac) + ", " + esc(c.fixed_ip)).join("; ")}) keeps its address.</b>` : "";
+  const pinIn = pins.some(c => CL.bs.some(b => b.inc && ipNum(c.fixed_ip) >= b.poolS && ipNum(c.fixed_ip) <= b.poolE));
+  const pinTxt = pins.length ? ` <b style="color:var(--hab)"><span>Home Assistant host</span> (<span translate="no">${pins.map(c => esc(c.name || c.hostname || c.mac) + ", " + esc(c.fixed_ip)).join("; ")}</span>) <span>keeps its address.</span></b>${pinIn ? ' <span style="color:var(--hab)">It stays inside the DHCP pool as a reservation, so the pool keeps its size.</span>' : ""}` : "";
   const where = multi ? `in ${inc.length} ${inc.length === 1 ? "network" : "networks"}` : `into .${b0.first & 255} – .${b0.end & 255}`;
   $("#clM1").innerHTML = m("move", `4 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}${multi ? " Every device stays in its network." : ""} Untick single devices below.${pinTxt}${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range." + pinTxt, !CL.rows.length);
   $("#clMoves").hidden = !CL.rows.length;
@@ -1859,7 +1874,7 @@ const RULES = { rows: [] };
 async function loadRules() { try { state.rules = (await api("api/rules")).rules || []; } catch { state.rules = []; } }
 function openRules() { RULES.rows = (state.rules || []).map(r => ({ ...r })); if (!RULES.rows.length) RULES.rows.push({ field: "vendor", contains: "", network_id: "" }); renderRules(); $("#dlgRules").showModal(); }
 function renderRules() {
-  const nets = state.networks.map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("");
+  const nets = state.networks.map(n => `<option translate="no" value="${esc(n.id)}">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("");
   $("#ruleRows").innerHTML = RULES.rows.map((r, i) => `<div class="rule-row" data-i="${i}">
     <select data-k="field" aria-label="Field"><option value="vendor">Vendor</option><option value="name">Name</option><option value="hostname">Hostname</option></select>
     <input data-k="contains" placeholder="contains, e.g. Espressif" value="${esc(r.contains)}" aria-label="Contains">
@@ -1884,7 +1899,7 @@ for (const id of ["#rulesCancel", "#rulesClose"]) $(id).addEventListener("click"
 $("#btnRules").addEventListener("click", openRules);
 
 async function load() {
-  state.loading = true; const b = $("#btnReload"); b.disabled = true; b.innerHTML = '<span class="spin"></span> Loading';
+  state.loading = true; const b = $("#btnReload"); b.disabled = true; b.classList.add("busy");
   try {
     const d = await api("api/snapshot");
     state.networks = d.networks; state.netById = Object.fromEntries(d.networks.map(n => [n.id, n]));
@@ -1899,7 +1914,7 @@ async function load() {
       `<div class="banner-hint muted">After changing the configuration, restart the app and press Refresh. Details are in the app log.</div>`;
     $("#banner").hidden = false;
   }
-  finally { state.loading = false; b.disabled = false; b.textContent = "Refresh"; renderAll(); }
+  finally { state.loading = false; b.disabled = false; b.classList.remove("busy"); renderAll(); }
 }
 
 // ---------- detail panel ----------
@@ -1989,7 +2004,7 @@ function renderInfo() {
   $("#tabEdit").hidden = !c.mac;
 }
 
-function fillNetSelect(sel) { $("#fNet").innerHTML = `<option value="">– select –</option>` + state.networks.map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join(""); $("#fNet").value = sel || ""; }
+function fillNetSelect(sel) { $("#fNet").innerHTML = `<option value="">– select –</option>` + state.networks.map(n => `<option translate="no" value="${esc(n.id)}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join(""); $("#fNet").value = sel || ""; }
 function suggestIp(netId) {
   const n = net(netId); if (!n || !n.subnet) return "";
   const used = new Set(state.clients.flatMap(c => [c.use_fixedip ? c.fixed_ip : "", c.ip]).filter(Boolean));
@@ -2028,7 +2043,7 @@ function fillForm(c) {
   $("#apCard").hidden = !c || c.conn !== "wifi";
   $("#vnoCard").hidden = !!c && (c.is_device || !c.mac);
   $("#fVnoOn").checked = !!c?.vno_id;
-  $("#fVno").innerHTML = state.networks.filter(n => n.subnet).map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join("");
+  $("#fVno").innerHTML = state.networks.filter(n => n.subnet).map(n => `<option translate="no" value="${esc(n.id)}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join("");
   $("#fVno").value = c?.vno_id || c?.network_id || $("#fVno").options[0]?.value || "";
   $("#fLock").checked = !!c?.fixed_ap_enabled;
   $("#fAp").innerHTML = state.aps.map(a => `<option value="${a.mac}">${esc(a.name)}</option>`).join("");
@@ -2053,7 +2068,7 @@ function lockIpFields(c) {
 function haConfirm(what) {
   return new Promise(res => {
     const d = $("#dlgHaWarn"), c = state.sel;
-    $("#haWarnTxt").innerHTML = `<b>${esc(c?.name || c?.hostname || c?.mac || "")}</b> is the machine Home Assistant runs on. ${what}`;
+    $("#haWarnTxt").innerHTML = `<b translate="no">${esc(c?.name || c?.hostname || c?.mac || "")}</b> is the machine Home Assistant runs on. ${what}`;
     $("#haAck").checked = false; $("#haWarnOk").disabled = true;
     const done = ok => { d.onclose = null; d.close(); res(ok); };
     $("#haWarnCancel").onclick = () => done(false);
@@ -2090,7 +2105,7 @@ function markPick() {
   for (const el of $("#pickGrid").querySelectorAll(".pick-sel")) el.classList.remove("pick-sel");
   const el = PICK && $("#pickGrid").querySelector(`.pc[data-ip="${PICK}"]`); el?.classList.add("pick-sel");
   const c = el?.dataset.mac && state.clients.find(x => x.mac === el.dataset.mac);
-  $("#pickSel").innerHTML = PICK ? `Selected: <b class="mono">${esc(PICK)}</b>${el?.classList.contains("pool") ? ' <span style="color:var(--warn)">– inside the DHCP pool</span>' : ""}${c ? ` · ${esc(c.name || c.hostname || c.mac)}` : ""}` : "No address selected.";
+  $("#pickSel").innerHTML = PICK ? `Selected: <b class="mono">${esc(PICK)}</b>${el?.classList.contains("pool") ? ' <span style="color:var(--warn)">– inside the DHCP pool</span>' : ""}${c ? ` · <span translate="no">${esc(c.name || c.hostname || c.mac)}</span>` : ""}` : "No address selected.";
   $("#pickOk").disabled = !PICK;
 }
 function openPick() {
@@ -2122,7 +2137,8 @@ $("#formEdit").addEventListener("submit", async e => {
   if (body.use_fixedip && ipNum(body.fixed_ip) < 0) return showErr("Please enter a valid IP address.");
   if (cur && !isGateway(cur) && isHaHost(cur)) {
     const was = cur.use_fixedip ? cur.fixed_ip : "", now = body.use_fixedip ? body.fixed_ip : "";
-    if (was !== now && !(await haConfirm(now ? `Its fixed IP changes from <b class="mono">${esc(was || cur.ip || "–")}</b> to <b class="mono">${esc(now)}</b>.` : `Its fixed IP <b class="mono">${esc(was)}</b> is removed – it may get a different address from the DHCP pool.`))) return;
+    const same = was === now || (!cur.use_fixedip && now && now === cur.ip); // reserving the address it already has
+    if (!same && !(await haConfirm(now ? `Its fixed IP changes from <b class="mono">${esc(was || cur.ip || "–")}</b> to <b class="mono">${esc(now)}</b>.` : `Its fixed IP <b class="mono">${esc(was)}</b> is removed – it may get a different address from the DHCP pool.`))) return;
   }
   const btn = $("#btnSave"); btn.disabled = true; btn.textContent = "Saving …";
   try {
@@ -2136,24 +2152,30 @@ $("#formEdit").addEventListener("submit", async e => {
   finally { btn.disabled = false; btn.textContent = "Apply"; }
 });
 function disarm() { const b = $("#btnForget"); b.classList.remove("armed"); b.textContent = "Forget client"; delete b.dataset.armed; }
+// remove a reservation / forget a client, then reload and show the fresh state (or close the panel if the client is gone)
 async function doDel(path, btn, label, msg) {
+  const mac = state.sel.mac; let err = null;
   btn.disabled = true; btn.textContent = "…";
-  try { await api(path, { mac: state.sel.mac }); toast(msg); await load(); }
-  catch (err) { showErr(err.message); }
-  finally { btn.disabled = false; btn.textContent = label; }
+  try { await api(path, { mac }); } catch (e) { err = e; }
+  try { await load(); } catch {}
+  btn.disabled = false; btn.textContent = label;
+  const c = state.clients.find(x => x.mac === mac);
+  if (path === "api/forget" && !c) { toast(msg); closePanel(); return; } // gone – also after a slow controller
+  if (err) { if (c) openPanel(c, "edit"); showErr(err.message); return; }
+  toast(msg); if (c) openPanel(c, "info"); else closePanel();
 }
 $("#btnUnres").addEventListener("click", async e => { const btn = e.currentTarget, c = state.sel && state.clients.find(x => x.mac === state.sel.mac);
   if (c && isHaHost(c) && !(await haConfirm(`Its fixed IP <b class="mono">${esc(c.fixed_ip)}</b> is removed – it may get a different address from the DHCP pool.`))) return;
-  doDel("api/unreserve", btn, "Remove reservation only", "Reservation removed").then(() => state.sel && openPanel(state.sel, "info")); });
+  doDel("api/unreserve", btn, "Remove reservation only", "Reservation removed"); });
 $("#btnForget").addEventListener("click", e => {
   const b = e.currentTarget;
   if (!b.dataset.armed) { b.dataset.armed = "1"; b.classList.add("armed"); b.textContent = "Really forget? Click again"; return; }
-  doDel("api/forget", b, "Forget client", "Forget client");
+  doDel("api/forget", b, "Forget client", "Client forgotten");
 });
 $("#tabInfo").addEventListener("click", () => setTab("info"));
 $("#tabEdit").addEventListener("click", () => setTab("edit"));
 $("#dClose").addEventListener("click", closePanel);
-document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (!$("#detail").hidden) closePanel(); else if (!$("#colPanel").hidden) closeCols(); });
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (document.querySelector("dialog[open]") || !$("#langMenu").hidden) return; if (!$("#detail").hidden) closePanel(); else if (!$("#colPanel").hidden) closeCols(); });
 
 // ---------- CSV ----------
 // CSV cell; values starting with = + - @ tab or CR get a leading ' so spreadsheets do not run them as formulas (CWE-1236)
@@ -2273,6 +2295,10 @@ function buildPlans(rows) {
     ch("Fixed IP", resTxt(!!c?.use_fixedip, c?.fixed_ip, c?._resNet), resTxt(d.use_fixedip, d.fixed_ip, d.network_id));
     if (p.hasAp) ch("Locked to AP", c?.fixed_ap_enabled ? apName(c.fixed_ap_mac) : "no", d.fixed_ap_enabled ? apName(d.fixed_ap_mac) : "no");
     ch("Local DNS", c?.local_dns_record_enabled ? c.local_dns_record : "", d.local_dns_record_enabled ? d.local_dns_record : "");
+    if (c && p.changes.some(x => x[0] === "Fixed IP")) {
+      if (isGateway(c)) p.errs.push("Gateway – its address comes from the network settings in UniFi");
+      else if (isHaHost(c)) p.errs.push("Home Assistant host – change its address in its edit panel");
+    }
     plans.push(p);
   });
   // duplicate IPs: existing reservations + file
@@ -2569,6 +2595,8 @@ function buildSubRows() {
     if (!n) errs.push(`No UniFi network contains ${nip}. Create the network first or pick one.`);
     else if (!inSubnet(nip, n.subnet)) errs.push(`${nip} is not in ${n.name} (${n.subnet})`);
     else if (nip === n.gateway) errs.push(`${nip} is the gateway of ${n.name}`);
+    if (isGateway(c)) errs.push("Gateway – its address comes from the network settings in UniFi");
+    else if (isHaHost(c)) errs.push("Home Assistant host – change its address in its edit panel");
     const twin = movers.find(x => x !== c && x.fixed_ip === c.fixed_ip);
     if (twin) { errs.push(`${c.fixed_ip} is reserved twice (also ${twin.name || twin.mac}). Fix the duplicate first.`); links.push(twin); }
     const other = state.clients.find(x => x.use_fixedip && x.fixed_ip === nip && !moving.has(x.mac));
@@ -2594,7 +2622,7 @@ $("#subToPick").addEventListener("change", e => {
   if (!SUB.running && !SUB.done) renderSub();
 });
 function fillSubNets() {
-  $("#subNet").innerHTML = `<option value="">Auto (by target subnet)</option>` + state.networks.map(n => `<option value="${esc(n.id)}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join("");
+  $("#subNet").innerHTML = `<option value="">Auto (by target subnet)</option>` + state.networks.map(n => `<option translate="no" value="${esc(n.id)}">${esc(n.name)}${n.vlan ? " · VLAN " + n.vlan : ""} · ${n.subnet}</option>`).join("");
 }
 function renderSub() {
   if (!SUB.done && !SUB.running) { const r = buildSubRows(); SUB.rows = r.rows; SUB.msg = r.msg; }
@@ -2688,6 +2716,8 @@ async function commitInline(inp) {
   const v = inp.value.trim(), f = inp.dataset.f;
   const cur = f === "name" ? (c.name || "") : (c.use_fixedip ? c.fixed_ip : "");
   if (v === cur) { inp.classList.remove("err"); return; }
+  if (f !== "name" && isGateway(c)) { inp.value = cur; inp.classList.add("err"); inp.title = "The gateway's address comes from the network settings in UniFi."; return; }
+  if (f !== "name" && isHaHost(c) && !(await haConfirm(v ? `Its fixed IP changes from <b class="mono">${esc(cur || c.ip || "–")}</b> to <b class="mono">${esc(v)}</b>.` : `Its fixed IP <b class="mono">${esc(cur)}</b> is removed – it may get a different address from the DHCP pool.`))) { inp.value = cur; return; }
   inp.classList.remove("ok", "err"); inp.classList.add("saving"); inp.title = "";
   try {
     if (f === "name") { await api("api/client", clientBody(c, { name: v })); c.name = v; }

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.28.2 – 2026-11-01
+
+Fixes from a code review:
+- **CleanUp no longer shrinks the DHCP pool** to make room for the Home Assistant host. The fixed block grows up to the host only automatically and only if the pool keeps a useful size; otherwise the host stays inside the pool as a reservation. A value typed into *up to* is never changed.
+- The Home Assistant host and the gateway are protected everywhere: inline edit asks for the same confirmation (gateway: not editable), *Replace subnet* and *CSV import* skip them with a note.
+- *Escape* in the IP picker or the Home Assistant warning no longer closes the device panel (and loses unsaved edits).
+- *Forget client*: UniFi can take long – the app now waits longer, checks whether the client is gone and reloads; the panel closes instead of showing a time-out error. After *Remove reservation only* the panel shows the fresh state.
+- Device names, notes and network names are never translated (a device called "Light" stayed "Light").
+- Reserving the address the Home Assistant host already uses no longer shows the warning; host detection is stricter (Supervisor data first, name only as fallback).
+- *Refresh* is an icon button that always stays visible; on narrow screens *Versions* is hidden first.
+- Translations are cached per app version (faster start); "Conflict" in the hover box is translated.
+
 ## 1.28.1 – 2026-11-01
 
 - IP plan tabs (*Current* / *CleanUp proposal*): calmer look – a box with background and slightly rounded tabs.

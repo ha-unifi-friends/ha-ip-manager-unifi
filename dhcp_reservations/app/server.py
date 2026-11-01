@@ -173,7 +173,7 @@ class Unifi:
         self.lock = threading.Lock()
         self.logged_in = False
 
-    def _raw(self, method, path, body=None):
+    def _raw(self, method, path, body=None, timeout=20):
         data = json.dumps(body).encode() if body is not None else None
         req = urllib.request.Request(self.base + path, data=data, method=method)
         req.add_header("Accept", "application/json")
@@ -182,7 +182,7 @@ class Unifi:
         if self.csrf:
             req.add_header("X-CSRF-Token", self.csrf)
         try:
-            resp = self.opener.open(req, timeout=20)
+            resp = self.opener.open(req, timeout=timeout)
             status, headers, raw = resp.status, resp.headers, resp.read()
         except urllib.error.HTTPError as e:
             status, headers, raw = e.code, e.headers, e.read()
@@ -253,17 +253,17 @@ class Unifi:
             log(f'Using site "{hit.get("name")}" ({hit.get("desc")})')
         self.site = hit.get("name")
 
-    def call(self, method, path, body=None, v2=False):
+    def call(self, method, path, body=None, v2=False, timeout=20):
         site = urllib.parse.quote(self.site, safe="")
         full = (f"/proxy/network/v2/api/site/{site}{path}" if v2
                 else f"/proxy/network/api/s/{site}{path}")
         with self.lock:
             if not self.logged_in:
                 self.login()
-            status, payload = self._raw(method, full, body)
+            status, payload = self._raw(method, full, body, timeout)
             if status in (401, 403):
                 self.login()
-                status, payload = self._raw(method, full, body)
+                status, payload = self._raw(method, full, body, timeout)
         if isinstance(payload, list):
             if status >= 400:
                 raise UnifiError(f"Controller returned HTTP {status}", 502)
@@ -577,8 +577,23 @@ def reconnect_client(api, mac):
 
 
 def forget_client(api, mac):
+    """forget-sta can take long on bigger controllers (it purges the client's history). On a time-out we check
+    whether the client is gone instead of reporting an error for something that usually did work."""
     mac = clean_mac(mac)
-    api.call("POST", "/cmd/stamgr", {"cmd": "forget-sta", "macs": [mac]})
+    try:
+        api.call("POST", "/cmd/stamgr", {"cmd": "forget-sta", "macs": [mac]}, timeout=90)
+    except UnifiError as e:
+        if "timed out" not in str(e).lower():
+            raise
+        log("Forget", mac, "timed out – checking whether it went through")
+        try:
+            still = any(normalize_mac(u.get("mac")) == mac for u in api.call("GET", "/rest/user"))
+        except UnifiError:
+            still = None
+        if still:
+            raise UnifiError("UniFi did not confirm in time and the client still exists – try again in a minute.", 504)
+        log("Forgotten", mac, "(confirmed after time-out)" if still is False else "(not confirmed)")
+        return {"ok": True, "pending": still is None}
     log("Forgotten", mac)
     return {"ok": True}
 
@@ -1347,12 +1362,12 @@ class Handler(BaseHTTPRequestHandler):
         self._send(403, {"error": "Only reachable through Home Assistant (Ingress)."})
         return False
 
-    def _send(self, status, obj=None, body=None, ctype="application/json; charset=utf-8"):
+    def _send(self, status, obj=None, body=None, ctype="application/json; charset=utf-8", cache="no-store"):
         data = body if body is not None else json.dumps(obj).encode()
         self.send_response(status)
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
-        self.send_header("Cache-Control", "no-store")
+        self.send_header("Cache-Control", cache)
         self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Referrer-Policy", "no-referrer")
         if ctype.startswith("text/html"):
@@ -1384,13 +1399,14 @@ class Handler(BaseHTTPRequestHandler):
         path = self.path.split("?")[0]
         # Ingress strips the prefix; match on the path suffix to be safe.
         try:
-            m = re.search(r"/i18n/([A-Za-z-]{2,5})\.json$", path) if method == "GET" else None
+            m = re.search(r"/i18n/([A-Za-z-]{2,5})\.json$", path.split("?")[0]) if method == "GET" else None
             if m:
                 f = os.path.join(STATIC_DIR, "i18n", m.group(1) + ".json")
                 if not os.path.isfile(f):
                     return self._send(404, body=b"{}", ctype="application/json")
                 with open(f, "rb") as fh:
-                    return self._send(200, body=fh.read(), ctype="application/json; charset=utf-8")
+                    # the UI asks with ?v=<app version>, so a long cache time is safe
+                    return self._send(200, body=fh.read(), ctype="application/json; charset=utf-8", cache="private, max-age=604800")
             if method == "GET" and (path == "/" or path.endswith("/index.html")):
                 with open(os.path.join(STATIC_DIR, "index.html"), "rb") as f:
                     return self._send(200, body=f.read().replace(b"__ADDON_VERSION__", ADDON_VERSION.encode()), ctype="text/html; charset=utf-8")
@@ -1400,6 +1416,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, save_client(API, self._json_body()))
             if method == "POST" and path.endswith("/api/unreserve"):
                 return self._send(200, remove_reservation(API, self._json_body().get("mac")))
+            if method == "GET" and path.endswith("/api/ha_host"):
+                return self._send(200, ha_host())
             if method == "GET" and path.endswith("/api/ha_devices"):
                 return self._send(200, ha_devices())
             if method == "GET" and path.endswith("/api/views"):

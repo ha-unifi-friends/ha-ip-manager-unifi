@@ -783,5 +783,12 @@
  "Theme: {0}": "Design: {0}",
  "Language: {0}": "Sprach: {0}",
  "Language": "Sprach",
- "Network check & link": "Netzwerk-Check & Link"
+ "Network check & link": "Netzwerk-Check & Link",
+ "keeps its address.": "behaltet sini Adrässe.",
+ "It stays inside the DHCP pool as a reservation, so the pool keeps its size.": "Er blibt als Reservierig im DHCP-Pool, damit de Pool sini Grössi bhaltet.",
+ "Gateway – its address comes from the network settings in UniFi": "Gateway – sini Adrässe chunnt us de Netzwerk-Iistellige in UniFi",
+ "Home Assistant host – change its address in its edit panel": "Home-Assistant-Host – Adrässe i sim Bearbeite-Panel ändere",
+ "The gateway's address comes from the network settings in UniFi.": "D Adrässe vom Gateway chunnt us de Netzwerk-Iistellige in UniFi.",
+ "UniFi did not confirm in time and the client still exists – try again in a minute.": "UniFi hät nöd rächtziitig bestätiget und de Client git's no – probier's in ere Minute nomal.",
+ "Client forgotten": "Client vergässe"
 }

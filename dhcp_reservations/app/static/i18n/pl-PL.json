@@ -783,5 +783,12 @@
  "Theme: {0}": "Motyw: {0}",
  "Language: {0}": "Język: {0}",
  "Language": "Język",
- "Network check & link": "Sprawdzenie sieci i link"
+ "Network check & link": "Sprawdzenie sieci i link",
+ "keeps its address.": "zachowuje swój adres.",
+ "It stays inside the DHCP pool as a reservation, so the pool keeps its size.": "Pozostaje w puli DHCP jako rezerwacja, więc pula zachowuje swój rozmiar.",
+ "Gateway – its address comes from the network settings in UniFi": "Brama – jej adres pochodzi z ustawień sieci w UniFi",
+ "Home Assistant host – change its address in its edit panel": "Host Home Assistant – zmień jego adres w panelu edycji",
+ "The gateway's address comes from the network settings in UniFi.": "Adres bramy pochodzi z ustawień sieci w UniFi.",
+ "UniFi did not confirm in time and the client still exists – try again in a minute.": "UniFi nie potwierdził na czas i klient nadal istnieje – spróbuj ponownie za minutę.",
+ "Client forgotten": "Klient zapomniany"
 }
