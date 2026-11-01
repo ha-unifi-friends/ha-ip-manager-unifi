@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.30.0 – 2026-11-01
+
+- **New standard views** in *Clients* (view menu): **Problems** (problems, IP ≠ fixed IP, not in override VLAN, duplicates, wrong network), **New devices** (first seen in the last 7 days, newest first), **Offline with fixed IP** (reservations of devices that are gone, oldest first), **Home Assistant** (devices known to HA, errors first) and **WiFi** (SSID, AP, AP lock, VLAN).
+- New filter **New** in the sidebar: first seen today / in the last 7 / 30 days.
+
 ## 1.29.1 – 2026-11-01
 
 - **Auto-Scale Network:** with UniFi's "Auto-Scale Network" on, UniFi manages subnet and DHCP range itself. CleanUp now says so for the affected networks and switches Auto-Scale off when it sets the pool; *Undo everything* switches it on again.

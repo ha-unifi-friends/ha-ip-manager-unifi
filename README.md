@@ -31,7 +31,7 @@ versions you can compare and restore.
 | **One table for everything** | Every client and UniFi device (APs, switches, gateway) with MAC, name, IP address, fixed IP, network/VLAN, connection type (WiFi, wired with switch port, Teleport), locked AP, first and last seen. Sort and filter every column, reorder columns by drag & drop. |
 | **Status at a glance** | Narrow icon columns for **UniFi Status** (online / offline) and **Home Assistant Status**, plus an **IP** pill: *Fix* (reservation or static IP) or *DHCP*. |
 | **Issue hints** | Duplicate IP, fixed IP outside its network or inside the DHCP pool, **IP is not Fixed IP** (the fixed IP is shown in yellow), **not in the override VLAN**, random/private MAC, not on its locked AP, wrong network by your own rules, Telnet/FTP open, duplicate names / DNS records, inactive devices. Every issue is a filter in the sidebar. |
-| **Views** | SharePoint-style views store columns, order, filters and sort. Built-in *All* and *DHCP Reservations*; views are shared by every browser. |
+| **Views** | SharePoint-style views store columns, order, filters and sort. Built-in *All*, *Problems*, *New devices*, *Offline with fixed IP*, *Home Assistant*, *WiFi* and *DHCP Reservations*; views are shared by every browser. |
 | **Inline edit** | Edit names and fixed IPs directly in the table (Enter / ↑ / ↓ move to the next row). |
 | **Light & dark** | *Auto* (follows the system) → *Light* → *Dark*, remembered per browser. |
 

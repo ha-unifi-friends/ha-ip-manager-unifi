@@ -547,7 +547,7 @@
  "{0} reconnect failed": "{0} – ponowne połączenie nieudane",
  "{0} renewal pending": "{0} – oczekuje na odnowienie",
  "Skipped": "Pominięto",
- "New": "Nowy",
+ "New": "Nowe",
  "Unchanged": "Bez zmian",
  "Error": "Błąd",
  "✓ Applied": "✓ Zastosowano",
@@ -848,5 +848,9 @@
  "left out": "pominięto",
  "Done first, so that no new device gets a dynamic address in the fixed block while the moves run.": "Wykonywane najpierw, aby żadne nowe urządzenie nie dostało adresu dynamicznego w bloku stałym w trakcie przenoszenia.",
  "Auto-Scale Network is on in UniFi: UniFi manages subnet and DHCP range itself. CleanUp switches it off when it sets the pool.": "Auto-Scale Network jest włączone w UniFi: UniFi sam zarządza podsiecią i zakresem DHCP. CleanUp wyłącza je przy ustawianiu puli.",
- "Untick single devices below.": "Pojedyncze urządzenia odznacz poniżej."
+ "Untick single devices below.": "Pojedyncze urządzenia odznacz poniżej.",
+ "First seen today": "Po raz pierwszy widziane dziś",
+ "First seen in the last 7 days": "Nowe w ostatnich 7 dniach",
+ "First seen in the last 30 days": "Nowe w ostatnich 30 dniach",
+ "Offline with fixed IP": "Offline ze stałym IP"
 }

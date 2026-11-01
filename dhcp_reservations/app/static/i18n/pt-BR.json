@@ -720,7 +720,7 @@
  "IP changed": "IP alterado",
  "Moved network": "Mudou de rede",
  "HA status": "Status HA",
- "New devices": "Novos dispositivos",
+ "New devices": "Dispositivos novos",
  "cmpRows": "cmpRows",
  "· fixed IP {0}": "· IP fixo {0}",
  "First seen {1}{2}": "Visto pela primeira vez {1}{2}",
@@ -848,5 +848,9 @@
  "left out": "ignorado",
  "Done first, so that no new device gets a dynamic address in the fixed block while the moves run.": "Feito primeiro, para que nenhum dispositivo novo receba um endereço dinâmico no bloco fixo durante as movimentações.",
  "Auto-Scale Network is on in UniFi: UniFi manages subnet and DHCP range itself. CleanUp switches it off when it sets the pool.": "Auto-Scale Network está ativado no UniFi: o UniFi gerencia a sub-rede e o intervalo DHCP. O CleanUp o desativa ao definir o pool.",
- "Untick single devices below.": "Desmarque dispositivos individuais abaixo."
+ "Untick single devices below.": "Desmarque dispositivos individuais abaixo.",
+ "First seen today": "Visto pela primeira vez hoje",
+ "First seen in the last 7 days": "Novo nos últimos 7 dias",
+ "First seen in the last 30 days": "Novo nos últimos 30 dias",
+ "Offline with fixed IP": "Offline com IP fixo"
 }

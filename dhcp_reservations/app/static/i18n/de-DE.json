@@ -848,5 +848,9 @@
  "left out": "wird ausgelassen",
  "Done first, so that no new device gets a dynamic address in the fixed block while the moves run.": "Wird zuerst erledigt, damit kein neues Gerät während der Verschiebungen eine dynamische Adresse im fixen Block bekommt.",
  "Auto-Scale Network is on in UniFi: UniFi manages subnet and DHCP range itself. CleanUp switches it off when it sets the pool.": "Auto-Scale Network ist in UniFi eingeschaltet: UniFi verwaltet Subnetz und DHCP-Bereich selbst. CleanUp schaltet es aus, wenn es den Pool setzt.",
- "Untick single devices below.": "Einzelne Geräte unten abwählen."
+ "Untick single devices below.": "Einzelne Geräte unten abwählen.",
+ "First seen today": "Heute zum ersten Mal gesehen",
+ "First seen in the last 7 days": "In den letzten 7 Tagen neu",
+ "First seen in the last 30 days": "In den letzten 30 Tagen neu",
+ "Offline with fixed IP": "Offline mit fixer IP"
 }

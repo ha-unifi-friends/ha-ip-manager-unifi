@@ -720,7 +720,7 @@
  "IP changed": "IP gänderet",
  "Moved network": "Netzwerk gwächslet",
  "HA status": "HA-Status",
- "New devices": "Neui Gerät",
+ "New devices": "Neui Grät",
  "cmpRows": "cmpRows",
  "· fixed IP {0}": "· fixi IP {0}",
  "First seen {1}{2}": "Zerscht gseh {1}{2}",
@@ -848,5 +848,9 @@
  "left out": "wird usglah",
  "Done first, so that no new device gets a dynamic address in the fixed block while the moves run.": "Wird zersch gmacht, damit kei neus Gerät während de Verschiebige e dynamischi Adresse im fixe Block überchunnt.",
  "Auto-Scale Network is on in UniFi: UniFi manages subnet and DHCP range itself. CleanUp switches it off when it sets the pool.": "Auto-Scale Network isch in UniFi aa: UniFi verwaltet Subnetz und DHCP-Bereich sälber. CleanUp schaltet's uus, wenn's de Pool setzt.",
- "Untick single devices below.": "Einzelni Gerät unne abwähle."
+ "Untick single devices below.": "Einzelni Gerät unne abwähle.",
+ "First seen today": "Hüt zum erste Mal gseh",
+ "First seen in the last 7 days": "I de letschte 7 Täg neu",
+ "First seen in the last 30 days": "I de letschte 30 Täg neu",
+ "Offline with fixed IP": "Offline mit fixer IP"
 }

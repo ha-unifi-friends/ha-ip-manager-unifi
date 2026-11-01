@@ -547,7 +547,7 @@
  "{0} reconnect failed": "{0} återanslutning misslyckades",
  "{0} renewal pending": "{0} förnyelse väntar",
  "Skipped": "Hoppades över",
- "New": "Ny",
+ "New": "Nya",
  "Unchanged": "Oförändrad",
  "Error": "Fel",
  "✓ Applied": "✓ Tillämpad",
@@ -848,5 +848,9 @@
  "left out": "utelämnas",
  "Done first, so that no new device gets a dynamic address in the fixed block while the moves run.": "Görs först, så att ingen ny enhet får en dynamisk adress i det fasta blocket medan flyttarna pågår.",
  "Auto-Scale Network is on in UniFi: UniFi manages subnet and DHCP range itself. CleanUp switches it off when it sets the pool.": "Auto-Scale Network är på i UniFi: UniFi hanterar subnät och DHCP-intervall själv. CleanUp stänger av det när poolen ställs in.",
- "Untick single devices below.": "Avmarkera enskilda enheter nedan."
+ "Untick single devices below.": "Avmarkera enskilda enheter nedan.",
+ "First seen today": "Sedd första gången i dag",
+ "First seen in the last 7 days": "Ny de senaste 7 dagarna",
+ "First seen in the last 30 days": "Ny de senaste 30 dagarna",
+ "Offline with fixed IP": "Offline med fast IP"
 }

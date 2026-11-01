@@ -848,5 +848,9 @@
  "left out": "wordt overgeslagen",
  "Done first, so that no new device gets a dynamic address in the fixed block while the moves run.": "Gebeurt eerst, zodat geen nieuw apparaat een dynamisch adres in het vaste blok krijgt terwijl de verplaatsingen lopen.",
  "Auto-Scale Network is on in UniFi: UniFi manages subnet and DHCP range itself. CleanUp switches it off when it sets the pool.": "Auto-Scale Network staat aan in UniFi: UniFi beheert subnet en DHCP-bereik zelf. CleanUp zet het uit bij het instellen van de pool.",
- "Untick single devices below.": "Vink hieronder losse apparaten uit."
+ "Untick single devices below.": "Vink hieronder losse apparaten uit.",
+ "First seen today": "Vandaag voor het eerst gezien",
+ "First seen in the last 7 days": "Nieuw in de afgelopen 7 dagen",
+ "First seen in the last 30 days": "Nieuw in de afgelopen 30 dagen",
+ "Offline with fixed IP": "Offline met vast IP"
 }
