@@ -299,6 +299,8 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .cl-result .rb{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
 .btn.danger-outline{border-color:var(--bad);color:var(--bad);background:transparent}
 .btn.danger-outline:hover{background:var(--bad-bg)}
+.pn .l1 .tag.as{font-size:9px;padding:2px 5px;flex:none}
+.tag.as{font:600 10px/1 system-ui,sans-serif;padding:2px 6px;border-radius:999px;border:1px solid var(--info);color:var(--info);background:var(--info-bg);vertical-align:1px;white-space:nowrap}
 .measure .w-line{display:block;margin-top:5px;color:var(--warn)}
 .lock-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin-top:8px}
 .gw-note{background:color-mix(in srgb,var(--gwc) 14%,transparent);color:var(--fg);border:1px solid color-mix(in srgb,var(--gwc) 50%,transparent)}
@@ -1527,7 +1529,7 @@ function renderPlan() {
   const ps = state.networks.map(planNet).filter(Boolean);
   $("#planStats").innerHTML = ps.map(p => { const pct = p.usable ? Math.round(p.used / p.usable * 100) : 0, t = tidiness(p); return `<button type="button" class="pn ${p.n.id === PLAN.sel ? "on" : ""}" data-net="${esc(p.n.id)}" aria-pressed="${p.n.id === PLAN.sel}">
     <span class="l1"><b translate="no">${esc(p.n.name)}</b>${p.n.vlan ? `<span class="muted">(${p.n.vlan})</span>` : ""}<span class="sp"></span>${tidyBadge(t, "Tidiness ")}</span>
-    <span class="l2"><span class="mono">${esc(p.n.subnet)}</span> · pool ${p.poolSize ? `<span class="mono">.${esc(p.n.dhcp_start.split(".").pop())}–.${esc(p.n.dhcp_stop.split(".").pop())}</span>` : "–"}</span>
+    <span class="l2"><span class="mono">${esc(p.n.subnet)}</span> · ${p.n.auto_scale ? autoScaleTag(p.n).trim() : `pool ${p.poolSize ? `<span class="mono">.${esc(p.n.dhcp_start.split(".").pop())}–.${esc(p.n.dhcp_stop.split(".").pop())}</span>` : "–"}`}</span>
     <span class="l3"><span class="ubar ${pct >= 80 ? "hi" : ""}" title="Utilization ${pct} % (${p.used}/${p.usable})"><i style="width:${pct}%"></i></span>${pct} % · <span>${p.fixed} fixed</span>${p.inPool ? ` · <span class="w">${p.inPool} in pool</span>` : ""} · ${p.dyn} dyn</span></button>`; }).join("");
   // "All networks" card on top: totals, utilization over all, tidiness weighted by the fixed IPs per network
   { const sum = k => ps.reduce((a, p) => a + p[k], 0), used = sum("used"), usable = sum("usable"), pct = usable ? Math.round(used / usable * 100) : 0;
@@ -1580,6 +1582,8 @@ function defaultEnd(p) {
   for (const o of offs) { const end = p.r.start + o - 1; if (end - first + 1 >= need && (p.r.end - 1) - end >= pool) return end; }
   return p.r.start + offs[0] - 1;
 }
+// UniFi "Auto-Scale Network": UniFi manages subnet and DHCP range itself
+const autoScaleTag = n => n?.auto_scale ? ` <span class="tag as" title="Auto-Scale Network is on in UniFi: UniFi manages subnet and DHCP range itself. CleanUp switches it off when it sets the pool.">Auto-Scale</span>` : "";
 // one network's proposal; end = last address of the fixed block
 function buildCleanFor(n, endX, prev) {
   const p = planNet(n); if (!p) return null;
@@ -1663,7 +1667,7 @@ function buildClean() {
   CL.bs = state.networks.map(n => { const p = planNet(n); if (!p) return null; return buildCleanFor(n, CL.pct ? p.r.start + Math.round(p.r.size * CL.pct / 100) - 1 : null, prev); })
     // only networks with something to tidy: moves, or a pool that currently covers fixed IPs (a mere pool extension is not offered)
     .filter(b => b && b.fixed.length && (b.rows.length || (b.poolChange && tidiness(b.p).inPool > 0)));
-  for (const b of CL.bs) b.inc = CL.inc[b.n.id] ?? true;
+  for (const b of CL.bs) b.inc = b.err ? false : CL.inc[b.n.id] ?? true;
   CL.rows = CL.bs.filter(b => b.inc).flatMap(b => b.rows);
   return CL.bs[0] || { multiEmpty: true };
 }
@@ -1760,7 +1764,9 @@ function renderClean() {
   $("#clSum").innerHTML = `<span class="pill">${multi ? "Overall tidiness" : "Tidiness"} ${tidyBadge(before)} → ${tidyBadge(after)}</span>${multi ? `<span class="pill">Networks <b>${inc.length}/${bs.length}</b></span>` : ""}<span class="pill">Fixed IPs <b>${fixedN}</b></span><span class="pill">Moves <b>${sel.length}/${CL.rows.length}</b></span>${multi ? `<span class="pill">Pool changes <b>${CL.m.pool ? pools.length : 0}</b></span>` : ""}<span class="pill" title="Dynamic clients that use an address inside the new fixed block">Conflicts <b${dynIn.length ? ' style="color:var(--cfl)"' : ""}>${dynIn.length}</b></span>`;
   CL.tab = CL.preview ? "chg" : "plan"; $("#clPreview").checked = !!CL.preview; $("#clPreview").disabled = CL.running; $("#cgPlay").hidden = CL.tab !== "chg" || !CL.m.move;
   const errs = inc.filter(b => b.err);
-  $("#clErr").innerHTML = errs.map(b => `<div class="err">${multi ? esc(b.n.name) + ": " : ""}${esc(b.err)}</div>`).join("");
+  // in "all networks" a network with a problem is simply left out (unticked) – the others can still be applied
+  const errShow = multi ? CL.bs.filter(b => b.err) : errs;
+  $("#clErr").innerHTML = errShow.map(b => `<div class="err">${multi ? `<b translate="no">${esc(b.n.name)}</b>: ` : ""}<span>${esc(b.err)}</span>${multi ? ' <span class="muted">– <span>left out</span></span>' : ""}</div>`).join("");
   // grid(s)
   const grid = b => {
     const s2 = sel.filter(r => r.b === b);
@@ -1773,10 +1779,10 @@ function renderClean() {
   else if (!bs.length) $("#clGrid").innerHTML = `<p class="hint" style="padding:12px 0">Nothing to clean up – every network already has its fixed IPs in one block outside the DHCP pool.</p>`;
   else {
     const tbl = `<div class="imp-table cl-nets"><table><thead><tr><th style="width:34px"></th><th>Network</th><th>Fixed block</th><th>DHCP pool</th><th>Moves</th><th title="Dynamic clients that currently use an address inside the new fixed block – they get a pool address at their next DHCP renewal">Conflicts</th><th>Tidiness</th></tr></thead><tbody>${bs.map(b => `<tr class="${b.inc ? "" : "off"}">
-      <td><label class="opt"><input type="checkbox" data-cn="${esc(b.n.id)}" ${b.inc ? "checked" : ""} ${CL.running || CL.done ? "disabled" : ""} aria-label="Include ${esc(b.n.name)}"></label></td>
+      <td><label class="opt"><input type="checkbox" data-cn="${esc(b.n.id)}" ${b.inc ? "checked" : ""} ${CL.running || CL.done || b.err ? "disabled" : ""} aria-label="Include ${esc(b.n.name)}"></label></td>
       <td><b translate="no">${esc(b.n.name)}</b>${b.n.vlan ? ` <span class="muted">(${b.n.vlan})</span>` : ""} <span class="muted mono">${esc(b.n.subnet)}</span>${b.err ? ` <span class="tag bad">${esc(b.err)}</span>` : ""}</td>
       <td class="mono">.${b.first & 255} – .${b.end & 255}</td>
-      <td class="mono">${b.poolChange ? `${poolTxt(b.p.ps, b.p.pe)} → <b>${poolTxt(b.poolS, b.poolE)}</b>` : `<span class="muted">${poolTxt(b.p.ps, b.p.pe)} (stays)</span>`}</td>
+      <td class="mono">${b.poolChange ? `${poolTxt(b.p.ps, b.p.pe)} → <b>${poolTxt(b.poolS, b.poolE)}</b>` : `<span class="muted">${poolTxt(b.p.ps, b.p.pe)} (stays)</span>`}${autoScaleTag(b.n)}</td>
       <td>${b.rows.filter(r => r.sel).length}/${b.rows.length}</td>
       <td>${b.dynIn.length ? `<span class="tag cfl" title="${esc(b.dynIn.map(c => `${c.name || c.hostname || c.mac} (${c.ip})`).join("\n"))}">${b.dynIn.length}</span>` : `<span class="muted">0</span>`}</td>
       <td>${tidyBadge(tidiness(b.p))} → ${tidyBadge(tidyAfter(b))}</td></tr>`).join("")}</tbody></table></div>`;
@@ -1792,7 +1798,7 @@ function renderClean() {
   const pinIn = pins.some(c => CL.bs.some(b => b.inc && ipNum(c.fixed_ip) >= b.poolS && ipNum(c.fixed_ip) <= b.poolE));
   const pinTxt = pins.length ? ` <b style="color:var(--hab)"><span>Home Assistant host</span> (<span translate="no">${pins.map(c => esc(c.name || c.hostname || c.mac) + ", " + esc(c.fixed_ip)).join("; ")}</span>) <span>keeps its address.</span></b>${pinIn ? ' <span style="color:var(--hab)">It stays inside the DHCP pool as a reservation, so the pool keeps its size.</span>' : ""}` : "";
   const where = multi ? `in ${inc.length} ${inc.length === 1 ? "network" : "networks"}` : `into .${b0.first & 255} – .${b0.end & 255}`;
-  $("#clM1").innerHTML = m("move", `4 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}${multi ? " Every device stays in its network." : ""} Untick single devices below.${pinTxt}${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : (CL.strategy === "pool" ? "Pool only: no device changes its address." : "Nothing to move – all fixed IPs already lie in the fixed range.") + pinTxt, !CL.rows.length);
+  $("#clM1").innerHTML = m("move", `4 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `<span>${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}</span>${multi ? " <span>Every device stays in its network.</span>" : ""} <span>Untick single devices below.</span>${pinTxt}${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : (CL.strategy === "pool" ? "Pool only: no device changes its address." : "Nothing to move – all fixed IPs already lie in the fixed range.") + pinTxt, !CL.rows.length);
   $("#clMoves").hidden = !CL.rows.length;
   $("#clMV").innerHTML = `<label class="measure"><input type="checkbox" checked disabled><span class="h">1 · Save a version of the current settings</span><span class="d">Always first – undo anytime via <i>Versions › Restore</i>.</span></label>`;
   const cflWifi = dynIn.filter(canReconnect), cflOther = dynIn.length - cflWifi.length;
@@ -1804,10 +1810,11 @@ function renderClean() {
   const poolWarn = [
     stInPool.length ? `<span class="w-line">⚠ <span>${stInPool.length === 1 ? "A device with its IP set on the device lies in the new pool" : `${stInPool.length} devices with their IP set on the device lie in the new pool`}</span>: ${stInPool.map(c => `${nm(c)} (${esc(c.ip)})`).join(", ")}. <span>Give them a fixed IP, otherwise the DHCP server may hand out their address.</span></span>` : "",
     haNoRes.length ? `<span class="w-line" style="color:var(--hab)">ⓘ <span>The Home Assistant host has no fixed IP in UniFi</span> (${haNoRes.map(esc).join(", ")}). <span>Its address is kept free – reserving it in its edit panel is recommended.</span></span>` : "",
+    CL.m.pool && incB.some(b => b.poolChange && b.n.auto_scale) ? `<span class="w-line">ⓘ <span>“Auto-Scale Network” is on in UniFi for</span> <span translate="no">${incB.filter(b => b.poolChange && b.n.auto_scale).map(b => esc(b.n.name)).join(", ")}</span>. <span>A manual pool needs it off – applying switches it off (Undo switches it on again).</span></span>` : "",
     clampedB.length ? `<span class="w-line">ⓘ <span>The fixed range was limited so that the pool keeps at least</span> ${Math.min(...clampedB.map(b => b.minPool))} <span>addresses.</span></span>` : "",
   ].filter(Boolean).join("");
   $("#clM3").innerHTML = multi
-    ? m("pool", `2 · Change the DHCP pool in ${pools.length} ${pools.length === 1 ? "network" : "networks"}`, pools.length ? `${pools.map(b => `${esc(b.n.name)} ${poolTxt(b.p.ps, b.p.pe)} → ${poolTxt(b.poolS, b.poolE)}`).join(" · ")}. ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in a new fixed range and will get a pool address at the next renewal. ` : ""}Done first, so that no new device gets a dynamic address in the fixed block while the moves run.` : "All pools already match.", !pools.length)
+    ? m("pool", `2 · Change the DHCP pool in ${pools.length} ${pools.length === 1 ? "network" : "networks"}`, pools.length ? `<span translate="no">${pools.map(b => `${esc(b.n.name)} ${poolTxt(b.p.ps, b.p.pe)} → ${poolTxt(b.poolS, b.poolE)}`).join(" · ")}</span>. ${dynIn.length ? `<span>${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in a new fixed range and will get a pool address at the next renewal.</span> ` : ""}<span>Done first, so that no new device gets a dynamic address in the fixed block while the moves run.</span>` : "All pools already match.", !pools.length)
     : m("pool", `2 · Change the DHCP pool ${poolTxt(b0.p.ps, b0.p.pe)} → .${b0.poolS & 255} – .${b0.poolE & 255}`, b0.poolChange ? `${b0.poolE - b0.poolS + 1} addresses for dynamic clients (today ${b0.p.dyn} in use). ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in the new fixed range and will get a pool address at the next renewal. ` : ""}Done first, so that no new device gets a dynamic address in the fixed block while the moves run.` : "The pool already matches.", !b0.poolChange);
   if (poolWarn) $("#clM3 .d")?.insertAdjacentHTML("beforeend", poolWarn);
   // moves (children of measure 1)
@@ -1878,7 +1885,7 @@ async function applyClean() {
   const step = (txt, cls = "ok") => { R.steps.push({ txt, cls }); renderClean(); };
   // 1 · pools first – if one fails nothing else is changed
   for (const b of pools) {
-    try { const r = await api("api/pool", { network_id: b.n.id, start: ipStr(b.poolS), stop: ipStr(b.poolE) }); J.pools.push({ id: b.n.id, name: b.n.name, start: r.before?.[0] || b.n.dhcp_start, stop: r.before?.[1] || b.n.dhcp_stop }); }
+    try { const r = await api("api/pool", { network_id: b.n.id, start: ipStr(b.poolS), stop: ipStr(b.poolE) }); J.pools.push({ id: b.n.id, name: b.n.name, start: r.before?.[0] || b.n.dhcp_start, stop: r.before?.[1] || b.n.dhcp_stop, auto: !!r.auto_scale_before }); }
     catch (e) { R.problems.push(`Pool change in ${b.n.name} failed: ${e.message}`); R.aborted = true; break; }
   }
   if (J.pools.length) step(`${J.pools.length}/${pools.length} DHCP ${pools.length === 1 ? "pool" : "pools"} changed`);
@@ -1944,7 +1951,7 @@ async function rollbackClean() {
   const items = J.moves.map(it => ({ c: now.get(it.c.mac) || it.c, ip: it.back.ip, from: it.ip, netId: it.back.netId, b: it.b }));
   await runMoves(items, held, (it, good, msg) => { good ? ok++ : (fail++, R.problems.push(`Rollback ${it.c.name || it.c.mac}: ${msg}`)); });
   let pOk = 0;
-  for (const p of [...J.pools].reverse()) { try { await api("api/pool", { network_id: p.id, start: p.start, stop: p.stop }); pOk++; } catch (e) { R.problems.push(`Rollback pool ${p.name}: ${e.message}`); } }
+  for (const p of [...J.pools].reverse()) { try { await api("api/pool", { network_id: p.id, start: p.start, stop: p.stop, auto_scale: p.auto }); pOk++; } catch (e) { R.problems.push(`Rollback pool ${p.name}: ${e.message}`); } }
   if (pOk) await waitGateway();
   const wifi = items.filter(it => canReconnect(now.get(it.c.mac))).map(it => it.c);
   if (wifi.length) await reconnectAll(wifi);

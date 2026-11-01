@@ -842,5 +842,11 @@
  "The DHCP server of {0} is off or relayed – the pool is not changed.": "Der DHCP-Server von {0} ist aus oder leitet weiter – der Pool wird nicht geändert.",
  "A DHCP pool needs at least 10 addresses.": "Ein DHCP-Pool braucht mindestens 10 Adressen.",
  "UniFi did not take the new pool for {0} (still {1} – {2}).": "UniFi hat den neuen Pool für {0} nicht übernommen (weiterhin {1} – {2}).",
- "Before forgetting {0}": "Vor dem Vergessen von {0}"
+ "Before forgetting {0}": "Vor dem Vergessen von {0}",
+ "“Auto-Scale Network” is on in UniFi for": "„Auto-Scale Network“ ist in UniFi eingeschaltet für",
+ "A manual pool needs it off – applying switches it off (Undo switches it on again).": "Ein manueller Pool braucht es aus – beim Anwenden wird es ausgeschaltet (Rückgängig schaltet es wieder ein).",
+ "left out": "wird ausgelassen",
+ "Done first, so that no new device gets a dynamic address in the fixed block while the moves run.": "Wird zuerst erledigt, damit kein neues Gerät während der Verschiebungen eine dynamische Adresse im fixen Block bekommt.",
+ "Auto-Scale Network is on in UniFi: UniFi manages subnet and DHCP range itself. CleanUp switches it off when it sets the pool.": "Auto-Scale Network ist in UniFi eingeschaltet: UniFi verwaltet Subnetz und DHCP-Bereich selbst. CleanUp schaltet es aus, wenn es den Pool setzt.",
+ "Untick single devices below.": "Einzelne Geräte unten abwählen."
 }

@@ -842,5 +842,11 @@
  "The DHCP server of {0} is off or relayed – the pool is not changed.": "DHCP-servern för {0} är avstängd eller vidarebefordrad – poolen ändras inte.",
  "A DHCP pool needs at least 10 addresses.": "En DHCP-pool behöver minst 10 adresser.",
  "UniFi did not take the new pool for {0} (still {1} – {2}).": "UniFi tog inte den nya poolen för {0} (fortfarande {1} – {2}).",
- "Before forgetting {0}": "Innan {0} glöms"
+ "Before forgetting {0}": "Innan {0} glöms",
+ "“Auto-Scale Network” is on in UniFi for": "”Auto-Scale Network” är på i UniFi för",
+ "A manual pool needs it off – applying switches it off (Undo switches it on again).": "En manuell pool kräver att den är av – när du verkställer stängs den av (Ångra slår på den igen).",
+ "left out": "utelämnas",
+ "Done first, so that no new device gets a dynamic address in the fixed block while the moves run.": "Görs först, så att ingen ny enhet får en dynamisk adress i det fasta blocket medan flyttarna pågår.",
+ "Auto-Scale Network is on in UniFi: UniFi manages subnet and DHCP range itself. CleanUp switches it off when it sets the pool.": "Auto-Scale Network är på i UniFi: UniFi hanterar subnät och DHCP-intervall själv. CleanUp stänger av det när poolen ställs in.",
+ "Untick single devices below.": "Avmarkera enskilda enheter nedan."
 }

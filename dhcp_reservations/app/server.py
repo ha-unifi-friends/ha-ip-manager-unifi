@@ -569,14 +569,19 @@ def set_dhcp_pool(api, body):
         raise UnifiError(f"The DHCP server of {info['name']} is off or relayed – the pool is not changed.", 400)
     if int(b) - int(a) + 1 < 10:
         raise UnifiError("A DHCP pool needs at least 10 addresses.", 400)
-    upd = dict(raw)  # the object was read right before the PUT – only start/stop change
+    upd = dict(raw)  # the object was read right before the PUT – only start/stop (and Auto-Scale) change
     upd["dhcpd_start"], upd["dhcpd_stop"] = start, stop
+    auto_before = bool(raw.get("auto_scale_enabled"))
+    # with "Auto-Scale Network" UniFi manages subnet and range itself – a manual pool needs it off (rollback may turn it on again)
+    want_auto = body.get("auto_scale")
+    if "auto_scale_enabled" in raw:
+        upd["auto_scale_enabled"] = bool(want_auto) if want_auto is not None else False
     api.call("PUT", f"/rest/networkconf/{nid}", upd)
     check = next((n for n in api.call("GET", "/rest/networkconf") if n.get("_id") == nid), {})
     if check.get("dhcpd_start") != start or check.get("dhcpd_stop") != stop:
         raise UnifiError(f"UniFi did not take the new pool for {info['name']} (still {check.get('dhcpd_start')} – {check.get('dhcpd_stop')}).", 502)
     log("DHCP pool", info["name"], f"{info.get('dhcp_start')}-{info.get('dhcp_stop')} ->", f"{start}-{stop}")
-    return {"ok": True, "network_id": nid, "start": start, "stop": stop, "before": [info.get("dhcp_start"), info.get("dhcp_stop")]}
+    return {"ok": True, "network_id": nid, "start": start, "stop": stop, "before": [info.get("dhcp_start"), info.get("dhcp_stop")], "auto_scale_before": auto_before}
 
 
 def gateway_state(api):

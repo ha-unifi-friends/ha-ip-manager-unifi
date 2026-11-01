@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.29.1 – 2026-11-01
+
+- **Auto-Scale Network:** with UniFi's "Auto-Scale Network" on, UniFi manages subnet and DHCP range itself. CleanUp now says so for the affected networks and switches Auto-Scale off when it sets the pool; *Undo everything* switches it on again.
+- Networks with Auto-Scale show an *Auto-Scale* badge in the network list and in the CleanUp table.
+- CleanUp for all networks: a network with a problem (e.g. pool would get too small) is left out automatically instead of blocking the others.
+- Translations: the remaining English sentences in the CleanUp steps are translated.
+
 ## 1.29.0 – 2026-11-01
 
 Safer CleanUp, after a review by a network specialist:
