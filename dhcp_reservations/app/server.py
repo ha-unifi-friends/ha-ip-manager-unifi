@@ -292,6 +292,10 @@ def net_info(n):
         "gateway": subnet.split("/")[0] if subnet else None,
         "dhcp_start": n.get("dhcpd_start"),
         "dhcp_stop": n.get("dhcpd_stop"),
+        "dhcp_enabled": n.get("dhcpd_enabled", True) is not False,
+        "dhcp_relay": bool(n.get("dhcp_relay_enabled")),
+        "lease_time": int(n.get("dhcpd_leasetime") or 86400) if str(n.get("dhcpd_leasetime") or "86400").isdigit() else 86400,
+        "auto_scale": bool(n.get("auto_scale_enabled")),
         "purpose": n.get("purpose"),
     }
 
@@ -561,11 +565,26 @@ def set_dhcp_pool(api, body):
     if a not in net or b not in net or a > b or a in (net.network_address, net.broadcast_address) \
             or b in (net.network_address, net.broadcast_address) or (gw is not None and a <= gw <= b):
         raise UnifiError(f"{start} – {stop} is not a valid range in {info['subnet']} (gateway {gw}).", 400)
-    upd = dict(raw)
+    if not info["dhcp_enabled"] or info["dhcp_relay"]:
+        raise UnifiError(f"The DHCP server of {info['name']} is off or relayed – the pool is not changed.", 400)
+    if int(b) - int(a) + 1 < 10:
+        raise UnifiError("A DHCP pool needs at least 10 addresses.", 400)
+    upd = dict(raw)  # the object was read right before the PUT – only start/stop change
     upd["dhcpd_start"], upd["dhcpd_stop"] = start, stop
     api.call("PUT", f"/rest/networkconf/{nid}", upd)
+    check = next((n for n in api.call("GET", "/rest/networkconf") if n.get("_id") == nid), {})
+    if check.get("dhcpd_start") != start or check.get("dhcpd_stop") != stop:
+        raise UnifiError(f"UniFi did not take the new pool for {info['name']} (still {check.get('dhcpd_start')} – {check.get('dhcpd_stop')}).", 502)
     log("DHCP pool", info["name"], f"{info.get('dhcp_start')}-{info.get('dhcp_stop')} ->", f"{start}-{stop}")
-    return {"ok": True, "network_id": nid, "start": start, "stop": stop}
+    return {"ok": True, "network_id": nid, "start": start, "stop": stop, "before": [info.get("dhcp_start"), info.get("dhcp_stop")]}
+
+
+def gateway_state(api):
+    """state of the UniFi gateway (1 = connected/ready; 4/5 = provisioning/upgrading) – used to wait after a pool change."""
+    for d in api.call("GET", "/stat/device"):
+        if DEVICE_KIND.get(str(d.get("type", ""))) == "gateway":
+            return {"found": True, "state": d.get("state"), "ready": d.get("state") == 1}
+    return {"found": False, "ready": True}
 
 
 def reconnect_client(api, mac):
@@ -1416,6 +1435,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, save_client(API, self._json_body()))
             if method == "POST" and path.endswith("/api/unreserve"):
                 return self._send(200, remove_reservation(API, self._json_body().get("mac")))
+            if method == "GET" and path.endswith("/api/gw_state"):
+                return self._send(200, gateway_state(API))
             if method == "GET" and path.endswith("/api/ha_host"):
                 return self._send(200, ha_host())
             if method == "GET" and path.endswith("/api/ha_devices"):

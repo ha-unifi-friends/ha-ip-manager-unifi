@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.29.0 – 2026-11-01
+
+Safer CleanUp, after a review by a network specialist:
+- **New strategy "Pool only"** (now the default): the DHCP pool starts behind the highest fixed IP – no device changes its address.
+- **Addresses in use are respected:** new addresses are never taken from devices seen online, UniFi devices, devices with their IP set on the device (they never renew), clients seen in the last 14 days or the Home Assistant host – in every strategy. Devices with an IP set on the device that would end up in the new pool are listed with a warning.
+- **Home Assistant host without a fixed IP** (IP set on the host) is protected too, with a hint to reserve it.
+- **DHCP pool:** its end stays where it is, it keeps at least max(30, 2 × dynamic clients) addresses, it never covers the gateway. Networks with the DHCP server off or relayed are not offered. The server re-reads the network right before the change and checks afterwards that UniFi took it.
+- **Stop on failure:** if a pool change fails, no fixed IP is changed.
+- **Waits for the gateway** to apply a new pool before devices are reconnected.
+- **Check afterwards:** the result shows which devices already use their new IP, which take it at their next renewal (with the network's lease time) and which got a pool address instead.
+- **Undo everything:** after a CleanUp, one click sets the pools and fixed IPs back to how they were (same safe order, Wi-Fi clients reconnected).
+- *Forget client* shows a 5 s progress bar, then refreshes; a version is saved before (name, note and reservation can be restored).
+
 ## 1.28.2 – 2026-11-01
 
 Fixes from a code review:

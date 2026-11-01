@@ -238,6 +238,12 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .btn.outline-accent{border-color:var(--accent);color:var(--accent);background:transparent}
 .btn.danger{border-color:var(--bad);color:var(--bad);background:transparent}
 .btn.danger.armed{background:var(--bad);color:#fff}
+.btn .bprog{position:absolute;left:0;bottom:0;height:4px;width:100%;background:rgba(255,255,255,.18);border-radius:0 0 6px 6px;overflow:hidden}
+.btn .bprog i{display:block;height:100%;width:0;background:#fff;animation:bprog 5s linear forwards}
+.btn .bprog.busy i{width:30%;animation:bbusy 1.2s ease-in-out infinite}
+@keyframes bprog{to{width:100%}}
+@keyframes bbusy{0%{margin-left:-30%}100%{margin-left:100%}}
+#btnForget{position:relative;overflow:hidden}
 .btn:disabled{opacity:.5;cursor:default}
 .spin{display:inline-block;width:12px;height:12px;border:2px solid var(--line-strong);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;vertical-align:-2px}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -282,6 +288,18 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .imp-table th[data-sk]:hover{color:var(--fg)}
 .imp-table th.sa::after{content:"▲";font-size:9px;margin-left:5px;color:var(--accent)}
 .imp-table th.sd::after{content:"▼";font-size:9px;margin-left:5px;color:var(--accent)}
+.cl-result{border:1px solid var(--line-strong);border-radius:10px;padding:12px 14px;margin-top:12px;background:var(--card);font-size:13px}
+.cl-result.has-prob{border-color:var(--warn)}
+.cl-result ul{margin:6px 0 0;padding-left:18px;display:grid;gap:3px}
+.cl-result li.ok::marker{content:"✓  ";color:var(--ok)}
+.cl-result li.warn{color:var(--warn)}
+.cl-result li.bad{color:var(--bad)}
+.cl-result li.muted{color:var(--muted)}
+.cl-result .probs{margin-top:10px;color:var(--warn)}
+.cl-result .rb{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.btn.danger-outline{border-color:var(--bad);color:var(--bad);background:transparent}
+.btn.danger-outline:hover{background:var(--bad-bg)}
+.measure .w-line{display:block;margin-top:5px;color:var(--warn)}
 .lock-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin-top:8px}
 .gw-note{background:color-mix(in srgb,var(--gwc) 14%,transparent);color:var(--fg);border:1px solid color-mix(in srgb,var(--gwc) 50%,transparent)}
 .ha-note{background:color-mix(in srgb,var(--hab) 14%,transparent);color:var(--fg);border:1px solid color-mix(in srgb,var(--hab) 50%,transparent)}
@@ -721,7 +739,7 @@ window.I18N = (() => {
         <div id="planGridWrap"></div>
         <div id="planClean" hidden>
       <div class="cl-ctrl">
-        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="min" aria-pressed="true" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button></span>
+        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="pool" aria-pressed="true" title="Move only the start of the DHCP pool behind the highest fixed IP – no device changes its address">Pool only</button><button type="button" data-cs="min" aria-pressed="false" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button></span>
         <label class="cl-one">Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253" title="Empty = automatic suggestion"></label><button class="link cl-one" type="button" id="clEndAuto" hidden title="Back to the automatic suggestion">Auto</button>
         <label class="cl-one">DHCP pool <b class="mono" id="clPool"></b></label>
         <label class="cl-multi" title="Size of the fixed block at the start of every network; empty = a suggestion per network">Fixed block <input type="number" id="clPct" min="10" max="90" step="5" placeholder="auto"> % of each network</label>
@@ -1552,7 +1570,7 @@ $("#planGridWrap").addEventListener("click", e => {
 
 
 // ---------- CleanUp Proposal ----------
-const CL = { strategy: "min", end: null, rows: [], m: { move: true, rc: false, pool: true }, tab: "plan", running: false, done: false, confirm: false, ha: null };
+const CL = { strategy: "pool", end: null, rows: [], m: { move: true, rc: false, pool: true }, tab: "plan", running: false, done: false, confirm: false, ha: null };
 const NOT_HA = "Not in Home Assistant";
 const haGroupKey = c => [...new Set(haOf(c).flatMap(d => haDoms(c, d)))].sort()[0] || NOT_HA;
 const groupKey = c => { const v = (c.oui || "").replace(/,?\s*(inc|ltd|llc|gmbh|co|corp|corporation|limited|technology|technologies|electronics|trading)\.?\b.*$/i, "").trim(); return v || (c.name || c.hostname || "Other").split(/[\s_-]/)[0] || "Other"; };
@@ -1566,27 +1584,46 @@ function defaultEnd(p) {
 function buildCleanFor(n, endX, prev) {
   const p = planNet(n); if (!p) return null;
   const first = p.r.start + 1, last = p.r.end - 1;
-  // the Home Assistant host keeps its address: the fixed block always reaches up to it, so it never ends up in the pool
-  const pinMax = Math.max(-1, ...state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device && isHaHost(c)).map(c => ipNum(c.fixed_ip)).filter(x => x > first && x < last));
-  let end = Math.min(Math.max(endX ?? defaultEnd(p), first + 1), last - 1);
-  // the fixed block may grow up to the Home Assistant host only automatically and only if the pool keeps a useful size;
-  // otherwise the host simply stays inside the pool as a reservation (allowed by UniFi)
-  if (endX == null && pinMax > end && last - pinMax >= Math.max(30, 3 * p.dyn)) end = pinMax;
-  const poolS = end + 1, poolE = last, inFixed = x => x >= first && x <= end && x !== p.gw;
-  const fixed = state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
-  const devFixed = state.clients.filter(c => c.is_device && c.use_fixedip && ipNum(c.fixed_ip) >= p.r.start && ipNum(c.fixed_ip) <= p.r.end);
+  const inNet = x => x >= p.r.start && x <= p.r.end;
+  const fixed = state.clients.filter(c => c.use_fixedip && c.fixed_ip && !c.is_device && inNet(ipNum(c.fixed_ip)));
+  const devFixed = state.clients.filter(c => c.is_device && c.use_fixedip && inNet(ipNum(c.fixed_ip)));
   const isGwDev = c => c.device_kind === "gateway" || (ipNum(c.fixed_ip) === p.gw && c.online && c.ip === c.fixed_ip);
   const keep = c => isHaHost(c) || isGwDev(c);
   const pinned = fixed.filter(keep), movable = fixed.filter(c => !keep(c));
-  const taken = new Set([p.gw, ...devFixed.map(c => ipNum(c.fixed_ip)), ...pinned.map(c => ipNum(c.fixed_ip))]);
-  // dynamic clients inside the new fixed block (UniFi devices with an IP set on the device are not dynamic)
-  const dynIn = state.clients.filter(c => c.online && c.ip && !(c.use_fixedip && c.fixed_ip === c.ip) && !(c.is_device && c.dev_ip_mode === "static") && inFixed(ipNum(c.ip)));
-  const busyNow = new Set(dynIn.map(c => ipNum(c.ip)));
-  const plan = new Map(); let err = "";
-  if (CL.strategy === "min") {
-    for (const c of movable) { const x = ipNum(c.fixed_ip); if (inFixed(x) && !taken.has(x)) { plan.set(c.mac, x); taken.add(x); } }
-    const pick = () => { for (const avoid of [true, false]) for (let x = first; x <= end; x++) if (x !== p.gw && !taken.has(x) && (!avoid || !busyNow.has(x))) return x; return -1; };
-    for (const c of movable) if (!plan.has(c.mac)) { const x = pick(); if (x < 0) { err = "Not enough room in the fixed range – raise the limit."; break; } plan.set(c.mac, x); taken.add(x); }
+  // --- what is in use right now (not only reservations): every address seen online, UniFi devices,
+  // the Home Assistant host (also without a reservation) and the last address of clients seen in the last 14 days
+  const recent = Date.now() / 1000 - 14 * 86400, busy = new Map(); // ip -> mac
+  for (const c of state.clients) if (c.ip && inNet(ipNum(c.ip)) && c.conn !== "teleport" && (c.online || c.is_device || (c.last_seen || 0) >= recent)) busy.set(ipNum(c.ip), c.mac);
+  for (const ip of state.haHost?.ips || []) if (inNet(ipNum(ip))) busy.set(ipNum(ip), "ha-host");
+  const inOldPool = x => p.ps >= 0 && x >= p.ps && x <= p.pe;
+  // an online client without reservation outside the current pool has its IP set on the device – it never renews
+  const isStatic = c => c.online && c.ip && !c.use_fixedip && (c.is_device ? c.dev_ip_mode === "static" : !inOldPool(ipNum(c.ip))) && inNet(ipNum(c.ip));
+  const statics = state.clients.filter(c => isStatic(c) && c.conn !== "teleport");
+  const haNoRes = (state.haHost?.ips || []).filter(ip => inNet(ipNum(ip)) && !state.clients.some(c => c.use_fixedip && c.fixed_ip === ip));
+  // --- DHCP pool: the end stays where it is (an upper block of static addresses is not pulled in), minimum size
+  const poolE0 = p.pe > first && p.pe <= last ? p.pe : last;
+  const minPool = Math.min(Math.max(30, 2 * p.dyn), Math.max(2, poolE0 - first - 1));
+  let end;
+  if (CL.strategy === "pool") end = Math.max(first + 1, ...movable.concat(pinned).map(c => ipNum(c.fixed_ip)).filter(x => x < poolE0)); // pool starts behind the highest reservation
+  else end = Math.min(Math.max(endX ?? defaultEnd(p), first + 1), last - 1);
+  let clamped = false;
+  if (poolE0 - end < minPool) { end = poolE0 - minPool; clamped = true; }
+  let poolS = end + 1, poolE = poolE0;
+  if (p.gw >= poolS && p.gw <= poolE) { if (p.gw - poolS >= poolE - p.gw) poolE = p.gw - 1; else poolS = p.gw + 1; }
+  const inFixed = x => x >= first && x <= end && x !== p.gw;
+  const taken = new Set([p.gw, ...devFixed.map(c => ipNum(c.fixed_ip)), ...pinned.map(c => ipNum(c.fixed_ip)), ...statics.map(c => ipNum(c.ip)), ...(state.haHost?.ips || []).map(ipNum)]);
+  const freeFor = (x, c) => !taken.has(x) && x !== p.gw && (!busy.has(x) || busy.get(x) === c.mac);
+  // dynamic clients in the new fixed block – they get a pool address at their next renewal (static ones never do)
+  const dynIn = state.clients.filter(c => c.online && c.ip && !c.use_fixedip && !isStatic(c) && !(c.is_device && c.dev_ip_mode === "static") && inFixed(ipNum(c.ip)) && !(state.haHost?.ips || []).includes(c.ip));
+  const plan = new Map(); let err = clamped && CL.strategy === "pool" ? "The fixed IPs reach too far up – the pool would get too small. Use another strategy." : "";
+  if (CL.strategy === "pool") { /* no moves */ }
+  else if (CL.strategy === "min") {
+    for (const c of movable) { const x = ipNum(c.fixed_ip); if (inFixed(x) && freeFor(x, c)) { plan.set(c.mac, x); taken.add(x); } }
+    for (const c of movable) if (!plan.has(c.mac)) {
+      let x = -1; for (let y = first; y <= end; y++) if (freeFor(y, c)) { x = y; break; }
+      if (x < 0) { err = "Not enough free addresses in the fixed range – raise the limit."; break; }
+      plan.set(c.mac, x); taken.add(x);
+    }
   } else {
     const groups = {};
     const key = CL.strategy === "ha" ? haGroupKey : groupKey;
@@ -1595,13 +1632,17 @@ function buildCleanFor(n, endX, prev) {
     let cur = Math.max(first, p.r.start + 10);
     for (const [g, cs] of order) {
       cs.sort((a, b) => (a.name || a.hostname || "").localeCompare(b.name || b.hostname || "", "en", { numeric: true }));
-      for (const c of cs) { while (taken.has(cur) || cur === p.gw) cur++; if (cur > end) { err = "The groups do not fit into the fixed range – raise the limit."; break; } plan.set(c.mac, cur); c._grp = g; taken.add(cur); cur++; }
+      for (const c of cs) { while (cur <= end && !freeFor(cur, c)) cur++; if (cur > end) { err = "The groups do not fit into the fixed range – raise the limit."; break; } plan.set(c.mac, cur); c._grp = g; taken.add(cur); cur++; }
       cur = p.r.start + Math.ceil((cur - p.r.start + 1) / 10) * 10;
     }
   }
   for (const c of pinned) plan.set(c.mac, ipNum(c.fixed_ip));
-  const b = { n, p, first: first === p.gw ? first + 1 : first, end, poolS, poolE, plan, fixed, pinned, dynIn, err, poolChange: p.ps !== poolS || p.pe !== poolE };
-  b.rows = fixed.filter(c => plan.has(c.mac) && plan.get(c.mac) !== ipNum(c.fixed_ip)).map(c => ({ c, b, nip: ipStr(plan.get(c.mac)), grp: CL.strategy !== "min" ? c._grp : groupKey(c), sel: prev.get(c.mac) ?? true, status: "chg" }));
+  const staticInPool = statics.filter(c => ipNum(c.ip) >= poolS && ipNum(c.ip) <= poolE && !(state.haHost?.ips || []).includes(c.ip));
+  const dhcpOff = n.dhcp_enabled === false || n.dhcp_relay;
+  const b = { n, p, first: first === p.gw ? first + 1 : first, end, poolS, poolE, plan, fixed, pinned, dynIn, statics, staticInPool, haNoRes, clamped, minPool, busy,
+    err: dhcpOff ? (n.dhcp_relay ? "DHCP is relayed to another server – CleanUp is not possible here." : "The DHCP server of this network is off – CleanUp is not possible here.") : err,
+    poolChange: !dhcpOff && (p.ps !== poolS || p.pe !== poolE) };
+  b.rows = dhcpOff ? [] : fixed.filter(c => plan.has(c.mac) && plan.get(c.mac) !== ipNum(c.fixed_ip)).map(c => ({ c, b, nip: ipStr(plan.get(c.mac)), grp: CL.strategy === "ha" || CL.strategy === "group" ? c._grp : groupKey(c), sel: prev.get(c.mac) ?? true, status: "chg" }));
   return b;
 }
 // tidiness after the checked measures of one network
@@ -1626,7 +1667,7 @@ function buildClean() {
   CL.rows = CL.bs.filter(b => b.inc).flatMap(b => b.rows);
   return CL.bs[0] || { multiEmpty: true };
 }
-function resetClean() { Object.assign(CL, { frozen: false, end: null, endSet: false, pct: null, inc: {}, bs: [], multi: PLAN.sel === ALL_NETS, rows: [], tab: "plan", preview: false, played: false, running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true, rcc: true } }); }
+function resetClean() { Object.assign(CL, { result: null, journal: null, frozen: false, end: null, endSet: false, pct: null, inc: {}, bs: [], multi: PLAN.sel === ALL_NETS, rows: [], tab: "plan", preview: false, played: false, running: false, done: false, confirm: false, m: { move: true, rc: true, pool: true, rcc: true } }); }
 async function openClean() {
   resetClean(); PLAN.tab = "clean"; renderPlan();
   if (!CL.ha) { try { CL.ha = new Set((await api("api/ha_devices")).devices.flatMap(d => d.macs)); renderClean(); } catch { CL.ha = new Set(); } }
@@ -1751,20 +1792,29 @@ function renderClean() {
   const pinIn = pins.some(c => CL.bs.some(b => b.inc && ipNum(c.fixed_ip) >= b.poolS && ipNum(c.fixed_ip) <= b.poolE));
   const pinTxt = pins.length ? ` <b style="color:var(--hab)"><span>Home Assistant host</span> (<span translate="no">${pins.map(c => esc(c.name || c.hostname || c.mac) + ", " + esc(c.fixed_ip)).join("; ")}</span>) <span>keeps its address.</span></b>${pinIn ? ' <span style="color:var(--hab)">It stays inside the DHCP pool as a reservation, so the pool keeps its size.</span>' : ""}` : "";
   const where = multi ? `in ${inc.length} ${inc.length === 1 ? "network" : "networks"}` : `into .${b0.first & 255} – .${b0.end & 255}`;
-  $("#clM1").innerHTML = m("move", `4 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}${multi ? " Every device stays in its network." : ""} Untick single devices below.${pinTxt}${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : "Nothing to move – all fixed IPs already lie in the fixed range." + pinTxt, !CL.rows.length);
+  $("#clM1").innerHTML = m("move", `4 · Move ${sel.length} fixed ${sel.length === 1 ? "IP" : "IPs"} ${where}`, CL.rows.length ? `${CL.strategy === "group" ? "Renumbered in blocks per vendor." : CL.strategy === "ha" ? "Renumbered in blocks per Home Assistant integration; devices not in HA come last." : "Only fixed IPs in the future DHCP pool, on the gateway or used twice move; all others keep their address."}${multi ? " Every device stays in its network." : ""} Untick single devices below.${pinTxt}${haHits ? ` <b style="color:var(--warn)">${haHits} of them ${haHits === 1 ? "is" : "are"} known to Home Assistant</b> – check integrations that are configured with an IP (Shelly, ESPHome, cameras …).` : ""}` : (CL.strategy === "pool" ? "Pool only: no device changes its address." : "Nothing to move – all fixed IPs already lie in the fixed range.") + pinTxt, !CL.rows.length);
   $("#clMoves").hidden = !CL.rows.length;
   $("#clMV").innerHTML = `<label class="measure"><input type="checkbox" checked disabled><span class="h">1 · Save a version of the current settings</span><span class="d">Always first – undo anytime via <i>Versions › Restore</i>.</span></label>`;
   const cflWifi = dynIn.filter(canReconnect), cflOther = dynIn.length - cflWifi.length;
   $("#clM0").innerHTML = m("rcc", `3 · Reconnect ${cflWifi.length} conflicting Wi-Fi ${cflWifi.length === 1 ? "client" : "clients"}`, dynIn.length ? `${cflWifi.length ? `<b>${cflWifi.map(c => esc(c.name || c.hostname || c.mac)).join(", ")}</b> <span>${cflWifi.length === 1 ? "uses an address in the new fixed block – reconnected after the pool change, it gets a pool address and frees it." : "use addresses in the new fixed block – reconnected after the pool change, they get pool addresses and free them."}</span>` : ""}${cflOther ? ` <span>${cflOther} wired or offline ${cflOther === 1 ? "client keeps its address" : "clients keep their addresses"} until the next DHCP renewal.</span>` : ""}` : "No dynamic client uses an address in the new fixed block.", !cflWifi.length);
   $("#clM2").innerHTML = m("rc", `5 · Reconnect ${nWifi} moved Wi-Fi ${nWifi === 1 ? "client" : "clients"}`, nWifi ? `So they take the new IP right away (one per second).${nOther ? ` ${nOther} wired or offline ${nOther === 1 ? "device takes" : "devices take"} it at the next DHCP renewal.` : ""}` : "No online Wi-Fi client is affected.", !nWifi || !CL.m.move);
+  // network facts the pool step has to mention
+  const incB = CL.bs.filter(b => b.inc), nm = c => `<span translate="no">${esc(c.name || c.hostname || c.mac)}</span>`;
+  const stInPool = incB.flatMap(b => b.staticInPool), haNoRes = [...new Set(incB.flatMap(b => b.haNoRes))], clampedB = incB.filter(b => b.clamped && CL.strategy !== "pool");
+  const poolWarn = [
+    stInPool.length ? `<span class="w-line">⚠ <span>${stInPool.length === 1 ? "A device with its IP set on the device lies in the new pool" : `${stInPool.length} devices with their IP set on the device lie in the new pool`}</span>: ${stInPool.map(c => `${nm(c)} (${esc(c.ip)})`).join(", ")}. <span>Give them a fixed IP, otherwise the DHCP server may hand out their address.</span></span>` : "",
+    haNoRes.length ? `<span class="w-line" style="color:var(--hab)">ⓘ <span>The Home Assistant host has no fixed IP in UniFi</span> (${haNoRes.map(esc).join(", ")}). <span>Its address is kept free – reserving it in its edit panel is recommended.</span></span>` : "",
+    clampedB.length ? `<span class="w-line">ⓘ <span>The fixed range was limited so that the pool keeps at least</span> ${Math.min(...clampedB.map(b => b.minPool))} <span>addresses.</span></span>` : "",
+  ].filter(Boolean).join("");
   $("#clM3").innerHTML = multi
     ? m("pool", `2 · Change the DHCP pool in ${pools.length} ${pools.length === 1 ? "network" : "networks"}`, pools.length ? `${pools.map(b => `${esc(b.n.name)} ${poolTxt(b.p.ps, b.p.pe)} → ${poolTxt(b.poolS, b.poolE)}`).join(" · ")}. ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in a new fixed range and will get a pool address at the next renewal. ` : ""}Done first, so that no new device gets a dynamic address in the fixed block while the moves run.` : "All pools already match.", !pools.length)
     : m("pool", `2 · Change the DHCP pool ${poolTxt(b0.p.ps, b0.p.pe)} → .${b0.poolS & 255} – .${b0.poolE & 255}`, b0.poolChange ? `${b0.poolE - b0.poolS + 1} addresses for dynamic clients (today ${b0.p.dyn} in use). ${dynIn.length ? `${dynIn.length} dynamic ${dynIn.length === 1 ? "client sits" : "clients sit"} in the new fixed range and will get a pool address at the next renewal. ` : ""}Done first, so that no new device gets a dynamic address in the fixed block while the moves run.` : "The pool already matches.", !b0.poolChange);
+  if (poolWarn) $("#clM3 .d")?.insertAdjacentHTML("beforeend", poolWarn);
   // moves (children of measure 1)
   const view = tsorted("clRows", CL.rows, { dev: r => (r.c.name || r.c.hostname || "").toLowerCase(), mac: r => r.c.mac, ip: r => ipNum(r.c.fixed_ip), nip: r => ipNum(r.nip), grp: r => (multi ? r.b.n.name + " " : "") + r.grp, status: r => r.status });
   $("#clRows").innerHTML = view.map(r => `<tr><td><label class="opt"><input type="checkbox" data-ci="${CL.rows.indexOf(r)}" ${r.sel ? "checked" : ""} ${CL.running || CL.done || !CL.m.move ? "disabled" : ""}></label></td>
     <td>${esc(r.c.name || r.c.hostname || "–")}</td><td class="mono">${esc(r.c.mac)}</td><td class="mono">${esc(r.c.fixed_ip)}</td><td class="mono"><b>${esc(r.nip)}</b></td><td>${multi ? `<span class="muted">${esc(r.b.n.name)} ·</span> ` : ""}${esc(r.grp)}</td>
-    <td><div class="chg-list">${r.status === "ok" ? '<span class="st ok">✓ Moved</span>' : r.status === "fail" ? `<span class="st err">Failed</span><span class="msg">${esc(r.result || "")}</span>` : '<span class="st chg">Move</span>'}${CL.ha?.has(r.c.mac) ? '<span style="color:var(--warn)">Known to Home Assistant – check IP-based integrations</span>' : ""}${r.status === "chg" && needsNewIp(r.c, r.nip) ? (canReconnect(r.c) ? (CL.m.rc ? '<span class="rc-note">↻ Will be reconnected</span>' : '<span class="muted">Wi-Fi – new IP at next renewal (or reconnect)</span>') : `<span class="muted">${esc(renewNote(r.c))}</span>`) : ""}</div></td></tr>`).join("");
+    <td><div class="chg-list">${r.status === "ok" ? `<span class="st ok">✓ Moved</span>${r.verify === "new" ? '<span style="color:var(--ok)">Uses the new IP</span>' : r.verify === "pool" ? `<span style="color:var(--warn)">Got a pool address (${esc(r.nowIp)}) – takes the new IP at its next renewal</span>` : r.verify === "old" ? '<span class="muted">Still on the old IP – takes the new one at its next renewal</span>' : r.verify === "offline" ? '<span class="muted">Offline – takes the new IP when it comes back</span>' : ""}` : r.status === "fail" ? `<span class="st err">Failed</span><span class="msg">${esc(r.result || "")}</span>` : '<span class="st chg">Move</span>'}${CL.ha?.has(r.c.mac) ? '<span style="color:var(--warn)">Known to Home Assistant – check IP-based integrations</span>' : ""}${r.status === "chg" && needsNewIp(r.c, r.nip) ? (canReconnect(r.c) ? (CL.m.rc ? '<span class="rc-note">↻ Will be reconnected</span>' : '<span class="muted">Wi-Fi – new IP at next renewal (or reconnect)</span>') : `<span class="muted">${esc(renewNote(r.c))}</span>`) : ""}</div></td></tr>`).join("");
   const vis = CL.rows.filter(() => !CL.running && !CL.done && CL.m.move), nS = vis.filter(r => r.sel).length, all = $("#clAll");
   all.disabled = !vis.length; all.checked = vis.length > 0 && nS === vis.length; all.indeterminate = nS > 0 && nS < vis.length;
   // footer
@@ -1780,7 +1830,41 @@ function renderClean() {
     const parts = [CL.m.move && sel.length ? `${sel.length} ${sel.length === 1 ? "move" : "moves"}` : "", CL.m.pool && pools.length ? (pools.length > 1 ? `${pools.length} pool changes` : "pool change") : ""].filter(Boolean);
     btn.textContent = parts.length ? "Apply " + parts.join(" + ") + " …" : "Nothing to apply"; btn.disabled = !todo || !!errs.length;
   }
+  if (CL.result && (CL.running || CL.done)) {
+    const R = CL.result, J = CL.journal;
+    $("#clConfirm").innerHTML = `<div class="cl-result ${R.problems.length ? "has-prob" : ""}"><b>${CL.running ? "Applying …" : R.aborted ? "Stopped" : "Result"}</b><ul>${R.steps.map(x => `<li class="${x.cls}">${x.cls === "muted" && CL.running ? '<span class="spin"></span> ' : ""}<span>${esc(x.txt)}</span></li>`).join("")}</ul>${R.problems.length ? `<div class="probs"><b>Needs attention</b><ul>${R.problems.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>` : ""}${J && (J.pools.length || J.moves.length) && !CL.running ? `<div class="rb"><button class="btn danger-outline" type="button" id="clRollback">Undo everything</button><span class="muted">Sets the pools and fixed IPs back to how they were before this CleanUp.</span></div>` : ""}</div>`;
+    $("#clRollback")?.addEventListener("click", rollbackClean);
+    return;
+  }
   $("#clConfirm").innerHTML = CL.confirm && !CL.done ? `<div class="cl-confirm"><b>Apply in this order?</b><ol>${steps.map(t => `<li>${esc(t[0].toUpperCase() + t.slice(1))}</li>`).join("")}</ol>${CL.m.pool && pools.length ? "<span>This changes the network configuration in UniFi.</span> " : ""}<span>Click</span> <i>Confirm &amp; apply</i>, or Cancel.</div>` : "";
+}
+// sets reservations in a safe order: an address still reserved by another device of the batch is freed first,
+// cycles are resolved via a free temporary address. items: [{ c, ip, netId, b }] – held: ip -> mac (current reservations)
+async function runMoves(items, held, onDone) {
+  let pending = [...items];
+  const put = (it, ip) => api("api/client", clientBody(it.c, { use_fixedip: true, fixed_ip: ip, network_id: it.netId }));
+  while (pending.length) {
+    const ready = pending.filter(it => !held.has(it.ip) || held.get(it.ip) === it.c.mac);
+    if (!ready.length) { // cycle: park the first device on an address nobody uses or plans
+      const it = pending[0], p = planNet(net(it.netId)), planned = new Set(pending.map(q => q.ip)), busy = it.b?.busy || new Map();
+      let viaTmp = null;
+      for (let x = p.r.end - 1; x > p.r.start; x--) { const ip = ipStr(x); if (x !== p.gw && !held.has(ip) && !planned.has(ip) && !busy.has(x)) { viaTmp = ip; break; } }
+      if (!viaTmp) { for (const q of pending) onDone(q, false, "No free address to resolve the swap"); break; }
+      try { await put(it, viaTmp); held.delete(it.from); held.set(viaTmp, it.c.mac); it.from = viaTmp; } catch (e) { onDone(it, false, e.message); pending = pending.slice(1); }
+      continue;
+    }
+    for (const it of ready) {
+      try { await put(it, it.ip); held.delete(it.from); held.set(it.ip, it.c.mac); onDone(it, true); }
+      catch (e) { onDone(it, false, e.message); }
+    }
+    pending = pending.filter(it => !ready.includes(it));
+  }
+}
+// after a pool change UniFi re-provisions the gateway – wait until it is ready again (max. 90 s)
+async function waitGateway() {
+  await sleep(5000);
+  for (let t = 0; t < 30; t++) { try { if ((await api("api/gw_state")).ready) return true; } catch { return true; } await sleep(3000); }
+  return false;
 }
 async function applyClean() {
   if (CL.done) { backToPlan(); return; }
@@ -1788,47 +1872,85 @@ async function applyClean() {
   const inc = CL.bs.filter(b => b.inc), pools = CL.m.pool ? inc.filter(b => b.poolChange) : [];
   const conflicts = CL.m.rcc ? inc.flatMap(b => b.dynIn).filter(canReconnect) : [];
   const todo = CL.m.move ? CL.rows.filter(r => r.sel && r.status === "chg") : [];
-  CL.running = true; renderClean();
-  if (!await autoVersion(CL.multi ? `Before cleanup of ${inc.length} networks` : `Before cleanup of ${inc[0].n.name}`)) { CL.running = false; CL.confirm = false; CL.frozen = false; renderClean(); return; }
-  const msg = [];
-  // 1 · pools first: from now on no new dynamic lease lands in the fixed block
-  let pOk = 0;
+  CL.running = true; CL.result = { steps: [], problems: [] }; renderClean();
+  if (!await autoVersion(CL.multi ? `Before cleanup of ${inc.length} networks` : `Before cleanup of ${inc[0].n.name}`)) { CL.running = false; CL.confirm = false; CL.frozen = false; CL.result = null; renderClean(); return; }
+  const R = CL.result, J = CL.journal = { pools: [], moves: [] };
+  const step = (txt, cls = "ok") => { R.steps.push({ txt, cls }); renderClean(); };
+  // 1 · pools first – if one fails nothing else is changed
   for (const b of pools) {
-    try { await api("api/pool", { network_id: b.n.id, start: ipStr(b.poolS), stop: ipStr(b.poolE) }); pOk++; }
-    catch (e) { toast(`Pool change in ${b.n.name} failed: ` + e.message); }
+    try { const r = await api("api/pool", { network_id: b.n.id, start: ipStr(b.poolS), stop: ipStr(b.poolE) }); J.pools.push({ id: b.n.id, name: b.n.name, start: r.before?.[0] || b.n.dhcp_start, stop: r.before?.[1] || b.n.dhcp_stop }); }
+    catch (e) { R.problems.push(`Pool change in ${b.n.name} failed: ${e.message}`); R.aborted = true; break; }
   }
-  if (pools.length) msg.push(`${pOk}/${pools.length} ${pools.length === 1 ? "pool" : "pools"} changed`);
+  if (J.pools.length) step(`${J.pools.length}/${pools.length} DHCP ${pools.length === 1 ? "pool" : "pools"} changed`);
+  if (R.aborted) { step("Stopped – no fixed IP was changed.", "bad"); return finishClean(); }
+  if (J.pools.length) { step("Waiting for the gateway to apply the new pool …", "muted"); const ok = await waitGateway(); R.steps.pop(); step(ok ? "Gateway has applied the new pool" : "Gateway did not report ready within 90 s – continuing", ok ? "ok" : "warn"); }
   // 2 · conflicting dynamic clients get a pool address and free theirs
-  if (conflicts.length) { const r = await reconnectAll(conflicts); msg.push(`${r.ok} ${r.ok === 1 ? "conflict" : "conflicts"} reconnected`); await sleep(8000); }
-  // 3 · moves, in a safe order (an address still reserved by another moving device is freed first)
+  if (conflicts.length) { const r = await reconnectAll(conflicts); step(`${r.ok} conflicting ${r.ok === 1 ? "client" : "clients"} reconnected`); await sleep(8000); }
+  // 3 · moves
   $("#clProg").hidden = !todo.length; let i = 0;
-  const put = async (r, ip) => api("api/client", clientBody(r.c, { use_fixedip: true, fixed_ip: ip, network_id: r.b.n.id }));
   const held = new Map(state.clients.filter(c => c.use_fixedip && c.fixed_ip).map(c => [c.fixed_ip, c.mac]));
-  let pending = [...todo];
-  while (pending.length) {
-    const ready = pending.filter(r => !held.has(r.nip) || held.get(r.nip) === r.c.mac);
-    if (!ready.length) { // cycle: park the first device on a free address
-      const r = pending[0], p = r.b.p, planned = new Set([...r.b.plan.values()]); let viaTmp = null;
-      for (let x = p.r.end - 1; x > p.r.start; x--) { const ip = ipStr(x); if (x !== p.gw && !held.has(ip) && !planned.has(x)) { viaTmp = ip; break; } }
-      if (!viaTmp) { for (const q of pending) { q.status = "fail"; q.result = "No free address to resolve the swap"; } break; }
-      try { await put(r, viaTmp); held.delete(r.c.fixed_ip); held.set(viaTmp, r.c.mac); r.c._tmp = viaTmp; } catch (e) { r.status = "fail"; r.result = e.message; pending = pending.slice(1); }
-      continue;
-    }
-    for (const r of ready) {
-      const from = r.c._tmp || r.c.fixed_ip;
-      try { await put(r, r.nip); r.status = "ok"; held.delete(from); held.set(r.nip, r.c.mac); }
-      catch (e) { r.status = "fail"; r.result = e.message; }
-      delete r.c._tmp;
-      $("#clProg i").style.width = (++i / todo.length * 100) + "%";
-    }
-    pending = pending.filter(r => !ready.includes(r));
-  }
-  if (todo.length) msg.push(`${todo.filter(r => r.status === "ok").length}/${todo.length} moved`);
+  const items = todo.map(r => ({ r, c: r.c, ip: r.nip, from: r.c.fixed_ip, netId: r.b.n.id, b: r.b, back: { ip: r.c.fixed_ip, netId: r.c._resNet || r.b.n.id } }));
+  await runMoves(items, held, (it, ok, msg) => {
+    it.r.status = ok ? "ok" : "fail"; it.r.result = msg || "";
+    if (ok) J.moves.push(it);
+    $("#clProg i").style.width = (++i / todo.length * 100) + "%";
+  });
+  if (todo.length) step(`${J.moves.length}/${todo.length} fixed ${todo.length === 1 ? "IP" : "IPs"} moved`, J.moves.length === todo.length ? "ok" : "warn");
+  for (const r of todo.filter(r => r.status === "fail")) R.problems.push(`${r.c.name || r.c.mac}: ${r.result}`);
   // 4 · moved Wi-Fi clients pick up their new fixed IP right away
-  if (CL.m.rc) { const aff = todo.filter(r => r.status === "ok" && needsNewIp(r.c, r.nip)), wifi = aff.filter(r => canReconnect(r.c)); if (wifi.length) msg.push(rcSummary(await reconnectAll(wifi.map(r => r.c)), aff.length - wifi.length)); }
-  toast(msg.join(" · ") || "Done");
+  const moved = J.moves.map(it => it.r), wifi = moved.filter(r => needsNewIp(r.c, r.nip) && canReconnect(r.c));
+  if (CL.m.rc && wifi.length) { const r = await reconnectAll(wifi.map(r => r.c)); step(`${r.ok} moved Wi-Fi ${r.ok === 1 ? "client" : "clients"} reconnected`); }
+  // 5 · check what the clients really use now
+  if (moved.length) { step("Checking the new addresses …", "muted"); await verifyMoves(moved, wifi.length ? 3 : 1); R.steps.pop(); }
+  return finishClean();
+}
+async function verifyMoves(rows, rounds) {
+  for (let k = 0; k < rounds; k++) {
+    await sleep(k ? 15000 : 10000);
+    let d; try { d = await api("api/snapshot"); } catch { return; }
+    const by = new Map(d.clients.map(c => [c.mac, c]));
+    for (const r of rows) {
+      const c = by.get(r.c.mac), b = r.b;
+      r.verify = !c || !c.online ? "offline" : c.ip === r.nip ? "new" : (ipNum(c.ip) >= b.poolS && ipNum(c.ip) <= b.poolE) && c.ip !== r.c.ip ? "pool" : "old";
+      r.nowIp = c?.ip || "";
+    }
+    if (rows.every(r => r.verify !== "old" || !canReconnect(r.c))) break;
+  }
+}
+function finishClean() {
+  const R = CL.result, rows = (CL.journal?.moves || []).map(it => it.r);
+  const cnt = v => rows.filter(r => r.verify === v).length;
+  if (rows.length) {
+    if (cnt("new")) R.steps.push({ txt: `${cnt("new")} ${cnt("new") === 1 ? "device already uses its new IP" : "devices already use their new IP"}`, cls: "ok" });
+    if (cnt("old") + cnt("offline")) {
+      const lt = Math.max(...rows.map(r => r.b.n.lease_time || 86400)) / 3600;
+      R.steps.push({ txt: `${cnt("old") + cnt("offline")} ${cnt("old") + cnt("offline") === 1 ? "device takes its new IP" : "devices take their new IP"} at the next DHCP renewal (lease time ${lt >= 1 ? Math.round(lt) + " h" : Math.round(lt * 60) + " min"} – renewal after half of it, or at a restart)`, cls: "muted" });
+    }
+    for (const r of rows.filter(r => r.verify === "pool")) R.problems.push(`${r.c.name || r.c.mac} got a pool address (${r.nowIp}) instead of ${r.nip} – its new address was probably still leased to another device. It takes ${r.nip} at its next renewal.`);
+  }
   CL.running = false; CL.confirm = false; CL.done = true; renderClean();
-  setTimeout(() => load(), 15000);
+  setTimeout(() => load(), 3000);
+}
+// undo a CleanUp run: pools back, fixed IPs back (same safe order), moved Wi-Fi clients reconnected
+async function rollbackClean() {
+  const J = CL.journal; if (!J || CL.running) return;
+  const b = $("#clRollback"); if (!b.dataset.armed) { b.dataset.armed = "1"; b.textContent = "Really undo? Click again"; return; }
+  CL.running = true; const R = CL.result; R.steps.push({ txt: "Undoing …", cls: "muted" }); renderClean();
+  await autoVersion("Before rollback of cleanup");
+  let snap; try { snap = await api("api/snapshot"); } catch (e) { R.problems.push("Rollback: " + e.message); CL.running = false; renderClean(); return; }
+  const held = new Map(snap.clients.filter(c => c.use_fixedip && c.fixed_ip).map(c => [c.fixed_ip, c.mac]));
+  const now = new Map(snap.clients.map(c => [c.mac, c]));
+  let ok = 0, fail = 0;
+  const items = J.moves.map(it => ({ c: now.get(it.c.mac) || it.c, ip: it.back.ip, from: it.ip, netId: it.back.netId, b: it.b }));
+  await runMoves(items, held, (it, good, msg) => { good ? ok++ : (fail++, R.problems.push(`Rollback ${it.c.name || it.c.mac}: ${msg}`)); });
+  let pOk = 0;
+  for (const p of [...J.pools].reverse()) { try { await api("api/pool", { network_id: p.id, start: p.start, stop: p.stop }); pOk++; } catch (e) { R.problems.push(`Rollback pool ${p.name}: ${e.message}`); } }
+  if (pOk) await waitGateway();
+  const wifi = items.filter(it => canReconnect(now.get(it.c.mac))).map(it => it.c);
+  if (wifi.length) await reconnectAll(wifi);
+  R.steps.pop(); R.steps.push({ txt: `Undone: ${ok}/${items.length} fixed IPs and ${pOk}/${J.pools.length} pools restored${wifi.length ? `, ${wifi.length} Wi-Fi clients reconnected` : ""}`, cls: fail ? "warn" : "ok" });
+  CL.journal = null; CL.running = false; renderClean();
+  setTimeout(() => load(), 3000);
 }
 const unconfirm = () => { if (CL.confirm && !CL.running) { CL.confirm = false; CL.frozen = false; } };
 $("#clEnd").addEventListener("change", e => { unconfirm(); const p = CL.b?.p; if (!p || CL.running || CL.done) return; if (e.target.value === "") CL.endSet = false; else { CL.end = p.r.start - (p.r.start & 255) + +e.target.value; CL.endSet = true; } renderClean(); });
@@ -2170,8 +2292,27 @@ $("#btnUnres").addEventListener("click", async e => { const btn = e.currentTarge
 $("#btnForget").addEventListener("click", e => {
   const b = e.currentTarget;
   if (!b.dataset.armed) { b.dataset.armed = "1"; b.classList.add("armed"); b.textContent = "Really forget? Click again"; return; }
-  doDel("api/forget", b, "Forget client", "Client forgotten");
+  doForget(b);
 });
+// forgetting can take UniFi a while: a 5 s progress bar, then refresh; if UniFi is still busy, wait for it
+async function doForget(btn) {
+  const mac = state.sel.mac;
+  btn.disabled = true; btn.innerHTML = '<span class="bprog"><i></i></span><span class="bl">Forgetting …</span>';
+  const who = state.sel.name || state.sel.hostname || mac;
+  if (!await autoVersion(`Before forgetting ${who}`)) { btn.disabled = false; disarm(); return; } // name, note and reservation can be restored
+  const req = api("api/forget", { mac }).then(() => null, e => e);
+  let [res] = await Promise.all([Promise.race([req, sleep(5000).then(() => "busy")]), sleep(5000)]); // the bar always runs its 5 s
+  try { await load(); } catch {}
+  let c = state.clients.find(x => x.mac === mac);
+  if (c && res === "busy") { // UniFi still working
+    btn.innerHTML = '<span class="bprog busy"><i></i></span><span class="bl">UniFi is still working …</span>';
+    res = await req; try { await load(); } catch {} c = state.clients.find(x => x.mac === mac);
+  }
+  btn.disabled = false; disarm();
+  if (!c) { toast("Client forgotten"); closePanel(); return; }
+  if (res && res !== "busy") { openPanel(c, "edit"); showErr(res.message); return; }
+  toast("Client forgotten"); openPanel(c, "info"); // UniFi lists clients that are still connected again right away
+}
 $("#tabInfo").addEventListener("click", () => setTab("info"));
 $("#tabEdit").addEventListener("click", () => setTab("edit"));
 $("#dClose").addEventListener("click", closePanel);
