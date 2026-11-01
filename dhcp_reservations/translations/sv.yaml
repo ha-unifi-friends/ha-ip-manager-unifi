@@ -1,0 +1,36 @@
+configuration:
+  unifi_host:
+    name: UniFi-controller
+    description: IP eller värdnamn för gatewayen (utan https://)
+  username:
+    name: Användarnamn
+    description: Lokalt UniFi-konto (inte ett Ubiquiti-molnkonto)
+  password:
+    name: Lösenord
+  site:
+    name: Site
+    description: Internt sitenamn, oftast "default". Visningsnamnet i UniFi fungerar också; med bara en site hittas den automatiskt.
+  verify_ssl:
+    name: Verifiera certifikat
+    description: Låt vara av så länge gatewayen använder ett självsignerat certifikat
+  certificate_fingerprint:
+    name: Certifikatets fingeravtryck (SHA-256)
+    description: Lås controllerns självsignerade certifikat – apploggen visar vid start värdet att klistra in här. När det är satt accepteras anslutningen bara om certifikatet matchar (verify_ssl behövs då inte).
+  daily_version:
+    name: Daglig automatisk version
+    description: Sparar en version av tabellen per dag (visas som "Daglig" under Versioner).
+  auto_version_retention_days:
+    name: Behåll automatiska versioner (dagar)
+    description: Dagliga versioner och versioner sparade före massåtgärder tas bort efter så här många dagar. Manuella, fästa och baslinjeversioner behålls.
+  notify_new_devices:
+    name: Avisera om nya enheter
+    description: Skapar en Home Assistant-avisering (och händelsen clients_reservations_new_device) när en enhet med okänd MAC dyker upp.
+  notify_networks:
+    name: Bara dessa nätverk
+    description: Nätverksnamn eller VLAN-ID att bevaka, t.ex. Trusted eller 10. Tomt = alla nätverk.
+  notify_random_mac:
+    name: Avisera även om slumpmässiga MAC
+    description: Telefoner och surfplattor med privat Wi-Fi-adress dyker upp med en ny MAC per nätverk; av som standard för att undvika brus.
+  vendor_lookup:
+    name: Slå upp okända tillverkare
+    description: Fyller i en tom Tillverkare via macvendors.com (bara tillverkarens 3-byte-prefix skickas, max 1 förfrågan per sekund, resultaten cachas).

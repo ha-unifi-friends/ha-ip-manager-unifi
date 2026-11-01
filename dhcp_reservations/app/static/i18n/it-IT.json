@@ -782,5 +782,6 @@
  "pools": "pool",
  "Theme: {0}": "Tema: {0}",
  "Language: {0}": "Lingua: {0}",
- "Language": "Lingua"
+ "Language": "Lingua",
+ "Network check & link": "Verifica di rete & link"
 }

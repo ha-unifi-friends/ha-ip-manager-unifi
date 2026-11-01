@@ -195,7 +195,7 @@ For the Home Assistant features, the service reads the device registry through t
 
 ## Languages
 
-The UI is available in English, Deutsch, Schwiizerdütsch (Mundart), Français, Italiano and Español – pick it at the bottom of the sidebar (*Auto* follows the browser). Translations are plain JSON files in [`dhcp_reservations/app/static/i18n/`](dhcp_reservations/app/static/i18n/): the key is the English text, `{0}`, `{1}` … are placeholders for numbers, names or addresses and may be reordered. Corrections and new languages are welcome as pull requests.
+The UI is available in English, Deutsch, Schwiizerdütsch (Mundart), Français, Italiano, Español, Nederlands, Polski, Português (Brasil) and Svenska – pick it at the bottom of the sidebar (*Auto* follows the browser). Translations are plain JSON files in [`dhcp_reservations/app/static/i18n/`](dhcp_reservations/app/static/i18n/): the key is the English text, `{0}`, `{1}` … are placeholders for numbers, names or addresses and may be reordered. Corrections and new languages are welcome as pull requests.
 
 ## Contributing
 

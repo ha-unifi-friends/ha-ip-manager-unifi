@@ -782,5 +782,6 @@
  "pools": "Pools",
  "Theme: {0}": "Design: {0}",
  "Language: {0}": "Sprache: {0}",
- "Language": "Sprache"
+ "Language": "Sprache",
+ "Network check & link": "Netzwerkprüfung & Link"
 }

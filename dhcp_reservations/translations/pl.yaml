@@ -1,0 +1,36 @@
+configuration:
+  unifi_host:
+    name: "Kontroler UniFi"
+    description: "IP lub nazwa hosta gatewaya (bez https://)"
+  username:
+    name: "Nazwa użytkownika"
+    description: "Lokalne konto UniFi (nie konto chmurowe Ubiquiti)"
+  password:
+    name: "Hasło"
+  site:
+    name: "Site"
+    description: "Wewnętrzna nazwa site, zwykle \"default\". Działa też nazwa wyświetlana w UniFi; przy jednym site jest wykrywany automatycznie."
+  verify_ssl:
+    name: "Weryfikuj certyfikat"
+    description: "Pozostaw wyłączone, dopóki gateway używa certyfikatu z podpisem własnym"
+  certificate_fingerprint:
+    name: "Odcisk certyfikatu (SHA-256)"
+    description: "Przypina certyfikat kontrolera z podpisem własnym – log aplikacji pokazuje przy starcie wartość do wklejenia tutaj. Gdy jest ustawiony, połączenie jest akceptowane tylko przy zgodnym certyfikacie (verify_ssl nie jest wtedy potrzebne)."
+  daily_version:
+    name: "Codzienna wersja automatyczna"
+    description: "Zapisuje jedną wersję tabeli dziennie (widoczną jako \"Codzienna\" w Wersjach)."
+  auto_version_retention_days:
+    name: "Przechowuj wersje automatyczne (dni)"
+    description: "Wersje codzienne i wersje zapisane przed akcjami zbiorczymi są usuwane po tylu dniach. Wersje ręczne, przypięte i bazowe zostają."
+  notify_new_devices:
+    name: "Powiadamiaj o nowych urządzeniach"
+    description: "Tworzy powiadomienie Home Assistant (oraz zdarzenie clients_reservations_new_device), gdy pojawi się urządzenie z nieznanym MAC."
+  notify_networks:
+    name: "Tylko te sieci"
+    description: "Nazwy sieci lub VLAN ID do obserwowania, np. Trusted lub 10. Puste = wszystkie sieci."
+  notify_random_mac:
+    name: "Powiadamiaj także o losowych MAC"
+    description: "Telefony i tablety z prywatnym adresem Wi-Fi pojawiają się z nowym MAC w każdej sieci; domyślnie wyłączone, by uniknąć szumu."
+  vendor_lookup:
+    name: "Sprawdzaj nieznanych producentów"
+    description: "Uzupełnia puste pole Producent przez macvendors.com (wysyłany jest tylko 3-bajtowy prefiks producenta, maks. 1 zapytanie na sekundę, wyniki są buforowane)."

@@ -1,0 +1,36 @@
+configuration:
+  unifi_host:
+    name: "UniFi-controller"
+    description: "IP of hostnaam van de gateway (zonder https://)"
+  username:
+    name: "Gebruikersnaam"
+    description: "Lokaal UniFi-account (geen Ubiquiti-cloudaccount)"
+  password:
+    name: "Wachtwoord"
+  site:
+    name: "Site"
+    description: "Interne sitenaam, meestal \"default\". De weergavenaam in UniFi werkt ook; met maar één site wordt die automatisch gevonden."
+  verify_ssl:
+    name: "Certificaat controleren"
+    description: "Uit laten zolang de gateway een zelfondertekend certificaat gebruikt"
+  certificate_fingerprint:
+    name: "Certificaatvingerafdruk (SHA-256)"
+    description: "Pint het zelfondertekende certificaat van de controller – het app-log toont bij de start de waarde om hier te plakken. Indien ingesteld, wordt de verbinding alleen geaccepteerd als het certificaat overeenkomt (verify_ssl is dan niet nodig)."
+  daily_version:
+    name: "Dagelijkse automatische versie"
+    description: "Slaat per dag één versie van de tabel op (getoond als \"Dagelijks\" onder Versies)."
+  auto_version_retention_days:
+    name: "Automatische versies bewaren (dagen)"
+    description: "Dagelijkse versies en de versies die vóór bulkacties zijn opgeslagen, worden na zoveel dagen verwijderd. Handmatige, vastgezette en baseline-versies blijven bewaard."
+  notify_new_devices:
+    name: "Melden bij nieuwe apparaten"
+    description: "Maakt een Home Assistant-melding (en het event clients_reservations_new_device) wanneer een apparaat met een onbekend MAC verschijnt."
+  notify_networks:
+    name: "Alleen deze netwerken"
+    description: "Netwerknamen of VLAN-ID's om te bewaken, bijv. Trusted of 10. Leeg = alle netwerken."
+  notify_random_mac:
+    name: "Ook melden bij willekeurige MAC's"
+    description: "Telefoons en tablets met een privé Wi-Fi-adres verschijnen met een nieuw MAC per netwerk; standaard uit om ruis te vermijden."
+  vendor_lookup:
+    name: "Onbekende fabrikanten opzoeken"
+    description: "Vult een lege Fabrikant via macvendors.com (alleen het 3-byte fabrikantprefix wordt verzonden, max. 1 verzoek per seconde, resultaten worden gecachet)."

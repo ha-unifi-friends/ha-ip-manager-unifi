@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.28.0 – 2026-11-01
+
+- **More languages:** Nederlands, Polski, Português (Brasil) and Svenska – in the app and on its configuration page in Home Assistant. *Auto* picks them from the browser language.
+- **Network check & link** (device details): the port check comes first, ping below it. Open web ports (HTTP/HTTPS) are larger blue buttons with a link icon and open the device's web page in a new tab.
+
 ## 1.27.1 – 2026-11-01
 
 - The sidebar footer (version, language, theme) stays on one line in every language: the language is picked with a flag button (menu with flag and name, 🌐 = Auto), the theme switch shows only its icon (the tooltip names the theme).

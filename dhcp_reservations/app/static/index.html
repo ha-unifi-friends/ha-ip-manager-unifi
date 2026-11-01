@@ -505,8 +505,10 @@ body.plan-sz-l .pc .pi .brand-fb{font-size:15px}
 .pchip{display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--line-strong);border-radius:6px;padding:4px 8px;font-size:12px;color:var(--fg);text-decoration:none;max-width:100%}
 .pchip b{font:600 12px ui-monospace,SFMono-Regular,Menlo,monospace}
 .pchip .t{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}
-a.pchip{border-color:var(--accent);color:var(--accent)}
-a.pchip:hover{background:var(--sel)}
+a.pchip{align-items:center;gap:8px;padding:7px 12px;font-size:13px;border:1.5px solid var(--accent);background:color-mix(in srgb,var(--accent) 16%,transparent);color:var(--accent);font-weight:600;border-radius:8px}
+a.pchip b{font-size:13px}
+a.pchip .lk{flex:none;opacity:.9}
+a.pchip:hover{background:color-mix(in srgb,var(--accent) 28%,transparent)}
 .pchip.bad{border-color:var(--bad);color:var(--bad)}
 .ports .foot{display:flex;align-items:center;gap:8px;font-size:11.5px;color:var(--muted)}
 .ports .foot .btn{margin-left:auto;padding:4px 10px;font-size:12px}
@@ -573,8 +575,8 @@ body.side-off .menu-btn{display:inline-flex}
 // Keys may contain {0},{1}… for interpolated parts; those parts are translated again where possible.
 window.I18N = (() => {
   "use strict";
-  const LANGS = [["auto", "Auto"], ["en", "English"], ["de-DE", "Deutsch"], ["de-CH", "Schwiizerdütsch"], ["fr-FR", "Français"], ["it-IT", "Italiano"], ["es-ES", "Español"]];
-  const BASE = { en: "en", de: "de-DE", fr: "fr-FR", it: "it-IT", es: "es-ES" }; // "Auto": Swiss German Mundart only when chosen explicitly
+  const LANGS = [["auto", "Auto"], ["en", "English"], ["de-DE", "Deutsch"], ["de-CH", "Schwiizerdütsch"], ["fr-FR", "Français"], ["it-IT", "Italiano"], ["es-ES", "Español"], ["nl-NL", "Nederlands"], ["pl-PL", "Polski"], ["pt-BR", "Português (Brasil)"], ["sv-SE", "Svenska"]];
+  const BASE = { en: "en", de: "de-DE", fr: "fr-FR", it: "it-IT", es: "es-ES", nl: "nl-NL", pl: "pl-PL", pt: "pt-BR", sv: "sv-SE" }; // "Auto": Swiss German Mundart only when chosen explicitly
   let pref = "auto"; try { pref = JSON.parse(localStorage.getItem("dhcpres.lang")) || "auto"; } catch {}
   if (BASE[pref] && pref !== "en") pref = BASE[pref];
   const auto = () => { for (const l of navigator.languages || [navigator.language || "en"]) { const b = BASE[String(l).toLowerCase().split("-")[0]]; if (b) return b; } return "en"; };
@@ -1313,7 +1315,7 @@ function pingHtml(c) {
     const col = r.received === r.sent ? "var(--ok)" : r.received ? "var(--warn)" : "var(--bad)";
     txt = `<span><b style="color:${col}">${r.received}/${r.sent} replies</b>${r.received ? ` · avg ${r.avg} ms <span class="muted">(min ${r.min} / max ${r.max})</span>` : " · no answer"} · ${esc(r.ip)}</span>`;
   }
-  return `<div class="foot" style="border-bottom:1px solid var(--line);padding-bottom:8px">${txt}${btn}</div>`;
+  return `<div class="foot" style="border-top:1px solid var(--line);padding-top:8px">${txt}${btn}</div>`;
 }
 async function pingDev(c) {
   if (PORTSCAN.pinging) return;
@@ -1326,14 +1328,15 @@ async function loadScans() { try { state.scans = (await api("api/portscans")).sc
 function portsHtml(c) {
   const sc = state.scans?.[c.mac], ip = webIp(c), busy = PORTSCAN.running === c.mac;
   const btn = `<button class="btn" type="button" id="btnScan" ${busy ? "disabled" : ""}>${busy ? '<span class="spin"></span> Checking …' : sc ? "Check again" : "Check ports"}</button>`;
-  if (!sc) return pingHtml(c) + `<div class="foot"><span>Checks about 30 common TCP ports on ${esc(ip)} from Home Assistant's network.${c.online ? "" : " The device is offline."}</span>${btn}</div>`;
+  if (!sc) return `<div class="foot"><span>Checks about 30 common TCP ports on ${esc(ip)} from Home Assistant's network.${c.online ? "" : " The device is offline."}</span>${btn}</div>` + pingHtml(c);
   const chips = sc.open.map(o => {
     const inner = `<b>${o.port}</b><span>${esc(o.service)}</span>${o.title ? `<span class="t" title="${esc(o.title)}">${esc(o.title)}</span>` : ""}`;
-    return o.scheme ? `<a class="pchip" href="${o.scheme}://${esc(sc.ip)}${(o.scheme === "http" && o.port === 80) || (o.scheme === "https" && o.port === 443) ? "" : ":" + o.port}/" target="_blank" rel="noopener noreferrer" title="Open in a new tab">${inner}</a>`
+    const LK = '<svg class="lk" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+    return o.scheme ? `<a class="pchip" href="${o.scheme}://${esc(sc.ip)}${(o.scheme === "http" && o.port === 80) || (o.scheme === "https" && o.port === 443) ? "" : ":" + o.port}/" target="_blank" rel="noopener noreferrer" title="Open in a new tab">${inner}${LK}</a>`
       : `<span class="pchip ${o.port === 23 || o.port === 21 ? "bad" : ""}" title="${o.port === 23 || o.port === 21 ? "Unencrypted protocol" : ""}">${inner}</span>`;
   }).join("");
-  return pingHtml(c) + `<div class="port-list">${chips || '<span class="muted">No open ports found.</span>'}</div>
-    <div class="foot"><span>${isoDateTime(sc.ts)} · ${esc(sc.ip)}${sc.ip !== ip ? ` <span style="color:var(--warn)">(now ${esc(ip)})</span>` : ""}</span>${btn}</div>`;
+  return `<div class="port-list">${chips || '<span class="muted">No open ports found.</span>'}</div>
+    <div class="foot"><span>${isoDateTime(sc.ts)} · ${esc(sc.ip)}${sc.ip !== ip ? ` <span style="color:var(--warn)">(now ${esc(ip)})</span>` : ""}</span>${btn}</div>` + pingHtml(c);
 }
 async function scanPorts(c) {
   if (PORTSCAN.running) return;
@@ -1971,7 +1974,7 @@ function renderInfo() {
         <span class="ha-logos">${haDoms(c, d).map(x => brandImg(x, 28)).join("")}</span>
         <div class="ha-info"><b>${esc(d.name_by_user || d.name)}</b><span class="muted">${esc(haDoms(c, d).join(", "))}${d.area ? " · " + esc(d.area) : ""}</span><span>${haDot(d.status)} ${esc(HA_ST[d.status]?.[0] || d.status)}</span>${d.status === "partial" && d.unavailable?.length ? `<details class="ha-unav"><summary>${d.unavailable.length} unavailable ${d.unavailable.length === 1 ? "entity" : "entities"}</summary>${d.unavailable.map(e => `<code>${esc(e)}</code>`).join("")}</details>` : ""}</div>
         <a class="btn" href="/config/devices/device/${encodeURIComponent(d.id)}" target="_blank" rel="noopener" title="Open this device in Home Assistant (new tab)">Open in HA ↗</a></div>`).join("")}</div>` : ""}
-    ${c.mac && webIp(c) ? `<div class="sec-title">Network check</div><div class="card ports" id="portBox">${portsHtml(c)}</div>` : ""}
+    ${c.mac && webIp(c) ? `<div class="sec-title">Network check &amp; link</div><div class="card ports" id="portBox">${portsHtml(c)}</div>` : ""}
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
@@ -3143,6 +3146,10 @@ function flagSvg(k) {
   if (k === "de-CH") return `<svg ${W}><rect width="60" height="40" fill="#DA291C"/><path d="M26 9h8v7h7v8h-7v7h-8v-7h-7v-8h7z" fill="#fff"/></svg>`;
   if (k === "fr-FR") return `<svg ${W}><rect width="20" height="40" fill="#002395"/><rect x="20" width="20" height="40" fill="#fff"/><rect x="40" width="20" height="40" fill="#ED2939"/></svg>`;
   if (k === "it-IT") return `<svg ${W}><rect width="20" height="40" fill="#009246"/><rect x="20" width="20" height="40" fill="#fff"/><rect x="40" width="20" height="40" fill="#CE2B37"/></svg>`;
+  if (k === "nl-NL") return `<svg ${W}><rect width="60" height="13.4" fill="#AE1C28"/><rect y="13.3" width="60" height="13.4" fill="#fff"/><rect y="26.6" width="60" height="13.4" fill="#21468B"/></svg>`;
+  if (k === "pl-PL") return `<svg ${W}><rect width="60" height="20" fill="#fff"/><rect y="20" width="60" height="20" fill="#DC143C"/></svg>`;
+  if (k === "pt-BR") return `<svg ${W}><rect width="60" height="40" fill="#009C3B"/><path d="M30 5 54 20 30 35 6 20z" fill="#FFDF00"/><circle cx="30" cy="20" r="8.5" fill="#002776"/><path d="M21.8 18.3q8.5-1.6 16.4 3" stroke="#fff" stroke-width="1.6" fill="none"/></svg>`;
+  if (k === "sv-SE") return `<svg ${W}><rect width="60" height="40" fill="#006AA7"/><rect x="17" width="8" height="40" fill="#FECC00"/><rect y="16" width="60" height="8" fill="#FECC00"/></svg>`;
   if (k === "es-ES") return `<svg ${W}><rect width="60" height="40" fill="#AA151B"/><rect y="10" width="60" height="20" fill="#F1BF00"/></svg>`;
   return "";
 }

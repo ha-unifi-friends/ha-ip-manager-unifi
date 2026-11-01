@@ -1,0 +1,36 @@
+configuration:
+  unifi_host:
+    name: Controller UniFi
+    description: IP ou hostname do gateway (sem https://)
+  username:
+    name: Usuário
+    description: Conta UniFi local (não uma conta de nuvem da Ubiquiti)
+  password:
+    name: Senha
+  site:
+    name: Site
+    description: Nome interno do site, geralmente "default". O nome exibido no UniFi também funciona; com apenas um site ele é encontrado automaticamente.
+  verify_ssl:
+    name: Verificar certificado
+    description: Deixe desligado enquanto o gateway usar um certificado autoassinado
+  certificate_fingerprint:
+    name: Impressão digital do certificado (SHA-256)
+    description: Fixa o certificado autoassinado do controller – o log do app mostra na inicialização o valor a colar aqui. Se definido, a conexão só é aceita se o certificado corresponder (verify_ssl não é necessário).
+  daily_version:
+    name: Versão automática diária
+    description: Salva uma versão da tabela por dia (exibida como "Diária" em Versões).
+  auto_version_retention_days:
+    name: Manter versões automáticas (dias)
+    description: Versões diárias e as salvas antes de ações em massa são excluídas após este número de dias. Versões manuais, fixadas e de referência são mantidas.
+  notify_new_devices:
+    name: Notificar sobre novos dispositivos
+    description: Cria uma notificação no Home Assistant (e o evento clients_reservations_new_device) quando aparece um dispositivo com MAC desconhecido.
+  notify_networks:
+    name: Somente estas redes
+    description: Nomes de rede ou IDs de VLAN a monitorar, ex. Trusted ou 10. Vazio = todas as redes.
+  notify_random_mac:
+    name: Notificar também MACs aleatórios
+    description: Celulares e tablets com endereço Wi-Fi privado aparecem com um MAC novo por rede; desligado por padrão para evitar ruído.
+  vendor_lookup:
+    name: Consultar fabricantes desconhecidos
+    description: Preenche um Fabricante vazio via macvendors.com (só o prefixo de 3 bytes do fabricante é enviado, no máx. 1 consulta por segundo, resultados em cache).
