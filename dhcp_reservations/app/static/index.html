@@ -138,7 +138,7 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 @container main (min-width:1000px){body:not(.plan-sz-l) .plan-grid{grid-template-columns:repeat(32,minmax(0,1fr));gap:2px}body:not(.plan-sz-l) .plan-grid .pc{font-size:10.5px;padding:0 3px}}
 .plan-icons .sht,.plan-size .sht{display:none}
 @container main (max-width:1400px){body.plan-mode #stand{display:none}.topbar .plan-icons .lng,.topbar .plan-size .lng{display:none}.topbar .plan-icons .sht,.topbar .plan-size .sht{display:inline}}
-@container main (max-width:1060px){body.plan-mode .topbar .btn.icon-btn.primary .lbl{display:none}body.plan-mode .topbar .btn.icon-btn.primary{padding:6px 9px}body.plan-mode .view-switch button{padding:5px 9px}.topbar .plan-tabs button[role="tab"]{padding:7px 10px 9px}}
+@container main (max-width:1060px){body.plan-mode .topbar .btn.icon-btn.primary .lbl{display:none}body.plan-mode .topbar .btn.icon-btn.primary{padding:6px 9px}body.plan-mode .view-switch button{padding:5px 9px}.topbar .plan-tabs button[role="tab"]{padding:8px 10px 10px}}
 @container main (max-width:900px){body.plan-mode .view-switch button svg + *{display:none}body.plan-mode #btnReload{display:none}}
 .side-foot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;padding:8px 14px calc(8px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));border-top:1px solid var(--line);color:var(--muted);font-size:12px}
 .side-foot .sp{flex:1}
@@ -365,8 +365,8 @@ body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,bo
 .tidy.bad{background:var(--bad-bg);color:var(--bad)}
 .plan-head{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;margin-bottom:8px}
 /* Current / CleanUp Proposal: tabs on a shared track (between the Clients / IP Plan switch and a tab bar) */
-.topbar .plan-tabs{margin:0 0 -10px;position:relative;z-index:1;border:1px solid var(--line-strong);border-bottom:0;flex:none;gap:2px;background:var(--chip);border-radius:20px 20px 0 0;padding:4px 4px 0;align-self:flex-end} /* -10px = padding: the tabs end exactly on the (blue) header line */
-.plan-tabs button[role="tab"]{font-size:13.5px;padding:7px 16px 9px;border-radius:16px 16px 0 0;border-bottom:0;display:inline-flex;align-items:center}
+.topbar .plan-tabs{margin:0 0 -10px;position:relative;z-index:1;border:1px solid var(--line-strong);border-bottom:0;flex:none;gap:2px;background:var(--chip);border-radius:12px 12px 0 0;padding:3px 3px 0;align-self:flex-end} /* -10px = padding: the tabs end exactly on the (blue) header line */
+.plan-tabs button[role="tab"]{font-size:13.5px;padding:8px 15px 10px;border-radius:9px 9px 0 0;border-bottom:0;display:inline-flex;align-items:center} /* box with background, tabs slightly rounded */
 .plan-tabs button[role="tab"]:hover{color:var(--fg)}
 .topbar .plan-tabs button[role="tab"][aria-selected="true"]{background:var(--accent);color:#fff;font-weight:600}
 body.plan-mode .topbar{border-bottom:2px solid var(--accent)}

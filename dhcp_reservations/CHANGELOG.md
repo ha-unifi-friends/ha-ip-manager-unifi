@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.28.1 – 2026-11-01
+
+- IP plan tabs (*Current* / *CleanUp proposal*): calmer look – a box with background and slightly rounded tabs.
+
 ## 1.28.0 – 2026-11-01
 
 - **More languages:** Nederlands, Polski, Português (Brasil) and Svenska – in the app and on its configuration page in Home Assistant. *Auto* picks them from the browser language.
