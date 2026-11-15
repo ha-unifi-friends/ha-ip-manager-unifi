@@ -1054,6 +1054,35 @@ def reorder_fw_policies(api, body, user=""):
 FLOW_MAX = int(os.environ.get("FLOW_MAX", "5000"))
 
 
+def is_local_ip(ip):
+    """True for addresses of the own network (private, link-local, multicast or a known subnet), False for the internet,
+    None when there is no usable IP. Flows do not always carry a zone or MAC, so this decides what is "in the network"."""
+    try:
+        a = ipaddress.ip_address(str(ip or "").split("%")[0])
+    except ValueError:
+        return None
+    return bool(a.is_private or a.is_link_local or a.is_multicast or any(a.version == n.version and a in n for n in KNOWN_NETS))
+
+
+def flow_ip_macs(flows):
+    """IP -> MAC from the flows that carry both: a flow without the MAC still belongs to the same device."""
+    out = {}
+    for f in flows:
+        for side in (f.get("source") or {}, f.get("destination") or {}):
+            mac, ip = normalize_mac(side.get("mac") or ""), side.get("ip")
+            if mac and ip and is_local_ip(ip):
+                out.setdefault(ip, mac)
+    return out
+
+
+def flow_side_external(side):
+    """Whether one end of a flow is the internet – by its IP first, the zone name only when there is no IP."""
+    loc = is_local_ip(side.get("ip"))
+    if loc is not None:
+        return not loc
+    return (side.get("zone_name") or "").lower() == "external" or bool(side.get("region") and not side.get("network_name"))
+
+
 def read_flows(api, frm, to, limit=None):
     """All flows of a window (page by page, at most `limit`). Raises UnifiError when the console has no flows API."""
     limit = limit or FLOW_MAX
@@ -1128,17 +1157,19 @@ def suspicious_patterns(flows, roles, quiet=()):
     def role(z):
         return roles.get(z) or _zone_role_guess(z)
     quiet = {str(x).lower() for x in quiet if x}
+    ipmac = flow_ip_macs(flows)
     by_src = {}
     for f in flows:
         src, dst = f.get("source") or {}, f.get("destination") or {}
         if (src.get("zone_name") or "").lower() == "external" or not src.get("ip"):
             continue
-        key = normalize_mac(src.get("mac") or "") or src.get("ip")
-        b = by_src.setdefault(key, {"name": src.get("device_name") or src.get("ip"), "ip": src.get("ip"), "mac": normalize_mac(src.get("mac") or "") or "",
+        smac = normalize_mac(src.get("mac") or "") or ipmac.get(src.get("ip")) or ""
+        key = smac or src.get("ip")
+        b = by_src.setdefault(key, {"name": src.get("device_name") or src.get("ip"), "ip": src.get("ip"), "mac": smac,
                                     "zone": src.get("zone_name") or "", "hosts": set(), "ports": {}, "blocked": 0, "remote": {}, "lateral": {},
                                     "flows": 0, "role": role(src.get("zone_name"))})
         b["flows"] += int(f.get("count") or 1)
-        internal = (dst.get("zone_name") or "").lower() != "external"
+        internal = not flow_side_external(dst)
         dip, port = dst.get("ip"), dst.get("port")
         if internal and dip:
             b["hosts"].add(dip)
@@ -1248,13 +1279,14 @@ def traffic_relations(api, qs):
         return {"available": False, "reason": str(e),
                 "hint": "Traffic flows need UniFi Network 9 or later (Insights › Flows) and a gateway that records them."}
     nodes, edges = {}, {}
+    ipmac = flow_ip_macs(flows)
 
     def node(side):
-        mac = normalize_mac(side.get("mac") or "")
+        mac = normalize_mac(side.get("mac") or "") or ipmac.get(side.get("ip")) or ""
         zone = side.get("zone_name") or ""
         if mac:
             nid = mac
-        elif zone.lower() == "external" or (side.get("region") and not side.get("network_name")):
+        elif flow_side_external(side):
             nid = "internet"
         else:
             nid = "ip:" + str(side.get("ip") or "?")
@@ -1303,10 +1335,13 @@ def traffic_relations(api, qs):
         e["domains"] = [d for d, _ in sorted(e["domains"].items(), key=lambda x: -x[1])[:8]]
         e["ports"] = sorted(e["ports"].values(), key=lambda x: -x["bytes"])[:20]
         out.append(e)
-    out.sort(key=lambda e: -(e["ab"] + e["ba"]))
+    susp = suspicious_patterns(flows, zone_roles_by_name(api), quiet_hosts(api))
+    # the pairs of suspicious devices are kept even without data (blocked scans), so "Show" finds all of them
+    hot = {x["src"] for x in susp} | {"ip:" + str(x["ip"]) for x in susp if x.get("ip")}
+    out.sort(key=lambda e: (e["a"] not in hot, -(e["ab"] + e["ba"])))
     log("Relations:", len(flows), "flows,", len(out), "pairs")
     return {"available": True, "from": frm, "to": to, "flows": len(flows), "truncated": len(flows) >= FLOW_MAX,
-            "nodes": nodes, "edges": out[:1500], "suspicious": suspicious_patterns(flows, zone_roles_by_name(api), quiet_hosts(api)),
+            "nodes": nodes, "edges": out[:3000], "suspicious": susp,
             "alerts": load_fw_settings()["alerts"]}
 
 

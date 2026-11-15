@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.33.1 – 2026-11-15
+
+Fix: *Show* on a suspicious device could show far fewer devices in the graph than the alert counted (e.g. “contacted 58 devices”, graph with 2).
+- Blocked flows often come without MAC or network; they were merged into one “internet” node. Whether an end is in the network is now decided by its IP (private, link-local, multicast or a known subnet), and a flow without MAC is assigned to the device with the same IP.
+- The alert counts only devices in the network; public IPs (e.g. time servers) are no longer counted as devices and appear as *Internet* in the graph.
+- Relations without data (only blocked attempts) get a dashed line instead of none.
+- *Show* lists all relations of the device, whatever is ticked above (internet, Home Assistant …), with the number of counterparts and blocked relations; the counts in the sidebar stay those of the whole network.
+- Relations of suspicious devices are kept when there are very many pairs.
+
 ## 1.33.0 – 2026-11-15
 
 **Relations** reworked:

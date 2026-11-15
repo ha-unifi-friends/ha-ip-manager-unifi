@@ -3550,7 +3550,9 @@ function relEdges() {
 }
 function relFilter(list) {
   const s = REL.scope, q = REL.q.trim().toLowerCase();
+  const fo = REL.focus;
   return list.filter(e => {
+    if (fo) return [e.a, e.b].some(id => relSrcMatch(id, fo)) && (!q || relQMatch(e, q)); // one device: all of its relations, whatever is ticked
     if (!REL.inet && (e.b === "internet" || e.a === "internet")) return false;
     const isHa = (e.ca && isHaHost(e.ca)) || (e.cb && isHaHost(e.cb));
     if (!REL.ha && isHa && s !== "ha") return false;
@@ -3568,11 +3570,11 @@ function relFilter(list) {
     if (s === "integ" && !e.sameInteg) return false;
     if (s === "rules" && !e.bad.length) return false;
     if (s === "blocked" && !e.blocked) return false;
-    if (REL.focus && ![e.a, e.b].some(id => relSrcMatch(id, REL.focus))) return false;
-    if (q && ![relLabel(e.a), relLabel(e.b), e.a_zone, e.b_zone, ...e.domains, ...e.ports.map(p => p.service + " " + p.port)].join(" ").toLowerCase().includes(q)) return false;
+    if (q && !relQMatch(e, q)) return false;
     return true;
   });
 }
+const relQMatch = (e, q) => [relLabel(e.a), relLabel(e.b), e.a_zone, e.b_zone, ...e.domains, ...e.ports.map(p => p.service + " " + p.port)].join(" ").toLowerCase().includes(q);
 const relBytes = n => n >= 1e9 ? (n / 1e9).toFixed(1) + " GB" : n >= 1e6 ? (n / 1e6).toFixed(1) + " MB" : n >= 1e3 ? Math.round(n / 1e3) + " kB" : n + " B";
 const relPriv = ip => /^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|f[cd][0-9a-f]{2}:|fe80:)/i.test(String(ip || ""));
 const relByIp = ip => ip ? state.clients.find(c => c.ip === ip || (c.use_fixedip && c.fixed_ip === ip)) || null : null;
@@ -3588,7 +3590,11 @@ const relZoneCol = z => { const i = z ? fwZones().findIndex(x => x.id === z.id) 
 // the address shown under a name
 const relIp = id => id === "internet" ? "" : relDev(id)?.ip || REL.data?.nodes[id]?.ip || id.replace(/^ip:/, "");
 // a source of the suspicious list ("aa:bb…" or an IP) → node id in the graph
-const relSrcMatch = (id, src) => id === src || id === "ip:" + src;
+const relSrcMatch = (id, src) => {
+  if (id === src || id === "ip:" + src) return true;
+  const g = (REL.data?.suspicious || []).find(x => x.src === src), c = g ? (g.mac ? devByMac(g.mac) : relByIp(g.ip)) : devByMac(src) || relByIp(src);
+  return !!c && relDev(id) === c;
+};
 // live force layout in the manner of d3-force (as in Home Assistant's Zigbee map): devices repel each other, relations
 // pull like springs, devices of a firewall zone gather; dragging a device makes its neighbours follow and wobble
 function relSimInit(nodes, links, W, H, grp, mrg, mrgL, rad) {
@@ -3624,7 +3630,7 @@ function relTick() {
     if (p.fx != null) { p.x = p.fx; p.y = p.fy; p.vx = p.vy = 0; continue; }
     p.vx += (c.x - p.x) * 0.03 * al; p.vy += (c.y - p.y) * 0.03 * al;
     p.vx *= 0.6; p.vy *= 0.6; p.x += p.vx; p.y += p.vy;
-    p.x = Math.max(mrgL[n] ?? 30, Math.min(W - (mrg[n] || 40), p.x)); p.y = Math.max(24, Math.min(H - 24, p.y));
+    p.x = Math.max(mrgL[n] ?? 30, Math.min(W - (mrg[n] || 40), p.x)); p.y = Math.max(rad(n) + 14, Math.min(H - 24, p.y));
   }
 }
 function relRun() {
@@ -3671,12 +3677,15 @@ function renderRel() {
   if (REL.busy) { $("#relMsg").innerHTML = `<p class="muted"><span class="spin"></span> Loading the traffic flows from UniFi …</p>`; return; }
   if (!D) { if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; $("#relGraph").innerHTML = ""; $("#relRows").innerHTML = ""; $("#relFocus").innerHTML = ""; $("#relListN").textContent = ""; $("#relMsg").innerHTML = REL.err ? `<div class="banner fw-ban"><b>Relations not available:</b> ${esc(REL.err.msg || "")}${REL.err.hint ? `<div class="banner-hint"><b>Hint:</b> ${esc(REL.err.hint)}</div>` : ""}</div>` : `<p class="hint">Pick a time range and click <b>Show</b>.</p>`; return; }
   const all = relEdges(), list = relFilter(all).slice(0, REL.max);
-  for (const [k] of REL_SCOPES) { const el = document.querySelector(`[data-relcnt="${k}"]`); if (el) { const save = REL.scope; REL.scope = k; el.textContent = relFilter(all).length; REL.scope = save; } }
+  const sv = [REL.scope, REL.focus]; REL.focus = null; // the sidebar counts the whole network, also while one device is shown
+  for (const [k] of REL_SCOPES) { const el = document.querySelector(`[data-relcnt="${k}"]`); if (el) { REL.scope = k; el.textContent = relFilter(all).length; } }
+  [REL.scope, REL.focus] = sv;
   $("#relListN").textContent = list.length;
   $("#relMsg").innerHTML = `<div class="sumrow"><span class="pill">Flows <b>${D.flows.toLocaleString(I18N.locale)}</b></span><span class="pill">Relations <b>${all.length}</b></span><span class="pill">Shown <b>${list.length}</b></span>${all.some(e => e.bad.length) ? `<span class="pill" title="Flows that UniFi let through although the current rules would block them">Against the rules <b style="color:var(--bad)">${all.filter(e => e.bad.length).length}</b></span>` : ""}<span class="pill">${isoDateTime(D.from / 1000)} – ${isoDateTime(D.to / 1000)}</span>${D.truncated ? `<span class="pill" title="Only the first flows of the window were read">${D.flows} <span>flows read – narrow the time range for all</span></span>` : ""}</div>`;
   if (REL.focus) {
     const g = sp.find(x => x.src === REL.focus), c = g?.mac ? devByMac(g.mac) : relByIp(g?.ip || REL.focus), name = c ? devName(c) : g?.name || REL.focus;
-    $("#relFocus").innerHTML = `<div class="rel-focus"><span class="pill"><span>Only the relations of</span> <b translate="no">${esc(name)}</b></span><button type="button" class="link" data-relunfocus>Show all</button></div>`;
+    const peers = new Set(list.map(e => relSrcMatch(e.a, REL.focus) ? e.b : e.a)), blk = list.filter(e => e.blocked).length;
+    $("#relFocus").innerHTML = `<div class="rel-focus"><span class="pill"><span>Only the relations of</span> <b translate="no">${esc(name)}</b></span><span class="pill">Counterparts <b>${peers.size}</b></span>${blk ? `<span class="pill">Blocked by UniFi <b>${blk}</b></span>` : ""}<button type="button" class="link" data-relunfocus>Show all</button></div>`;
   } else $("#relFocus").innerHTML = "";
   // zone of each node (from the device, or from the flow)
   const zn = n => n ? { id: "n:" + n, name: n } : null, nz = {}; for (const e of list) { nz[e.a] ??= e.za || zn(e.a_zone); nz[e.b] ??= e.b === "internet" ? null : e.zb || zn(e.b_zone); }
@@ -3718,9 +3727,9 @@ function relGeo(e, from, to) {
 function relDraw() {
   const G = REL.g, box = $("#relGraph"); if (!G || REL.tab !== "graph") return;
   const { list, nodes, W, H, max, rad, lbl, sub, kind } = G, P = REL.pos, v = REL.view;
-  const wid = b => b ? 0.8 + 3.6 * Math.sqrt(b / max) : 0;
+  const wid = b => 0.8 + 3.6 * Math.sqrt((b || 0) / max);
   const arrow = (e, from, to, bytes, back) => {
-    if (!bytes) return "";
+    if (!bytes && (back || e.ab || e.ba)) return ""; // a pair without data (blocked attempts) still gets its line
     const col = e.bad.length ? "var(--bad)" : e.cat[2];
     return `<path d="${relGeo(e, from, to)}" stroke="${col}" stroke-width="${wid(bytes).toFixed(2)}" fill="none" marker-end="url(#ra${e.bad.length ? "b" : REL_PORTS.indexOf(e.cat)})" class="rel-e${e.bad.length || e.susp.length ? " bad" : e.unexp.length ? " unexp" : ""}${e.blocked ? " blk" : ""}${REL.sel === e.a + "|" + e.b ? " sel" : ""}${back ? " back" : ""}" data-rele="${esc(e.a + "|" + e.b)}"><title>${esc(`${relLabel(from)} → ${relLabel(to)}: ${relBytes(bytes)} · ${e.ports.slice(0, 3).map(x => `${x.service || x.proto} ${x.port ?? ""}`).join(", ")}${e.bad.length ? " · against the rules" : ""}`)}</title></path>`;
   };
@@ -3782,7 +3791,7 @@ $("#relGraph").addEventListener("mouseover", e => {
 });
 $("#relGraph").addEventListener("mouseleave", () => { const svg = $("#relGraph svg"); if (svg) { svg.classList.remove("hl"); svg.dataset.hl = ""; } });
 document.querySelectorAll("[data-rt]").forEach(t => t.addEventListener("click", () => { REL.tab = t.dataset.rt; store.set("relTab", REL.tab); renderRel(); }));
-$("#relFocus").addEventListener("click", e => { if (e.target.closest("[data-relunfocus]")) { REL.focus = null; REL.pos = {}; renderRel(); } });
+$("#relFocus").addEventListener("click", e => { if (e.target.closest("[data-relunfocus]")) { REL.focus = null; REL.view = { k: 1, x: 0, y: 0 }; REL.pos = {}; renderRel(); } });
 $("#relView").addEventListener("click", e => {
   const p = e.target.closest("[data-relp]"); if (p) { REL.preset = p.dataset.relp; store.set("relPreset", REL.preset); if (REL.preset !== "custom") loadRel(); else renderRel(); return; }
   if (e.target.closest("#relLoad")) { REL.from = new Date($("#relFrom").value).getTime() || null; REL.to = new Date($("#relTo").value).getTime() || null; loadRel(); return; }
@@ -3799,7 +3808,7 @@ $("#relSusp").addEventListener("change", async e => {
 });
 $("#relSusp").addEventListener("click", e => {
   if (e.target.closest("[data-relsuspall]")) { REL.suspAll = !REL.suspAll; renderRel(); return; }
-  const f = e.target.closest("[data-relfocus]"); if (f) { REL.focus = f.dataset.relfocus; REL.scope = "all"; REL.q = ""; $("#relQ").value = ""; REL.pos = {}; renderRel(); $("#relFocus").scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
+  const f = e.target.closest("[data-relfocus]"); if (f) { REL.focus = f.dataset.relfocus; REL.view = { k: 1, x: 0, y: 0 }; REL.scope = "all"; REL.q = ""; $("#relQ").value = ""; REL.pos = {}; renderRel(); $("#relFocus").scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
   if (!e.target.closest("[data-relsusp]")) return; REL.scope = "susp"; REL.focus = null; REL.tab = "graph"; REL.q = ""; $("#relQ").value = ""; REL.pos = {}; renderRel();
 });
 $("#relHa").addEventListener("change", e => { REL.ha = e.target.checked; store.set("relHa", REL.ha); REL.pos = {}; renderRel(); });
