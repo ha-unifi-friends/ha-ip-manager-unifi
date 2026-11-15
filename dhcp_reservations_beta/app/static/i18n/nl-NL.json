@@ -1349,5 +1349,16 @@
  "All zones fit into the width of the window": "Alle zones passen in de vensterbreedte",
  "Every column 150 px wide – scroll for more zones": "Elke kolom 150 px breed – scroll voor meer zones",
  "Matrix width": "Breedte van de matrix",
- "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Of UniFi de treffers van deze regel naar de syslog schrijft – ingesteld in UniFi"
+ "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Of UniFi de treffers van deze regel naar de syslog schrijft – ingesteld in UniFi",
+ "UniFi recorded no allowed traffic in this time range": "UniFi heeft in deze periode geen toegestaan verkeer vastgelegd",
+ "{0} blocked connections, no allowed ones.": "{0} geblokkeerde verbindingen, geen toegestane.",
+ "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Waarschijnlijk wordt alleen geblokkeerd verkeer gelogd; relaties tussen apparaten die met elkaar mogen praten ontbreken dan.",
+ "Only the first flows of the time range were read – a shorter time range can also help.": "Alleen de eerste flows van de periode zijn gelezen – een kortere periode kan ook helpen.",
+ "Reading the UniFi settings …": "UniFi-instellingen worden gelezen …",
+ "Matching switches in the UniFi site settings:": "Passende schakelaars in de UniFi-site-instellingen:",
+ "Switch on in UniFi": "Inschakelen in UniFi",
+ "Switch on…": "Inschakelen…",
+ "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "Geen passende schakelaar gevonden in de UniFi-site-instellingen – schakel het loggen van toegestaan verkeer in UniFi in.",
+ "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "Geen passende schakelaar gevonden in de UniFi-site-instellingen ({0}) – schakel het loggen van toegestaan verkeer in UniFi in.",
+ "Switched on in UniFi – new flows are recorded from now on": "Ingeschakeld in UniFi – nieuwe flows worden vanaf nu vastgelegd"
 }

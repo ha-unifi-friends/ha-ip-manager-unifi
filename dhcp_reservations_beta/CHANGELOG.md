@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.35.0 – 2026-11-16
+
+**Relations:**
+- *Show in the graph* on *Suspicious network traffic* shows the relations of all suspicious devices, whatever is ticked above (internet, Home Assistant …) – before, unticked filters could hide all but one. The view is reset.
+- **Is allowed traffic recorded?** When the flows read contain only blocked connections, a notice says so: relations between devices that may talk to each other are then missing. The site settings of UniFi are searched for matching logging switches (shown with their name and state); one that is off can be switched on after a confirmation. UniFi does not document these settings, so the switches are found by name.
+- More space between the key figures and the *Suspicious network traffic* box.
+
 ## 1.34.1 – 2026-11-16
 
 - **Relations:** the notice “Blocked connections may be missing” and *Enable logging…* are removed. The flows show blocked connections also for rules without logging; the logging switch of a policy only writes its matches to the syslog. Most of the rules it listed were UniFi's built-in ones (Block All Traffic per zone pair and similar), which log nothing by default.

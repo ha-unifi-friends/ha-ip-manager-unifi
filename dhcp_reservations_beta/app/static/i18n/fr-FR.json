@@ -1349,5 +1349,16 @@
  "All zones fit into the width of the window": "Toutes les zones tiennent dans la largeur de la fenêtre",
  "Every column 150 px wide – scroll for more zones": "Chaque colonne fait 150 px – faites défiler pour les autres zones",
  "Matrix width": "Largeur de la matrice",
- "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Si UniFi écrit les correspondances de cette règle dans le syslog – réglé dans UniFi"
+ "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Si UniFi écrit les correspondances de cette règle dans le syslog – réglé dans UniFi",
+ "UniFi recorded no allowed traffic in this time range": "UniFi n'a enregistré aucun trafic autorisé sur cette période",
+ "{0} blocked connections, no allowed ones.": "{0} connexions bloquées, aucune autorisée.",
+ "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Seul le trafic bloqué est probablement journalisé ; les relations entre appareils autorisés à communiquer manquent alors.",
+ "Only the first flows of the time range were read – a shorter time range can also help.": "Seuls les premiers flux de la période ont été lus – une période plus courte peut aussi aider.",
+ "Reading the UniFi settings …": "Lecture des réglages UniFi …",
+ "Matching switches in the UniFi site settings:": "Interrupteurs correspondants dans les réglages du site UniFi :",
+ "Switch on in UniFi": "Activer dans UniFi",
+ "Switch on…": "Activer…",
+ "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "Aucun interrupteur correspondant trouvé dans les réglages du site UniFi – activez la journalisation du trafic autorisé dans UniFi.",
+ "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "Aucun interrupteur correspondant trouvé dans les réglages du site UniFi ({0}) – activez la journalisation du trafic autorisé dans UniFi.",
+ "Switched on in UniFi – new flows are recorded from now on": "Activé dans UniFi – les nouveaux flux sont enregistrés dès maintenant"
 }

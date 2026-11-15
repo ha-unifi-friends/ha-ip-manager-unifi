@@ -1340,7 +1340,9 @@ def traffic_relations(api, qs):
     hot = {x["src"] for x in susp} | {"ip:" + str(x["ip"]) for x in susp if x.get("ip")}
     out.sort(key=lambda e: (e["a"] not in hot, -(e["ab"] + e["ba"])))
     log("Relations:", len(flows), "flows,", len(out), "pairs")
+    nblk = sum(1 for f in flows if str(f.get("action") or "").lower() == "blocked")
     return {"available": True, "from": frm, "to": to, "flows": len(flows), "truncated": len(flows) >= FLOW_MAX,
+            "actions": {"allowed": len(flows) - nblk, "blocked": nblk},
             "nodes": nodes, "edges": out[:3000], "suspicious": susp,
             "alerts": load_fw_settings()["alerts"]}
 
@@ -1482,6 +1484,39 @@ def create_fw_policy(api, body, user=""):
     created = res[0] if isinstance(res, list) and res else res if isinstance(res, dict) else {}
     log("Firewall policy created:", name, action, created.get("_id", "?"))
     return {"policy": fw_policy(created) if isinstance(created, dict) and created else None, "version": ver["id"]}
+
+
+FLOW_LOG_RX = re.compile(r"flow|traffic_?log|log_?(all|allow|block|traffic)", re.I)
+
+
+def flow_log_settings(api):
+    """Switches in the site settings that look like traffic / flow logging. UniFi does not document them, so they are
+    found by name and shown as they are (setting key, field, value) – the user decides."""
+    try:
+        rows = api.call("GET", "/rest/setting")
+    except UnifiError as e:
+        return {"settings": [], "error": str(e)}
+    out = []
+    for r in rows if isinstance(rows, list) else []:
+        if not isinstance(r, dict) or not r.get("key"):
+            continue
+        for k, v in r.items():
+            if k in ("_id", "key", "site_id") or not _fw_scalar(v) or not FLOW_LOG_RX.search(k):
+                continue
+            out.append({"key": r["key"], "field": k, "value": v})
+    return {"settings": out}
+
+
+def enable_flow_log_setting(api, body):
+    """Switch one of the settings found by flow_log_settings on (only booleans that are off)."""
+    key, field = str(body.get("key") or ""), str(body.get("field") or "")
+    rows = api.call("GET", "/rest/setting")
+    row = next((r for r in rows if isinstance(r, dict) and r.get("key") == key), None) if isinstance(rows, list) else None
+    if not row or not FLOW_LOG_RX.search(field) or row.get(field) is not False:
+        raise UnifiError("This setting cannot be switched on here – reload and check it in UniFi.", 400)
+    api.call("PUT", f"/rest/setting/{urllib.parse.quote(key, safe='')}/{urllib.parse.quote(str(row['_id']), safe='')}", {**row, field: True})
+    log("Setting switched on:", key, field)
+    return {"ok": True}
 
 
 def firewall_for_version(api):
@@ -2191,6 +2226,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, reorder_fw_policies(API, self._json_body(), self._user()))
             if method == "POST" and path.endswith("/api/fw_policy"):
                 return self._send(200, create_fw_policy(API, self._json_body(), self._user()))
+            if method == "GET" and path.endswith("/api/flow_logging"):
+                return self._send(200, flow_log_settings(API))
+            if method == "POST" and path.endswith("/api/flow_logging"):
+                return self._send(200, enable_flow_log_setting(API, self._json_body()))
             if method == "GET" and path.endswith("/api/fw_settings"):
                 return self._send(200, load_fw_settings())
             if method == "POST" and path.endswith("/api/fw_settings"):

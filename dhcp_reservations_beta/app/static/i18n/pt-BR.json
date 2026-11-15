@@ -1349,5 +1349,16 @@
  "All zones fit into the width of the window": "Todas as zonas cabem na largura da janela",
  "Every column 150 px wide – scroll for more zones": "Cada coluna com 150 px – role para ver mais zonas",
  "Matrix width": "Largura da matriz",
- "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Se o UniFi grava as correspondências desta regra no syslog – definido no UniFi"
+ "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Se o UniFi grava as correspondências desta regra no syslog – definido no UniFi",
+ "UniFi recorded no allowed traffic in this time range": "O UniFi não registrou tráfego permitido neste período",
+ "{0} blocked connections, no allowed ones.": "{0} conexões bloqueadas, nenhuma permitida.",
+ "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Provavelmente só o tráfego bloqueado é registrado; faltam então as relações entre dispositivos que podem se comunicar.",
+ "Only the first flows of the time range were read – a shorter time range can also help.": "Só os primeiros fluxos do período foram lidos – um período menor também pode ajudar.",
+ "Reading the UniFi settings …": "Lendo as configurações do UniFi …",
+ "Matching switches in the UniFi site settings:": "Chaves correspondentes nas configurações do site UniFi:",
+ "Switch on in UniFi": "Ativar no UniFi",
+ "Switch on…": "Ativar…",
+ "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "Nenhuma chave correspondente encontrada nas configurações do site UniFi – ative o registro do tráfego permitido no UniFi.",
+ "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "Nenhuma chave correspondente encontrada nas configurações do site UniFi ({0}) – ative o registro do tráfego permitido no UniFi.",
+ "Switched on in UniFi – new flows are recorded from now on": "Ativado no UniFi – novos fluxos são registrados a partir de agora"
 }
