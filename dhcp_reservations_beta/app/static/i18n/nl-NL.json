@@ -1321,5 +1321,22 @@
  "remote-access attempt to {0}": "poging tot toegang op afstand naar {0}",
  "opened connections from the {0} zone into a trusted zone ({1})": "opende verbindingen vanuit zone {0} naar een vertrouwde zone ({1})",
  "remote-access attempts ({0}) to {1} devices ({2})": "pogingen tot toegang op afstand ({0}) naar {1} apparaten ({2})",
- "Against the firewall rules": "Tegen de firewallregels"
+ "Against the firewall rules": "Tegen de firewallregels",
+ "Graph": "Graaf",
+ "List": "Lijst",
+ "Data": "Data",
+ "Show only the relations of this device": "Alleen de relaties van dit apparaat tonen",
+ "Show less": "Minder tonen",
+ "Show all {0} devices": "Alle {0} apparaten tonen",
+ "{0} addresses from the internet": "{0} adressen van internet",
+ "knocked on your network": "hebben bij je netwerk aangeklopt",
+ "{0} ports": "{0} poorten",
+ "{0} blocked": "{0} geblokkeerd",
+ "Sources": "Bronnen",
+ "Only the relations of": "Alleen de relaties van",
+ "Talks to many devices": "Praat met veel apparaten",
+ "Line width = data volume · drag devices, Ctrl + wheel or the buttons to zoom": "Lijndikte = datavolume · sleep apparaten, zoom met Ctrl + scrollwiel of de knoppen",
+ "Zoom in": "Inzoomen",
+ "Zoom out": "Uitzoomen",
+ "Reset the view and the layout": "Weergave en indeling herstellen"
 }

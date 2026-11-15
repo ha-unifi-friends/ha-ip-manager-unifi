@@ -1321,5 +1321,22 @@
  "remote-access attempt to {0}": "Fernzuegriffsversuech uf {0}",
  "opened connections from the {0} zone into a trusted zone ({1})": "het us de Zone {0} Verbindige i e vertrauenswürdigi Zone ufgmacht ({1})",
  "remote-access attempts ({0}) to {1} devices ({2})": "Fernzuegriffsversüech ({0}) uf {1} Gerät ({2})",
- "Against the firewall rules": "Gäge d Firewall-Regle"
+ "Against the firewall rules": "Gäge d Firewall-Regle",
+ "Graph": "Graph",
+ "List": "Liste",
+ "Data": "Date",
+ "Show only the relations of this device": "Nume d Beziehige vo dem Grät zeige",
+ "Show less": "Weniger zeige",
+ "Show all {0} devices": "Alli {0} Grät zeige",
+ "{0} addresses from the internet": "{0} Adrässe us em Internet",
+ "knocked on your network": "händ bi dim Netzwärk aagchlopfet",
+ "{0} ports": "{0} Ports",
+ "{0} blocked": "{0} blockiert",
+ "Sources": "Quälle",
+ "Only the relations of": "Nume d Beziehige vo",
+ "Talks to many devices": "Redt mit vilne Grät",
+ "Line width = data volume · drag devices, Ctrl + wheel or the buttons to zoom": "Linienbreiti = Datemängi · Grät chasch zieh, Zoom mit Ctrl + Muusrad oder de Chnöpf",
+ "Zoom in": "Grösser",
+ "Zoom out": "Chliner",
+ "Reset the view and the layout": "Aasicht und Aaordnig zruggsetze"
 }
