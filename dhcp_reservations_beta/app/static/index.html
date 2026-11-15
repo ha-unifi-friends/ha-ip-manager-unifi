@@ -3926,7 +3926,6 @@ function renderInfo() {
       ${kv("Local DNS", c.local_dns_record_enabled ? esc(c.local_dns_record) : "")}
       ${kv("Note", esc(c.note))}
     </dl></div>
-    ${fwInfoHtml(c)}
     ${webIp(c) ? `<div class="openrow"><a class="btn primary" href="http://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open the device's web interface in a new tab"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Open http://${esc(webIp(c))}</a><a class="btn" href="https://${esc(webIp(c))}/" target="_blank" rel="noopener noreferrer" title="Open with HTTPS">HTTPS</a></div>${!c.online ? `<p class="hint">The device is offline – the page may not load.</p>` : ""}` : ""}
     ${c.mac && !c.is_device && c.conn === "wired" && !c.online ? `<button class="btn" type="button" id="btnWol" style="width:100%"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-2px;margin-right:6px"><path d="M12 2v10M18.4 6.6a9 9 0 1 1-12.8 0"/></svg>Wake on LAN</button>` : ""}
     ${haOf(c).length ? `<div class="sec-title">Home Assistant</div><div class="card ha-card">${haOf(c).map(d => `<div class="ha-row">
@@ -3934,6 +3933,7 @@ function renderInfo() {
         <div class="ha-info"><b>${esc(d.name_by_user || d.name)}</b><span class="muted">${esc(haDoms(c, d).join(", "))}${d.area ? " · " + esc(d.area) : ""}</span><span>${haDot(d.status)} ${esc(HA_ST[d.status]?.[0] || d.status)}</span>${d.status === "partial" && d.unavailable?.length ? `<details class="ha-unav"><summary>${d.unavailable.length} unavailable ${d.unavailable.length === 1 ? "entity" : "entities"}</summary>${d.unavailable.map(e => `<code>${esc(e)}</code>`).join("")}</details>` : ""}</div>
         <a class="btn" href="/config/devices/device/${encodeURIComponent(d.id)}" target="_blank" rel="noopener" title="Open this device in Home Assistant (new tab)">Open in HA ↗</a></div>`).join("")}</div>` : ""}
     ${c.mac && webIp(c) ? `<div class="sec-title">Network check &amp; link</div><div class="card ports" id="portBox">${portsHtml(c)}</div>` : ""}
+    ${fwInfoHtml(c)}
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
