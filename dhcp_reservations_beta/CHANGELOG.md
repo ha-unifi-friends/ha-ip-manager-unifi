@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.35.1 – 2026-11-16
+
+- **Client details:** *Home Assistant* and *Network check & link* (with the button to open the device) now come before the *Firewall* section.
+
 ## 1.35.0 – 2026-11-16
 
 **Relations:**
