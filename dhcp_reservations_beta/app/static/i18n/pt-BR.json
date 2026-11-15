@@ -1321,5 +1321,22 @@
  "remote-access attempt to {0}": "tentativa de acesso remoto a {0}",
  "opened connections from the {0} zone into a trusted zone ({1})": "abriu conexões da zona {0} para uma zona confiável ({1})",
  "remote-access attempts ({0}) to {1} devices ({2})": "tentativas de acesso remoto ({0}) a {1} dispositivos ({2})",
- "Against the firewall rules": "Contra as regras do firewall"
+ "Against the firewall rules": "Contra as regras do firewall",
+ "Graph": "Grafo",
+ "List": "Lista",
+ "Data": "Dados",
+ "Show only the relations of this device": "Mostrar só as relações deste dispositivo",
+ "Show less": "Mostrar menos",
+ "Show all {0} devices": "Mostrar todos os {0} dispositivos",
+ "{0} addresses from the internet": "{0} endereços da internet",
+ "knocked on your network": "bateram na porta da sua rede",
+ "{0} ports": "{0} portas",
+ "{0} blocked": "{0} bloqueadas",
+ "Sources": "Origens",
+ "Only the relations of": "Só as relações de",
+ "Talks to many devices": "Fala com muitos dispositivos",
+ "Line width = data volume · drag devices, Ctrl + wheel or the buttons to zoom": "Espessura = volume de dados · arraste os dispositivos, zoom com Ctrl + roda ou os botões",
+ "Zoom in": "Aproximar",
+ "Zoom out": "Afastar",
+ "Reset the view and the layout": "Redefinir a visualização e o layout"
 }

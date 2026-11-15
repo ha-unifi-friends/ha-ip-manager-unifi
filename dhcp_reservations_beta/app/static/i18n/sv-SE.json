@@ -1321,5 +1321,22 @@
  "remote-access attempt to {0}": "försök till fjärråtkomst till {0}",
  "opened connections from the {0} zone into a trusted zone ({1})": "öppnade anslutningar från zonen {0} till en betrodd zon ({1})",
  "remote-access attempts ({0}) to {1} devices ({2})": "försök till fjärråtkomst ({0}) till {1} enheter ({2})",
- "Against the firewall rules": "Mot brandväggsreglerna"
+ "Against the firewall rules": "Mot brandväggsreglerna",
+ "Graph": "Graf",
+ "List": "Lista",
+ "Data": "Data",
+ "Show only the relations of this device": "Visa bara relationerna för den här enheten",
+ "Show less": "Visa mindre",
+ "Show all {0} devices": "Visa alla {0} enheter",
+ "{0} addresses from the internet": "{0} adresser från internet",
+ "knocked on your network": "har knackat på ditt nätverk",
+ "{0} ports": "{0} portar",
+ "{0} blocked": "{0} blockerade",
+ "Sources": "Källor",
+ "Only the relations of": "Bara relationerna för",
+ "Talks to many devices": "Pratar med många enheter",
+ "Line width = data volume · drag devices, Ctrl + wheel or the buttons to zoom": "Linjebredd = datamängd · dra enheterna, zooma med Ctrl + scrollhjul eller knapparna",
+ "Zoom in": "Zooma in",
+ "Zoom out": "Zooma ut",
+ "Reset the view and the layout": "Återställ vy och layout"
 }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.33.0 – 2026-11-15
+
+**Relations** reworked:
+- **Graph** and **List** are now two tabs in the header (the choice is remembered).
+- The **graph** looks like Home Assistant's Zigbee map: plain dots with the name on the right and the zone and IP below, thin lines, devices that talk to many others (Home Assistant, servers, the gateway) are bigger, the internet is a square. It is a live force layout: drag a device and its neighbours follow and swing back. Zoom with Ctrl + wheel or the + / − buttons, move the view by dragging the background; ⟲ resets the view and the layout. Hovering a device highlights its relations.
+- The **list** shows the names with IP, zone and network, an arrow for one-way or two-way traffic, the total data volume with a bar, and a coloured edge for suspicious or unexpected rows.
+- **Suspicious network traffic** is grouped per device, with the device name instead of a repeated IP and the findings as chips; *Show* limits graph and list to that device. Scans from the internet are folded into one line.
+
 ## 1.32.1 – 2026-11-14
 
 Fixes from a code review:
