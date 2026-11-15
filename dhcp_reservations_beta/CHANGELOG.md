@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.34.0 – 2026-11-15
+
+**Relations:**
+- New filter **Blocked by the firewall**, off by default: relations UniFi blocked completely are hidden, so you see first what got through. A pill shows how many are hidden. The sidebar views *Blocked by UniFi* and *Suspicious* and *Show* on a device still show them.
+- **Firewall logging:** UniFi lists blocked connections only for block rules with logging. The page reads which block / reject rules do not log (custom and built-in), says so, and offers *Enable logging…*: it lists the rules and switches logging on in UniFi after a confirmation (a version is saved first). Rules UniFi does not let change are reported.
+
 ## 1.33.1 – 2026-11-15
 
 Fix: *Show* on a suspicious device could show far fewer devices in the graph than the alert counted (e.g. “contacted 58 devices”, graph with 2).

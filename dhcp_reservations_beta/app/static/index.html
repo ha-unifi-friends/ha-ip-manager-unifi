@@ -387,6 +387,11 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .rel-legend i.nk{width:10px;height:10px;border-radius:50%;background:var(--nc)}
 .rel-legend i.nk-inet{border-radius:2px}
 .rel-legend .lsep{width:1px;height:12px;background:var(--line)}
+.rel-log{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;justify-content:space-between;margin:0 0 10px;padding:9px 12px;border-radius:8px;font-size:12.5px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
+.rel-log b{color:var(--warn)}
+.rel-logl{display:flex;flex-wrap:wrap;gap:4px}
+.rel-logask{flex-basis:100%;display:grid;gap:6px}
+.rel-logbtn{display:flex;gap:8px}
 .rel-focus{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px}
 .rs-list{display:grid;gap:4px;margin-top:6px}
 .rs-row{display:grid;grid-template-columns:minmax(170px,240px) 1fr auto;gap:4px 12px;align-items:center;padding:5px 8px;border-radius:6px;background:color-mix(in srgb,var(--fg) 3%,transparent)}
@@ -1091,10 +1096,12 @@ window.I18N = (() => {
           <label class="opt" title="Access points, switches and the gateway"><input type="checkbox" id="relUnifi"><span>UniFi devices</span></label>
           <label class="opt" title="Devices recognised as NAS or server"><input type="checkbox" id="relNas"><span>NAS / server</span></label>
           <label class="opt" title="Devices recognised as printers"><input type="checkbox" id="relPrinter"><span>Printers</span></label>
+          <label class="opt" title="Connections UniFi's firewall blocked completely – untick to see only what got through"><input type="checkbox" id="relBlk"><span>Blocked by the firewall</span></label>
           <span class="sp"></span>
           <div class="search fw-search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="relQ" placeholder="Search devices, ports, domains" aria-label="Search relations"></div>
         </div>
         <div id="relMsg"></div>
+        <div id="relLog"></div>
         <div id="relSusp"></div>
         <div id="relFocus"></div>
         <div class="rel-box" id="relGraphBox"><div id="relGraph"></div><div class="rel-legend" id="relLegend"></div></div>
@@ -3485,7 +3492,7 @@ $("#fwChain").addEventListener("dragend", () => { FW.drag = null; for (const x o
 // standard ports get a colour (the dominant port of a pair colours its arrows)
 const REL_PORTS = [["DNS", [53, 853], "#14b8a6"], ["Web", [80, 443, 8080, 8443], "#3b82f6"], ["NTP", [123], "#a3a3a3"], ["MQTT", [1883, 8883], "#f59e0b"], ["Camera / RTSP", [554], "#ec4899"], ["Home Assistant", [8123], "#0ea5e9"], ["ESPHome", [6053], "#22c55e"], ["SSH / remote", [22, 3389, 5900], "#ef4444"], ["Files / SMB", [139, 445, 2049], "#8b5cf6"], ["Discovery (mDNS / SSDP)", [5353, 1900], "#84cc16"], ["Streaming / casting", [8008, 8009, 7000, 1400, 32400], "#f97316"], ["Other", [], "#94a3b8"]];
 const relPortCat = port => REL_PORTS.find(c => c[1].includes(+port)) || REL_PORTS[REL_PORTS.length - 1];
-const REL = { data: null, err: null, busy: false, preset: store.get("relPreset", "24h"), from: null, to: null, inet: store.get("relInet", true), ha: store.get("relHa", true), unifi: store.get("relUnifi", true), nas: store.get("relNas", true), printer: store.get("relPrinter", true), scope: store.get("relScope", "all"), tab: store.get("relTab", "graph"), q: "", sel: null, focus: null, suspAll: false, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false, max: 120 };
+const REL = { data: null, err: null, busy: false, preset: store.get("relPreset", "24h"), from: null, to: null, inet: store.get("relInet", true), ha: store.get("relHa", true), unifi: store.get("relUnifi", true), nas: store.get("relNas", true), printer: store.get("relPrinter", true), blk: store.get("relBlk", false), logAsk: false, scope: store.get("relScope", "all"), tab: store.get("relTab", "graph"), q: "", sel: null, focus: null, suspAll: false, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false, max: 120 };
 const REL_SCOPES = [["all", "All relations"], ["zone", "Within a firewall zone"], ["vlan", "Within a VLAN"], ["xvlan", "Across VLANs"], ["inet", "To the internet"], ["vendor", "Same vendor"], ["integ", "Same HA integration"], ["ha", "With Home Assistant"], ["susp", "Suspicious"], ["unexp", "Unexpected"], ["rules", "Against the firewall rules"], ["blocked", "Blocked by UniFi"]];
 const isRel = () => document.body.classList.contains("rel-mode");
 function relRange() {
@@ -3553,6 +3560,7 @@ function relFilter(list) {
   const fo = REL.focus;
   return list.filter(e => {
     if (fo) return [e.a, e.b].some(id => relSrcMatch(id, fo)) && (!q || relQMatch(e, q)); // one device: all of its relations, whatever is ticked
+    if (!REL.blk && s !== "blocked" && s !== "susp" && e.blocked >= e.flows) return false; // only blocked attempts
     if (!REL.inet && (e.b === "internet" || e.a === "internet")) return false;
     const isHa = (e.ca && isHaHost(e.ca)) || (e.cb && isHaHost(e.cb));
     if (!REL.ha && isHa && s !== "ha") return false;
@@ -3668,7 +3676,7 @@ function renderRel() {
   const D = REL.data;
   for (const b of document.querySelectorAll("[data-relp]")) b.setAttribute("aria-pressed", String(b.dataset.relp === REL.preset));
   for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(b.dataset.rt === REL.tab));
-  $("#relCustom").hidden = REL.preset !== "custom"; $("#relInet").checked = REL.inet; $("#relHa").checked = REL.ha; $("#relUnifi").checked = REL.unifi; $("#relNas").checked = REL.nas; $("#relPrinter").checked = REL.printer; $("#relLoad").disabled = REL.busy;
+  $("#relCustom").hidden = REL.preset !== "custom"; $("#relInet").checked = REL.inet; $("#relHa").checked = REL.ha; $("#relUnifi").checked = REL.unifi; $("#relNas").checked = REL.nas; $("#relPrinter").checked = REL.printer; $("#relBlk").checked = REL.blk; $("#relLog").innerHTML = relLogHtml(); $("#relLoad").disabled = REL.busy;
   $("#relScopes").innerHTML = REL_SCOPES.map(([k, l]) => { return `<button type="button" class="pn rel-sc ${REL.scope === k ? "on" : ""}" data-relsc="${k}" aria-pressed="${REL.scope === k}"><span class="l1"><b>${l}</b><span class="sp"></span><span class="muted" data-relcnt="${k}"></span></span></button>`; }).join("");
   const sp = D?.suspicious || [], on = !!FWS.alerts?.suspicious, nSrc = new Set(sp.map(x => x.src)).size;
   $("#relSusp").innerHTML = `<div class="fa-card ${sp.length ? "bad" : "info"} rel-susp"><span class="fa-dot"></span><div class="fa-c"><div class="fa-h"><span>Suspicious network traffic</span>${D ? ` <span class="fa-n" title="Sources">${nSrc}</span>` : ""}<span class="sp"></span>${sp.length ? `<button type="button" class="btn sm" data-relsusp>Show in the graph</button>` : ""}<label class="opt" title="Checks the flows every 10 minutes and sends a Home Assistant notification and the event clients_reservations_suspicious_traffic"><input type="checkbox" id="relAlert" ${on ? "checked" : ""}><span>Notify me in Home Assistant</span></label></div>
@@ -3681,7 +3689,7 @@ function renderRel() {
   for (const [k] of REL_SCOPES) { const el = document.querySelector(`[data-relcnt="${k}"]`); if (el) { REL.scope = k; el.textContent = relFilter(all).length; } }
   [REL.scope, REL.focus] = sv;
   $("#relListN").textContent = list.length;
-  $("#relMsg").innerHTML = `<div class="sumrow"><span class="pill">Flows <b>${D.flows.toLocaleString(I18N.locale)}</b></span><span class="pill">Relations <b>${all.length}</b></span><span class="pill">Shown <b>${list.length}</b></span>${all.some(e => e.bad.length) ? `<span class="pill" title="Flows that UniFi let through although the current rules would block them">Against the rules <b style="color:var(--bad)">${all.filter(e => e.bad.length).length}</b></span>` : ""}<span class="pill">${isoDateTime(D.from / 1000)} – ${isoDateTime(D.to / 1000)}</span>${D.truncated ? `<span class="pill" title="Only the first flows of the window were read">${D.flows} <span>flows read – narrow the time range for all</span></span>` : ""}</div>`;
+  $("#relMsg").innerHTML = `<div class="sumrow"><span class="pill">Flows <b>${D.flows.toLocaleString(I18N.locale)}</b></span><span class="pill">Relations <b>${all.length}</b></span><span class="pill">Shown <b>${list.length}</b></span>${!REL.blk && !REL.focus && !["blocked", "susp"].includes(REL.scope) && all.some(e => e.blocked >= e.flows) ? `<span class="pill" title="Tick “Blocked by the firewall” to show them">Blocked, hidden <b>${all.filter(e => e.blocked >= e.flows).length}</b></span>` : ""}${all.some(e => e.bad.length) ? `<span class="pill" title="Flows that UniFi let through although the current rules would block them">Against the rules <b style="color:var(--bad)">${all.filter(e => e.bad.length).length}</b></span>` : ""}<span class="pill">${isoDateTime(D.from / 1000)} – ${isoDateTime(D.to / 1000)}</span>${D.truncated ? `<span class="pill" title="Only the first flows of the window were read">${D.flows} <span>flows read – narrow the time range for all</span></span>` : ""}</div>`;
   if (REL.focus) {
     const g = sp.find(x => x.src === REL.focus), c = g?.mac ? devByMac(g.mac) : relByIp(g?.ip || REL.focus), name = c ? devName(c) : g?.name || REL.focus;
     const peers = new Set(list.map(e => relSrcMatch(e.a, REL.focus) ? e.b : e.a)), blk = list.filter(e => e.blocked).length;
@@ -3779,6 +3787,26 @@ $("#relGraph").addEventListener("click", e => {
   const z = e.target.closest("[data-relzoom]"); if (!z) return; e.stopPropagation();
   if (z.dataset.relzoom === "fit") { REL.view = { k: 1, x: 0, y: 0 }; REL.pos = {}; renderRel(); } else relZoom(z.dataset.relzoom === "in" ? 1.25 : 0.8);
 }, true);
+// UniFi lists blocked connections only for block rules with logging – say which ones do not log and offer to switch it on
+const relLogOff = () => (FW.data?.policies || []).filter(p => p.enabled !== false && !fwIsAllow(p) && !p.logging);
+function relLogHtml() {
+  if (!FW.data) return "";
+  const all = FW.data.policies.filter(p => p.enabled !== false && !fwIsAllow(p)), off = relLogOff();
+  if (!off.length) return "";
+  return `<div class="rel-log"><div><b>Blocked connections may be missing.</b> <span>UniFi lists blocked connections only for block rules with logging.</span> <span>${off.length} of ${all.length} block rules do not log.</span></div>
+    ${REL.logAsk ? `<div class="rel-logask"><div class="muted">These rules get logging switched on in UniFi (a version is saved first):</div><div class="rel-logl">${off.map(p => `<span class="rel-port" style="--pc:var(--warn)"><span translate="no">${esc(p.name || p.id)}</span>${p.predefined ? ` <span class="muted">· built-in</span>` : ""}</span>`).join(" ")}</div><div class="rel-logbtn"><button type="button" class="btn primary sm" data-rellogok>Enable logging for ${off.length} rules</button><button type="button" class="btn sm" data-rellogno>Cancel</button></div></div>` : `<button type="button" class="btn sm" data-rellog>Enable logging…</button>`}</div>`;
+}
+$("#relLog").addEventListener("click", async e => {
+  if (e.target.closest("[data-rellog]")) { REL.logAsk = true; renderRel(); return; }
+  if (e.target.closest("[data-rellogno]")) { REL.logAsk = false; renderRel(); return; }
+  const b = e.target.closest("[data-rellogok]"); if (!b) return;
+  b.disabled = true;
+  try {
+    const r = await api("api/fw_logging", { ids: relLogOff().map(p => p.id) });
+    toast(r.failed.length ? `Logging on for ${r.ok.length} rules, ${r.failed.length} not possible: ${r.failed.map(x => x.name).join(", ")}` : `Logging on for ${r.ok.length} rules – new blocked connections now appear here`);
+    REL.logAsk = false; await loadFw(); renderRel();
+  } catch (err) { toast(err.message); b.disabled = false; }
+});
 // hovering a device lights up its relations and neighbours
 $("#relGraph").addEventListener("mouseover", e => {
   const svg = $("#relGraph svg"); if (!svg) return;
@@ -3800,7 +3828,7 @@ $("#relView").addEventListener("click", e => {
   const ed = e.target.closest("[data-rele]"); if (ed && !e.target.closest("button")) { REL.sel = REL.sel === ed.dataset.rele ? null : ed.dataset.rele; renderRel(); }
 });
 $("#relInet").addEventListener("change", e => { REL.inet = e.target.checked; store.set("relInet", REL.inet); REL.pos = {}; renderRel(); });
-for (const [id, k, sk] of [["#relUnifi", "unifi", "relUnifi"], ["#relNas", "nas", "relNas"], ["#relPrinter", "printer", "relPrinter"]]) $(id).addEventListener("change", e => { REL[k] = e.target.checked; store.set(sk, REL[k]); REL.pos = {}; renderRel(); });
+for (const [id, k, sk] of [["#relUnifi", "unifi", "relUnifi"], ["#relNas", "nas", "relNas"], ["#relPrinter", "printer", "relPrinter"], ["#relBlk", "blk", "relBlk"]]) $(id).addEventListener("change", e => { REL[k] = e.target.checked; store.set(sk, REL[k]); REL.pos = {}; renderRel(); });
 $("#relSusp").addEventListener("change", async e => {
   if (!e.target.matches("#relAlert")) return;
   try { await saveFwSettings({ alerts: { suspicious: e.target.checked } }); toast(e.target.checked ? "Home Assistant will be notified about suspicious traffic" : "Suspicious-traffic notifications are off"); }

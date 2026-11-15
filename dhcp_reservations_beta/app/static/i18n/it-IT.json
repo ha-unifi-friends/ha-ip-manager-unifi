@@ -1339,5 +1339,18 @@
  "Zoom in": "Ingrandisci",
  "Zoom out": "Riduci",
  "Reset the view and the layout": "Ripristina vista e disposizione",
- "Counterparts": "Controparti"
+ "Counterparts": "Controparti",
+ "Blocked by the firewall": "Bloccato dal firewall",
+ "Connections UniFi's firewall blocked completely – untick to see only what got through": "Connessioni bloccate completamente dal firewall UniFi – deseleziona per vedere solo ciò che è passato",
+ "Blocked, hidden": "Bloccate, nascoste",
+ "Tick “Blocked by the firewall” to show them": "Seleziona «Bloccato dal firewall» per mostrarle",
+ "Blocked connections may be missing.": "Possono mancare connessioni bloccate.",
+ "UniFi lists blocked connections only for block rules with logging.": "UniFi elenca le connessioni bloccate solo per le regole di blocco con registrazione.",
+ "{0} of {1} block rules do not log.": "{0} regole di blocco su {1} non registrano.",
+ "These rules get logging switched on in UniFi (a version is saved first):": "Per queste regole verrà attivata la registrazione in UniFi (prima viene salvata una versione):",
+ "built-in": "integrata",
+ "Enable logging for {0} rules": "Attiva la registrazione per {0} regole",
+ "Enable logging…": "Attiva la registrazione…",
+ "Logging on for {0} rules – new blocked connections now appear here": "Registrazione attivata per {0} regole – le nuove connessioni bloccate ora compaiono qui",
+ "Logging on for {0} rules, {1} not possible: {2}": "Registrazione attivata per {0} regole, {1} non possibile: {2}"
 }

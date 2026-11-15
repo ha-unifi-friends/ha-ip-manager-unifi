@@ -1339,5 +1339,18 @@
  "Zoom in": "Inzoomen",
  "Zoom out": "Uitzoomen",
  "Reset the view and the layout": "Weergave en indeling herstellen",
- "Counterparts": "Tegenpartijen"
+ "Counterparts": "Tegenpartijen",
+ "Blocked by the firewall": "Geblokkeerd door de firewall",
+ "Connections UniFi's firewall blocked completely – untick to see only what got through": "Verbindingen die de UniFi-firewall volledig blokkeerde – uitvinken om alleen te zien wat doorkwam",
+ "Blocked, hidden": "Geblokkeerd, verborgen",
+ "Tick “Blocked by the firewall” to show them": "Vink „Geblokkeerd door de firewall“ aan om ze te tonen",
+ "Blocked connections may be missing.": "Geblokkeerde verbindingen kunnen ontbreken.",
+ "UniFi lists blocked connections only for block rules with logging.": "UniFi toont geblokkeerde verbindingen alleen voor blokkeerregels met logging.",
+ "{0} of {1} block rules do not log.": "{0} van {1} blokkeerregels loggen niet.",
+ "These rules get logging switched on in UniFi (a version is saved first):": "Bij deze regels wordt logging in UniFi ingeschakeld (eerst wordt een versie opgeslagen):",
+ "built-in": "ingebouwd",
+ "Enable logging for {0} rules": "Logging inschakelen voor {0} regels",
+ "Enable logging…": "Logging inschakelen…",
+ "Logging on for {0} rules – new blocked connections now appear here": "Logging aan voor {0} regels – nieuwe geblokkeerde verbindingen verschijnen nu hier",
+ "Logging on for {0} rules, {1} not possible: {2}": "Logging aan voor {0} regels, {1} niet mogelijk: {2}"
 }
