@@ -1484,34 +1484,6 @@ def create_fw_policy(api, body, user=""):
     return {"policy": fw_policy(created) if isinstance(created, dict) and created else None, "version": ver["id"]}
 
 
-def enable_fw_logging(api, body, user=""):
-    """Switch logging on for block / reject policies (v2 ids in body["ids"]). UniFi lists blocked connections only for
-    policies that log. Each policy is written back as UniFi sent it, with logging on; a version is saved first."""
-    ids = {str(x) for x in body.get("ids") or []}
-    if not ids:
-        raise UnifiError("No rules selected.", 400)
-    raw = api.call("GET", "/firewall-policies", v2=True)
-    pols = [p for p in raw if isinstance(p, dict) and str(p.get("_id")) in ids] if isinstance(raw, list) else []
-    if not pols:
-        raise UnifiError("The rules were not found – reload and try again.", 409)
-    ver = create_version(api, "auto", "Before enabling firewall logging", user)
-    done, failed = [], []
-    for p in pols:
-        if str(p.get("action") or "").upper() not in ("BLOCK", "REJECT"):
-            continue
-        name = p.get("name") or p.get("_id")
-        if p.get("logging"):
-            done.append(name)
-            continue
-        try:
-            api.call("PUT", "/firewall-policies/" + urllib.parse.quote(str(p["_id"]), safe=""), {**p, "logging": True}, v2=True)
-            done.append(name)
-        except UnifiError as e:
-            failed.append({"name": name, "error": str(e), "predefined": bool(p.get("predefined"))})
-    log("Firewall logging enabled:", len(done), "rules,", len(failed), "failed")
-    return {"ok": done, "failed": failed, "version": ver["id"]}
-
-
 def firewall_for_version(api):
     """What a version keeps of the firewall: zones and the custom policies (built-in ones follow from the zones)."""
     try:
@@ -2217,8 +2189,6 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, traffic_relations(API, qs))
             if method == "POST" and path.endswith("/api/fw_order"):
                 return self._send(200, reorder_fw_policies(API, self._json_body(), self._user()))
-            if method == "POST" and path.endswith("/api/fw_logging"):
-                return self._send(200, enable_fw_logging(API, self._json_body(), self._user()))
             if method == "POST" and path.endswith("/api/fw_policy"):
                 return self._send(200, create_fw_policy(API, self._json_body(), self._user()))
             if method == "GET" and path.endswith("/api/fw_settings"):
