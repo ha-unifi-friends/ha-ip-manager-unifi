@@ -1,0 +1,39 @@
+configuration:
+  unifi_host:
+    name: UniFi controller
+    description: IP or hostname of the gateway (without https://)
+  username:
+    name: Username
+    description: Local UniFi account (not a Ubiquiti cloud account)
+  password:
+    name: Password
+  site:
+    name: Site
+    description: Internal site name, usually "default". The display name shown in UniFi works too; with only one site it is found automatically.
+  verify_ssl:
+    name: Verify certificate
+    description: Leave off while the gateway uses a self-signed certificate
+  certificate_fingerprint:
+    name: Certificate fingerprint (SHA-256)
+    description: Pin the controller's self-signed certificate – the app log shows the value to paste here at start. When set, the connection is only accepted if the certificate matches (verify_ssl is then not needed).
+  api_key:
+    name: UniFi API key (optional)
+    description: Needed to change the order of firewall rules. Create it in UniFi Network › Settings › Control Plane › Integrations.
+  daily_version:
+    name: Daily automatic version
+    description: Saves one version of the table per day (shown as "Daily" under Versions).
+  auto_version_retention_days:
+    name: Keep automatic versions (days)
+    description: Daily versions and the versions saved before bulk actions are deleted after this many days. Manual, pinned and baseline versions are kept.
+  notify_new_devices:
+    name: Notify about new devices
+    description: Creates a Home Assistant notification (and the event clients_reservations_new_device) when a device with an unknown MAC appears.
+  notify_networks:
+    name: Only these networks
+    description: Network names or VLAN IDs to watch, e.g. Trusted or 10. Empty = all networks.
+  notify_random_mac:
+    name: Also notify about random MACs
+    description: Phones and tablets with a private Wi-Fi address show up with a new MAC per network; off by default to avoid noise.
+  vendor_lookup:
+    name: Look up unknown vendors
+    description: Fills an empty Vendor via macvendors.com (only the 3-byte vendor prefix is sent, max. 1 request per second, results are cached).

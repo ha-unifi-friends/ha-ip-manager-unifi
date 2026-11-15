@@ -157,6 +157,12 @@ versions you can compare and restore.
 3. On the *Configuration* tab, enter the gateway IP, username and password, then start the app.
 4. Turn on *Show in sidebar* (the panel is called *IP Manager*), or open it via *Open Web UI*.
 
+### Beta
+
+The repository also contains **IP Manager for UniFi Beta** – new features are tested there first. It installs next to
+the stable app with its own settings and data (enter the UniFi connection again) and has an orange «BETA» band on its
+icon. Its panel is called *IP Manager Beta*. Only install it if you want to try new features early.
+
 ## Configuration
 
 | Option | Default | Description |
