@@ -1344,18 +1344,10 @@
  "Connections UniFi's firewall blocked completely – untick to see only what got through": "Connexions que le pare-feu UniFi a entièrement bloquées – décochez pour ne voir que ce qui est passé",
  "Blocked, hidden": "Bloquées, masquées",
  "Tick “Blocked by the firewall” to show them": "Cochez « Bloqué par le pare-feu » pour les afficher",
- "Blocked connections may be missing.": "Des connexions bloquées peuvent manquer.",
- "UniFi lists blocked connections only for block rules with logging.": "UniFi ne liste les connexions bloquées que pour les règles de blocage avec journalisation.",
- "{0} of {1} block rules do not log.": "{0} règles de blocage sur {1} ne journalisent pas.",
- "These rules get logging switched on in UniFi (a version is saved first):": "La journalisation sera activée dans UniFi pour ces règles (une version est enregistrée avant) :",
- "built-in": "intégrée",
- "Enable logging for {0} rules": "Activer la journalisation pour {0} règles",
- "Enable logging…": "Activer la journalisation…",
- "Logging on for {0} rules – new blocked connections now appear here": "Journalisation activée pour {0} règles – les nouvelles connexions bloquées apparaissent ici",
- "Logging on for {0} rules, {1} not possible: {2}": "Journalisation activée pour {0} règles, {1} impossible : {2}",
  "Autofit": "Ajuster",
  "Fixed width": "Largeur fixe",
  "All zones fit into the width of the window": "Toutes les zones tiennent dans la largeur de la fenêtre",
  "Every column 150 px wide – scroll for more zones": "Chaque colonne fait 150 px – faites défiler pour les autres zones",
- "Matrix width": "Largeur de la matrice"
+ "Matrix width": "Largeur de la matrice",
+ "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Si UniFi écrit les correspondances de cette règle dans le syslog – réglé dans UniFi"
 }

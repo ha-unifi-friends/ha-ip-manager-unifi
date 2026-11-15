@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.34.1 – 2026-11-16
+
+- **Relations:** the notice “Blocked connections may be missing” and *Enable logging…* are removed. The flows show blocked connections also for rules without logging; the logging switch of a policy only writes its matches to the syslog. Most of the rules it listed were UniFi's built-in ones (Block All Traffic per zone pair and similar), which log nothing by default.
+- **Firewall:** the policy list has a new column **Logging** (on / off, sortable) instead.
+- The filter *Blocked by the firewall* stays.
+
 ## 1.34.0 – 2026-11-15
 
 **Relations:**
