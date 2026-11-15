@@ -1349,5 +1349,16 @@
  "All zones fit into the width of the window": "Alli Zone passed i d Fänschterbreiti",
  "Every column 150 px wide – scroll for more zones": "Jedi Spalte 150 px breit – für wiiteri Zone scrolle",
  "Matrix width": "Breiti vo de Matrix",
- "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Öb UniFi d Träffer vo dere Richtlinie is Syslog schriibt – iigstellt i UniFi"
+ "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Öb UniFi d Träffer vo dere Richtlinie is Syslog schriibt – iigstellt i UniFi",
+ "UniFi recorded no allowed traffic in this time range": "UniFi het i dem Zytruum kei erlaubte Verkehr ufzeichnet",
+ "{0} blocked connections, no allowed ones.": "{0} blockierti Verbindige, kei erlaubti.",
+ "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Vermuetlich wird nume blockierte Verkehr protokolliert; Beziehige zwüsche Grät, wo mitenand rede dörfed, fähled denn.",
+ "Only the first flows of the time range were read – a shorter time range can also help.": "Es sind nume di erschte Flows vom Zytruum gläse worde – en chürzere Zytruum cha au hälfe.",
+ "Reading the UniFi settings …": "UniFi-Iistellige wärded gläse …",
+ "Matching switches in the UniFi site settings:": "Passendi Schalter i de UniFi-Site-Iistellige:",
+ "Switch on in UniFi": "I UniFi iischalte",
+ "Switch on…": "Iischalte…",
+ "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "Kei passende Schalter i de UniFi-Site-Iistellige gfunde – schalt d Protokollierig vo erlaubtem Verkehr i UniFi ii.",
+ "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "Kei passende Schalter i de UniFi-Site-Iistellige gfunde ({0}) – schalt d Protokollierig vo erlaubtem Verkehr i UniFi ii.",
+ "Switched on in UniFi – new flows are recorded from now on": "I UniFi iigschaltet – neui Flows wärded ab jetzt ufzeichnet"
 }

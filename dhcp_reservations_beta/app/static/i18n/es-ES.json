@@ -1349,5 +1349,16 @@
  "All zones fit into the width of the window": "Todas las zonas caben en el ancho de la ventana",
  "Every column 150 px wide – scroll for more zones": "Cada columna mide 150 px – desplázate para ver más zonas",
  "Matrix width": "Ancho de la matriz",
- "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Si UniFi escribe las coincidencias de esta regla en el syslog – se ajusta en UniFi"
+ "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Si UniFi escribe las coincidencias de esta regla en el syslog – se ajusta en UniFi",
+ "UniFi recorded no allowed traffic in this time range": "UniFi no registró tráfico permitido en este periodo",
+ "{0} blocked connections, no allowed ones.": "{0} conexiones bloqueadas, ninguna permitida.",
+ "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Probablemente solo se registra el tráfico bloqueado; faltan entonces las relaciones entre dispositivos que pueden comunicarse.",
+ "Only the first flows of the time range were read – a shorter time range can also help.": "Solo se leyeron los primeros flujos del periodo – un periodo más corto también puede ayudar.",
+ "Reading the UniFi settings …": "Leyendo los ajustes de UniFi …",
+ "Matching switches in the UniFi site settings:": "Interruptores coincidentes en los ajustes del sitio de UniFi:",
+ "Switch on in UniFi": "Activar en UniFi",
+ "Switch on…": "Activar…",
+ "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "No se encontró ningún interruptor coincidente en los ajustes del sitio de UniFi – activa el registro del tráfico permitido en UniFi.",
+ "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "No se encontró ningún interruptor coincidente en los ajustes del sitio de UniFi ({0}) – activa el registro del tráfico permitido en UniFi.",
+ "Switched on in UniFi – new flows are recorded from now on": "Activado en UniFi – los nuevos flujos se registran a partir de ahora"
 }
