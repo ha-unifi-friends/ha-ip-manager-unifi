@@ -1352,5 +1352,10 @@
  "Enable logging for {0} rules": "Ativar o registro em {0} regras",
  "Enable logging…": "Ativar o registro…",
  "Logging on for {0} rules – new blocked connections now appear here": "Registro ativado em {0} regras – novas conexões bloqueadas aparecem aqui agora",
- "Logging on for {0} rules, {1} not possible: {2}": "Registro ativado em {0} regras, {1} não foi possível: {2}"
+ "Logging on for {0} rules, {1} not possible: {2}": "Registro ativado em {0} regras, {1} não foi possível: {2}",
+ "Autofit": "Ajustar",
+ "Fixed width": "Largura fixa",
+ "All zones fit into the width of the window": "Todas as zonas cabem na largura da janela",
+ "Every column 150 px wide – scroll for more zones": "Cada coluna com 150 px – role para ver mais zonas",
+ "Matrix width": "Largura da matriz"
 }

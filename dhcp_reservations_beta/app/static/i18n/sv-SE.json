@@ -1352,5 +1352,10 @@
  "Enable logging for {0} rules": "Slå på loggning för {0} regler",
  "Enable logging…": "Slå på loggning…",
  "Logging on for {0} rules – new blocked connections now appear here": "Loggning på för {0} regler – nya blockerade anslutningar visas nu här",
- "Logging on for {0} rules, {1} not possible: {2}": "Loggning på för {0} regler, {1} inte möjligt: {2}"
+ "Logging on for {0} rules, {1} not possible: {2}": "Loggning på för {0} regler, {1} inte möjligt: {2}",
+ "Autofit": "Anpassa",
+ "Fixed width": "Fast bredd",
+ "All zones fit into the width of the window": "Alla zoner ryms i fönstrets bredd",
+ "Every column 150 px wide – scroll for more zones": "Varje kolumn 150 px bred – scrolla för fler zoner",
+ "Matrix width": "Matrisens bredd"
 }

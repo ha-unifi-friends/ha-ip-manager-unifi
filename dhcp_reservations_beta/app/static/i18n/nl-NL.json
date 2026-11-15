@@ -1352,5 +1352,10 @@
  "Enable logging for {0} rules": "Logging inschakelen voor {0} regels",
  "Enable logging…": "Logging inschakelen…",
  "Logging on for {0} rules – new blocked connections now appear here": "Logging aan voor {0} regels – nieuwe geblokkeerde verbindingen verschijnen nu hier",
- "Logging on for {0} rules, {1} not possible: {2}": "Logging aan voor {0} regels, {1} niet mogelijk: {2}"
+ "Logging on for {0} rules, {1} not possible: {2}": "Logging aan voor {0} regels, {1} niet mogelijk: {2}",
+ "Autofit": "Passend",
+ "Fixed width": "Vaste breedte",
+ "All zones fit into the width of the window": "Alle zones passen in de vensterbreedte",
+ "Every column 150 px wide – scroll for more zones": "Elke kolom 150 px breed – scroll voor meer zones",
+ "Matrix width": "Breedte van de matrix"
 }
