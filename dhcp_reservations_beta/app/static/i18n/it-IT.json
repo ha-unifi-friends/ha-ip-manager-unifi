@@ -1350,15 +1350,11 @@
  "Every column 150 px wide – scroll for more zones": "Ogni colonna è larga 150 px – scorri per le altre zone",
  "Matrix width": "Larghezza della matrice",
  "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Se UniFi scrive le corrispondenze di questa regola nel syslog – impostato in UniFi",
- "UniFi recorded no allowed traffic in this time range": "UniFi non ha registrato traffico consentito in questo intervallo",
- "{0} blocked connections, no allowed ones.": "{0} connessioni bloccate, nessuna consentita.",
- "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Probabilmente viene registrato solo il traffico bloccato; mancano quindi le relazioni tra dispositivi che possono comunicare.",
- "Only the first flows of the time range were read – a shorter time range can also help.": "Sono stati letti solo i primi flussi dell'intervallo – un intervallo più breve può aiutare.",
- "Reading the UniFi settings …": "Lettura delle impostazioni UniFi …",
- "Matching switches in the UniFi site settings:": "Interruttori corrispondenti nelle impostazioni del sito UniFi:",
- "Switch on in UniFi": "Attiva in UniFi",
- "Switch on…": "Attiva…",
- "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "Nessun interruttore corrispondente trovato nelle impostazioni del sito UniFi – attiva la registrazione del traffico consentito in UniFi.",
- "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "Nessun interruttore corrispondente trovato nelle impostazioni del sito UniFi ({0}) – attiva la registrazione del traffico consentito in UniFi.",
- "Switched on in UniFi – new flows are recorded from now on": "Attivato in UniFi – i nuovi flussi vengono registrati da ora"
+ "Only blocked flows were read": "Sono stati letti solo flussi bloccati",
+ "UniFi returned the first {0} flows of the time range, all of them blocked (often a device that keeps knocking).": "UniFi ha restituito i primi {0} flussi dell'intervallo, tutti bloccati (spesso un dispositivo che bussa di continuo).",
+ "Choose a shorter time range to see the allowed traffic as well.": "Scegli un intervallo più breve per vedere anche il traffico consentito.",
+ "No allowed traffic in this time range": "Nessun traffico consentito in questo intervallo",
+ "UniFi recorded only blocked connections.": "UniFi ha registrato solo connessioni bloccate.",
+ "Blocked flows filled the limit – the allowed ones were read on their own": "I flussi bloccati hanno riempito il limite – quelli consentiti sono stati letti a parte",
+ "blocked": "bloccati"
 }

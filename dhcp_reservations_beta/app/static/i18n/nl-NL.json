@@ -1350,15 +1350,11 @@
  "Every column 150 px wide – scroll for more zones": "Elke kolom 150 px breed – scroll voor meer zones",
  "Matrix width": "Breedte van de matrix",
  "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Of UniFi de treffers van deze regel naar de syslog schrijft – ingesteld in UniFi",
- "UniFi recorded no allowed traffic in this time range": "UniFi heeft in deze periode geen toegestaan verkeer vastgelegd",
- "{0} blocked connections, no allowed ones.": "{0} geblokkeerde verbindingen, geen toegestane.",
- "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Waarschijnlijk wordt alleen geblokkeerd verkeer gelogd; relaties tussen apparaten die met elkaar mogen praten ontbreken dan.",
- "Only the first flows of the time range were read – a shorter time range can also help.": "Alleen de eerste flows van de periode zijn gelezen – een kortere periode kan ook helpen.",
- "Reading the UniFi settings …": "UniFi-instellingen worden gelezen …",
- "Matching switches in the UniFi site settings:": "Passende schakelaars in de UniFi-site-instellingen:",
- "Switch on in UniFi": "Inschakelen in UniFi",
- "Switch on…": "Inschakelen…",
- "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "Geen passende schakelaar gevonden in de UniFi-site-instellingen – schakel het loggen van toegestaan verkeer in UniFi in.",
- "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "Geen passende schakelaar gevonden in de UniFi-site-instellingen ({0}) – schakel het loggen van toegestaan verkeer in UniFi in.",
- "Switched on in UniFi – new flows are recorded from now on": "Ingeschakeld in UniFi – nieuwe flows worden vanaf nu vastgelegd"
+ "Only blocked flows were read": "Alleen geblokkeerde flows gelezen",
+ "UniFi returned the first {0} flows of the time range, all of them blocked (often a device that keeps knocking).": "UniFi gaf de eerste {0} flows van de periode terug, allemaal geblokkeerd (vaak een apparaat dat steeds aanklopt).",
+ "Choose a shorter time range to see the allowed traffic as well.": "Kies een kortere periode om ook het toegestane verkeer te zien.",
+ "No allowed traffic in this time range": "Geen toegestaan verkeer in deze periode",
+ "UniFi recorded only blocked connections.": "UniFi heeft alleen geblokkeerde verbindingen vastgelegd.",
+ "Blocked flows filled the limit – the allowed ones were read on their own": "Geblokkeerde flows vulden de limiet – de toegestane zijn apart gelezen",
+ "blocked": "geblokkeerd"
 }

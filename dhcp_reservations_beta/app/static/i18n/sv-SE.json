@@ -1350,15 +1350,11 @@
  "Every column 150 px wide – scroll for more zones": "Varje kolumn 150 px bred – scrolla för fler zoner",
  "Matrix width": "Matrisens bredd",
  "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Om UniFi skriver träffarna för den här regeln till syslog – ställs in i UniFi",
- "UniFi recorded no allowed traffic in this time range": "UniFi har inte registrerat någon tillåten trafik under perioden",
- "{0} blocked connections, no allowed ones.": "{0} blockerade anslutningar, inga tillåtna.",
- "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Troligen loggas bara blockerad trafik; relationer mellan enheter som får prata med varandra saknas då.",
- "Only the first flows of the time range were read – a shorter time range can also help.": "Bara de första flödena i perioden lästes – en kortare period kan också hjälpa.",
- "Reading the UniFi settings …": "Läser UniFi-inställningarna …",
- "Matching switches in the UniFi site settings:": "Matchande brytare i UniFi-platsinställningarna:",
- "Switch on in UniFi": "Slå på i UniFi",
- "Switch on…": "Slå på…",
- "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "Ingen matchande brytare hittades i UniFi-platsinställningarna – slå på loggning av tillåten trafik i UniFi.",
- "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "Ingen matchande brytare hittades i UniFi-platsinställningarna ({0}) – slå på loggning av tillåten trafik i UniFi.",
- "Switched on in UniFi – new flows are recorded from now on": "Påslaget i UniFi – nya flöden registreras från och med nu"
+ "Only blocked flows were read": "Bara blockerade flöden lästes",
+ "UniFi returned the first {0} flows of the time range, all of them blocked (often a device that keeps knocking).": "UniFi returnerade periodens första {0} flöden, alla blockerade (ofta en enhet som knackar hela tiden).",
+ "Choose a shorter time range to see the allowed traffic as well.": "Välj en kortare period för att även se den tillåtna trafiken.",
+ "No allowed traffic in this time range": "Ingen tillåten trafik under perioden",
+ "UniFi recorded only blocked connections.": "UniFi registrerade bara blockerade anslutningar.",
+ "Blocked flows filled the limit – the allowed ones were read on their own": "Blockerade flöden fyllde gränsen – de tillåtna lästes separat",
+ "blocked": "blockerade"
 }

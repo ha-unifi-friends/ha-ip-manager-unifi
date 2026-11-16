@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.35.2 – 2026-11-16
+
+**Relations:**
+- The search for logging switches in the UniFi site settings and its *Switch on* button are removed. They were found by name only and could hit an unrelated setting (e.g. `global_switch › flowctrl_enabled`, Ethernet flow control of the switches).
+- The notice about allowed traffic now says what really happened: when the flows read are all blocked and the limit was reached, a device that keeps knocking filled it – choose a shorter time range. Without the limit it says that UniFi recorded only blocked connections.
+- When blocked flows fill the limit, the app tries to read the allowed flows on their own (with a filter the console may understand; it is used only when the answer really holds allowed flows only). A pill then shows allowed and blocked flows. The suspicious-traffic check still counts all blocked attempts read.
+
 ## 1.35.1 – 2026-11-16
 
 - **Client details:** *Home Assistant* and *Network check & link* (with the button to open the device) now come before the *Firewall* section.
