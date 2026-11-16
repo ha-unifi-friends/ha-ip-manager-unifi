@@ -1350,15 +1350,11 @@
  "Every column 150 px wide – scroll for more zones": "Każda kolumna ma 150 px – przewiń, aby zobaczyć więcej stref",
  "Matrix width": "Szerokość macierzy",
  "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Czy UniFi zapisuje trafienia tej reguły w syslogu – ustawiane w UniFi",
- "UniFi recorded no allowed traffic in this time range": "UniFi nie zarejestrował w tym okresie dozwolonego ruchu",
- "{0} blocked connections, no allowed ones.": "Zablokowane połączenia: {0}, brak dozwolonych.",
- "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Prawdopodobnie logowany jest tylko zablokowany ruch; brakuje wtedy relacji między urządzeniami, które mogą się komunikować.",
- "Only the first flows of the time range were read – a shorter time range can also help.": "Odczytano tylko pierwsze przepływy z okresu – krótszy okres też może pomóc.",
- "Reading the UniFi settings …": "Odczyt ustawień UniFi …",
- "Matching switches in the UniFi site settings:": "Pasujące przełączniki w ustawieniach witryny UniFi:",
- "Switch on in UniFi": "Włącz w UniFi",
- "Switch on…": "Włącz…",
- "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "Nie znaleziono pasującego przełącznika w ustawieniach witryny UniFi – włącz logowanie dozwolonego ruchu w UniFi.",
- "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "Nie znaleziono pasującego przełącznika w ustawieniach witryny UniFi ({0}) – włącz logowanie dozwolonego ruchu w UniFi.",
- "Switched on in UniFi – new flows are recorded from now on": "Włączono w UniFi – nowe przepływy są rejestrowane od teraz"
+ "Only blocked flows were read": "Odczytano tylko zablokowane przepływy",
+ "UniFi returned the first {0} flows of the time range, all of them blocked (often a device that keeps knocking).": "UniFi zwrócił pierwsze przepływy z okresu ({0}), wszystkie zablokowane (często urządzenie, które ciągle puka).",
+ "Choose a shorter time range to see the allowed traffic as well.": "Wybierz krótszy okres, aby zobaczyć także dozwolony ruch.",
+ "No allowed traffic in this time range": "Brak dozwolonego ruchu w tym okresie",
+ "UniFi recorded only blocked connections.": "UniFi zarejestrował tylko zablokowane połączenia.",
+ "Blocked flows filled the limit – the allowed ones were read on their own": "Zablokowane przepływy wypełniły limit – dozwolone odczytano osobno",
+ "blocked": "zablokowane"
 }

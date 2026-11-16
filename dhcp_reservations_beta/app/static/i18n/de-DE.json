@@ -1350,15 +1350,11 @@
  "Every column 150 px wide – scroll for more zones": "Jede Spalte 150 px breit – für weitere Zonen scrollen",
  "Matrix width": "Breite der Matrix",
  "Whether UniFi writes the matches of this policy to the syslog – set in UniFi": "Ob UniFi die Treffer dieser Richtlinie ins Syslog schreibt – eingestellt in UniFi",
- "UniFi recorded no allowed traffic in this time range": "UniFi hat in diesem Zeitraum keinen erlaubten Verkehr aufgezeichnet",
- "{0} blocked connections, no allowed ones.": "{0} blockierte Verbindungen, keine erlaubten.",
- "Probably only blocked traffic is logged; relations between devices that may talk to each other are then missing.": "Vermutlich wird nur blockierter Verkehr protokolliert; Beziehungen zwischen Geräten, die miteinander sprechen dürfen, fehlen dann.",
- "Only the first flows of the time range were read – a shorter time range can also help.": "Es wurden nur die ersten Flows des Zeitraums gelesen – ein kürzerer Zeitraum kann auch helfen.",
- "Reading the UniFi settings …": "UniFi-Einstellungen werden gelesen …",
- "Matching switches in the UniFi site settings:": "Passende Schalter in den UniFi-Site-Einstellungen:",
- "Switch on in UniFi": "In UniFi einschalten",
- "Switch on…": "Einschalten…",
- "No matching switch found in the UniFi site settings – switch on the logging of allowed traffic in UniFi.": "Kein passender Schalter in den UniFi-Site-Einstellungen gefunden – schalte die Protokollierung von erlaubtem Verkehr in UniFi ein.",
- "No matching switch found in the UniFi site settings ({0}) – switch on the logging of allowed traffic in UniFi.": "Kein passender Schalter in den UniFi-Site-Einstellungen gefunden ({0}) – schalte die Protokollierung von erlaubtem Verkehr in UniFi ein.",
- "Switched on in UniFi – new flows are recorded from now on": "In UniFi eingeschaltet – neue Flows werden ab jetzt aufgezeichnet"
+ "Only blocked flows were read": "Es wurden nur blockierte Flows gelesen",
+ "UniFi returned the first {0} flows of the time range, all of them blocked (often a device that keeps knocking).": "UniFi hat die ersten {0} Flows des Zeitraums geliefert, alle blockiert (oft ein Gerät, das ständig anklopft).",
+ "Choose a shorter time range to see the allowed traffic as well.": "Wähle einen kürzeren Zeitraum, um auch den erlaubten Verkehr zu sehen.",
+ "No allowed traffic in this time range": "Kein erlaubter Verkehr in diesem Zeitraum",
+ "UniFi recorded only blocked connections.": "UniFi hat nur blockierte Verbindungen aufgezeichnet.",
+ "Blocked flows filled the limit – the allowed ones were read on their own": "Blockierte Flows haben das Limit gefüllt – die erlaubten wurden separat gelesen",
+ "blocked": "blockiert"
 }
