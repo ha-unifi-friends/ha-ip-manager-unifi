@@ -3778,13 +3778,12 @@ $("#relGraph").addEventListener("wheel", e => { if (!REL.g || !(e.ctrlKey || e.m
 $("#relGraph").addEventListener("pointerdown", e => {
   if (!REL.g || e.button !== 0 || e.target.closest(".rel-zoom") || e.target.closest("[data-rele]")) return;
   const n = e.target.closest("[data-reln]"), p = relPt(e);
-  REL.drag = { id: n?.dataset.reln || null, p0: p, v0: { ...REL.view }, moved: false };
-  $("#relGraph").setPointerCapture(e.pointerId);
+  REL.drag = { id: n?.dataset.reln || null, p0: p, v0: { ...REL.view }, moved: false, pid: e.pointerId };
 });
 $("#relGraph").addEventListener("pointermove", e => {
   const D = REL.drag; if (!D) return;
   const p = relPt(e); if (!D.moved && Math.hypot(p.sx - D.p0.sx, p.sy - D.p0.sy) < 4) return;
-  if (!D.moved && D.id && REL.sim) { REL.sim.alphaTarget = 0.3; relRun(); }
+  if (!D.moved) { try { $("#relGraph").setPointerCapture(D.pid); } catch {} if (D.id && REL.sim) { REL.sim.alphaTarget = 0.3; relRun(); } }
   D.moved = true;
   if (D.id) { const q = REL.pos[D.id]; q.fx = p.x; q.fy = p.y; }
   else { REL.view.x = D.v0.x + p.sx - D.p0.sx; REL.view.y = D.v0.y + p.sy - D.p0.sy; relZoom(1); }
@@ -3804,7 +3803,8 @@ function relRecHtml(D) {
   const A = D.actions; if (!A || !D.flows || A.allowed > 0) return "";
   return D.truncated
     ? `<div class="rel-rec"><div><b>Only blocked flows were read</b> – <span>UniFi returned the first ${D.flows.toLocaleString(I18N.locale)} flows of the time range, all of them blocked (often a device that keeps knocking).</span> <span>Choose a shorter time range to see the allowed traffic as well.</span></div></div>`
-    : `<div class="rel-rec"><div><b>No allowed traffic in this time range</b> – <span>UniFi recorded only blocked connections.</span></div></div>`;
+    : `<div class="rel-rec"><div><b>No allowed traffic in this time range</b> – <span>UniFi recorded only blocked connections.</span></div>
+      <div><b>How to record allowed traffic:</b> <span>In UniFi Network open Settings › CyberSecure › Traffic Logging and set Flow Logging to All Traffic.</span> <span class="muted">The names can differ between UniFi versions. Some consoles need internal storage (SSD) for it, and some gateways (e.g. UDM, UDR, Express) only log blocked traffic.</span></div></div>`;
 }
 // hovering a device lights up its relations and neighbours
 $("#relGraph").addEventListener("mouseover", e => {
@@ -3823,8 +3823,13 @@ $("#relView").addEventListener("click", e => {
   const p = e.target.closest("[data-relp]"); if (p) { REL.preset = p.dataset.relp; store.set("relPreset", REL.preset); if (REL.preset !== "custom") loadRel(); else renderRel(); return; }
   if (e.target.closest("#relLoad")) { REL.from = new Date($("#relFrom").value).getTime() || null; REL.to = new Date($("#relTo").value).getTime() || null; loadRel(); return; }
   if (REL.noClick) return;
-  const n = e.target.closest("[data-reln]"); if (n) { const c = relDev(n.dataset.reln); if (c) openPanel(c); return; }
-  const ed = e.target.closest("[data-rele]"); if (ed && !e.target.closest("button")) { REL.sel = REL.sel === ed.dataset.rele ? null : ed.dataset.rele; renderRel(); }
+  const n = e.target.closest("[data-reln]"); if (n) { const c = relDev(n.dataset.reln); if (c) openPanel(c); else toast(n.dataset.reln === "internet" ? "The internet has no details" : "Not a known device – " + n.dataset.reln.replace(/^ip:/, "")); return; }
+  const ed = e.target.closest("[data-rele]");
+  if (ed && !e.target.closest("button")) {
+    REL.sel = ed.dataset.rele; renderRel();
+    const [a, b] = ed.dataset.rele.split("|"), c = relDev(a) || relDev(b); // the device that starts it, else the other end
+    if (c) openPanel(c); else toast("No known device in this relation");
+  }
 });
 $("#relInet").addEventListener("change", e => { REL.inet = e.target.checked; store.set("relInet", REL.inet); REL.pos = {}; renderRel(); });
 for (const [id, k, sk] of [["#relUnifi", "unifi", "relUnifi"], ["#relNas", "nas", "relNas"], ["#relPrinter", "printer", "relPrinter"], ["#relBlk", "blk", "relBlk"]]) $(id).addEventListener("change", e => { REL[k] = e.target.checked; store.set(sk, REL[k]); REL.pos = {}; renderRel(); });

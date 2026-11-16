@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.35.3 – 2026-11-16
+
+**Relations:**
+- A click on a device in the graph opens its details on the right again (dragging had swallowed the click). A click on an arrow or a row of the list opens the device that starts the relation (or the other end). Addresses without a known device and the internet say so.
+- The notice “No allowed traffic in this time range” says how to switch it on: in UniFi Network, *Settings › CyberSecure › Traffic Logging*, set *Flow Logging* to *All Traffic* – with the note that names can differ between versions, some consoles need internal storage and some gateways only log blocked traffic.
+
 ## 1.35.2 – 2026-11-16
 
 **Relations:**
