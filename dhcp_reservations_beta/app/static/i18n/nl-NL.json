@@ -1356,5 +1356,11 @@
  "No allowed traffic in this time range": "Geen toegestaan verkeer in deze periode",
  "UniFi recorded only blocked connections.": "UniFi heeft alleen geblokkeerde verbindingen vastgelegd.",
  "Blocked flows filled the limit – the allowed ones were read on their own": "Geblokkeerde flows vulden de limiet – de toegestane zijn apart gelezen",
- "blocked": "geblokkeerd"
+ "blocked": "geblokkeerd",
+ "No known device in this relation": "Geen bekend apparaat in deze relatie",
+ "The internet has no details": "Internet heeft geen details",
+ "Not a known device – {0}": "Geen bekend apparaat – {0}",
+ "The names can differ between UniFi versions. Some consoles need internal storage (SSD) for it, and some gateways (e.g. UDM, UDR, Express) only log blocked traffic.": "De namen kunnen per UniFi-versie verschillen. Sommige consoles hebben interne opslag (SSD) nodig en sommige gateways (bijv. UDM, UDR, Express) loggen alleen geblokkeerd verkeer.",
+ "How to record allowed traffic:": "Zo wordt ook toegestaan verkeer vastgelegd:",
+ "In UniFi Network open Settings › CyberSecure › Traffic Logging and set Flow Logging to All Traffic.": "Open in UniFi Network Settings › CyberSecure › Traffic Logging en zet Flow Logging op All Traffic."
 }

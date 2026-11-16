@@ -1356,5 +1356,11 @@
  "No allowed traffic in this time range": "Ingen tillåten trafik under perioden",
  "UniFi recorded only blocked connections.": "UniFi registrerade bara blockerade anslutningar.",
  "Blocked flows filled the limit – the allowed ones were read on their own": "Blockerade flöden fyllde gränsen – de tillåtna lästes separat",
- "blocked": "blockerade"
+ "blocked": "blockerade",
+ "No known device in this relation": "Ingen känd enhet i den här relationen",
+ "The internet has no details": "Internet har inga detaljer",
+ "Not a known device – {0}": "Ingen känd enhet – {0}",
+ "The names can differ between UniFi versions. Some consoles need internal storage (SSD) for it, and some gateways (e.g. UDM, UDR, Express) only log blocked traffic.": "Namnen kan skilja mellan UniFi-versioner. Vissa konsoler behöver intern lagring (SSD) och vissa gateways (t.ex. UDM, UDR, Express) loggar bara blockerad trafik.",
+ "How to record allowed traffic:": "Så registreras även tillåten trafik:",
+ "In UniFi Network open Settings › CyberSecure › Traffic Logging and set Flow Logging to All Traffic.": "Öppna Settings › CyberSecure › Traffic Logging i UniFi Network och ställ Flow Logging på All Traffic."
 }

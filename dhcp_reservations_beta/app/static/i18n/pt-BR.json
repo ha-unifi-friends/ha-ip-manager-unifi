@@ -1356,5 +1356,11 @@
  "No allowed traffic in this time range": "Nenhum tráfego permitido neste período",
  "UniFi recorded only blocked connections.": "O UniFi registrou só conexões bloqueadas.",
  "Blocked flows filled the limit – the allowed ones were read on their own": "Fluxos bloqueados encheram o limite – os permitidos foram lidos à parte",
- "blocked": "bloqueados"
+ "blocked": "bloqueados",
+ "No known device in this relation": "Nenhum dispositivo conhecido nesta relação",
+ "The internet has no details": "A internet não tem detalhes",
+ "Not a known device – {0}": "Dispositivo desconhecido – {0}",
+ "The names can differ between UniFi versions. Some consoles need internal storage (SSD) for it, and some gateways (e.g. UDM, UDR, Express) only log blocked traffic.": "Os nomes podem variar conforme a versão do UniFi. Alguns consoles precisam de armazenamento interno (SSD) e alguns gateways (ex.: UDM, UDR, Express) só registram tráfego bloqueado.",
+ "How to record allowed traffic:": "Como registrar o tráfego permitido:",
+ "In UniFi Network open Settings › CyberSecure › Traffic Logging and set Flow Logging to All Traffic.": "No UniFi Network abra Settings › CyberSecure › Traffic Logging e defina Flow Logging como All Traffic."
 }
