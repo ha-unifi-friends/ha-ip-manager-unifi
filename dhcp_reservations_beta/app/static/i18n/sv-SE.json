@@ -1524,5 +1524,6 @@
  "all blocked": "allt blockerat",
  "not decided": "inte avgjort",
  "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Rader: från · kolumner: till. Ping och vanliga tjänster, som testet i enhetsdetaljerna – klicka på en cell för detaljer.",
- "Only the first {0} devices.": "Bara de första {0} enheterna."
+ "Only the first {0} devices.": "Bara de första {0} enheterna.",
+ "Remove from the selection": "Ta bort från urvalet"
 }

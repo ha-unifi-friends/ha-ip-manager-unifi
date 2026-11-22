@@ -1524,5 +1524,6 @@
  "all blocked": "alles geblokkeerd",
  "not decided": "niet beslist",
  "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Rijen: van · kolommen: naar. Ping en gangbare diensten, zoals de test in de details – klik op een cel voor de details.",
- "Only the first {0} devices.": "Alleen de eerste {0} apparaten."
+ "Only the first {0} devices.": "Alleen de eerste {0} apparaten.",
+ "Remove from the selection": "Uit de selectie halen"
 }
