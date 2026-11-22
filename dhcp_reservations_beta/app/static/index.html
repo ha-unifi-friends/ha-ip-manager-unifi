@@ -561,7 +561,10 @@ td.sm-c.on{outline:2px solid var(--accent);outline-offset:1px}
 /* bulk changes */
 /* multi-select switch in the top bar (clients view only) */
 .ms-seg{flex:none}.ms-seg button{min-width:30px;padding:4px 10px;font-weight:700;font-size:13px}
-body.plan-mode .ms-seg,body.fw-mode .ms-seg,body.rel-mode .ms-seg{display:none}
+body.plan-mode .ms-seg,body.fw-mode .ms-seg{display:none}
+body.sel-mode .tt-card.picked,body.sel-mode .tt-c.picked{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,var(--card));box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 45%,transparent)}
+body.sel-mode .rel-n.picked .core{stroke:var(--accent);stroke-width:4}
+@media (max-width:760px){body.sel-split #relView{padding-bottom:50vh;padding-bottom:50dvh}}
 body.sel-mode #tbody tr td:first-child{box-shadow:inset 3px 0 0 transparent}
 body.sel-mode #tbody tr.picked{background:color-mix(in srgb,var(--accent) 16%,transparent)}
 body.sel-mode #tbody tr.picked td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
@@ -1945,14 +1948,19 @@ function rows() {
 // ---------- bulk changes: select several devices in the table or the list, then change them together ----------
 const BULK = { on: false, keys: new Set(), busy: false, act: "" };
 const bulkDevs = () => state.clients.filter(c => BULK.keys.has(keyOf(c)));
-function bulkMarks() { for (const tr of document.querySelectorAll("#tbody tr[data-k]")) tr.classList.toggle("picked", BULK.keys.has(tr.dataset.k)); document.body.classList.toggle("sel-mode", BULK.on); }
+function bulkMarks() {
+  for (const tr of document.querySelectorAll("#tbody tr[data-k]")) tr.classList.toggle("picked", BULK.keys.has(tr.dataset.k));
+  for (const b of document.querySelectorAll("#topoTree [data-ttdev]")) b.classList.toggle("picked", BULK.keys.has(b.dataset.ttdev));
+  for (const g of document.querySelectorAll("#relGraph g[data-reln]")) g.classList.toggle("picked", BULK.keys.has(g.dataset.reln));
+  document.body.classList.toggle("sel-mode", BULK.on);
+}
 function bulkToggle(k) { BULK.keys.has(k) ? BULK.keys.delete(k) : BULK.keys.add(k); bulkMarks(); for (const b of document.querySelectorAll("#cardList .lc[data-k]")) b.classList.toggle("picked", BULK.keys.has(b.dataset.k)); renderBulk(); }
 function setBulk(on) { BULK.on = on; if (!on) BULK.keys.clear(); for (const b of document.querySelectorAll("[data-ms]")) b.setAttribute("aria-pressed", String((b.dataset.ms === "1") === on)); renderAll(); }
 document.querySelectorAll("[data-ms]").forEach(b => b.addEventListener("click", () => { const on = b.dataset.ms === "1"; if (on !== BULK.on) setBulk(on); }));
 document.addEventListener("keydown", e => { if (e.key === "Escape" && BULK.on && !document.querySelector("dialog[open]")) setBulk(false); });
 // the selection always uses the detail pane – on phones as the lower half of the screen, the list stays above
 function renderBulk() {
-  selPane(BULK.on && !isPlan() && !isFw() && !isRel());
+  selPane(BULK.on && !isPlan() && !isFw());
 }
 // ---------- selection in the detail pane: summary, actions and a small firewall matrix ----------
 function selPane(on) {
@@ -4334,6 +4342,7 @@ async function loadDevSusp(c) {
 }
 function renderRel() {
   if (!isRel()) return;
+  queueMicrotask(bulkMarks); // the tree / graph is rebuilt below
   for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(b.dataset.rt === REL.tab));
   $("#topoTree").hidden = REL.tab !== "tree"; $("#relGraphBox").hidden = REL.tab !== "topo";
   if (REL.tab !== "topo" && REL.sim) { if (REL.sim.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; }
@@ -4360,6 +4369,7 @@ function relDraw() {
     ${nodes.map(node).join("")}</g></svg><div class="rel-zoom"><button type="button" class="btn sm" data-relzoom="in" title="Zoom in">+</button><button type="button" class="btn sm" data-relzoom="out" title="Zoom out">−</button><button type="button" class="btn sm" data-relzoom="auto" title="Auto zoom – show everything"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg></button><button type="button" class="btn sm" data-relzoom="fit" title="Reset the view and the layout">⟲</button><button type="button" class="btn sm" data-relzoom="labels" aria-pressed="${REL.labels}" title="${REL.labels ? "Hide labels" : "Show labels"}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg></button></div>`;
   const byKey = new Map(list.map(e => [e.a + "|" + e.b, e]));
   G.els = { n: [...box.querySelectorAll("g[data-reln]")].map(el => [el, el.dataset.reln]), e: [...box.querySelectorAll("path[data-rele]")].map(el => { const e = byKey.get(el.dataset.rele); return [el, e, e.a, e.b]; }) };
+  bulkMarks();
 }
 function relMove() {
   const G = REL.g, P = REL.pos; if (!G?.els) return;
@@ -4510,7 +4520,7 @@ function renderTopo() {
     $("#relLegend").innerHTML = [["inet", "Internet"], ["unifi", "UniFi device"], ["ha", "Home Assistant"], ["dev", "Client"], ["hit", "Filter hit"]].map(([k, l]) => `<span><i class="nk nk-${k}"></i>${l}</span>`).join("") + `<span class="lsep"></span><span><i style="background:#94a3b8"></i>Cable</span><span><i class="dash"></i>WiFi / mesh</span><span class="muted">${matchMedia("(pointer: coarse)").matches ? "Drag devices, use the buttons to zoom" : "Drag devices, Ctrl + wheel or the buttons to zoom"}</span>`;
   }
 }
-$("#topoTree").addEventListener("click", e => { if (e.target.closest("summary")) return; const b = e.target.closest("[data-ttdev]"); if (!b) return; const c = devByMac(b.dataset.ttdev); if (c) { openPanel(c); $("#topoTree").querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); $("#topoTree").querySelectorAll(`[data-ttdev="${CSS.escape(c.mac)}"]`).forEach(x => x.classList.add("sel")); } });
+$("#topoTree").addEventListener("click", e => { if (e.target.closest("summary")) return; const b = e.target.closest("[data-ttdev]"); if (!b) return; const c = devByMac(b.dataset.ttdev); if (c && BULK.on) { bulkToggle(keyOf(c)); return; } if (c) { openPanel(c); $("#topoTree").querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); $("#topoTree").querySelectorAll(`[data-ttdev="${CSS.escape(c.mac)}"]`).forEach(x => x.classList.add("sel")); } });
 // hovering a device lights up its relations and neighbours
 $("#relGraph").addEventListener("mouseover", e => {
   const svg = $("#relGraph svg"); if (!svg) return;
@@ -4530,7 +4540,7 @@ document.querySelectorAll("[data-rt]").forEach(t => t.addEventListener("click", 
 }));
 $("#relView").addEventListener("click", e => {
   if (REL.noClick) return;
-  const n = e.target.closest("[data-reln]"); if (n) { const c = relDev(n.dataset.reln); if (c) openPanel(c); else toast(n.dataset.reln === "internet" ? "The internet has no details" : "Not a known device – " + n.dataset.reln.replace(/^ip:/, "")); return; }
+  const n = e.target.closest("[data-reln]"); if (n) { const c = relDev(n.dataset.reln); if (c && BULK.on) { bulkToggle(keyOf(c)); return; } if (c) openPanel(c); else toast(n.dataset.reln === "internet" ? "The internet has no details" : "Not a known device – " + n.dataset.reln.replace(/^ip:/, "")); return; }
   const ed = e.target.closest("[data-rele]");
   if (ed && !e.target.closest("button")) { const [a, b] = ed.dataset.rele.split("|"), c = relDev(b) || relDev(a); if (c) openPanel(c); }
 });

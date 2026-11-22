@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.9
+
+- **Tree and Graph:** the slider «1 | n» is offered there too. In «n» mode a click on a device in the tree or a node in the graph selects it (marked in purple) and the selection pane shows the summary, firewall matrix and actions – just like in the table.
+
 ## 1.52.8
 
 - **Selection pane (desktop):** the pane grows with the firewall matrix – up to twice its normal width (800 px) – before the matrix starts to scroll sideways. With one device or on phones nothing changes.
