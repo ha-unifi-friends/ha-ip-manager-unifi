@@ -1451,6 +1451,27 @@ def suspicious_worker():
         time.sleep(SUSP_INTERVAL)
 
 
+SUSP_RECENT = {"t": 0, "data": None}
+SUSP_RECENT_LOCK = threading.Lock()
+
+
+def suspicious_recent(api):
+    """Suspicious-traffic findings of the last 24 hours for the device details – kept 5 minutes, so opening devices
+    does not read the flows again each time."""
+    with SUSP_RECENT_LOCK:
+        if SUSP_RECENT["data"] is not None and time.time() - SUSP_RECENT["t"] < 300:
+            return SUSP_RECENT["data"]
+        to = int(time.time() * 1000)
+        try:
+            flows, split = read_flows_split(api, to - 24 * 3600 * 1000, to)
+        except UnifiError as e:
+            return {"available": False, "reason": str(e), "suspicious": []}
+        data = {"available": True, "from": to - 24 * 3600 * 1000, "to": to,
+                "suspicious": suspicious_patterns(split.get("all") or flows, zone_roles_by_name(api), quiet_hosts(api))}
+        SUSP_RECENT.update(t=time.time(), data=data)
+        return data
+
+
 def traffic_relations(api, qs):
     """Traffic flows of a time window, summed up per pair (initiator → target): bytes both ways, ports, domains,
     what UniFi did (allowed / blocked). The console keeps about 7 days and caps a query at 10,000 flows."""
@@ -2377,6 +2398,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, build_snapshot(API))
             if method == "GET" and path.endswith("/api/firewall"):
                 return self._send(200, firewall_state(API))
+            if method == "GET" and path.endswith("/api/suspicious"):
+                return self._send(200, suspicious_recent(API))
             if method == "GET" and path.endswith("/api/relations"):
                 qs = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(self.path).query))
                 return self._send(200, traffic_relations(API, qs))

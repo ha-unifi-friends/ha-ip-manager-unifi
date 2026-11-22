@@ -1430,5 +1430,6 @@
  "✓ {0} stopped blinking ({1}).": "✓ {0} slutade blinka ({1}).",
  "✓ Restart sent at {0} – {1} is back in about a minute.": "✓ Omstart skickad {0} – {1} är tillbaka om ungefär en minut.",
  "✓ {0} disabled ({1}).": "✓ {0} inaktiverad ({1}).",
- "✓ {0} enabled ({1}).": "✓ {0} aktiverad ({1})."
+ "✓ {0} enabled ({1}).": "✓ {0} aktiverad ({1}).",
+ "Last 24 hours:": "Senaste 24 timmarna:"
 }

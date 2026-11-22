@@ -1430,5 +1430,6 @@
  "✓ {0} stopped blinking ({1}).": "✓ {0} ne clignote plus ({1}).",
  "✓ Restart sent at {0} – {1} is back in about a minute.": "✓ Redémarrage envoyé à {0} – {1} revient dans environ une minute.",
  "✓ {0} disabled ({1}).": "✓ {0} désactivé ({1}).",
- "✓ {0} enabled ({1}).": "✓ {0} activé ({1})."
+ "✓ {0} enabled ({1}).": "✓ {0} activé ({1}).",
+ "Last 24 hours:": "Dernières 24 heures :"
 }

@@ -429,6 +429,8 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .dev-act .link.warn{color:var(--warn)}
 .dev-act .link:disabled{color:var(--muted);cursor:default}
 .dev-act .hint{margin:0;font-size:12px}
+.dev-susp{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:12px}
+#devSusp:empty{display:none}
 .port-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin:6px 0 2px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 .port-note>b:first-child{color:var(--warn)}
 .rel-focus{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px}
@@ -3758,14 +3760,28 @@ function relRun() {
   const step = () => { S.raf = 0; if (REL.sim !== S || !$("#relGraph svg")) return; relTick(); relMove(); if (S.alpha > 0.004 || S.alphaTarget) S.raf = requestAnimationFrame(step); };
   S.raf = requestAnimationFrame(step);
 }
+// one finding of the suspicious-traffic check as a pill (relations and device details)
+const REL_SUSP_ICON = { scan_hosts: "🔍", scan_ports: "🔍", blocked: "⛔", remote: "🔑", lateral: "↪" };
+const relSuspText = x => x.kind === "scan_ports" ? `probed ${x.count} ports on ${relIpName(x.target)}` : x.text;
+const relSuspChip = x => `<span class="rs-c ${["scan_hosts", "scan_ports", "remote"].includes(x.kind) ? "bad" : ""}"><span aria-hidden="true">${REL_SUSP_ICON[x.kind] || "⚠"}</span><span>${esc(relSuspText(x))}</span></span>`;
+// device details: the findings of the last 24 hours for this device (loaded once, the server keeps them 5 minutes)
+const DEVSUSP = { at: 0, data: null, busy: null };
+async function loadDevSusp(c) {
+  const box = $("#devSusp"); if (!box || !c?.mac) return;
+  if (!DEVSUSP.data || Date.now() - DEVSUSP.at > 300e3) {
+    DEVSUSP.busy ||= api("api/suspicious").then(d => { DEVSUSP.data = d; DEVSUSP.at = Date.now(); }).catch(() => { DEVSUSP.data = { suspicious: [] }; DEVSUSP.at = Date.now(); }).finally(() => { DEVSUSP.busy = null; });
+    await DEVSUSP.busy;
+  }
+  if (state.sel !== c || !$("#devSusp")) return;
+  const mine = (DEVSUSP.data?.suspicious || []).filter(x => x.src === c.mac || (x.mac && x.mac === c.mac) || (!x.mac && x.ip && x.ip === c.ip));
+  $("#devSusp").innerHTML = mine.length ? `<div class="dev-susp"><span class="muted">Last 24 hours:</span> ${mine.map(relSuspChip).join("")}</div>` : "";
+}
 // suspicious traffic: one row per device, the findings as chips; scans from the internet folded into one line
 function relSuspHtml(sp) {
   const groups = new Map();
   for (const x of sp) { if (!groups.has(x.src)) groups.set(x.src, { x, items: [] }); groups.get(x.src).items.push(x); }
   const all = [...groups.values()], ext = all.filter(g => !g.x.mac && !relPriv(g.x.ip)), int = all.filter(g => !ext.includes(g));
-  const ICON = { scan_hosts: "🔍", scan_ports: "🔍", blocked: "⛔", remote: "🔑", lateral: "↪" };
-  const text = x => x.kind === "scan_ports" ? `probed ${x.count} ports on ${relIpName(x.target)}` : x.text;
-  const chip = x => `<span class="rs-c ${["scan_hosts", "scan_ports", "remote"].includes(x.kind) ? "bad" : ""}"><span aria-hidden="true">${ICON[x.kind] || "⚠"}</span><span>${esc(text(x))}</span></span>`;
+  const text = relSuspText, chip = relSuspChip;
   const row = g => {
     const x = g.x, c = x.mac ? devByMac(x.mac) : relByIp(x.ip), name = c ? devName(c) : x.name && x.name !== x.ip ? x.name : x.ip;
     const sub = [name !== x.ip ? x.ip : "", x.zone].filter(Boolean).join(" · ");
@@ -3995,6 +4011,7 @@ function renderInfo() {
   $("#paneInfo").innerHTML = `
     <div class="card devcard"><div class="big ${c.icon_id ? "pic" : ""}">${iconHtml(c, true)}</div><div><div class="v">${esc(c.is_device ? `${KIND_LABEL[c.device_kind]} · ${c.device_model}` : (c.oui || CONN_LABEL[c.conn]))}</div><div class="mono muted">${esc(c.mac || "no MAC")}${c.mac ? (isRandomMac(c.mac) && !c.is_device ? ` <span class="muted" style="font-family:inherit;font-size:11px" title="Locally administered (random / private) address – it has no registered vendor">· random MAC</span>` : ` <a class="oui-link" href="https://maclookup.app/macaddress/${esc(c.mac.slice(0, 8).replace(/:/g, "").toUpperCase())}" target="_blank" rel="noopener noreferrer" title="Look up the vendor of ${esc(c.mac.slice(0, 8))} on maclookup.app (only the vendor prefix is sent)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Lookup vendor</a>`) : ""}</div>${c.oui_src ? `<div class="muted" style="font-size:11px">Vendor from macvendors.com</div>` : ""}</div></div>
     ${c._warn.length ? `<div>${c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("")}</div>` : ""}
+    <div id="devSusp"></div>
     <div class="card"><dl class="kv" style="margin:0">
       ${c.is_device ? kv("UniFi name", esc(c.device_name)) : ""}
       ${kv("Status", c.online ? '<span style="color:var(--ok)">Online</span>' : "Offline · " + esc(c.last_seen ? rel(c.last_seen) : "never seen") + (c.last_seen ? ` <span class="muted">(${isoDateTime(c.last_seen)})</span>` : ""))}
@@ -4031,6 +4048,7 @@ function renderInfo() {
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
+  if (c.mac && !c.is_device) loadDevSusp(c);
   $("#swGrid")?.addEventListener("click", e => { const b = e.target.closest("[data-swdev]"); if (!b) return; const o = devByMac(b.dataset.swdev); if (o && o.mac !== c.mac) openPanel(o); });
   $("#portBox")?.addEventListener("click", e => { if (e.target.closest("#btnScan")) scanPorts(c); else if (e.target.closest("#btnPing")) pingDev(c); });
   $("#btnWol")?.addEventListener("click", async e => {
