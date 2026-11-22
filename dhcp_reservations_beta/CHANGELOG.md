@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.48.0
+
+- **What changed since your last visit:** above the table and the list a box shows, when something changed since you last marked it as seen – new devices, devices with new issues, changed fixed IPs, removed devices and changed firewall rules. Click a chip to show only those devices (click again to show all), *firewall rules* opens the firewall; *Mark as seen* hides the box until the next change. The comparison is stored in this browser.
+
 ## 1.47.0
 
 - **Clients: Table · List · Tree · Graph.** The former list is now called *Table*; the new **List** shows one card per device – online dot, icon, name, IP type, IP (and the fixed IP when it differs), network, connection (switch port or access point) and the issues as pills. A tap opens the details. Same filters, search, sort and views as the table.
