@@ -1492,5 +1492,16 @@
  "Can this device reach …? Test a connection": "Kan dit apparaat … bereiken? Verbinding testen",
  "Recently changed": "Recent gewijzigd",
  "Changed in the last 7 days": "Gewijzigd in de laatste 7 dagen",
- "Multi-select": "Meervoudige selectie"
+ "Multi-select": "Meervoudige selectie",
+ "Firewall: may this device reach": "Firewall: mag dit apparaat bereiken",
+ "All ports open": "Alle poorten open",
+ "All ports blocked": "Alle poorten geblokkeerd",
+ "No rule and no default between these zones": "Geen regel en geen standaard tussen deze zones",
+ "Not decided": "Niet beslist",
+ "{0} of {1} allowed": "{0} van {1} toegestaan",
+ "decided by": "beslist door",
+ "Zone default: {0}": "Zonestandaard: {0}",
+ "Search devices and zones": "Apparaten en zones zoeken",
+ "all devices": "alle apparaten",
+ "No match.": "Geen resultaat."
 }

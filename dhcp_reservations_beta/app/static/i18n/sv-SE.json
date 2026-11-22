@@ -1492,5 +1492,16 @@
  "Can this device reach …? Test a connection": "Kan enheten nå …? Testa en anslutning",
  "Recently changed": "Nyligen ändrade",
  "Changed in the last 7 days": "Ändrade de senaste 7 dagarna",
- "Multi-select": "Flerval"
+ "Multi-select": "Flerval",
+ "Firewall: may this device reach": "Brandvägg: får enheten nå",
+ "All ports open": "Alla portar öppna",
+ "All ports blocked": "Alla portar blockerade",
+ "No rule and no default between these zones": "Ingen regel och ingen standard mellan zonerna",
+ "Not decided": "Inte avgjort",
+ "{0} of {1} allowed": "{0} av {1} tillåtna",
+ "decided by": "avgörs av",
+ "Zone default: {0}": "Zonstandard: {0}",
+ "Search devices and zones": "Sök enheter och zoner",
+ "all devices": "alla enheter",
+ "No match.": "Ingen träff."
 }

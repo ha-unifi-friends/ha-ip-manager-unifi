@@ -1492,5 +1492,16 @@
  "Can this device reach …? Test a connection": "Este dispositivo consegue chegar a …? Testar uma conexão",
  "Recently changed": "Alterados recentemente",
  "Changed in the last 7 days": "Alterados nos últimos 7 dias",
- "Multi-select": "Seleção múltipla"
+ "Multi-select": "Seleção múltipla",
+ "Firewall: may this device reach": "Firewall: este dispositivo pode alcançar",
+ "All ports open": "Todas as portas abertas",
+ "All ports blocked": "Todas as portas bloqueadas",
+ "No rule and no default between these zones": "Nenhuma regra nem padrão entre estas zonas",
+ "Not decided": "Não decidido",
+ "{0} of {1} allowed": "{0} de {1} permitidos",
+ "decided by": "decidido por",
+ "Zone default: {0}": "Padrão da zona: {0}",
+ "Search devices and zones": "Pesquisar dispositivos e zonas",
+ "all devices": "todos os dispositivos",
+ "No match.": "Nenhum resultado."
 }
