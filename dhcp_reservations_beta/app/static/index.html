@@ -418,6 +418,10 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .pv-change label{font-size:12px;color:var(--muted)}
 .pv-ask{margin-top:8px;display:grid;gap:6px;font-size:12.5px;padding:8px 10px;border-radius:8px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 .pv-btns{display:flex;gap:8px}
+.rc-status{margin:8px 0 0;font-size:12.5px;padding:7px 10px;border-radius:7px}
+.rc-status.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.rc-status.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.ask-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .port-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin:6px 0 2px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 .port-note>b:first-child{color:var(--warn)}
 .rel-focus{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px}
@@ -1208,6 +1212,7 @@ window.I18N = (() => {
       <div class="card" id="rcCard" hidden>
         <div class="sec-title">WiFi</div>
         <button class="btn" type="button" id="btnReconnect" style="width:100%"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Reconnect</button>
+        <p class="rc-status" id="rcStatus" role="status" hidden></p>
         <p class="hint" id="rcText" style="margin:8px 0 0">Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP).</p>
       </div>
     </div>
@@ -1382,6 +1387,13 @@ window.I18N = (() => {
     </div>
     <div class="imp-foot"><span class="sp"></span><button class="btn" type="button" id="rulesCancel">Cancel</button><button class="btn primary" type="button" id="rulesSave">Save rules</button></div>
   </div>
+</dialog>
+<dialog id="dlgAsk" class="small" aria-labelledby="askTitle">
+  <form method="dialog" novalidate>
+    <div class="ask-head"><h2 id="askTitle"></h2><button class="x link" type="button" id="askX" aria-label="Close" style="color:var(--muted)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
+    <p id="askText" style="margin:0"></p>
+    <div class="actions"><button class="btn" type="button" id="askNo">Cancel</button><button class="btn primary" type="submit" id="askOk">Confirm</button></div>
+  </form>
 </dialog>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="pcTip" class="pc-tip" role="tooltip" hidden></div>
@@ -4132,6 +4144,7 @@ function fillForm(c) {
   $("#fAp").value = c?.fixed_ap_mac || c?.ap_mac || state.aps[0]?.mac || "";
   $("#fDnsOn").checked = !!c?.local_dns_record_enabled; $("#fDns").value = c?.local_dns_record || "";
   $("#editErr").hidden = true; $("#dangerZone").hidden = !c?.known;
+  if ($("#rcCard").dataset.mac !== (c?.mac || "")) { $("#rcStatus").hidden = true; $("#rcCard").dataset.mac = c?.mac || ""; }
   $("#rcCard").hidden = !(c?.mac && !c.is_device && c.conn === "wifi"); $("#btnReconnect").disabled = !canReconnect(c);
   $("#rcText").textContent = canReconnect(c) ? "Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP)." : "Only possible while the device is connected to the WiFi.";
   $("#btnUnres").hidden = $("#unresText").hidden = !c?.use_fixedip;
@@ -4452,12 +4465,29 @@ function bindSort(id, render) {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const needsNewIp = (c, ip) => !!c && !!ip && !!c.online && !!c.ip && c.ip !== ip;
 const canReconnect = c => !!c && !!c.mac && !c.is_device && c.conn === "wifi" && !!c.online;
+// a small yes / no dialog: askConfirm("Title", "Text", "Confirm") → true / false
+function askConfirm(title, text, ok = "Confirm") {
+  const d = $("#dlgAsk"); $("#askTitle").textContent = title; $("#askText").textContent = text; $("#askOk").textContent = ok;
+  return new Promise(res => {
+    const done = v => { d.removeEventListener("close", onClose); if (d.open) d.close(); res(v); };
+    const onClose = () => done(d.returnValue === "ok");
+    d.returnValue = ""; d.addEventListener("close", onClose);
+    $("#askOk").onclick = e => { e.preventDefault(); d.returnValue = "ok"; d.close(); };
+    $("#askNo").onclick = $("#askX").onclick = () => d.close();
+    d.showModal(); $("#askOk").focus();
+  });
+}
+const RC_LABEL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>Reconnect</span>`;
 $("#btnReconnect").addEventListener("click", async () => {
-  const c = state.sel, b = $("#btnReconnect"); if (!canReconnect(c)) return;
-  b.disabled = true;
-  try { await api("api/reconnect", { mac: c.mac }); toast(`${devName(c)} is reconnecting – the status updates in a few seconds`); setTimeout(() => load(), 15000); }
-  catch (e) { toast("Reconnect failed: " + e.message); }
-  finally { setTimeout(() => { if (state.sel === c) b.disabled = !canReconnect(c); }, 5000); }
+  const c = state.sel, b = $("#btnReconnect"), st = $("#rcStatus"); if (!canReconnect(c)) return;
+  if (!await askConfirm(`Reconnect ${devName(c)}?`, `Are you sure you want to reconnect ${devName(c)}? It is disconnected from the WiFi for a moment and connects again right away.`)) return;
+  b.disabled = true; b.innerHTML = `<span class="spin"></span> <span>Reconnecting …</span>`; st.hidden = true;
+  try {
+    await api("api/reconnect", { mac: c.mac });
+    st.className = "rc-status ok"; st.textContent = `✓ Sent at ${new Date().toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" })} – ${devName(c)} reconnects in a few seconds.`; st.hidden = false;
+    toast(`${devName(c)} is reconnecting – the status updates in a few seconds`); setTimeout(() => load(), 15000);
+  } catch (e) { st.className = "rc-status bad"; st.textContent = "Reconnect failed: " + e.message; st.hidden = false; }
+  finally { setTimeout(() => { b.innerHTML = RC_LABEL; if (state.sel === c) b.disabled = !canReconnect(c); }, 3000); }
 });
 const renewNote = c => canReconnect(c) ? "" : c.conn === "wired" ? "Wired – takes the new IP at its next DHCP renewal" : "Takes the new IP at its next DHCP renewal";
 async function reconnectAll(cs) {

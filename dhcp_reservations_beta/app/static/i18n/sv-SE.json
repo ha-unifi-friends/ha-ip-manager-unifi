@@ -1405,5 +1405,10 @@
  "Change port VLAN": "Ändra port-VLAN",
  "The port already has this VLAN": "Porten har redan detta VLAN",
  "Port VLAN changed to {0} – the switch applies it in a few seconds": "Port-VLAN ändrat till {0} – switchen tillämpar det om några sekunder",
- "A virtual network override usually has no effect on wired devices. To move the device to {0}, change the native VLAN of the port – in the Switch port card of the settings or in UniFi.": "Att tvinga ett virtuellt nätverk fungerar oftast inte för trådbundna enheter. För att flytta enheten till {0}, ändra portens native-VLAN – i kortet ”Switchport” i inställningarna eller i UniFi."
+ "A virtual network override usually has no effect on wired devices. To move the device to {0}, change the native VLAN of the port – in the Switch port card of the settings or in UniFi.": "Att tvinga ett virtuellt nätverk fungerar oftast inte för trådbundna enheter. För att flytta enheten till {0}, ändra portens native-VLAN – i kortet ”Switchport” i inställningarna eller i UniFi.",
+ "Reconnect {0}?": "Ansluta {0} igen?",
+ "Are you sure you want to reconnect {0}? It is disconnected from the WiFi for a moment and connects again right away.": "Vill du verkligen ansluta {0} igen? Den kopplas bort från wifi en kort stund och ansluter direkt igen.",
+ "Confirm": "Bekräfta",
+ "Reconnecting …": "Ansluter igen …",
+ "✓ Sent at {0} – {1} reconnects in a few seconds.": "✓ Skickat {0} – {1} ansluter igen om några sekunder."
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.37.1 – 2026-11-22
+
+- **Reconnect** asks first in a small dialog (“Reconnect …? – Cancel / Confirm”). While it runs the button shows a spinner, and the WiFi card then says when it was sent (or why it failed) – no longer only a short message at the edge of the screen.
+
 ## 1.37.0 – 2026-11-22
 
 - **Change the port VLAN:** the *Switch port* card in the settings of a wired device can change the native (untagged) VLAN of its switch port. The target network is preselected when the device does not match its port. Before changing, it lists all devices on the port that move along; a version is saved first and the other settings of the port are kept. Not offered for uplink ports, ports with a UniFi device behind them (it would lose its controller) and ports with a port profile – the reason is shown.

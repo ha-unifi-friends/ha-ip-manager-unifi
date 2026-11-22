@@ -1405,5 +1405,10 @@
  "Change port VLAN": "Port-VLAN ändern",
  "The port already has this VLAN": "Der Port hat dieses VLAN bereits",
  "Port VLAN changed to {0} – the switch applies it in a few seconds": "Port-VLAN auf {0} geändert – der Switch übernimmt es in ein paar Sekunden",
- "A virtual network override usually has no effect on wired devices. To move the device to {0}, change the native VLAN of the port – in the Switch port card of the settings or in UniFi.": "Ein virtuelles Netzwerk erzwingen wirkt bei kabelgebundenen Geräten meist nicht. Um das Gerät nach {0} zu verschieben, ändere das native VLAN des Ports – in der Karte «Switch-Port» unter Einstellungen oder in UniFi."
+ "A virtual network override usually has no effect on wired devices. To move the device to {0}, change the native VLAN of the port – in the Switch port card of the settings or in UniFi.": "Ein virtuelles Netzwerk erzwingen wirkt bei kabelgebundenen Geräten meist nicht. Um das Gerät nach {0} zu verschieben, ändere das native VLAN des Ports – in der Karte «Switch-Port» unter Einstellungen oder in UniFi.",
+ "Reconnect {0}?": "{0} neu verbinden?",
+ "Are you sure you want to reconnect {0}? It is disconnected from the WiFi for a moment and connects again right away.": "Willst du {0} wirklich neu verbinden? Das Gerät wird kurz vom WLAN getrennt und verbindet sich gleich wieder.",
+ "Confirm": "Bestätigen",
+ "Reconnecting …": "Verbinde neu …",
+ "✓ Sent at {0} – {1} reconnects in a few seconds.": "✓ Gesendet um {0} – {1} verbindet sich in ein paar Sekunden neu."
 }
