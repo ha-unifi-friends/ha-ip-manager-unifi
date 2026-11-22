@@ -1380,7 +1380,7 @@
  "paused": "wstrzymana",
  "Normal traffic of this device reaches the internet": "Zwykły ruch tego urządzenia dociera do internetu",
  "Normal traffic of this device is blocked by {0}": "Zwykły ruch tego urządzenia blokuje {0}",
- "Reaches the internet": "Dociera do internetu",
+ "Reaches the internet": "Dostęp do internetu",
  "Client · other MAC": "Klient · inny MAC",
  "Client · {0}": "Klient · {0}",
  "Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.": "Reguły strefy i reguły tego klienta, w kolejności sprawdzania przez UniFi – decyduje pierwsza pasująca reguła.",
@@ -1507,5 +1507,13 @@
  "Choose the target": "Wybierz cel",
  "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Kliknij urządzenie lub całą strefę (dwuklik od razu ją wybiera). Kliknij nazwę strefy, aby ją zwinąć.",
  "All devices of the zone": "Wszystkie urządzenia strefy",
- "No devices": "Brak urządzeń"
+ "No devices": "Brak urządzeń",
+ "{0} selected": "{0} zaznaczonych",
+ "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Kliknij urządzenia w tabeli lub liście, aby je zaznaczyć. Tu pojawi się podsumowanie, akcje i mała macierz zapory.",
+ "with fixed IP": "ze stałym IP",
+ "Firewall between the selected devices": "Zapora między wybranymi urządzeniami",
+ "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ wszystko dozwolone · ✕ wszystko zablokowane · ◐ częściowo · ? nierozstrzygnięte – ping i popularne usługi, jak test w szczegółach. Najedź na komórkę, by zobaczyć reguły.",
+ "Only the first 10 devices.": "Tylko pierwszych 10 urządzeń.",
+ "Zone default": "Domyślne strefy",
+ "allowed": "dozwolonych"
 }

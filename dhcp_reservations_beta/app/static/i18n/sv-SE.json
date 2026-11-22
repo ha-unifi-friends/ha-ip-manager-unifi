@@ -1507,5 +1507,13 @@
  "Choose the target": "Välj mål",
  "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Klicka på en enhet eller en hel zon (dubbelklick väljer direkt). Klicka på zonens namn för att fälla ihop den.",
  "All devices of the zone": "Alla enheter i zonen",
- "No devices": "Inga enheter"
+ "No devices": "Inga enheter",
+ "{0} selected": "{0} valda",
+ "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Klicka på enheter i tabellen eller listan för att välja dem. Här visas sammanfattningen, åtgärderna och en liten brandväggsmatris.",
+ "with fixed IP": "med fast IP",
+ "Firewall between the selected devices": "Brandvägg mellan valda enheter",
+ "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ allt tillåtet · ✕ allt blockerat · ◐ delvis · ? inte avgjort – ping och vanliga tjänster, som testet i enhetsdetaljerna. Hovra över en cell för reglerna.",
+ "Only the first 10 devices.": "Bara de första 10 enheterna.",
+ "Zone default": "Zonstandard",
+ "allowed": "tillåtna"
 }

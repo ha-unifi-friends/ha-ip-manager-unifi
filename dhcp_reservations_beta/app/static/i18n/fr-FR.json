@@ -1380,7 +1380,7 @@
  "paused": "en pause",
  "Normal traffic of this device reaches the internet": "Le trafic normal de cet appareil atteint Internet",
  "Normal traffic of this device is blocked by {0}": "Le trafic normal de cet appareil est bloqué par {0}",
- "Reaches the internet": "Atteint Internet",
+ "Reaches the internet": "Accès à Internet",
  "Client · other MAC": "Client · autre MAC",
  "Client · {0}": "Client · {0}",
  "Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.": "Les règles de zone et celles de ce client, dans l'ordre où UniFi les vérifie – la première règle qui correspond décide.",
@@ -1507,5 +1507,13 @@
  "Choose the target": "Choisir la cible",
  "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Cliquez sur un appareil ou une zone entière (double-clic pour valider). Cliquez sur le nom d’une zone pour la replier.",
  "All devices of the zone": "Tous les appareils de la zone",
- "No devices": "Aucun appareil"
+ "No devices": "Aucun appareil",
+ "{0} selected": "{0} sélectionné(s)",
+ "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Cliquez sur des appareils dans le tableau ou la liste pour les sélectionner. Le résumé, les actions et une petite matrice de pare-feu apparaissent ici.",
+ "with fixed IP": "avec IP fixe",
+ "Firewall between the selected devices": "Pare-feu entre les appareils sélectionnés",
+ "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ tout autorisé · ✕ tout bloqué · ◐ en partie · ? non décidé – ping et services courants, comme le test dans les détails. Survolez une case pour les règles décisives.",
+ "Only the first 10 devices.": "Seulement les 10 premiers appareils.",
+ "Zone default": "Défaut de zone",
+ "allowed": "autorisés"
 }
