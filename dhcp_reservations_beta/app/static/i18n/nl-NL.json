@@ -1462,5 +1462,8 @@
  "Internet access": "Internettoegang",
  "The rules that concern this device, in their order – the first matching rule decides.": "De regels die dit apparaat betreffen, in hun volgorde – de eerste passende regel beslist.",
  "decides for this device": "beslist voor dit apparaat",
- "never reached for this device": "wordt voor dit apparaat nooit bereikt"
+ "never reached for this device": "wordt voor dit apparaat nooit bereikt",
+ "The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.": "De regels die dit apparaat betreffen (zijn netwerk en het apparaat zelf), in hun volgorde – de eerste passende regel beslist.",
+ "Rules marked ⚠ name a client with the same name but another MAC address": "Met ⚠ gemarkeerde regels noemen een client met dezelfde naam maar een ander MAC-adres",
+ "– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.": "– waarschijnlijk een privé-wifi-adres dat is veranderd. Selecteer het apparaat in UniFi opnieuw in deze regels of schakel het privé-adres op het apparaat uit."
 }

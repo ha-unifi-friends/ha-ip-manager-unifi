@@ -1462,5 +1462,8 @@
  "Internet access": "Internetzugang",
  "The rules that concern this device, in their order – the first matching rule decides.": "Die Regeln, die dieses Gerät betreffen, in ihrer Reihenfolge – die erste passende Regel entscheidet.",
  "decides for this device": "entscheidet für dieses Gerät",
- "never reached for this device": "wird für dieses Gerät nie erreicht"
+ "never reached for this device": "wird für dieses Gerät nie erreicht",
+ "The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.": "Die Regeln, die dieses Gerät betreffen (sein Netzwerk und das Gerät selbst), in ihrer Reihenfolge – die erste passende Regel entscheidet.",
+ "Rules marked ⚠ name a client with the same name but another MAC address": "Mit ⚠ markierte Regeln nennen einen Client mit gleichem Namen, aber anderer MAC-Adresse",
+ "– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.": "– vermutlich eine private WLAN-Adresse, die sich geändert hat. Wähle das Gerät in UniFi in diesen Regeln neu aus oder schalte die private Adresse am Gerät aus."
 }

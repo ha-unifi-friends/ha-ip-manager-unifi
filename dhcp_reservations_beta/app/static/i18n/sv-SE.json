@@ -1462,5 +1462,8 @@
  "Internet access": "Internetåtkomst",
  "The rules that concern this device, in their order – the first matching rule decides.": "Reglerna som rör den här enheten, i sin ordning – den första matchande regeln avgör.",
  "decides for this device": "avgör för den här enheten",
- "never reached for this device": "nås aldrig för den här enheten"
+ "never reached for this device": "nås aldrig för den här enheten",
+ "The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.": "Reglerna som rör den här enheten (dess nätverk och själva enheten), i sin ordning – den första matchande regeln avgör.",
+ "Rules marked ⚠ name a client with the same name but another MAC address": "Regler markerade med ⚠ anger en klient med samma namn men en annan MAC-adress",
+ "– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.": "– troligen en privat wifi-adress som har ändrats. Välj enheten igen i dessa regler i UniFi, eller stäng av den privata adressen på enheten."
 }
