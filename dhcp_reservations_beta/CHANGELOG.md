@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.42.6
+
+- Device detail: the *Firewall* section is collapsed by default (the open state is remembered), and the expand/collapse arrow of the internet access chain is larger.
+
 ## 1.42.5
 
 - Internet access chain: all rules sit on one level again – the green line bypasses paused rules and UniFi's built-in special rules with an arc above the icon.
