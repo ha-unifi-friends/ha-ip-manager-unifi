@@ -1431,5 +1431,12 @@
  "✓ Restart sent at {0} – {1} is back in about a minute.": "✓ Herstart verstuurd om {0} – {1} is over ongeveer een minuut terug.",
  "✓ {0} disabled ({1}).": "✓ {0} uitgeschakeld ({1}).",
  "✓ {0} enabled ({1}).": "✓ {0} ingeschakeld ({1}).",
- "Last 24 hours:": "Laatste 24 uur:"
+ "Last 24 hours:": "Laatste 24 uur:",
+ "Firewall blocks (24 h)": "Firewallblokkades (24 u)",
+ "Loading the firewall blocks of the last 24 hours …": "Firewallblokkades van de laatste 24 uur worden geladen …",
+ "Many blocked attempts (50+)": "Veel geblokkeerde pogingen (50+)",
+ "Scans or other suspicious traffic": "Scans of ander verdacht verkeer",
+ "No findings": "Geen bevindingen",
+ "Blocked (24 h)": "Geblokkeerd (24 u)",
+ "Connection attempts blocked by the firewall in the last 24 hours": "Door de firewall geblokkeerde verbindingspogingen van de laatste 24 uur"
 }

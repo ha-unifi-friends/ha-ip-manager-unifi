@@ -1431,5 +1431,12 @@
  "✓ Restart sent at {0} – {1} is back in about a minute.": "✓ Reinicio enviado a las {0} – {1} vuelve en un minuto aprox.",
  "✓ {0} disabled ({1}).": "✓ {0} desactivado ({1}).",
  "✓ {0} enabled ({1}).": "✓ {0} activado ({1}).",
- "Last 24 hours:": "Últimas 24 horas:"
+ "Last 24 hours:": "Últimas 24 horas:",
+ "Firewall blocks (24 h)": "Bloqueos del firewall (24 h)",
+ "Loading the firewall blocks of the last 24 hours …": "Cargando los bloqueos del firewall de las últimas 24 horas …",
+ "Many blocked attempts (50+)": "Muchos intentos bloqueados (50+)",
+ "Scans or other suspicious traffic": "Escaneos u otro tráfico sospechoso",
+ "No findings": "Sin hallazgos",
+ "Blocked (24 h)": "Bloqueado (24 h)",
+ "Connection attempts blocked by the firewall in the last 24 hours": "Intentos de conexión bloqueados por el firewall en las últimas 24 horas"
 }

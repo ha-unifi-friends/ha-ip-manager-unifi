@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.38.2 – 2026-11-22
+
+- **Clients:** new filter **Firewall blocks (24 h)** in the sidebar – *Many blocked attempts (50+)*, *Scans or other suspicious traffic*, *No findings* – and a sortable column **Blocked (24 h)** with the number of blocked connection attempts (also in the standard view *Problems*). Same data as the pills in the device details, loaded in the background.
+
 ## 1.38.1 – 2026-11-22
 
 - **Device details** show the suspicious-traffic findings of the last 24 hours for the device as pills, like in *Relations* (e.g. “⛔ 1600 connection attempts blocked by the firewall”). The findings are read once and kept 5 minutes on the server, so opening devices stays quick.

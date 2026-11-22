@@ -1431,5 +1431,12 @@
  "✓ Restart sent at {0} – {1} is back in about a minute.": "✓ Omstart skickad {0} – {1} är tillbaka om ungefär en minut.",
  "✓ {0} disabled ({1}).": "✓ {0} inaktiverad ({1}).",
  "✓ {0} enabled ({1}).": "✓ {0} aktiverad ({1}).",
- "Last 24 hours:": "Senaste 24 timmarna:"
+ "Last 24 hours:": "Senaste 24 timmarna:",
+ "Firewall blocks (24 h)": "Brandväggsblockeringar (24 h)",
+ "Loading the firewall blocks of the last 24 hours …": "Läser in brandväggsblockeringar för de senaste 24 timmarna …",
+ "Many blocked attempts (50+)": "Många blockerade försök (50+)",
+ "Scans or other suspicious traffic": "Skanningar eller annan misstänkt trafik",
+ "No findings": "Inga fynd",
+ "Blocked (24 h)": "Blockerat (24 h)",
+ "Connection attempts blocked by the firewall in the last 24 hours": "Anslutningsförsök som brandväggen blockerat de senaste 24 timmarna"
 }
