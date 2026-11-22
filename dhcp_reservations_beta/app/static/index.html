@@ -429,6 +429,7 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .dev-act .link.warn{color:var(--warn)}
 .dev-act .link:disabled{color:var(--muted);cursor:default}
 .dev-act .hint{margin:0;font-size:12px}
+.fwblk{color:var(--bad);white-space:nowrap}
 .dev-susp{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:12px}
 #devSusp:empty{display:none}
 .port-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin:6px 0 2px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
@@ -1572,6 +1573,9 @@ const FACETS = [
   { id: "ssid", title: "WiFi Broadcasts", get: c => c.essid, opts: () => uniq(state.clients.map(c => c.essid)).map(v => [v, v]) },
   { id: "vlan", title: "VLANs", get: c => c.network_id, opts: () => state.networks.map(n => [n.id, n.name + (n.vlan ? ` (${n.vlan})` : "")]) },
   { id: "zone", title: "Firewall zones", ready: () => FW.ok !== undefined, get: c => zoneOf(c)?.id || "", opts: () => fwZones().map(z => [z.id, z.name]) },
+  { id: "fwblk", title: "Firewall blocks (24 h)", emptyText: "Loading the firewall blocks of the last 24 hours …", ready: () => !!DEVSUSP.data,
+    multi: c => { if (!c.mac || c.is_device || !DEVSUSP.data) return []; const f = devSuspOf(c); return f.length ? [...new Set(f.map(x => x.kind === "blocked" ? "blk" : "susp"))] : ["none"]; },
+    opts: () => DEVSUSP.data ? [["blk", "Many blocked attempts (50+)"], ["susp", "Scans or other suspicious traffic"], ["none", "No findings"]] : [] },
   { id: "fwa", title: "Firewall analysis", ready: () => !!FW.data, multi: c => c.mac ? fwDevCodes(c) : [], opts: () => FW.data ? [["find", "With findings"], ["zone", "Wrong zone"], ["grp", "Unlike similar devices"], ["access", "Access problems"], ["unk", "Device type not recognised"]] : [] },
 ];
 const uniq = a => [...new Set(a.filter(Boolean))].sort((x, y) => x.localeCompare(y, "de"));
@@ -1656,6 +1660,8 @@ const COLS = [
   { key: "pvlan", label: "Port VLAN", filter: "net", val: c => c.port_vlan ? netLabel(c.port_vlan.native) : "~", fval: c => c.port_vlan?.native || "",
     td: c => c.port_vlan ? `<span class="${c._portMiss ? "vno-miss" : ""}" title="${esc(`${c.port_vlan.switch} · Port ${c.port_vlan.port}`)}">${esc(netName(c.port_vlan.native) || "?")}${net(c.port_vlan.native)?.vlan ? `<span class="vl">(${net(c.port_vlan.native).vlan})</span>` : ""}</span>` : `<span class="muted">-</span>` },
   { key: "essid", label: "WiFi", val: c => (c.essid || "").toLowerCase(), td: c => c.essid ? esc(c.essid) : `<span class="muted">-</span>` },
+  { key: "fwblk", label: "Blocked (24 h)", val: c => -devBlocked(c), fval: c => String(devBlocked(c) || ""),
+    td: c => { const n = devBlocked(c); return n ? `<span class="fwblk" title="Connection attempts blocked by the firewall in the last 24 hours">⛔ ${n.toLocaleString(I18N.locale)}</span>` : `<span class="muted">-</span>`; } },
   { key: "_warn", label: "Issues", val: c => c._warn.length ? (c._serious ? 0 : 1) : 2, fval: c => c._warn.map(w => w[1]).join(" "), td: c => c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("") },
   { key: "_resNet", label: "Reservation VLAN", filter: "net", val: c => netLabel(c._resNet), fval: c => c._resNet,
     td: c => c._resNet ? `${esc(netName(c._resNet))}${net(c._resNet)?.vlan ? `<span class="vl">(${net(c._resNet).vlan})</span>` : ""}` : "" },
@@ -2517,6 +2523,7 @@ async function load() {
     await fwP;
     state.aps = d.aps || []; state.switches = d.switches || {}; state.clients = d.clients; state.fetchedAt = d.fetched_at;
     computeWarnings(); if (typeof computeBaseCats === "function") computeBaseCats(); buildHead(); $("#banner").hidden = true;
+    fetchDevSusp().then(() => { if (!isRel() && !isFw()) renderAll(); });
     if (state.sel) { const again = state.clients.find(c => keyOf(c) === keyOf(state.sel)); again ? (state.sel = again, renderInfo()) : closePanel(); }
   } catch (e) {
     $("#banner").innerHTML = `<b>Could not load data:</b> ${esc(e.message)}` + (e.hint ? `<div class="banner-hint"><b>Hint:</b> ${esc(e.hint)}</div>` : "") +
@@ -3766,14 +3773,18 @@ const relSuspText = x => x.kind === "scan_ports" ? `probed ${x.count} ports on $
 const relSuspChip = x => `<span class="rs-c ${["scan_hosts", "scan_ports", "remote"].includes(x.kind) ? "bad" : ""}"><span aria-hidden="true">${REL_SUSP_ICON[x.kind] || "⚠"}</span><span>${esc(relSuspText(x))}</span></span>`;
 // device details: the findings of the last 24 hours for this device (loaded once, the server keeps them 5 minutes)
 const DEVSUSP = { at: 0, data: null, busy: null };
+// the findings of the last 24 hours (shared by the device details, the client filter and the column)
+function fetchDevSusp() {
+  if (DEVSUSP.data && Date.now() - DEVSUSP.at < 300e3) return Promise.resolve();
+  return DEVSUSP.busy ||= api("api/suspicious").then(d => { DEVSUSP.data = d; DEVSUSP.at = Date.now(); }).catch(() => { DEVSUSP.data = { suspicious: [] }; DEVSUSP.at = Date.now(); }).finally(() => { DEVSUSP.busy = null; });
+}
+const devSuspOf = c => !c?.mac || c.is_device ? [] : (DEVSUSP.data?.suspicious || []).filter(x => x.src === c.mac || (x.mac && x.mac === c.mac) || (!x.mac && x.ip && x.ip === c.ip));
+const devBlocked = c => devSuspOf(c).filter(x => x.kind === "blocked").reduce((n, x) => n + (x.count || 0), 0);
 async function loadDevSusp(c) {
   const box = $("#devSusp"); if (!box || !c?.mac) return;
-  if (!DEVSUSP.data || Date.now() - DEVSUSP.at > 300e3) {
-    DEVSUSP.busy ||= api("api/suspicious").then(d => { DEVSUSP.data = d; DEVSUSP.at = Date.now(); }).catch(() => { DEVSUSP.data = { suspicious: [] }; DEVSUSP.at = Date.now(); }).finally(() => { DEVSUSP.busy = null; });
-    await DEVSUSP.busy;
-  }
+  await fetchDevSusp();
   if (state.sel !== c || !$("#devSusp")) return;
-  const mine = (DEVSUSP.data?.suspicious || []).filter(x => x.src === c.mac || (x.mac && x.mac === c.mac) || (!x.mac && x.ip && x.ip === c.ip));
+  const mine = devSuspOf(c);
   $("#devSusp").innerHTML = mine.length ? `<div class="dev-susp"><span class="muted">Last 24 hours:</span> ${mine.map(relSuspChip).join("")}</div>` : "";
 }
 // suspicious traffic: one row per device, the findings as chips; scans from the internet folded into one line
@@ -4668,7 +4679,7 @@ const clone = o => JSON.parse(JSON.stringify(o ?? null));
 const onlyCols = keep => COLS.map(c => c.key).filter(k => !keep.includes(k)); // hide every column that is not listed
 const BUILTIN_VIEWS = [
   { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: {}, sort: { key: "ip", dir: 1 } } },
-  { id: "problems", name: "Problems", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "mac", "oui"]), colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "mac", "oui"], colFilters: {}, facets: { hint: ["problem", "mismatch", "vno", "dup", "wrongnet"] }, sort: { key: "ip", dir: 1 } } },
+  { id: "problems", name: "Problems", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "fwblk", "mac", "oui"]), colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "mac", "oui"], colFilters: {}, facets: { hint: ["problem", "mismatch", "vno", "dup", "wrongnet"] }, sort: { key: "ip", dir: 1 } } },
   { id: "new", name: "New devices", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "name", "first_seen", "ip", "mac", "oui", "network_id", "conn", "uplink"]), colOrder: ["online", "ha", "name", "first_seen", "ip", "mac", "oui", "network_id", "conn", "uplink"], colFilters: {}, facets: { fresh: ["7"] }, sort: { key: "first_seen", dir: -1 } } },
   { id: "stale", name: "Offline with fixed IP", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "name", "fixed_ip", "last_seen", "mac", "oui", "network_id", "note"]), colOrder: ["online", "ha", "name", "fixed_ip", "last_seen", "mac", "oui", "network_id", "note"], colFilters: {}, facets: { status: ["off"], res: ["yes"] }, sort: { key: "last_seen", dir: -1 } } },
   { id: "ha", name: "Home Assistant", builtin: true, state: { hiddenCols: onlyCols(["ha", "online", "name", "ip", "fixed_ip", "ipmode", "network_id", "mac", "_warn"]), colOrder: ["ha", "online", "name", "ip", "fixed_ip", "ipmode", "network_id", "mac", "_warn"], colFilters: {}, facets: { ha: ["yes"] }, sort: { key: "ha", dir: 1 } } },
