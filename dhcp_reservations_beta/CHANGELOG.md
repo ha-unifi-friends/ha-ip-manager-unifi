@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.46.1
+
+- **IP plan** opens with *All networks* selected.
+- **Top bar:** no button ends up outside the window any more (e.g. *Add reservation* in the IP plan with English labels). When the bar does not fit, the app shortens it step by step – button labels, menu labels, time, tab labels, count – and as a last resort wraps it into a second row. This works for every language and window width.
+
 ## 1.46.0
 
 UX improvements from the review:

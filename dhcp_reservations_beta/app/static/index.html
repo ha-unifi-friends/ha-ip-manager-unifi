@@ -482,6 +482,13 @@ body:not(.rel-mode) .topo-icons{display:none!important}
 .menu .mi.mi-ver{display:none}
 @container main (max-width:700px){.menu .mi.mi-ver{display:flex}}
 @container main (max-width:900px){body.plan-mode .menu .mi.mi-ver{display:flex}}
+/* safety net: when the top bar still does not fit (long translations, odd widths), fitTopbar() shortens it step by step */
+.topbar.tb-s1 .btn.icon-btn .lbl{display:none}.topbar.tb-s1 .btn.icon-btn{padding:6px 9px}
+.topbar.tb-s2 .view-switch button svg + *{display:none}.topbar.tb-s2 .view-switch button{padding:5px 9px}.topbar.tb-s2 .plan-icons .lng,.topbar.tb-s2 .plan-size .lng{display:none}.topbar.tb-s2 .plan-icons .sht,.topbar.tb-s2 .plan-size .sht{display:inline}
+.topbar.tb-s3 #stand{display:none}.topbar.tb-s3 .topo-ic-lbl{display:none}
+.topbar.tb-s4 .cli-tabs .tl{display:none}.topbar.tb-s4 .cli-tabs svg{margin-right:0!important}.topbar.tb-s4 .plan-tabs button[role="tab"]{padding:8px 9px 10px}
+.topbar.tb-s5 #count{display:none}.topbar.tb-s5 .plan-size{display:none}
+.topbar.tb-s6{flex-wrap:wrap;row-gap:8px}.topbar.tb-s6 .grp{margin-left:auto}
 .act-icons{display:none;align-items:center;gap:8px;padding:6px 10px;color:var(--muted)}
 @container main (max-width:1240px){body.rel-mode .topbar .topo-icons{display:none!important}body.rel-mode .act-icons{display:flex}}
 .act-icons .seg button{padding:4px 10px;font-size:12.5px}
@@ -1961,6 +1968,18 @@ const ALL_NETS = "__all";
 const PLAN = { sel: null, tab: "cur" }; // tab: cur = current plan, clean = CleanUp Proposal
 // ---------- view: Clients (table) or IP Plan (full page, networks in the sidebar) ----------
 const isPlan = () => document.body.classList.contains("plan-mode");
+// no button may end up outside the window: shorten the top bar until its last element is visible
+const TB_STEPS = ["tb-s1", "tb-s2", "tb-s3", "tb-s4", "tb-s5", "tb-s6"]; // the last one wraps into a second row
+function fitTopbar() {
+  const t = document.querySelector(".topbar"); if (!t) return;
+  t.classList.remove(...TB_STEPS);
+  const over = () => { const right = Math.min(t.getBoundingClientRect().right, document.documentElement.clientWidth) - 2;
+    return [...t.querySelectorAll("button, .seg, #count, #stand")].some(e => e.offsetWidth && e.getBoundingClientRect().right > right); };
+  for (const c of TB_STEPS) { if (!over()) break; t.classList.add(c); }
+}
+let tbRaf = 0;
+const fitTopbarSoon = () => { if (!tbRaf) tbRaf = requestAnimationFrame(() => { tbRaf = 0; fitTopbar(); }); };
+window.addEventListener("resize", fitTopbarSoon);
 function setView(v) {
   if (CL.running) return;
   if (!["clients", "plan", "fw", "rel"].includes(v)) v = "clients";
@@ -1971,9 +1990,12 @@ function setView(v) {
   for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(rel ? b.dataset.rt === REL.tab : b.dataset.rt === "list"));
   $("#planNets").hidden = !plan; $("#fwSide").hidden = !fw; $(".tablewrap").hidden = plan || fw || rel; $("#planView").hidden = !plan; $("#fwView").hidden = !fw;
   if (rel) { closeCols(); PLAN.tab = "cur"; openRel(); } else if (plan) { closeCols(); openPlan(); } else if (fw) { closeCols(); PLAN.tab = "cur"; renderFw(); } else { PLAN.tab = "cur"; renderTable(); }
+  fitTopbarSoon();
 }
+// texts of the top bar change (count, time, translation, plan tabs): fit again
+new MutationObserver(fitTopbarSoon).observe(document.querySelector(".topbar"), { subtree: true, childList: true, characterData: true });
 document.querySelectorAll("[data-vw]").forEach(b => b.addEventListener("click", () => setView(b.dataset.vw)));
-function openPlan() { if (PLAN.sel !== ALL_NETS && (!PLAN.sel || !net(PLAN.sel))) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; PLAN.tab = "cur"; renderPlan(); }
+function openPlan() { if (PLAN.sel !== ALL_NETS && (!PLAN.sel || !net(PLAN.sel))) PLAN.sel = ALL_NETS; /* start with the overview of all networks */ PLAN.tab = "cur"; renderPlan(); }
 // icons in the IP plan cells: none, the UniFi device icon, or the logo of the Home Assistant integration
 const PLAN_ICONS = { mode: store.get("planIconMode", store.get("planIcons", false) ? "unifi" : "off") };
 const iconSeg = () => `<span class="seg plan-icons" role="group" aria-label="Icons in the cells">${[["off", "No icons", "None"], ["unifi", "UniFi", "UniFi"], ["ha", "Home Assistant", "HA"]].map(([k, t, sh]) => `<button type="button" data-pim="${k}" aria-pressed="${PLAN_ICONS.mode === k}" title="${k === "off" ? "Only the address" : k === "unifi" ? "Device icon from UniFi" : "Logo of the Home Assistant integration (UniFi icon when the device is not in HA)"}"><span class="lng">${t}</span><span class="sht">${sh}</span></button>`).join("")}</span>`;
@@ -2078,7 +2100,7 @@ function renderPlan() {
     $("#planStats").insertAdjacentHTML("afterbegin", `<button type="button" class="pn pn-all ${PLAN.sel === ALL_NETS ? "on" : ""}" data-net="${ALL_NETS}" aria-pressed="${PLAN.sel === ALL_NETS}">
       <span class="l1"><b>All networks</b><span class="muted">(${ps.length})</span><span class="sp"></span><span title="Average tidiness, weighted by the fixed IPs per network">${tidyBadge(tAll, "Tidiness ")}</span></span>
       <span class="l3"><span class="ubar ${pct >= 80 ? "hi" : ""}" title="Utilization ${pct} % (${used}/${usable})"><i style="width:${pct}%"></i></span>${pct} % · <span>${sum("fixed")} fixed</span>${sum("inPool") ? ` · <span class="w">${sum("inPool")} in pool</span>` : ""} · ${sum("dyn")} dyn</span></button>`); }
-  if (PLAN.sel !== ALL_NETS && !ps.some(x => x.n.id === PLAN.sel)) PLAN.sel = ps[0]?.n.id || null;
+  if (PLAN.sel !== ALL_NETS && !ps.some(x => x.n.id === PLAN.sel)) PLAN.sel = ALL_NETS;
   const all = PLAN.sel === ALL_NETS;
   const ct = document.querySelector('[data-pt="clean"]'); ct.title = all ? "CleanUp Proposal for all networks at once" : "";
   const vis = rows(); PLAN.vis = vis.length === state.clients.length ? null : new Set(vis.map(c => c.mac));
