@@ -215,4 +215,6 @@ Always keep a backup. The app saves a version before every bulk action, but you 
 
 ## License
 
-[MIT](LICENSE)
+[PolyForm Noncommercial 1.0.0](LICENSE) – free for personal, hobby and other noncommercial use. Commercial use is not permitted, including selling the app, bundling it with a paid product or service, or offering it as a service to customers. If you want to use it commercially, please open an issue to ask.
+
+Versions released before this change remain under the MIT License.
