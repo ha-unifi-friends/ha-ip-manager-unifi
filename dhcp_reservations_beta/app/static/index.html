@@ -389,6 +389,29 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .rel-legend .lsep{width:1px;height:12px;background:var(--line)}
 .rel-rec{display:grid;gap:6px;margin:12px 0 0;padding:9px 12px;border-radius:8px;font-size:12.5px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 .rel-rec>div>b{color:var(--warn)}
+.swcard{padding:10px 10px 8px}
+.swgrid{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 6px;position:relative}
+.swc{display:grid;grid-template-rows:58px 46px 46px 58px;gap:6px;flex:none;width:52px}
+.swc:has(> :nth-child(2):last-child){grid-template-rows:58px 46px}
+.swd{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;min-width:0;cursor:pointer;border-radius:6px;padding:2px 0}
+.swd.b{justify-content:flex-start}
+.swd:empty{cursor:default}
+.swd:hover:not(:empty){background:color-mix(in srgb,var(--fg) 6%,transparent)}
+.swi{position:relative;width:34px;height:34px;border-radius:7px;background:var(--chip);display:grid;place-items:center;overflow:visible}
+.swi img{width:30px;height:30px;object-fit:contain}
+.swha{position:absolute;right:-5px;bottom:-5px;width:16px;height:16px;border-radius:50%;background:var(--card);display:grid;place-items:center;box-shadow:0 0 0 1px var(--line)}
+.swn{font-size:10.5px;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.swd.me .swn{color:var(--fg);font-weight:600}
+.swp{position:relative;border-radius:6px;display:flex;align-items:flex-end;padding:4px 6px;font-size:12px;font-weight:600;color:#14321c}
+.swp .swic{position:absolute;top:4px;right:5px;display:flex}
+.swp.gbe{background:#5fcf6f}.swp.fe{background:#b6d34a}.swp.down{background:color-mix(in srgb,var(--fg) 22%,var(--card));color:var(--fg)}.swp.off{background:transparent;border:1px dashed var(--line-strong);color:var(--muted)}
+.swp.me{outline:3px solid var(--accent);outline-offset:2px;z-index:1}
+.swleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--muted);margin-top:4px}
+.swleg span{display:inline-flex;align-items:center;gap:4px}
+.swleg i{display:inline-block;width:9px;height:9px;border-radius:2px}
+.swleg i.gbe{background:#5fcf6f}.swleg i.fe{background:#b6d34a}.swleg i.down{background:color-mix(in srgb,var(--fg) 22%,var(--card))}.swleg i.off{border:1px dashed var(--line-strong)}
+.port-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin:6px 0 2px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
+.port-note>b:first-child{color:var(--warn)}
 .rel-focus{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px}
 .rs-list{display:grid;gap:4px;margin-top:6px}
 .rs-row{display:grid;grid-template-columns:minmax(170px,240px) 1fr auto;gap:4px 12px;align-items:center;padding:5px 8px;border-radius:6px;background:color-mix(in srgb,var(--fg) 3%,transparent)}
@@ -1141,6 +1164,7 @@ window.I18N = (() => {
         <div class="field" id="vnoField"><label for="fVno">Network</label><select id="fVno" form="formEdit"></select></div>
         <div class="hint" id="vnoHint">Puts the client into this network (VLAN) regardless of the Wi-Fi or switch port it uses. A fixed IP must then lie in this network.</div>
         <div class="hint" id="fwVno" hidden></div>
+        <div class="port-note" id="portHint" hidden></div>
       </div>
       <div class="form card">
         <label class="switch" for="fFixed"><span>Fixed IP address</span><input type="checkbox" id="fFixed" form="formEdit"></label>
@@ -1408,6 +1432,38 @@ function ruleNet(c) {
   }
   return "";
 }
+// "Services (20) untagged · tagged: all" – the VLAN setup of a switch port
+function portVlanText(pv) {
+  const nm = id => netLabel(id) || netName(id) || "?";
+  const tg = pv.tagged === "none" ? "Tagged: none" : pv.tagged === "disabled" ? "Port disabled"
+    : pv.tagged_ids.length ? `Tagged: ${pv.tagged_ids.map(nm).join(", ")}`
+    : pv.excluded_ids.length ? `Tagged: all except ${pv.excluded_ids.map(nm).join(", ")}` : pv.tagged === "custom" ? "Tagged: custom" : "Tagged: all";
+  const src = pv.source === "profile" ? `Port profile ${pv.profile}` : pv.source === "default" ? "UniFi default" : "";
+  return `<span translate="no">${esc(nm(pv.native))}</span> <span class="muted">(untagged)</span><div class="muted"><span>${esc(tg)}</span>${src ? ` · <span>${esc(src)}</span>` : ""}</div>`;
+}
+// the switch a wired device is plugged into: its ports like in UniFi (odd on top, even below), the device's port highlighted,
+// the devices on the ports above / below them – with the Home Assistant logo when HA knows them
+const SW_BOLT = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>`;
+const SW_UP = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="m6 15 6-6 6 6"/></svg>`;
+function switchHtml(c) {
+  const sw = c?.sw_mac && c.port != null ? state.switches?.[c.sw_mac] : null;
+  if (!sw || !sw.ports.length) return "";
+  const on = p => state.clients.filter(x => x.sw_mac === sw.mac && String(x.port) === String(p.idx) && x.mac !== sw.mac);
+  const speed = p => !p.up ? "Disconnected" : p.speed >= 10000 ? "10 GbE" : p.speed >= 2500 ? (p.speed / 1000) + " GbE" : p.speed >= 1000 ? "GbE" : p.speed ? p.speed + " Mbit/s" : "Connected";
+  const st = p => !p.enabled ? "off" : !p.up ? "down" : p.speed && p.speed < 1000 ? "fe" : "gbe";
+  const dev = (p, below) => {
+    const os = on(p), o = os.find(x => x.mac === c.mac) || os[0];
+    if (!o) return `<div class="swd ${below ? "b" : ""}"></div>`;
+    const nm = devName(o), ha = haOf(o).length || isHaHost(o);
+    return `<button type="button" class="swd ${below ? "b" : ""}${o.mac === c.mac ? " me" : ""}" data-swdev="${esc(o.mac)}" title="${esc(os.map(devName).join(", "))}"><span class="swi">${iconHtml(o)}${ha ? `<span class="swha">${brandImg("homeassistant", 12)}</span>` : ""}</span><span class="swn" translate="no">${esc(nm)}${os.length > 1 ? ` +${os.length - 1}` : ""}</span></button>`;
+  };
+  const tile = p => `<div class="swp ${st(p)}${String(p.idx) === String(c.port) ? " me" : ""}" title="${esc([`Port ${p.idx}${p.name && p.name !== "Port " + p.idx ? " · " + p.name : ""}`, speed(p), p.poe_w ? `PoE ${p.poe_w} W` : "", p.uplink ? "Uplink" : "", ...on(p).map(devName)].filter(Boolean).join(" · "))}"><span class="swno">${p.idx}</span>${p.uplink ? `<span class="swic">${SW_UP}</span>` : p.poe ? `<span class="swic">${SW_BOLT}</span>` : ""}</div>`;
+  const ps = sw.ports, two = ps.length > 8, cols = [];
+  if (two) for (let i = 0; i < ps.length; i += 2) cols.push([ps[i], ps[i + 1]]); else ps.forEach(p => cols.push([p]));
+  const grid = cols.map(([a, b]) => `<div class="swc">${dev(a, false)}${tile(a)}${b ? tile(b) + dev(b, true) : ""}</div>`).join("");
+  return `<div class="sec-title"><span>Switch</span> · <span translate="no">${esc(sw.name)}</span></div><div class="card swcard"><div class="swgrid" id="swGrid">${grid}</div>
+    <div class="swleg"><span><i class="gbe"></i>GbE</span><span><i class="fe"></i>FE</span><span><i class="down"></i>Disconnected</span><span><i class="off"></i>Disabled</span><span>${SW_BOLT} PoE</span><span>${SW_UP} Uplink</span></div></div>`;
+}
 function computeWarnings() {
   state.rev = (state.rev || 0) + 1; // data revision: caches built from the clients (firewall analysis) follow it
   const byIp = {}, byName = {}, byDns = {};
@@ -1436,12 +1492,15 @@ function computeWarnings() {
     c._vnoMiss = !!(vn && ((c.network_id && c.network_id !== vn.id) || (c.ip && vn.subnet && !inSubnet(c.ip, vn.subnet))));
     if (c._vnoMiss) w.push([c.online ? "warn" : "info", (c.online ? "Not in " : "Last seen outside ") + vn.name + " (override)"]);
     else if (c.vno_id) w.push(["info", "VLAN override"]);
+    // wired: override / fixed IP in another network than the native VLAN of the switch port
+    c._portMiss = c.conn === "wired" ? portMismatch(c, c.vno_id || c._resNet) : null;
+    if (c._portMiss) w.push(["warn", "Port VLAN is " + (c._portMiss.have?.name || "?")]);
     if (c.mac && !c.is_device && c.name && byName[c.name.trim().toLowerCase()]?.length > 1) w.push(["warn", "Duplicate name"]);
     for (const o of state.scans?.[c.mac]?.open || []) if (o.port === 23 || o.port === 21) w.push(["warn", o.service + " open"]);
     if (c.local_dns_record_enabled && c.local_dns_record && byDns[c.local_dns_record.trim().toLowerCase()]?.length > 1) w.push(["bad", "Duplicate DNS name"]);
     if (c.mac && !c.is_device && c.conn !== "teleport") {
       const want = ruleNet(c), have = c._resNet || c.network_id;
-      if (want && have && want !== have && net(want)) w.push(["warn", "Expected in " + net(want).name]);
+      if (want && have && want !== have && net(want)) w.push(["warn", "Expected in " + net(want).name + (c.conn === "wired" && c.port_vlan ? " (switch port)" : "")]);
     }
     if (c.mac && !c.is_device && isRandomMac(c.mac)) w.push([c.use_fixedip ? "warn" : "info", "Random MAC"]);
     c._warn = w; c._serious = w.some(x => x[0] !== "info");
@@ -1552,6 +1611,8 @@ const COLS = [
     td: c => { const z = zoneOf(c); return z ? `<span class="zchip">${esc(z.name)}</span>` : `<span class="muted">-</span>`; } },
   { key: "vno", label: "Virtual network override", filter: "net", val: c => c.vno_id ? netLabel(c.vno_id) : "~", fval: c => c.vno_id || "",
     td: c => c.vno_id ? `<span class="${c._vnoMiss ? "vno-miss" : ""}" title="${c._vnoMiss ? `Override to ${esc(netName(c.vno_id))}, but the device ${c.online ? "is" : "was last"} in ${esc(netName(c.network_id) || c.ip)}` : "Virtual network override"}">${esc(netName(c.vno_id) || "?")}${net(c.vno_id)?.vlan ? `<span class="vl">(${net(c.vno_id).vlan})</span>` : ""}</span>` : `<span class="muted">-</span>` },
+  { key: "pvlan", label: "Port VLAN", filter: "net", val: c => c.port_vlan ? netLabel(c.port_vlan.native) : "~", fval: c => c.port_vlan?.native || "",
+    td: c => c.port_vlan ? `<span class="${c._portMiss ? "vno-miss" : ""}" title="${esc(`${c.port_vlan.switch} · Port ${c.port_vlan.port}`)}">${esc(netName(c.port_vlan.native) || "?")}${net(c.port_vlan.native)?.vlan ? `<span class="vl">(${net(c.port_vlan.native).vlan})</span>` : ""}</span>` : `<span class="muted">-</span>` },
   { key: "essid", label: "WiFi", val: c => (c.essid || "").toLowerCase(), td: c => c.essid ? esc(c.essid) : `<span class="muted">-</span>` },
   { key: "_warn", label: "Issues", val: c => c._warn.length ? (c._serious ? 0 : 1) : 2, fval: c => c._warn.map(w => w[1]).join(" "), td: c => c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("") },
   { key: "_resNet", label: "Reservation VLAN", filter: "net", val: c => netLabel(c._resNet), fval: c => c._resNet,
@@ -2412,7 +2473,7 @@ async function load() {
     await loadHa();
     try { const v = (await api("api/vendors")).vendors || {}; for (const c of d.clients) if (!c.oui && c.mac && v[c.mac.slice(0, 8)]) { c.oui = v[c.mac.slice(0, 8)]; c.oui_src = "lookup"; } } catch {}
     await fwP;
-    state.aps = d.aps || []; state.clients = d.clients; state.fetchedAt = d.fetched_at;
+    state.aps = d.aps || []; state.switches = d.switches || {}; state.clients = d.clients; state.fetchedAt = d.fetched_at;
     computeWarnings(); if (typeof computeBaseCats === "function") computeBaseCats(); buildHead(); $("#banner").hidden = true;
     if (state.sel) { const again = state.clients.find(c => keyOf(c) === keyOf(state.sel)); again ? (state.sel = again, renderInfo()) : closePanel(); }
   } catch (e) {
@@ -3206,7 +3267,7 @@ function prepareMove(c, z) {
   const n = state.networks.find(x => z.network_ids.includes(x.id) && x.subnet);
   if (!n) { toast(`${z.name} has no network with a subnet – assign one in UniFi first.`); return; }
   openPanel(c, "edit"); $("#fVnoOn").checked = true; syncToggles(); $("#fVno").value = n.id; followVno(); updateHint();
-  toast(`Prepared: ${devName(c)} → ${n.name} (${z.name}). Check the fixed IP and click Apply.`);
+  toast(c.conn === "wired" && portMismatch(c, n.id) ? `Prepared: ${devName(c)} → ${n.name}. Wired – the switch port decides, see the note.` : `Prepared: ${devName(c)} → ${n.name} (${z.name}). Check the fixed IP and click Apply.`);
 }
 // zone roles dialog
 function openFwRoles() {
@@ -3906,8 +3967,12 @@ function renderInfo() {
       ${kv("Network", esc(n ? n.name : c.network_name))}
       ${kv("VLAN ID", n?.vlan ?? "")}
       ${kv("Virtual network override", c.vno_id ? esc(netLabel(c.vno_id) || "active") : "")}
+      ${c.port_vlan ? kv("Switch port", `<span translate="no">${esc(c.port_vlan.switch)}</span> · <span>Port</span> ${c.port_vlan.port}${c.port_vlan.port_name && c.port_vlan.port_name !== "Port " + c.port_vlan.port ? ` <span class="muted" translate="no">(${esc(c.port_vlan.port_name)})</span>` : ""}`) : ""}
+      ${c.port_vlan ? kv("Port VLAN", portVlanText(c.port_vlan)) : ""}
       ${kv("Hostname", esc(c.hostname))}
     </dl></div>
+    ${c._portMiss ? `<div class="port-note">${portNoteHtml(c._portMiss)}</div>` : ""}
+    ${switchHtml(c)}
     <div class="sec-title">DHCP reservation</div>
     <div class="card"><dl class="kv" style="margin:0">
       ${kv("Fixed IP", c.use_fixedip ? esc(c.fixed_ip) : "none", c.use_fixedip ? "mono" : "")}
@@ -3926,6 +3991,8 @@ function renderInfo() {
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
+  const swm = $("#swGrid .swp.me"); if (swm) { const g = $("#swGrid"); g.scrollLeft = Math.max(0, swm.offsetLeft - g.clientWidth / 2 + swm.offsetWidth / 2); }
+  $("#swGrid")?.addEventListener("click", e => { const b = e.target.closest("[data-swdev]"); if (!b) return; const o = devByMac(b.dataset.swdev); if (o && o.mac !== c.mac) openPanel(o); });
   $("#portBox")?.addEventListener("click", e => { if (e.target.closest("#btnScan")) scanPorts(c); else if (e.target.closest("#btnPing")) pingDev(c); });
   $("#btnWol")?.addEventListener("click", async e => {
     const b = e.currentTarget, ip = c.use_fixedip ? c.fixed_ip : c.ip, n = net(c._resNet) || net(c.network_id) || state.networks.find(x => inSubnet(ip, x.subnet));
@@ -3947,7 +4014,23 @@ function suggestIp(netId) {
   for (const allowPool of [false, true]) for (let x = start; x <= end; x++) { if (x === gw || (!allowPool && x >= ps && x <= pe)) continue; const ip = toIp(x); if (!used.has(ip)) return ip; }
   return "";
 }
+// wired devices: the native VLAN of their switch port decides the network – an override or a fixed IP elsewhere rarely works
+function portMismatch(c, target) {
+  const pv = c?.port_vlan; if (!pv?.native || !target || target === pv.native) return null;
+  return { pv, target, have: net(pv.native), want: net(target) };
+}
+function portNoteHtml(m) {
+  const pv = m.pv;
+  return `<b>The switch port decides here.</b> <span>${esc(`Wired to ${pv.switch}, port ${pv.port} – its native VLAN is ${m.have?.name || "?"}.`)}</span> <span>${esc(`A virtual network override usually has no effect on wired devices. To move the device to ${m.want?.name || "?"}, set the port's native VLAN in UniFi (Devices › switch › port › Native VLAN / Network).`)}</span>${pv.source === "profile" ? ` <span>${esc(`The port uses the profile ${pv.profile}.`)}</span>` : ""} <span class="muted">Other devices on this port get the new native VLAN too.</span>`;
+}
+function updatePortHint() {
+  const c = state.sel, el = $("#portHint"); if (!el) return;
+  const target = $("#fVnoOn").checked ? $("#fVno").value : $("#fFixed").checked ? $("#fNet").value : "";
+  const m = c?.conn === "wired" ? portMismatch(c, target) : null;
+  el.innerHTML = m ? portNoteHtml(m) : ""; el.hidden = !m;
+}
 function updateHint() {
+  updatePortHint();
   const n = net($("#fNet").value), ip = $("#fIp").value.trim(); let h = "";
   if (n) {
     h = `Subnet ${n.subnet}` + (n.dhcp_start ? `, DHCP pool ${n.dhcp_start} – ${n.dhcp_stop}` : "");

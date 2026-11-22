@@ -376,6 +376,26 @@ def build_snapshot(api):
         if not mac:
             continue
         rows[mac] = merge_device(rows.get(mac) or merge({}, {}, {}), d, nets)
+    try:
+        profiles = {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
+    except UnifiError as e:
+        log("Port profiles not available:", e)
+        profiles = {}
+    by_mac = {(d.get("mac") or "").lower(): d for d in devs if d.get("mac")}
+    default_net = next((n["id"] for n in nets if n.get("purpose") == "corporate" and n.get("vlan") is None), "")
+    for r in rows.values():
+        if r.get("conn") == "wired" and not r.get("is_device") and r.get("sw_mac") and r.get("port"):
+            d = by_mac.get(r["sw_mac"])
+            if d:
+                r["port_vlan"] = port_vlan(d, r["port"], profiles, default_net)
+    switches = {}
+    for d in devs:
+        pt = [p for p in d.get("port_table") or [] if isinstance(p, dict) and p.get("port_idx") is not None]
+        kind = DEVICE_KIND.get(str(d.get("type", "")), "device")
+        if not d.get("mac") or not pt or (kind not in ("switch", "gateway") and len(pt) < 4):
+            continue
+        switches[d["mac"].lower()] = {"mac": d["mac"].lower(), "name": d.get("name") or d["mac"], "model": d.get("model") or "",
+                                      "ports": [switch_port(p) for p in sorted(pt, key=lambda p: int(p.get("port_idx") or 0))]}
     aps = sorted(({"mac": d["mac"].lower(), "name": d.get("name") or d["mac"]}
                   for d in devs if d.get("mac") and str(d.get("type", "")).startswith("uap")
                   and str(d.get("device_category") or "ap") == "ap"),
@@ -383,9 +403,59 @@ def build_snapshot(api):
     return {
         "networks": nets,
         "aps": aps,
+        "switches": switches,
         "clients": sorted(rows.values(), key=lambda r: (r["name"] or r["hostname"] or r["mac"]).lower()),
         "fetched_at": int(time.time()),
     }
+
+
+def port_vlan(dev, idx, profiles, default_net):
+    """VLAN setup of one switch port: the native (untagged) network and which networks are tagged.
+    A port override wins; it may point to a port profile. Without an override UniFi uses the default network, all tagged.
+    Older UniFi versions describe it with "forward" (all / native / customize / disabled)."""
+    try:
+        idx = int(idx)
+    except (TypeError, ValueError):
+        return None
+    ov = next((o for o in dev.get("port_overrides") or [] if str(o.get("port_idx")) == str(idx)), None)
+    pt = next((p for p in dev.get("port_table") or [] if str(p.get("port_idx")) == str(idx)), {}) or {}
+    src, prof = ("override", None) if ov else ("default", None)
+    cfg = dict(ov or {})
+    pid = cfg.get("portconf_id") or (pt.get("portconf_id") if not ov else None)
+    if pid and pid in profiles:  # a port profile decides the VLANs of the port
+        prof = profiles[pid]
+        cfg = {**prof, **{k: v for k, v in cfg.items() if k in ("name", "port_idx")}}
+        src = "profile"
+    fwd = str(cfg.get("forward") or "").lower()
+    native = cfg.get("native_networkconf_id") or ""
+    mgmt = str(cfg.get("tagged_vlan_mgmt") or "").lower()
+    tagged_ids, excluded = list(cfg.get("tagged_networkconf_ids") or []), list(cfg.get("excluded_networkconf_ids") or [])
+    if fwd == "disabled":
+        tagged = "disabled"
+    elif mgmt in ("block_all", "custom", "auto"):
+        tagged = {"block_all": "none", "custom": "custom", "auto": "all"}[mgmt]
+    elif fwd == "native":
+        tagged = "none"
+    elif fwd == "customize":
+        tagged = "custom"
+    else:
+        tagged = "all"
+    return {"switch": dev.get("name") or dev.get("mac") or "", "switch_mac": (dev.get("mac") or "").lower(), "port": idx,
+            "port_name": (ov or {}).get("name") or pt.get("name") or "", "native": native or default_net,
+            "native_default": not native, "tagged": tagged, "tagged_ids": tagged_ids, "excluded_ids": excluded,
+            "source": src, "profile": (prof or {}).get("name") or ""}
+
+
+def switch_port(p):
+    """One port of a switch for the port view: link, speed, PoE, uplink."""
+    poe = bool(p.get("port_poe"))
+    try:
+        watts = round(float(p.get("poe_power") or 0), 2) if poe else 0
+    except (TypeError, ValueError):
+        watts = 0
+    return {"idx": int(p.get("port_idx")), "name": p.get("name") or "", "up": bool(p.get("up")), "speed": int(p.get("speed") or 0),
+            "enabled": p.get("enable") is not False, "poe": poe, "poe_w": watts, "uplink": bool(p.get("is_uplink")),
+            "sfp": bool(p.get("sfp_found")) or str(p.get("media") or "").upper().startswith("SFP")}
 
 
 DEVICE_KIND = {"uap": "ap", "usw": "switch", "udm": "gateway", "ugw": "gateway", "uxg": "gateway", "usg": "gateway"}
@@ -420,6 +490,7 @@ def merge_device(row, d, nets):
         "conn": "wifi" if wireless else "wired",
         "wired": not wireless,
         "uplink": up.get("uplink_device_name") or up.get("name") or "",
+        "sw_mac": (up.get("uplink_mac") or "").lower() if not wireless else "",
         "port": up.get("uplink_remote_port") or up.get("port_idx") if not wireless else None,
         "essid": "",
         "last_seen": d.get("last_seen") or row.get("last_seen") or 0,
@@ -462,6 +533,7 @@ def merge(u, s, a=None):
     return {
         "conn": conn,
         "port": port if conn == "wired" else None,
+        "sw_mac": (s.get("sw_mac") or a.get("sw_mac") or a.get("uplink_mac") or "").lower() if conn == "wired" else "",
         "id": u.get("_id") or s.get("user_id") or s.get("_id"),
         "known": bool(u.get("_id")),
         "mac": (u.get("mac") or s.get("mac") or "").lower(),
