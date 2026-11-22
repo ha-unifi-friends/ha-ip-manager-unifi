@@ -489,6 +489,16 @@ body:not(.rel-mode) .topo-icons{display:none!important}
 .topbar.tb-s4 .cli-tabs .tl{display:none}.topbar.tb-s4 .cli-tabs svg{margin-right:0!important}.topbar.tb-s4 .plan-tabs button[role="tab"]{padding:8px 9px 10px}
 .topbar.tb-s5 #count{display:none}.topbar.tb-s5 .plan-size{display:none}
 .topbar.tb-s6{flex-wrap:wrap;row-gap:8px}.topbar.tb-s6 .grp{margin-left:auto}
+/* rule simulation */
+.fw-sim{margin:12px 0;padding:10px 14px}
+.fw-sim .fi-sum{margin:0}
+.sim-form{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:flex-end;margin-top:8px}
+.sim-form label{display:grid;gap:3px;font-size:12px;color:var(--muted);min-width:0}
+.sim-form select{max-width:280px}.sim-form input{width:90px}
+.sim-v{margin:12px 0 4px;font-size:18px;font-weight:700}.sim-v.ok{color:var(--ok)}.sim-v.no{color:var(--bad)}.sim-v.unk{color:var(--warn);font-size:14px}
+.sim-steps{margin:8px 0 0;padding-left:22px;display:grid;gap:4px;font-size:13px}
+.sim-steps li.skip{opacity:.6}.sim-steps li.dec{font-weight:600}.sim-steps li.warn{color:var(--warn)}
+.sim-i{display:inline-block;width:18px}
 /* bulk changes */
 .bulk-bar{position:sticky;bottom:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0;padding:8px 12px;border-top:2px solid var(--accent);background:var(--panel);box-shadow:0 -6px 18px rgba(0,0,0,.25);order:9}
 .bulk-bar[hidden]{display:none}.bulk-bar .sp{flex:1}.bb-sep{width:1px;height:20px;background:var(--line)}
@@ -1229,6 +1239,7 @@ window.I18N = (() => {
           <div class="plan-head"><h3>Zone Matrix</h3><span class="hint">Click a zone pair to filter the policies below. Read only – policies are changed in UniFi.</span><span class="sp"></span><span id="fwSum" class="sumrow" style="margin:0"></span></div>
           <div class="fw-mx-box" id="fwMatrix"></div>
           <div class="fw-chain" id="fwChain" hidden></div>
+          <details class="card fw-sim" id="fwSim" open><summary class="sec-title fi-sum"><span>Test a connection</span><span class="fm-chev" aria-hidden="true">▾</span></summary><div id="fwSimBody"></div></details>
           <div class="fw-bar">
             <label class="opt"><input type="checkbox" id="fwV4"><span>IPv4</span></label>
             <label class="opt"><input type="checkbox" id="fwV6"><span>IPv6</span></label>
@@ -3009,7 +3020,7 @@ function renderFw() {
   msg.innerHTML = "";
   $("#fwBody").hidden = FW.tab === "an"; $("#fwAn").hidden = FW.tab !== "an";
   if (FW.tab === "an") { renderFa(); return; }
-  renderChain();
+  renderChain(); renderSim();
   const zs = fwZones(), all = FW.data.policies.length, nCustom = FW.data.policies.filter(p => !p.predefined).length;
   const head = `<tr><th class="fw-corner"><button type="button" class="fwc all ${!FW.src && !FW.dst && !FW.zone ? "on" : ""}" data-fwall title="Show all policies"><span class="l">All policies <span>(${all})</span></span></button></th>${zs.map(z => `<th scope="col"><button type="button" class="fwh ${FW.dst === z.id && !FW.src ? "on" : ""}" data-fwd="${esc(z.id)}" title="Policies to ${esc(z.name)}" translate="no">${esc(z.name)}</button></th>`).join("")}</tr>`;
   const body = zs.map(s => `<tr><th scope="row"><button type="button" class="fwh ${FW.src === s.id && !FW.dst ? "on" : ""}" data-fws="${esc(s.id)}" title="Policies from ${esc(s.name)}" translate="no">${esc(s.name)}</button></th>${zs.map(d => {
@@ -3145,7 +3156,7 @@ function fwMiniChainHtml(c) {
     <details class="card fw-mini${items.some(x => x.sp || x.off) ? " has-by" : ""}" id="fwMini"${open ? " open" : ""}><summary class="fm-sum" title="${esc(flow ? "Normal traffic of this device reaches the internet" : `Normal traffic of this device is blocked by ${stop.p.name || "a rule"}`)}"><span class="fm-n dev">${iconHtml(c)}</span>${strip}<span class="fm-n net${flow ? " on" : ""}">🌐</span><span class="fm-v ${flow ? "ok" : "no"}" aria-label="${flow ? "Reaches the internet" : "Blocked"}">${flow ? "✓" : "✕"}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
     <div class="fw-named">${lane}</div><p class="hint" style="margin:6px 0 0">Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.</p>${items.some(x => x.sp) ? `<p class="hint" style="margin:4px 0 0">Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.</p>` : ""}${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}${fwNamedHtml(c, true, { src: z.id, dst: ext.id })}</details>`;
 }
-document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); if (e.target.id === "fwInfo") store.set("fwInfoOpen", e.target.open); if (e.target.id === "swInfo") store.set("swInfoOpen", e.target.open); }, true);
+document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); if (e.target.id === "fwInfo") store.set("fwInfoOpen", e.target.open); if (e.target.id === "swInfo") store.set("swInfoOpen", e.target.open); if (e.target.id === "fwSim") store.set("fwSimOpen", e.target.open); }, true);
 // the rules that name this client (by MAC, IP or network) – boxes like in the rule chain, paused ones grey
 function fwNamedHtml(c, inner, skip) {
   if (!FW.data || !c?.mac) return "";
@@ -3183,11 +3194,13 @@ function fwInfoHtml(c) {
     ${d?.f.length ? `<div class="fw-finds">${d.f.map(f => `<span class="fa-f ${f.sev}">${f.html}</span>`).join("")}</div>` : ""}
     ${eff.length ? `<div class="sec-sub">What applies to this client</div><div class="imp-table fw-eff"><table><thead><tr><th>Zone</th><th>Client → zone</th><th>Zone → client</th></tr></thead><tbody>${eff.map(x => `<tr${x.z.id === z.id ? ' class="own"' : ""}><td><span class="zchip" translate="no">${esc(x.z.name)}</span>${x.z.id === z.id ? ` <span class="muted">(own)</span>` : ""}</td><td>${cell(x.out)}</td><td>${cell(x.inc)}</td></tr>`).join("")}</tbody></table></div><p class="hint" style="margin:6px 0 0">The first matching rule decides (UniFi's order). The zone defaults are the built-in rules at the end.</p>` : ""}
     ${changing.length || still.length ? `<div class="sec-sub">Paused rules</div><div class="fw-hits">${[...changing, ...still].map(x => `<button type="button" class="fw-hit paused" data-fwpol="${esc(x.p.id)}">${fwActTag(x.p)}<span class="fw-hn"><b translate="no">${esc(x.p.name || "?")}</b> <span class="st err">Paused</span><span class="muted"><span>${x.dir === "out" ? "Client →" : "→ client from"}</span> <span translate="no">${esc(x.z?.name || "?")}</span>: ${x.now.lvl !== x.then.lvl ? `<span>now</span> ${fwLvlTag(x.now.lvl)}, <span>if active</span> ${fwLvlTag(x.then.lvl)}` : `<span>if active: no change – another rule decides first</span>`}</span></span></button>`).join("")}</div>` : ""}
-    <button class="btn" type="button" data-fwwiz="${esc(c.mac)}" style="width:100%;margin-top:10px">${ICON_SHIELD}<span>Create firewall rule for this client…</span></button>
+    <button class="btn" type="button" data-fwsim="${esc(c.mac)}" style="width:100%;margin-top:10px"><span>Can this device reach …? Test a connection</span></button>
+    <button class="btn" type="button" data-fwwiz="${esc(c.mac)}" style="width:100%;margin-top:6px">${ICON_SHIELD}<span>Create firewall rule for this client…</span></button>
   </div></details>`;
 }
 const ICON_SHIELD = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="M12 8v8M8 12h8"/></svg>';
 document.addEventListener("click", e => {
+  const sm = e.target.closest("[data-fwsim]"); if (sm) { const c = devByMac(sm.dataset.fwsim); if (c) openSimFor(c); return; }
   const w = e.target.closest("[data-fwwiz]"); if (w) { const c = devByMac(w.dataset.fwwiz); if (c) openWiz(c); return; }
   const z = e.target.closest("[data-fwzone]"); if (z) { openFwFor({ zone: z.dataset.fwzone }); return; }
   const pr = e.target.closest("[data-fwpair]"); if (pr) { const [s2, d2] = pr.dataset.fwpair.split("|"); openFwFor({ src: s2, dst: d2 }); return; }
@@ -3310,6 +3323,87 @@ function fwDecide(sz, dz, src, dst, also) {
   r.lvl = r.extra.some(x => x.allow) ? "partial" : r.ret ? "ret" : "";
   return r;
 }
+// ---------- rule simulation: would a new connection from A to B (protocol, port) be allowed? First matching rule decides ----------
+const SIM = { src: "", dst: "", proto: "tcp", port: "443", res: null };
+// ports of a policy side: "80,443,8000-8100" or an address group of ports; null = any
+function fwPortSet(e) {
+  if (fwPortAny(e)) return null;
+  const g = e.port_group_id && FW.groupById?.[e.port_group_id];
+  const raw = g ? (g.members || []).join(",") : String(e.port || "");
+  return raw.split(/[,\s]+/).filter(Boolean).map(x => { const [a, b] = x.split("-").map(Number); return [a, isNaN(b) ? a : b]; }).filter(r => !isNaN(r[0]));
+}
+const fwPortHas = (e, port) => { const set = fwPortSet(e); if (!set) return true; const hit = set.some(([a, b]) => port >= a && port <= b); return e.match_opposite_ports ? !hit : hit; };
+function fwProtoHas(p, proto) {
+  const v = String(p.protocol || "all").toLowerCase(), not = !!p.match_opposite_protocol;
+  const hit = v === "all" || v === proto || (v === "tcp_udp" && (proto === "tcp" || proto === "udp"));
+  return not ? !hit : hit;
+}
+// q: { sz, dz, src (device or null = the whole zone), dst (device or null), proto: tcp|udp|icmp|all, port: number|null }
+function fwSimulate(q) {
+  const out = { verdict: "", by: null, steps: [], notes: [] };
+  if (!FW.data || !q.sz || !q.dz) return out;
+  for (const p of fwSeq(q.sz, q.dz).seq) {
+    const step = { p, st: "" }; out.steps.push(step);
+    if (p.enabled === false) { step.st = "paused"; continue; }
+    // UniFi's built-in rules other than the zone default only cover special cases (invalid connections, LTE failover …)
+    const isDefault = fwTarget(p.source) === "ANY" && fwTarget(p.destination) === "ANY" && fwPortAny(p.source) && fwPortAny(p.destination) && fwProto(p) === "All" && fwCst(p) === "ALL" && !fwSched(p);
+    if (p.predefined && !isDefault) { step.st = "special"; continue; }
+    let ms = fwSideMatch(p.source, q.src);
+    // a rule that names a client with the same name but another MAC (a private WiFi address that changed) counts for it
+    if (!ms && q.src && fwSameNameMac(p.source, q.src)) { ms = "all"; step.alt = true; }
+    const md = fwSideMatch(p.destination, q.dst);
+    if (!ms || !md) { step.st = "other"; continue; } // names other devices
+    if (fwCst(p) === "RESPOND_ONLY") { step.st = "replies"; continue; } // only answers to connections from the other side
+    if (fwCst(p) !== "ALL") { step.st = "state"; continue; }
+    if (ms === "some" || md === "some") { step.st = "some"; continue; } // only some of the devices or addresses (zone question, domains …)
+    if (q.proto !== "all" && !fwProtoHas(p, q.proto)) { step.st = "proto"; continue; }
+    if (q.proto === "all" && String(p.protocol || "all").toLowerCase() !== "all") { step.st = "some"; continue; }
+    const portsMatter = q.proto === "tcp" || q.proto === "udp";
+    if (!fwPortAny(p.source)) { step.st = "some"; continue; }
+    if (!fwPortAny(p.destination)) {
+      if (!portsMatter || q.port == null) { step.st = "some"; continue; }
+      if (!fwPortHas(p.destination, q.port)) { step.st = "port"; continue; }
+    }
+    if (fwSched(p)) { step.st = "sched"; out.notes.push(p); continue; } // decides only at certain times – see what applies otherwise
+    step.st = "decides"; out.by = p; out.verdict = fwIsAllow(p) ? "allow" : "block";
+    return out;
+  }
+  out.verdict = "unknown";
+  return out;
+}
+const SIM_ST = { decides: ["Decides", "dec"], other: ["Names other devices", "skip"], some: ["Only for some traffic or devices", "skip"], proto: ["Other protocol", "skip"], port: ["Other port", "skip"],
+  replies: ["Only replies", "skip"], special: ["Special case only (built-in)", "skip"], state: ["Other connection state", "skip"], paused: ["Paused", "skip"], sched: ["Only at certain times", "warn"] };
+const simParse = v => v.startsWith("dev:") ? { dev: devByMac(v.slice(4)), zone: zoneOf(devByMac(v.slice(4)))?.id } : v.startsWith("zone:") ? { dev: null, zone: v.slice(5) } : { dev: null, zone: "" };
+function renderSim() {
+  const box = $("#fwSimBody"); if (!box || !FW.data) return;
+  const ext = fwZoneByKey("external"), zs = fwZones();
+  if (!SIM.dst && ext) SIM.dst = "zone:" + ext.id;
+  const devs = state.clients.filter(c => c.mac && zoneOf(c)).sort((a, b) => devName(a).localeCompare(devName(b), "de"));
+  const opts = (cur, inet) => `${inet && ext ? `<option value="zone:${esc(ext.id)}" ${cur === "zone:" + ext.id ? "selected" : ""}>Internet</option>` : ""}<optgroup label="${esc(I18N.tr("Zones"))}">${zs.filter(z => !inet || z.id !== ext?.id).filter(z => inet || z.key !== "external").map(z => `<option value="zone:${esc(z.id)}" ${cur === "zone:" + z.id ? "selected" : ""} translate="no">${esc(z.name)}</option>`).join("")}</optgroup><optgroup label="${esc(I18N.tr("Devices"))}">${devs.map(c => `<option value="dev:${esc(c.mac)}" ${cur === "dev:" + c.mac ? "selected" : ""} translate="no">${esc(devName(c))} · ${esc(c.ip || "")}</option>`).join("")}</optgroup>`;
+  const r = SIM.res;
+  const verdict = !r ? "" : r.verdict === "allow" ? `<div class="sim-v ok">✓ <span>Allowed</span></div>` : r.verdict === "block" ? `<div class="sim-v no">✕ <span>Blocked</span></div>` : `<div class="sim-v unk">? <span>No rule decides for exactly this – it depends on the device or address</span></div>`;
+  const by = r?.by ? `<p class="hint sim-by"><span>Decided by</span> <button type="button" class="link" data-fwpol="${esc(r.by.id)}" translate="no">${esc(r.by.name || "?")}</button>${r.by.predefined ? ` <span class="muted">(<span>built-in</span>)</span>` : ""}</p>` : "";
+  const notes = r?.notes.length ? `<p class="hint sim-note">⏱ <span>At certain times another rule decides:</span> <span translate="no">${r.notes.map(p => esc(p.name || "?")).join(", ")}</span></p>` : "";
+  const steps = r ? `<ol class="sim-steps">${r.steps.map(x => `<li class="${SIM_ST[x.st]?.[1] || ""}"><span class="sim-i">${fwPolIcon(x.p)}</span><button type="button" class="link" data-fwpol="${esc(x.p.id)}" translate="no">${esc(x.p.name || "?")}</button>${x.p.predefined ? " 🔒" : ""} <span class="muted">– <span>${SIM_ST[x.st]?.[0] || ""}</span>${x.alt ? ` · <span>names this device under another MAC</span>` : ""}</span></li>`).join("")}</ol>` : "";
+  box.innerHTML = `<div class="sim-form">
+      <label><span>From</span><select id="simSrc">${opts(SIM.src || "", false)}</select></label>
+      <label><span>To</span><select id="simDst">${opts(SIM.dst, true)}</select></label>
+      <label><span>Protocol</span><select id="simProto">${[["tcp", "TCP"], ["udp", "UDP"], ["icmp", "ICMP (ping)"], ["all", "Any"]].map(([k, l]) => `<option value="${k}" ${SIM.proto === k ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+      <label><span>Port</span><input id="simPort" class="mono" inputmode="numeric" value="${esc(SIM.port)}" placeholder="443" ${SIM.proto === "tcp" || SIM.proto === "udp" ? "" : "disabled"}></label>
+      <button type="button" class="btn primary" id="simGo">Check</button></div>
+    <p class="hint" style="margin:6px 0 0">A new connection, checked against the rules in the order UniFi uses – the first matching rule decides. Answers to an allowed connection are not shown here.</p>
+    ${verdict}${by}${notes}${steps}`;
+}
+function runSim() {
+  SIM.src = $("#simSrc").value; SIM.dst = $("#simDst").value; SIM.proto = $("#simProto").value; SIM.port = $("#simPort").value.trim();
+  const a = simParse(SIM.src), b = simParse(SIM.dst), port = parseInt(SIM.port, 10);
+  SIM.res = fwSimulate({ sz: a.zone, dz: b.zone, src: a.dev, dst: b.dev, proto: SIM.proto, port: isNaN(port) ? null : port });
+  renderSim();
+}
+document.addEventListener("click", e => { if (e.target.closest("#simGo")) runSim(); });
+document.addEventListener("change", e => { if (e.target.id === "simProto") { SIM.proto = e.target.value; const pi = $("#simPort"); if (pi) pi.disabled = !(SIM.proto === "tcp" || SIM.proto === "udp"); } });
+// from the device details: open the test with this device as source
+function openSimFor(c) { SIM.src = "dev:" + c.mac; SIM.res = null; store.set("fwSimOpen", true); setView("fw"); setTimeout(() => { const d = $("#fwSim"); if (d) { d.open = true; renderSim(); d.scrollIntoView({ block: "start", behavior: "smooth" }); } }, 300); }
 const FW_LVL = { full: ["Allowed", "allow"], partial: ["Partly allowed", "part"], ret: ["Replies only", "ret"], none: ["Blocked", "block"], "": ["Unknown", "none"] };
 const fwLvlTag = (lvl, extra) => `<span class="fw-lvl ${FW_LVL[lvl][1]}">${FW_LVL[lvl][0]}${extra ? ` <span>${extra}</span>` : ""}</span>`;
 const fwInternet = c => fwDecide(zoneOf(c)?.id, fwZoneByKey("external")?.id, c, null);

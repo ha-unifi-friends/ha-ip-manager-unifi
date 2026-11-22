@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.50.0
+
+- **Test a connection** (Firewall page, below the matrix): choose *From* (a device or a zone), *To* (Internet, a zone or a device), protocol and port, and the app shows whether a new connection is **allowed or blocked**, which rule decides, and every rule on the way in UniFi's order with the reason it does not apply (other port, other devices, paused, special case …). Rules with a schedule are named as "only at certain times".
+- Device details › Firewall: **Can this device reach …?** opens the test with the device as source.
+- The test follows the same rules as the internet access chain: UniFi's built-in special rules do not decide normal traffic, and a rule that names the device under an older MAC counts for it.
+
 ## 1.49.0
 
 - **Bulk changes:** *Actions › Select devices…* – click devices in the table or the list to select them (or *Select all shown*), then change them together in the bar at the bottom: **override network**, **remove override**, **release fixed IP**, **note**, **reconnect WiFi** and **firewall rule** (opens the wizard with the selected devices as source). Each change asks first and saves a version before it starts; the result says how many worked and why one failed. *Done* ends the selection.
