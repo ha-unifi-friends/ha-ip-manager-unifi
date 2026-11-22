@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.43.0
+
+- Menu order: Clients, Topology, IP Plan, Firewall – Topology uses the same filter pane as Clients, so it now sits right next to it.
+
 ## 1.42.9
 
 - Topology graph: the nodes are filled in the colour of the lines; the type colour (UniFi, Home Assistant, client …) is now the ring around the node.
