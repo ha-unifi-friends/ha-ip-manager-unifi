@@ -1382,5 +1382,7 @@
  "Tagged: all": "Taggade: alla",
  "Port profile {0}": "Portprofil {0}",
  "UniFi default": "UniFi-standard",
- "Prepared: {0} → {1}. Wired – the switch port decides, see the note.": "Förberett: {0} → {1}. Trådbunden – switchporten avgör, se anmärkningen."
+ "Prepared: {0} → {1}. Wired – the switch port decides, see the note.": "Förberett: {0} → {1}. Trådbunden – switchporten avgör, se anmärkningen.",
+ "Disconnected": "Frånkopplad",
+ "Connected": "Ansluten"
 }

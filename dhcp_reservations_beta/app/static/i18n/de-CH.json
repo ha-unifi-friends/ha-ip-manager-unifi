@@ -1382,5 +1382,7 @@
  "Tagged: all": "Taggt: alli",
  "Port profile {0}": "Port-Profil {0}",
  "UniFi default": "UniFi-Standard",
- "Prepared: {0} → {1}. Wired – the switch port decides, see the note.": "Vorbereitet: {0} → {1}. Mit Kabel – de Switch-Port entscheidet, lueg de Hiiwiis."
+ "Prepared: {0} → {1}. Wired – the switch port decides, see the note.": "Vorbereitet: {0} → {1}. Mit Kabel – de Switch-Port entscheidet, lueg de Hiiwiis.",
+ "Disconnected": "Trennt",
+ "Connected": "Verbunde"
 }

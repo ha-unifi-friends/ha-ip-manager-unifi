@@ -1382,5 +1382,7 @@
  "Tagged: all": "Tagués : tous",
  "Port profile {0}": "Profil de port {0}",
  "UniFi default": "Défaut UniFi",
- "Prepared: {0} → {1}. Wired – the switch port decides, see the note.": "Préparé : {0} → {1}. Câblé – le port du switch décide, voir la note."
+ "Prepared: {0} → {1}. Wired – the switch port decides, see the note.": "Préparé : {0} → {1}. Câblé – le port du switch décide, voir la note.",
+ "Disconnected": "Déconnecté",
+ "Connected": "Connecté"
 }

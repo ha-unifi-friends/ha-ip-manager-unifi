@@ -388,6 +388,14 @@ def build_snapshot(api):
             d = by_mac.get(r["sw_mac"])
             if d:
                 r["port_vlan"] = port_vlan(d, r["port"], profiles, default_net)
+    switches = {}
+    for d in devs:
+        pt = [p for p in d.get("port_table") or [] if isinstance(p, dict) and p.get("port_idx") is not None]
+        kind = DEVICE_KIND.get(str(d.get("type", "")), "device")
+        if not d.get("mac") or not pt or (kind not in ("switch", "gateway") and len(pt) < 4):
+            continue
+        switches[d["mac"].lower()] = {"mac": d["mac"].lower(), "name": d.get("name") or d["mac"], "model": d.get("model") or "",
+                                      "ports": [switch_port(p) for p in sorted(pt, key=lambda p: int(p.get("port_idx") or 0))]}
     aps = sorted(({"mac": d["mac"].lower(), "name": d.get("name") or d["mac"]}
                   for d in devs if d.get("mac") and str(d.get("type", "")).startswith("uap")
                   and str(d.get("device_category") or "ap") == "ap"),
@@ -395,6 +403,7 @@ def build_snapshot(api):
     return {
         "networks": nets,
         "aps": aps,
+        "switches": switches,
         "clients": sorted(rows.values(), key=lambda r: (r["name"] or r["hostname"] or r["mac"]).lower()),
         "fetched_at": int(time.time()),
     }
@@ -437,6 +446,18 @@ def port_vlan(dev, idx, profiles, default_net):
             "source": src, "profile": (prof or {}).get("name") or ""}
 
 
+def switch_port(p):
+    """One port of a switch for the port view: link, speed, PoE, uplink."""
+    poe = bool(p.get("port_poe"))
+    try:
+        watts = round(float(p.get("poe_power") or 0), 2) if poe else 0
+    except (TypeError, ValueError):
+        watts = 0
+    return {"idx": int(p.get("port_idx")), "name": p.get("name") or "", "up": bool(p.get("up")), "speed": int(p.get("speed") or 0),
+            "enabled": p.get("enable") is not False, "poe": poe, "poe_w": watts, "uplink": bool(p.get("is_uplink")),
+            "sfp": bool(p.get("sfp_found")) or str(p.get("media") or "").upper().startswith("SFP")}
+
+
 DEVICE_KIND = {"uap": "ap", "usw": "switch", "udm": "gateway", "ugw": "gateway", "uxg": "gateway", "usg": "gateway"}
 
 
@@ -469,6 +490,7 @@ def merge_device(row, d, nets):
         "conn": "wifi" if wireless else "wired",
         "wired": not wireless,
         "uplink": up.get("uplink_device_name") or up.get("name") or "",
+        "sw_mac": (up.get("uplink_mac") or "").lower() if not wireless else "",
         "port": up.get("uplink_remote_port") or up.get("port_idx") if not wireless else None,
         "essid": "",
         "last_seen": d.get("last_seen") or row.get("last_seen") or 0,

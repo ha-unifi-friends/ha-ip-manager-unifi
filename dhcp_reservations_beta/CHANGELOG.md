@@ -8,6 +8,7 @@
 - The same note appears live in the settings while choosing an override or a network, and after *Prepare move…* in the firewall analysis.
 - Network rules (“belongs in …”) mark wired devices with *(switch port)*.
 - New table column **Port VLAN** (filterable by network).
+- **Switch view** in the details of a wired device: the ports of its switch like in UniFi (odd on top, even below; GbE / FE / disconnected / disabled, PoE, uplink), its own port highlighted, the devices on the other ports above and below with their icon and the Home Assistant logo when HA knows them – a click opens that device.
 
 **App:**
 - Marked as **experimental** in the Home Assistant add-on store.
