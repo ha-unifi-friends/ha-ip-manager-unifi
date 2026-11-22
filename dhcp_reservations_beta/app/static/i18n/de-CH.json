@@ -1477,5 +1477,7 @@
  "More rules that name this client": "Wiiteri Regle, wo de Client nänned",
  "Network · {0}": "Netzwerk · {0}",
  "Special case": "Sonderfall",
- "Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.": "Abbländet: in UniFi iibauti Sonderregle – nume für Sonderfäll (ungültigi Verbindige, LTE-Failover, Gascht-Aamäldig …), nöd für normale Verkehr."
+ "Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.": "Abbländet: in UniFi iibauti Sonderregle – nume für Sonderfäll (ungültigi Verbindige, LTE-Failover, Gascht-Aamäldig …), nöd für normale Verkehr.",
+ "Hide labels": "Beschriftige uusblände",
+ "Show labels": "Beschriftige iiblände"
 }

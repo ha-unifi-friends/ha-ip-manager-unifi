@@ -1477,5 +1477,7 @@
  "More rules that name this client": "Fler regler som anger den här klienten",
  "Network · {0}": "Nätverk · {0}",
  "Special case": "Specialfall",
- "Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.": "Nedtonade: UniFis inbyggda specialregler – bara för specialfall (ogiltiga anslutningar, LTE-failover, gästautentisering …), inte för normal trafik."
+ "Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.": "Nedtonade: UniFis inbyggda specialregler – bara för specialfall (ogiltiga anslutningar, LTE-failover, gästautentisering …), inte för normal trafik.",
+ "Hide labels": "Dölj etiketter",
+ "Show labels": "Visa etiketter"
 }

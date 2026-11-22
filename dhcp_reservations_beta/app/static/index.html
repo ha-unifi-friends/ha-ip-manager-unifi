@@ -375,8 +375,10 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .rel-svg.hl .rel-e.on{opacity:1}
 .rel-svg.has-sel .rel-e:not(.sel){opacity:.2}
 .rel-n{transition:opacity .15s;--nc:#26a69a}
-.rel-n .core{fill:var(--nc)}
-.rel-n:hover .core{stroke:var(--fg);stroke-width:2}
+.rel-n .core{fill:color-mix(in srgb,#94a3b8 50%,var(--bg));stroke:var(--nc);stroke-width:2.5}
+.rel-n:hover .core{stroke:var(--fg)}
+.rel-svg.no-lbl .rel-l,.rel-svg.no-lbl .rel-s{display:none}
+.rel-zoom .btn[aria-pressed="true"]{color:var(--accent);border-color:var(--accent)}
 .nk-inet{--nc:#039be5}.nk-unifi{--nc:#18bcf2}.nk-ha{--nc:#41bdf5}.nk-hub{--nc:#00bcd4}.nk-dev{--nc:#26a69a}.nk-susp{--nc:#ef4444}
 .rel-n.nk-susp .core{animation:relpulse 1.6s ease-in-out infinite}
 .rel-l{font-size:12px;fill:var(--fg);paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
@@ -3711,7 +3713,7 @@ $("#fwChain").addEventListener("dragend", () => { FW.drag = null; for (const x o
 // ---------- topology view: shared helpers, live force layout, drawing ----------
 // standard ports get a colour (the dominant port of a pair colours its arrows)
 const REL_PORTS = [["DNS", [53, 853], "#14b8a6"], ["Web", [80, 443, 8080, 8443], "#3b82f6"], ["NTP", [123], "#a3a3a3"], ["MQTT", [1883, 8883], "#f59e0b"], ["Camera / RTSP", [554], "#ec4899"], ["Home Assistant", [8123], "#0ea5e9"], ["ESPHome", [6053], "#22c55e"], ["SSH / remote", [22, 3389, 5900], "#ef4444"], ["Files / SMB", [139, 445, 2049], "#8b5cf6"], ["Discovery (mDNS / SSDP)", [5353, 1900], "#84cc16"], ["Streaming / casting", [8008, 8009, 7000, 1400, 32400], "#f97316"], ["Other", [], "#94a3b8"]];
-const REL = { tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoIcon: store.get("topoIcon", "ha"), sel: null, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false };
+const REL = { tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoIcon: store.get("topoIcon", "ha"), labels: store.get("topoLabels", true), sel: null, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false };
 const isRel = () => document.body.classList.contains("rel-mode");
 // the device behind a node id (MAC, "ip:…", "internet")
 function relDev(id) { if (id === "internet") return null; if (id.startsWith("ip:")) { const ip = id.slice(3); return state.clients.find(c => c.ip === ip || (c.use_fixedip && c.fixed_ip === ip)) || null; } return devByMac(id); }
@@ -3824,9 +3826,9 @@ function relDraw() {
     const shape = k === "inet" ? `<rect class="core" x="${-r}" y="${-r}" width="${2 * r}" height="${2 * r}" rx="4"/>` : `<circle class="core" r="${r.toFixed(1)}"/>`;
     return `<g class="rel-n nk-${k}" data-reln="${esc(n)}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><title>${esc([relLabel(n), relIp(n), s].filter(Boolean).join(" · "))}</title>${shape}${G.icon ? G.icon(n, r) : ic && r >= 9 ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${ic}</text>` : ""}<text class="rel-l" x="${(r + 5).toFixed(1)}" y="${s ? -1 : 4}" translate="no">${esc(lbl(n))}</text>${s ? `<text class="rel-s" x="${(r + 5).toFixed(1)}" y="11" translate="no">${esc(s)}</text>` : ""}</g>`;
   };
-  box.innerHTML = `<svg class="rel-svg${list.some(e => REL.sel === e.a + "|" + e.b) ? " has-sel" : ""}" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Relations graph"><defs>${markers}</defs><rect class="rel-bg" width="${W}" height="${H}"/><g class="rel-vp" transform="translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})">
+  box.innerHTML = `<svg class="rel-svg${REL.labels ? "" : " no-lbl"}${list.some(e => REL.sel === e.a + "|" + e.b) ? " has-sel" : ""}" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Relations graph"><defs>${markers}</defs><rect class="rel-bg" width="${W}" height="${H}"/><g class="rel-vp" transform="translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})">
     ${list.map(e => arrow(e, e.a, e.b, e.ab, false) + arrow(e, e.b, e.a, e.ba, true)).join("")}
-    ${nodes.map(node).join("")}</g></svg><div class="rel-zoom"><button type="button" class="btn sm" data-relzoom="in" title="Zoom in">+</button><button type="button" class="btn sm" data-relzoom="out" title="Zoom out">−</button><button type="button" class="btn sm" data-relzoom="auto" title="Auto zoom – show everything"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg></button><button type="button" class="btn sm" data-relzoom="fit" title="Reset the view and the layout">⟲</button></div>`;
+    ${nodes.map(node).join("")}</g></svg><div class="rel-zoom"><button type="button" class="btn sm" data-relzoom="in" title="Zoom in">+</button><button type="button" class="btn sm" data-relzoom="out" title="Zoom out">−</button><button type="button" class="btn sm" data-relzoom="auto" title="Auto zoom – show everything"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg></button><button type="button" class="btn sm" data-relzoom="fit" title="Reset the view and the layout">⟲</button><button type="button" class="btn sm" data-relzoom="labels" aria-pressed="${REL.labels}" title="${REL.labels ? "Hide labels" : "Show labels"}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg></button></div>`;
   const byKey = new Map(list.map(e => [e.a + "|" + e.b, e]));
   G.els = { n: [...box.querySelectorAll("g[data-reln]")].map(el => [el, el.dataset.reln]), e: [...box.querySelectorAll("path[data-rele]")].map(el => { const e = byKey.get(el.dataset.rele), back = el.classList.contains("back"); return [el, e, back ? e.b : e.a, back ? e.a : e.b]; }) };
 }
@@ -3841,7 +3843,7 @@ function relPt(ev) { const svg = $("#relGraph svg"), r = svg.getBoundingClientRe
 function relFit() {
   const G = REL.g, P = REL.pos; if (!G?.nodes.length) return;
   let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
-  for (const n of G.nodes) { const p = P[n]; if (!p) continue; const r = G.rad(n), lw = Math.max(G.lbl(n).length * 6.4, G.sub(n).length * 5.6) + r + 8; x0 = Math.min(x0, p.x - r - 4); x1 = Math.max(x1, p.x + lw); y0 = Math.min(y0, p.y - r - 6); y1 = Math.max(y1, p.y + r + 16); }
+  for (const n of G.nodes) { const p = P[n]; if (!p) continue; const r = G.rad(n), lw = (REL.labels ? Math.max(G.lbl(n).length * 6.4, G.sub(n).length * 5.6) : 0) + r + 8; x0 = Math.min(x0, p.x - r - 4); x1 = Math.max(x1, p.x + lw); y0 = Math.min(y0, p.y - r - 6); y1 = Math.max(y1, p.y + r + 16); }
   if (!isFinite(x0)) return;
   const pad = 24, k = Math.max(0.25, Math.min(1.6, (G.W - 2 * pad) / Math.max(1, x1 - x0), (G.H - 2 * pad) / Math.max(1, y1 - y0)));
   REL.view = { k, x: G.W / 2 - k * (x0 + x1) / 2, y: G.H / 2 - k * (y0 + y1) / 2 };
@@ -3870,6 +3872,7 @@ $("#relGraph").addEventListener("pointerup", () => {
 });
 $("#relGraph").addEventListener("click", e => {
   const z = e.target.closest("[data-relzoom]"); if (!z) return; e.stopPropagation();
+  if (z.dataset.relzoom === "labels") { REL.labels = !REL.labels; store.set("topoLabels", REL.labels); REL.topoKey = null; renderRel(); return; }
   if (z.dataset.relzoom === "fit") { REL.view = { k: 1, x: 0, y: 0 }; REL.pos = {}; REL.autoFit = true; renderRel(); }
   else if (z.dataset.relzoom === "auto") { REL.autoFit = false; relFit(); }
   else { REL.autoFit = false; relZoom(z.dataset.relzoom === "in" ? 1.25 : 0.8); }
@@ -3966,7 +3969,7 @@ function topoGraph(M) {
   const rad = id => { const c = M.byMac.get(id); return id === "internet" ? 13 : id === "?" ? 9 : !c?.is_device ? (ico ? 9 : 6) : c.device_kind === "gateway" ? 15 : c.device_kind === "switch" ? 12 : 10; };
   const lbl = id => { const s = id === "?" ? I18N.tr("Connection not known") : relLabel(id); return s.length > 26 ? s.slice(0, 25) + "…" : s; };
   const sub = id => { const c = M.byMac.get(id); return c ? topoSub(c) : ""; };
-  const grp = {}, mrg = {}, mrgL = {}; for (const n of nodes) { grp[n] = "t"; mrg[n] = Math.max(lbl(n).length * 6.4, sub(n).length * 5.6) + rad(n) + 10; mrgL[n] = rad(n) + 8; }
+  const grp = {}, mrg = {}, mrgL = {}; for (const n of nodes) { grp[n] = "t"; mrg[n] = (REL.labels ? Math.max(lbl(n).length * 6.4, sub(n).length * 5.6) : 0) + rad(n) + 10; mrgL[n] = rad(n) + 8; }
   // a new set of devices (other filter, clients on / off): zoom to fit again once it has settled
   const key = nodes.join(","); if (key !== REL.topoKey) { REL.topoKey = key; REL.autoFit = true; }
   relSimInit(nodes, edges, W, H, grp, mrg, mrgL, rad, { free: true });
