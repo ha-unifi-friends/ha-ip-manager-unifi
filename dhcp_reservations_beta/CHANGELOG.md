@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.41.2 – 2026-11-22
+
+- **Phones:** Firewall and Topology get the same header as the IP plan – menu points in the first row, the tabs below on the left, *Refresh* / *Actions* in their own row on the right above the blue line.
+
 ## 1.41.1 – 2026-11-22
 
 - **Phones:** the header has the menu points in the first row; below them the tabs sit on the left on the blue line and *Refresh* / *Actions* are on the right. Menus are never wider than the screen; long entries wrap.
