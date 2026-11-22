@@ -53,6 +53,8 @@ def _addon_version():
 
 ADDON_VERSION = _addon_version()
 HIST_CACHE = {}  # version id -> (mtime, clients, networks, aps)
+HIST_LOCK = threading.Lock()
+SETTINGS_LOCK = threading.Lock()
 SCAN_LOCK = threading.Lock()
 WATCH_INTERVAL = int(os.environ.get("WATCH_INTERVAL", "120"))
 
@@ -173,6 +175,7 @@ class Unifi:
         self.csrf = ""
         self.lock = threading.Lock()
         self.logged_in = False
+        self.gen = 0  # counts the logins, so parallel requests that saw the same stale session log in only once
         self.api_key = str(opts.get("api_key") or "").strip()
         self.int_site = None
 
@@ -212,6 +215,16 @@ class Unifi:
         except ValueError:
             payload = {"raw": raw[:300].decode(errors="replace")}
         return status, payload
+
+    def _session(self, stale=None):
+        """Log in if needed; with stale = the login generation a request used, log in again unless another request
+        already did. Returns the current generation."""
+        with self.lock:
+            if not self.logged_in or (stale is not None and stale == self.gen):
+                self.logged_in = False
+                self.login()
+                self.gen += 1
+            return self.gen
 
     def login(self):
         if not self.user or not self.password:
@@ -285,21 +298,32 @@ class Unifi:
         site = urllib.parse.quote(self.site, safe="")
         full = (f"/proxy/network/v2/api/site/{site}{path}" if v2
                 else f"/proxy/network/api/s/{site}{path}")
-        with self.lock:
-            if not self.logged_in:
-                self.login()
+        # the lock covers only the login: a slow request (e.g. forget, 90 s) must not block every other request
+        gen = self._session()
+        status, payload = self._raw(method, full, body, timeout)
+        if status in (401, 403):
+            # refused before anything happened – safe to send again after a new login
+            self._session(stale=gen)
             status, payload = self._raw(method, full, body, timeout)
-            if status in (401, 403):
-                self.login()
-                status, payload = self._raw(method, full, body, timeout)
-            elif status >= 500:
-                # a server error can stick to a stale session (e.g. right after an app or console update): log in
-                # again and retry once instead of failing until the app is restarted
-                log(f"Controller returned HTTP {status} for {method} {path} – logging in again and retrying")
-                time.sleep(1)
-                self.logged_in = False
-                self.login()
-                status, payload = self._raw(method, full, body, timeout)
+        elif status >= 500:
+            # a server error can stick to a stale session (e.g. right after an app or console update). Reads are sent
+            # again after a new login; writes are not – the controller may have applied them already
+            read = method == "GET" or (v2 and path.startswith("/traffic-flows"))
+            log(f"Controller returned HTTP {status} for {method} {path} – logging in again" + (" and retrying" if read else ""))
+            if not read:
+                with self.lock:
+                    self.logged_in = False  # the next request logs in again
+                msg = (payload.get("meta") or {}).get("msg") if isinstance(payload, dict) else None
+                raise UnifiError(f"Controller error ({msg or f'HTTP {status}'}) – the change may have been applied anyway. "
+                                 "Press Refresh and check before trying again.", 502)
+            time.sleep(1)
+            try:
+                self._session(stale=gen)
+            except UnifiError as e:
+                log("Login after the server error failed:", e)
+                raise UnifiError(f"The controller is not available (HTTP {status}) – it may be restarting or updating. "
+                                 "Try again in a minute.", 502)
+            status, payload = self._raw(method, full, body, timeout)
         if isinstance(payload, list):
             if status >= 400:
                 raise UnifiError(f"Controller returned HTTP {status}", 502)
@@ -499,6 +523,12 @@ def set_port_vlan(api, body, user=""):
               and str((d.get("uplink") or d.get("last_uplink") or {}).get("uplink_remote_port")) == str(idx)]
     if behind:
         raise UnifiError(f"{', '.join(behind)} is connected to port {idx} – a UniFi device would lose its controller. Change it in UniFi.", 400)
+    # Home Assistant itself on this port: it would land in another network and lose this app and the controller
+    ha = ha_host_ids(api)
+    ha_macs, ha_ips = set(m.lower() for m in ha["macs"]), set(ha["ips"])
+    on_port = [c for c in api.call("GET", "/stat/sta") if (c.get("sw_mac") or "").lower() == sw_mac and str(c.get("sw_port")) == str(idx)]
+    if any((c.get("mac") or "").lower() in ha_macs or c.get("ip") in ha_ips for c in on_port):
+        raise UnifiError(f"Home Assistant is connected to port {idx} – it would lose its network and this app. Change it in UniFi.", 400)
     ovs = [dict(o) for o in dev.get("port_overrides") or []]
     ov = next((o for o in ovs if str(o.get("port_idx")) == str(idx)), None)
     try:
@@ -690,7 +720,7 @@ def save_client(api, body):
     payload["use_fixedip"] = use_fixed
     if use_fixed:
         net = nets.get(body.get("network_id") or "")
-        if not net:
+        if not net or not net.get("subnet"):
             raise UnifiError("Please choose a network (VLAN) for the reservation.", 400)
         payload["network_id"] = net["id"]
         payload["fixed_ip"] = validate_ip(body.get("fixed_ip") or "", net)
@@ -1009,7 +1039,7 @@ def normalize_mac(v):
 
 # ---------------------------------------------------------------- firewall (zone-based, read only)
 # UniFi Network 9+ groups networks into zones; policies allow or block traffic between two zones.
-# Read through the same internal v2 API the UniFi UI uses. Nothing here writes to the firewall.
+# Read through the same internal v2 API the UniFi UI uses. Reading only; the writes (order, new policy) are below.
 FW_POLICY_KEYS = ("name", "description", "enabled", "action", "predefined", "index", "ip_version", "protocol",
                   "connection_state_type", "connection_states", "create_allow_respond", "logging",
                   "match_opposite_protocol", "icmp_typename", "icmp_v6_typename", "match_ip_sec",
@@ -1160,7 +1190,8 @@ def _int_list(api, path):
             raise UnifiError(f"UniFi Integration API: {msg}", 502)
         data = res.get("data") if isinstance(res, dict) else res
         out += data or []
-        if not data or len(data) < 200 or len(out) >= (res.get("totalCount") or 0 if isinstance(res, dict) else 0):
+        total = res.get("totalCount") if isinstance(res, dict) else None
+        if not data or len(data) < 200 or (isinstance(total, int) and len(out) >= total):
             return out
         off += 200
 
@@ -1646,6 +1677,11 @@ def load_fw_settings():
 
 
 def save_fw_settings(body):
+    with SETTINGS_LOCK:  # read – change – write: two saves at once must not lose one
+        return _save_fw_settings(body)
+
+
+def _save_fw_settings(body):
     cur = load_fw_settings()
     if "zone_roles" in body:
         roles = {}
@@ -1669,7 +1705,7 @@ def save_fw_settings(body):
 
 # ---------------------------------------------------------------- versions
 def _write_json(path, data):
-    tmp = path + ".tmp"
+    tmp = f"{path}.{os.getpid()}.{threading.get_ident()}.tmp"  # parallel writers never share a temp file
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     os.replace(tmp, path)
@@ -1764,6 +1800,11 @@ def device_history(mac):
     mac = normalize_mac(mac)
     if not mac:
         raise UnifiError("Invalid MAC.", 400)
+    with HIST_LOCK:  # the cache is shared by parallel requests
+        return _device_history(mac)
+
+
+def _device_history(mac):
     out, ids = [], set()
     for meta in sorted(_index(), key=lambda m: m.get("created", 0)):
         path = _vpath(meta["id"])
@@ -2030,7 +2071,8 @@ def save_rules(body):
         f, v, n = str(r.get("field") or ""), str(r.get("contains") or "").strip(), str(r.get("network_id") or "")
         if f in RULE_FIELDS and v and n:
             rules.append({"field": f, "contains": v[:60], "network_id": n})
-    _write_json(RULES_PATH, rules[:200])
+    with SETTINGS_LOCK:
+        _write_json(RULES_PATH, rules[:200])
     log("Rules saved:", len(rules))
     return {"rules": rules}
 
@@ -2288,13 +2330,19 @@ class Handler(BaseHTTPRequestHandler):
         # JSON only: a cross-site form cannot send application/json without a CORS preflight (CSRF defence)
         if not (self.headers.get("Content-Type") or "").lower().startswith("application/json"):
             raise UnifiError("Content-Type must be application/json.", 415)
-        n = int(self.headers.get("Content-Length") or 0)
-        if n > 100_000:
-            raise UnifiError("Request too large.", 400)
         try:
-            return json.loads(self.rfile.read(n) or b"{}")
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            raise UnifiError("Invalid Content-Length.", 400)
+        if n < 0 or n > 100_000:
+            raise UnifiError("Request too large." if n > 0 else "Invalid Content-Length.", 400)
+        try:
+            body = json.loads(self.rfile.read(n) or b"{}")
         except ValueError:
             raise UnifiError("Invalid JSON.", 400)
+        if not isinstance(body, dict):  # every endpoint expects an object
+            raise UnifiError("Invalid JSON.", 400)
+        return body
 
     def _route(self, method):
         if not self._allowed():

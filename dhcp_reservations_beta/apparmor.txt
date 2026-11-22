@@ -30,7 +30,6 @@ profile dhcp_reservations_beta flags=(attach_disconnected,mediate_deleted) {
   # ... but write only where the app and the start-up need it
   /data/ r,
   /data/** rwk,
-  /app/** rw,
   /tmp/** rwk,
   /var/tmp/** rwk,
   /run/** rwk,

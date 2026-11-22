@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.45.1
+
+Fixes from a full review:
+- **Controller errors:** after a server error (HTTP 5xx) only *reads* are sent again. Changes (create a rule, restart a device, save a client …) are no longer repeated – the controller may already have applied them; the message says to refresh and check. If the console is restarting, the message says so instead of pointing at the password.
+- A slow controller request (e.g. *Forget*, up to 90 s) no longer blocks all other requests – only the login is serialised.
+- **Port VLAN:** the switch port of the Home Assistant host can no longer be changed (HA would lose its network and this app).
+- **Versions on phones:** *Versions…* is in the Actions menu when the header has no room for its button.
+- Fixed IPs can only be reserved in networks with a subnet; requests with an invalid body are refused cleanly; settings and rules are saved one at a time; the history cache is safe with parallel requests; paging of the UniFi Integration API no longer stops after 200 rules.
+- AppArmor: the app can no longer write to its own program folder.
+- About 35 missing translations (all languages), e.g. tooltips of the firewall matrix and rule chain, *(untagged)*, *Area*, *Separator*, *up to*, *default*, notes in the edit panel.
+- A failed CSV download of a version shows an error; the tree no longer jumps back to the first filter hit on every refresh.
+
 ## 1.45.0
 
 - Tree and Graph keep the view selector and show "X of Y devices" next to it – on phones too (narrow phones show the short form, e.g. 2/21).
