@@ -1475,5 +1475,7 @@
  "Client · {0}": "Klient · {0}",
  "Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.": "Reguły strefy i reguły tego klienta, w kolejności sprawdzania przez UniFi – decyduje pierwsza pasująca reguła.",
  "More rules that name this client": "Inne reguły wskazujące tego klienta",
- "Network · {0}": "Sieć · {0}"
+ "Network · {0}": "Sieć · {0}",
+ "Built-in special rules": "Wbudowane reguły specjalne",
+ "Only for special cases (invalid connections, LTE failover, guest authorisation …) – not for normal traffic.": "Tylko dla przypadków szczególnych (nieprawidłowe połączenia, przełączanie LTE, uwierzytelnianie gości …) – nie dla zwykłego ruchu."
 }

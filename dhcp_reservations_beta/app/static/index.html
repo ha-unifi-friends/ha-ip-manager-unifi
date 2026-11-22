@@ -535,6 +535,7 @@ body.fw-mode #btnNew{display:none}
 .fw-named .lb.off,.fw-lane.mini .lb.off{background:var(--chip);border-color:var(--line-strong);opacity:.75}
 .fw-named .lb.off .lb-ic,.fw-lane.mini .lb.off .lb-ic{background:var(--muted)}
 .fw-mini .sec-sub{margin-top:12px}
+.fw-special .lb{opacity:.6}
 .fw-named{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
 .fw-named .lb{width:auto;min-width:0;padding:6px 8px;font-size:11.5px}
 .fw-named .lb-s,.fw-named .lb-h{font-size:10.5px}
@@ -2848,8 +2849,12 @@ function fwMiniChainHtml(c) {
   if (!FW.data || !c?.mac || c.is_device || !z || !ext || z.id === ext.id) return "";
   const { seq } = fwSeq(z.id, ext.id);
   let reached = true;
-  const items = [];
+  const items = [], special = [];
+  // UniFi's built-in rules other than the zone default (Allow / Block All) only cover special cases – invalid connections,
+  // the LTE failover, guest authorisation … – they are listed apart and do not decide about normal traffic
+  const isDefault = p => fwTarget(p.source) === "ANY" && fwTarget(p.destination) === "ANY" && fwPortAny(p.source) && fwPortAny(p.destination) && fwProto(p) === "All" && fwCst(p) === "ALL" && !fwSched(p);
   for (const p of seq) {
+    if (p.predefined && !isDefault(p)) { if (fwSideMatch(p.source, c)) special.push(p); continue; }
     // the device by its MAC, its IP or its network – or a client with the same name and another MAC (a private WiFi address that changed)
     const m = fwSideMatch(p.source, c), alt = !m && fwSameNameMac(p.source, c);
     if (!m && !alt) continue; // a rule for other devices
@@ -2878,7 +2883,7 @@ function fwMiniChainHtml(c) {
   const open = store.get("fwMiniOpen", false);
   return `<div class="sec-title"><span>Internet access</span> <span class="muted">Client → External</span></div>
     <details class="card fw-mini" id="fwMini"${open ? " open" : ""}><summary class="fm-sum" title="${esc(flow ? "Normal traffic of this device reaches the internet" : `Normal traffic of this device is blocked by ${stop.p.name || "a rule"}`)}"><span class="fm-n dev">${iconHtml(c)}</span>${strip}<span class="fm-n net${flow ? " on" : ""}">🌐</span><span class="fm-v ${flow ? "ok" : "no"}" aria-label="${flow ? "Reaches the internet" : "Blocked"}">${flow ? "✓" : "✕"}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
-    <div class="fw-named">${lane}</div><p class="hint" style="margin:6px 0 0">Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.</p>${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}${fwNamedHtml(c, true, { src: z.id, dst: ext.id })}</details>`;
+    <div class="fw-named">${lane}</div><p class="hint" style="margin:6px 0 0">Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.</p>${special.length ? `<div class="sec-sub">Built-in special rules</div><div class="fw-named fw-special">${special.map(p => `<button type="button" class="lb ${fwIsAllow(p) ? "allow" : "block"} pre" data-fwpol="${esc(p.id)}" title="${esc(`${p.name || "?"} · ${fwShort(p.source)} → ${fwShort(p.destination)}`)}"><span class="lb-top"><span class="lb-id">🔒</span><span class="lb-ic">${fwIsAllow(p) ? "✓" : "✕"}</span></span><span class="lb-n" translate="no">${esc(p.name || "?")}</span><span class="lb-s" translate="no">${esc(fwShort(p.source))} → ${esc(fwShort(p.destination))}</span>${typeof p.hits === "number" ? `<span class="lb-h">${p.hits.toLocaleString(I18N.locale)} <span>hits</span></span>` : ""}</button>`).join("")}</div><p class="hint" style="margin:6px 0 0">Only for special cases (invalid connections, LTE failover, guest authorisation …) – not for normal traffic.</p>` : ""}${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}${fwNamedHtml(c, true, { src: z.id, dst: ext.id })}</details>`;
 }
 document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); }, true);
 // the rules that name this client (by MAC, IP or network) – boxes like in the rule chain, paused ones grey

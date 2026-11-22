@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.42.4
+
+- Internet access chain: UniFi's built-in special rules (Block Invalid Traffic, Block Non-Permitted Networks Out ULTE, …) are left out of the chain and the green line – the chain shows normal traffic only. They are listed at the bottom of the opened chain as *Built-in special rules*.
+
 ## 1.42.3 – 2026-11-22
 
 - **Internet access chain, opened:** one list in the order UniFi checks the rules, zone rules and the rules for this client mixed – numbered boxes in the look of the rule chain that wrap instead of scrolling. Each box says where it comes from: *Zone*, *Network · …* or *Client · MAC / IP* (or *other MAC*). Paused rules are grey.
