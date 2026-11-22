@@ -1456,5 +1456,7 @@
  "Tree": "Árvore",
  "Filter hit": "Resultado do filtro",
  "Notify me in Home Assistant about suspicious traffic": "Avisar no Home Assistant sobre tráfego suspeito",
- "Icons": "Ícones"
+ "Icons": "Ícones",
+ "UniFi icons": "Ícones do UniFi",
+ "Home Assistant integration logos": "Logos das integrações do Home Assistant"
 }

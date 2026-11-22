@@ -1456,5 +1456,7 @@
  "Tree": "Boom",
  "Filter hit": "Filtertreffer",
  "Notify me in Home Assistant about suspicious traffic": "Meld verdacht verkeer in Home Assistant",
- "Icons": "Pictogrammen"
+ "Icons": "Pictogrammen",
+ "UniFi icons": "UniFi-pictogrammen",
+ "Home Assistant integration logos": "Logo's van de Home Assistant-integraties"
 }

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.41.8 – 2026-11-22
+
+- **Topology:** the icon switch sits in the header right of the tabs *Tree* / *Graph* (the row below is gone). With less room the labels get shorter – *None* → *Off*, *Home Assistant* → *HA* – and the label *Icons* is hidden.
+
 ## 1.41.7 – 2026-11-22
 
 - **Topology:** the heading “Network topology” and its explanation are removed.

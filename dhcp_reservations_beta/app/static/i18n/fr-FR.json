@@ -292,7 +292,7 @@
  "Tidiness {0}/100 – {1} fixed IPs: {2} inside the DHCP pool (-50 max), {3} % close together (-30 max), {4} conflicts / devices on another IP (-20 max)": "Ordre {0}/100 – {1} IP fixes : {2} dans le pool DHCP (-50 max), {3} % regroupées (-30 max), {4} conflits / appareils sur une autre IP (-20 max)",
  "planIconMode": "planIconMode",
  "planIcons": "planIcons",
- "No icons": "Sans icônes",
+ "No icons": "Pas d'icônes",
  "None": "Aucune",
  "UniFi": "UniFi",
  "HA": "HA",
@@ -1456,5 +1456,7 @@
  "Tree": "Arbre",
  "Filter hit": "Résultat du filtre",
  "Notify me in Home Assistant about suspicious traffic": "M'avertir dans Home Assistant en cas de trafic suspect",
- "Icons": "Icônes"
+ "Icons": "Icônes",
+ "UniFi icons": "Icônes UniFi",
+ "Home Assistant integration logos": "Logos des intégrations Home Assistant"
 }
