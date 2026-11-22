@@ -2,7 +2,8 @@
 
 ## 1.42.3 – 2026-11-22
 
-- **Device details:** *Rules that name this client* moved from the firewall card into the opened internet access chain, below the chain – as boxes in the look of the rule chain (✓ / ✕ / ↩ / Ⅱ, name, zones, as source or destination, by MAC / IP / network, hits); paused rules are grey. A click opens the rule in the firewall view. Without an internet chain (e.g. no zone) the list stands on its own.
+- **Internet access chain, opened:** one list in the order UniFi checks the rules, zone rules and the rules for this client mixed – numbered boxes in the look of the rule chain that wrap instead of scrolling. Each box says where it comes from: *Zone*, *Network · …* or *Client · MAC / IP* (or *other MAC*). Paused rules are grey.
+- Below it, *More rules that name this client*: the rules of other zone pairs (or with the client as destination) that name it. The list moved out of the firewall card; without an internet chain (e.g. no zone) it stands on its own.
 
 ## 1.42.2 – 2026-11-22
 
