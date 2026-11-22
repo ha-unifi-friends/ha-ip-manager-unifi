@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.41.9 – 2026-11-22
+
+- **Phones:** *Refresh* and *Actions* (and *+*) sit at the top right in the row of the menu points; the tabs follow below on the blue line. The header is one row lower.
+
 ## 1.41.8 – 2026-11-22
 
 - **Topology:** the icon switch sits in the header right of the tabs *Tree* / *Graph* (the row below is gone). With less room the labels get shorter – *None* → *Off*, *Home Assistant* → *HA* – and the label *Icons* is hidden.

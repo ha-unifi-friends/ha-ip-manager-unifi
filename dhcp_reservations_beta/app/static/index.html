@@ -124,8 +124,8 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 .topbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px max(16px,env(safe-area-inset-right)) 10px max(16px,env(safe-area-inset-left));border-bottom:1px solid var(--line);color:var(--muted)}
 .topbar .sp{flex:1}
 .tb-break{display:none}
-/* phones: menu points in the first row, the buttons in their own row on the right, the tabs at the bottom on the left – the active tab sits right on the blue line */
-@container main (max-width:559px){.topbar .grp{order:3;flex-wrap:nowrap;flex-basis:100%;justify-content:flex-end}.topbar .plan-tabs{order:5}.topbar .sp,.topbar .plan-icons-slot{order:6}}
+/* phones: menu points and – on the right – the buttons in the first row, the tabs at the bottom on the left – the active tab sits right on the blue line */
+@container main (max-width:559px){.topbar{column-gap:8px}.topbar .grp{order:1;flex-wrap:nowrap;margin-left:auto;gap:6px}.topbar .tb-break{display:block;flex-basis:100%;height:0;order:4}.topbar .plan-tabs{order:5}.topbar .sp,.topbar .plan-icons-slot{order:6}}
 .topbar .grp{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn.icon-btn{display:inline-flex;align-items:center;gap:6px}
 /* the toolbar stays on one line: labels collapse to icons depending on the width of the table area (detail panel open or not) */
