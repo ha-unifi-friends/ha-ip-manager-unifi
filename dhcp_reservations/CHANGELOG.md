@@ -1,5 +1,27 @@
 # Changelog
 
+## 2.0.1 – 2026-11-22
+
+Fixes and improvements from a full review (beta 1.45.1 – 1.46.1):
+
+**Fixes and safety**
+- After a controller server error (HTTP 5xx) only reads are repeated – changes (create a rule, restart a device, save a client …) are no longer sent twice; the message says to refresh and check. A restarting console is reported as such instead of pointing at the password.
+- A slow controller request (e.g. *Forget*) no longer blocks all other requests.
+- The switch port of the Home Assistant host can no longer be moved to another VLAN.
+- Fixed IPs only in networks with a subnet; invalid requests are refused cleanly; settings are saved one at a time; reading more than 200 firewall rules through the Integration API works.
+- AppArmor: the app can no longer write to its own program folder.
+
+**Usability**
+- **Firewall matrix:** zone pairs without a UniFi default show what your own rules do (*Rule: block / allow / mixed*), with a legend; on phones the source zones stay visible.
+- **Versions on phones:** in the Actions menu, one card per version.
+- **IP plan** opens with *All networks*.
+- **Top bar:** no button ends up outside the window – the bar is shortened step by step and wraps as a last resort.
+- View menu on phones uses the full width; tooltips on the main menu; touch-friendly graph hint; visible search fields in the light theme.
+- **German:** one word per thing – *WLAN*, *Regel*, *Aufräum-Vorschlag*, *Nicht mehr anheften*; about 40 missing translations added in all languages.
+
+**Under the hood**
+- Leftovers of the former traffic graph removed, duplicated helpers and CSS merged, 90 unused translations removed (about 900 lines less).
+
 ## 2.0.0 – 2026-11-22
 
 The big update from the beta channel (beta 1.31 – 1.45): firewall, topology and much more device detail.

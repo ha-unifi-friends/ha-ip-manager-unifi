@@ -53,6 +53,8 @@ def _addon_version():
 
 ADDON_VERSION = _addon_version()
 HIST_CACHE = {}  # version id -> (mtime, clients, networks, aps)
+HIST_LOCK = threading.Lock()
+SETTINGS_LOCK = threading.Lock()
 SCAN_LOCK = threading.Lock()
 WATCH_INTERVAL = int(os.environ.get("WATCH_INTERVAL", "120"))
 
@@ -173,6 +175,7 @@ class Unifi:
         self.csrf = ""
         self.lock = threading.Lock()
         self.logged_in = False
+        self.gen = 0  # counts the logins, so parallel requests that saw the same stale session log in only once
         self.api_key = str(opts.get("api_key") or "").strip()
         self.int_site = None
 
@@ -212,6 +215,16 @@ class Unifi:
         except ValueError:
             payload = {"raw": raw[:300].decode(errors="replace")}
         return status, payload
+
+    def _session(self, stale=None):
+        """Log in if needed; with stale = the login generation a request used, log in again unless another request
+        already did. Returns the current generation."""
+        with self.lock:
+            if not self.logged_in or (stale is not None and stale == self.gen):
+                self.logged_in = False
+                self.login()
+                self.gen += 1
+            return self.gen
 
     def login(self):
         if not self.user or not self.password:
@@ -285,21 +298,32 @@ class Unifi:
         site = urllib.parse.quote(self.site, safe="")
         full = (f"/proxy/network/v2/api/site/{site}{path}" if v2
                 else f"/proxy/network/api/s/{site}{path}")
-        with self.lock:
-            if not self.logged_in:
-                self.login()
+        # the lock covers only the login: a slow request (e.g. forget, 90 s) must not block every other request
+        gen = self._session()
+        status, payload = self._raw(method, full, body, timeout)
+        if status in (401, 403):
+            # refused before anything happened – safe to send again after a new login
+            self._session(stale=gen)
             status, payload = self._raw(method, full, body, timeout)
-            if status in (401, 403):
-                self.login()
-                status, payload = self._raw(method, full, body, timeout)
-            elif status >= 500:
-                # a server error can stick to a stale session (e.g. right after an app or console update): log in
-                # again and retry once instead of failing until the app is restarted
-                log(f"Controller returned HTTP {status} for {method} {path} – logging in again and retrying")
-                time.sleep(1)
-                self.logged_in = False
-                self.login()
-                status, payload = self._raw(method, full, body, timeout)
+        elif status >= 500:
+            # a server error can stick to a stale session (e.g. right after an app or console update). Reads are sent
+            # again after a new login; writes are not – the controller may have applied them already
+            read = method == "GET" or (v2 and path.startswith("/traffic-flows"))
+            log(f"Controller returned HTTP {status} for {method} {path} – logging in again" + (" and retrying" if read else ""))
+            if not read:
+                with self.lock:
+                    self.logged_in = False  # the next request logs in again
+                msg = (payload.get("meta") or {}).get("msg") if isinstance(payload, dict) else None
+                raise UnifiError(f"Controller error ({msg or f'HTTP {status}'}) – the change may have been applied anyway. "
+                                 "Press Refresh and check before trying again.", 502)
+            time.sleep(1)
+            try:
+                self._session(stale=gen)
+            except UnifiError as e:
+                log("Login after the server error failed:", e)
+                raise UnifiError(f"The controller is not available (HTTP {status}) – it may be restarting or updating. "
+                                 "Try again in a minute.", 502)
+            status, payload = self._raw(method, full, body, timeout)
         if isinstance(payload, list):
             if status >= 400:
                 raise UnifiError(f"Controller returned HTTP {status}", 502)
@@ -384,11 +408,7 @@ def build_snapshot(api):
         if not mac:
             continue
         rows[mac] = merge_device(rows.get(mac) or merge({}, {}, {}), d, nets)
-    try:
-        profiles = {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
-    except UnifiError as e:
-        log("Port profiles not available:", e)
-        profiles = {}
+    profiles = port_profiles(api)
     by_mac = {(d.get("mac") or "").lower(): d for d in devs if d.get("mac")}
     default_net = next((n["id"] for n in nets if n.get("purpose") == "corporate" and n.get("vlan") is None), "")
     for r in rows.values():
@@ -437,7 +457,7 @@ def port_vlan(dev, idx, profiles, default_net):
     src, prof = ("override", None) if ov else ("default", None)
     cfg = dict(ov or {})
     pid = cfg.get("portconf_id") or (pt.get("portconf_id") if not ov else None)
-    builtin = pid in profiles and (profiles[pid].get("attr_no_delete") or str(profiles[pid].get("name") or "").lower() in ("all", "default"))
+    builtin = pid in profiles and builtin_profile(profiles[pid])
     if pid and pid in profiles and not builtin:  # a port profile decides the VLANs of the port (UniFi's "All" is the default, no real profile)
         prof = profiles[pid]
         cfg = {**prof, **{k: v for k, v in cfg.items() if k in ("name", "port_idx")}}
@@ -474,6 +494,20 @@ def switch_port(p):
             "sfp": bool(p.get("sfp_found")) or str(p.get("media") or "").upper().startswith("SFP")}
 
 
+def port_profiles(api):
+    """UniFi's switch port profiles by id ({} when the controller does not offer them)."""
+    try:
+        return {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
+    except UnifiError as e:
+        log("Port profiles not available:", e)
+        return {}
+
+
+def builtin_profile(prof):
+    """UniFi's built-in "All" profile is what a port without own settings uses – that is no real profile."""
+    return bool(prof.get("attr_no_delete") or str(prof.get("name") or "").lower() in ("all", "default"))
+
+
 def set_port_vlan(api, body, user=""):
     """Change the native (untagged) network of one switch port – UniFi "Native VLAN / Network" of the port.
     Refused for uplink ports, ports with a UniFi device behind them (it would lose its controller) and ports that use a
@@ -499,16 +533,19 @@ def set_port_vlan(api, body, user=""):
               and str((d.get("uplink") or d.get("last_uplink") or {}).get("uplink_remote_port")) == str(idx)]
     if behind:
         raise UnifiError(f"{', '.join(behind)} is connected to port {idx} – a UniFi device would lose its controller. Change it in UniFi.", 400)
+    # Home Assistant itself on this port: it would land in another network and lose this app and the controller
+    ha = ha_host_ids(api)
+    ha_macs, ha_ips = set(m.lower() for m in ha["macs"]), set(ha["ips"])
+    on_port = [c for c in api.call("GET", "/stat/sta") if (c.get("sw_mac") or "").lower() == sw_mac and str(c.get("sw_port")) == str(idx)]
+    if any((c.get("mac") or "").lower() in ha_macs or c.get("ip") in ha_ips for c in on_port):
+        raise UnifiError(f"Home Assistant is connected to port {idx} – it would lose its network and this app. Change it in UniFi.", 400)
     ovs = [dict(o) for o in dev.get("port_overrides") or []]
     ov = next((o for o in ovs if str(o.get("port_idx")) == str(idx)), None)
-    try:
-        profiles = {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
-    except UnifiError:
-        profiles = {}
+    profiles = port_profiles(api)
     pid = (ov or {}).get("portconf_id") or (pt.get("portconf_id") if not ov else None)
     prof = profiles.get(pid) if pid else None
     # UniFi's built-in "All" profile is what a port without own settings uses – that is no real profile
-    if prof and not (prof.get("attr_no_delete") or str(prof.get("name") or "").lower() in ("all", "default")):
+    if prof and not builtin_profile(prof):
         raise UnifiError(f"Port {idx} uses the port profile “{prof.get('name')}” – change the profile or the port in UniFi.", 400)
     if ov is not None and pid:
         ov.pop("portconf_id", None)
@@ -690,7 +727,7 @@ def save_client(api, body):
     payload["use_fixedip"] = use_fixed
     if use_fixed:
         net = nets.get(body.get("network_id") or "")
-        if not net:
+        if not net or not net.get("subnet"):
             raise UnifiError("Please choose a network (VLAN) for the reservation.", 400)
         payload["network_id"] = net["id"]
         payload["fixed_ip"] = validate_ip(body.get("fixed_ip") or "", net)
@@ -865,6 +902,11 @@ HA_TEMPLATE = """{%- set ns = namespace(out=[]) -%}{%- set ns_skip = '(button|ev
 {{ ns.out | tojson }}"""
 
 
+def controller_host(api):
+    """Host name or IP of the UniFi console, without scheme and port."""
+    return re.sub(r"^https?://", "", api.base).split("/")[0].split(":")[0]
+
+
 def supervisor_token():
     """The token is in the environment, or – with the s6 init of the base image – only in s6's env store."""
     for key in ("SUPERVISOR_TOKEN", "HASSIO_TOKEN"):
@@ -882,22 +924,7 @@ def supervisor_token():
 
 
 def ha_devices():
-    token = supervisor_token()
-    base = os.environ.get("HA_API", "http://supervisor/core/api")
-    if not token and "HA_API" not in os.environ:
-        raise UnifiError("Home Assistant API is not available to the app (update the app to grant access).", 500)
-    req = urllib.request.Request(base + "/template", data=json.dumps({"template": HA_TEMPLATE}).encode(), method="POST",
-                                 headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
-    try:
-        raw = urllib.request.urlopen(req, timeout=30).read().decode()
-    except urllib.error.HTTPError as e:
-        raise UnifiError(f"Home Assistant API returned HTTP {e.code}.", 502)
-    except (urllib.error.URLError, OSError) as e:
-        raise UnifiError(f"Home Assistant not reachable: {e}", 502)
-    try:
-        devs = json.loads(raw)
-    except ValueError:
-        raise UnifiError("Unexpected answer from Home Assistant.", 502)
+    devs = ha_call("/template", {"template": HA_TEMPLATE}, timeout=30, strict=True)
     out = []
     for d in devs:
         macs = [m for m in (normalize_mac(x) for x in d.get("macs") or []) if m]
@@ -1009,7 +1036,7 @@ def normalize_mac(v):
 
 # ---------------------------------------------------------------- firewall (zone-based, read only)
 # UniFi Network 9+ groups networks into zones; policies allow or block traffic between two zones.
-# Read through the same internal v2 API the UniFi UI uses. Nothing here writes to the firewall.
+# Read through the same internal v2 API the UniFi UI uses. Reading only; the writes (order, new policy) are below.
 FW_POLICY_KEYS = ("name", "description", "enabled", "action", "predefined", "index", "ip_version", "protocol",
                   "connection_state_type", "connection_states", "create_allow_respond", "logging",
                   "match_opposite_protocol", "icmp_typename", "icmp_v6_typename", "match_ip_sec",
@@ -1141,7 +1168,7 @@ def firewall_state(api):
                                   "vlan": n.get("vlan") if n.get("vlan_enabled") else None, "subnet": n.get("ip_subnet") or ""}
     except UnifiError as e:
         log("Networks for the firewall view not available:", e)
-    host = re.sub(r"^https?://", "", api.base).split("/")[0].split(":")[0]
+    host = controller_host(api)
     try:
         ipaddress.ip_address(host)
     except ValueError:
@@ -1160,7 +1187,8 @@ def _int_list(api, path):
             raise UnifiError(f"UniFi Integration API: {msg}", 502)
         data = res.get("data") if isinstance(res, dict) else res
         out += data or []
-        if not data or len(data) < 200 or len(out) >= (res.get("totalCount") or 0 if isinstance(res, dict) else 0):
+        total = res.get("totalCount") if isinstance(res, dict) else None
+        if not data or len(data) < 200 or (isinstance(total, int) and len(out) >= total):
             return out
         off += 200
 
@@ -1335,7 +1363,7 @@ def _zone_role_guess(name, key=""):
 def quiet_hosts(api):
     """Hosts that talk to many devices by design: the Home Assistant host and the UniFi console."""
     h = ha_host_ids(api)
-    ctl = re.sub(r"^https?://", "", api.base).split("/")[0].split(":")[0]
+    ctl = controller_host(api)
     return set(h["ips"]) | set(h["macs"]) | {ctl}
 
 
@@ -1646,6 +1674,11 @@ def load_fw_settings():
 
 
 def save_fw_settings(body):
+    with SETTINGS_LOCK:  # read – change – write: two saves at once must not lose one
+        return _save_fw_settings(body)
+
+
+def _save_fw_settings(body):
     cur = load_fw_settings()
     if "zone_roles" in body:
         roles = {}
@@ -1669,7 +1702,7 @@ def save_fw_settings(body):
 
 # ---------------------------------------------------------------- versions
 def _write_json(path, data):
-    tmp = path + ".tmp"
+    tmp = f"{path}.{os.getpid()}.{threading.get_ident()}.tmp"  # parallel writers never share a temp file
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
     os.replace(tmp, path)
@@ -1764,6 +1797,11 @@ def device_history(mac):
     mac = normalize_mac(mac)
     if not mac:
         raise UnifiError("Invalid MAC.", 400)
+    with HIST_LOCK:  # the cache is shared by parallel requests
+        return _device_history(mac)
+
+
+def _device_history(mac):
     out, ids = [], set()
     for meta in sorted(_index(), key=lambda m: m.get("created", 0)):
         path = _vpath(meta["id"])
@@ -1841,16 +1879,16 @@ def ensure_daily():
 
 
 # ---------------------------------------------------------------- Home Assistant calls
-def ha_call(path, body):
-    """POST to the Home Assistant Core API through the Supervisor."""
+def ha_call(path, body, timeout=20, strict=False):
+    """POST to the Home Assistant Core API through the Supervisor. strict: an answer that is no JSON is an error."""
     token = supervisor_token()
     base = os.environ.get("HA_API", "http://supervisor/core/api")
     if not token and "HA_API" not in os.environ:
-        raise UnifiError("Home Assistant API is not available to the app.", 500)
+        raise UnifiError("Home Assistant API is not available to the app (update the app to grant access).", 500)
     req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",
                                  headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
     try:
-        raw = urllib.request.urlopen(req, timeout=20).read().decode()
+        raw = urllib.request.urlopen(req, timeout=timeout).read().decode()
     except urllib.error.HTTPError as e:
         raise UnifiError(f"Home Assistant API returned HTTP {e.code}.", 502)
     except (urllib.error.URLError, OSError) as e:
@@ -1858,6 +1896,8 @@ def ha_call(path, body):
     try:
         return json.loads(raw) if raw else {}
     except ValueError:
+        if strict:
+            raise UnifiError("Unexpected answer from Home Assistant.", 502)
         return {}
 
 
@@ -2030,7 +2070,8 @@ def save_rules(body):
         f, v, n = str(r.get("field") or ""), str(r.get("contains") or "").strip(), str(r.get("network_id") or "")
         if f in RULE_FIELDS and v and n:
             rules.append({"field": f, "contains": v[:60], "network_id": n})
-    _write_json(RULES_PATH, rules[:200])
+    with SETTINGS_LOCK:
+        _write_json(RULES_PATH, rules[:200])
     log("Rules saved:", len(rules))
     return {"rules": rules}
 
@@ -2288,13 +2329,19 @@ class Handler(BaseHTTPRequestHandler):
         # JSON only: a cross-site form cannot send application/json without a CORS preflight (CSRF defence)
         if not (self.headers.get("Content-Type") or "").lower().startswith("application/json"):
             raise UnifiError("Content-Type must be application/json.", 415)
-        n = int(self.headers.get("Content-Length") or 0)
-        if n > 100_000:
-            raise UnifiError("Request too large.", 400)
         try:
-            return json.loads(self.rfile.read(n) or b"{}")
+            n = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            raise UnifiError("Invalid Content-Length.", 400)
+        if n < 0 or n > 100_000:
+            raise UnifiError("Request too large." if n > 0 else "Invalid Content-Length.", 400)
+        try:
+            body = json.loads(self.rfile.read(n) or b"{}")
         except ValueError:
             raise UnifiError("Invalid JSON.", 400)
+        if not isinstance(body, dict):  # every endpoint expects an object
+            raise UnifiError("Invalid JSON.", 400)
+        return body
 
     def _route(self, method):
         if not self._allowed():
@@ -2376,8 +2423,6 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, save_rules(self._json_body()))
             if method == "POST" and path.endswith("/api/wol"):
                 return self._send(200, wake_on_lan(self._json_body()))
-            if method == "POST" and path.endswith("/api/check_new"):
-                return self._send(200, {"new": check_new_devices(API)})
             if method == "POST" and path.endswith("/api/port_vlan"):
                 return self._send(200, set_port_vlan(API, self._json_body(), self._user()))
             if method == "POST" and path.endswith("/api/device_cmd"):
