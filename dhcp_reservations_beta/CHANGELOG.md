@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.52.2
+
+- **Firewall matrix of the selection:** up to 30 devices (was 10). The devices are listed above as numbered pills; the matrix shows only the numbers, so it stays compact (scrolls sideways when needed). A small key explains ✓ ◐ ✕ ?.
+- **Click a cell** for the details in a small dialog – the same result as the test in the device details: summary, deciding rules (links) and the services as chips (*All ports open* / *All ports blocked* when they agree).
+
 ## 1.52.1
 
 - **Selection pane:** the summaries (connection, networks, virtual network override, internet access) are pills side by side in one card – much shorter. Order: summary, firewall matrix, actions at the bottom. The pane scrolls as a whole; the matrix keeps its full height on low windows.

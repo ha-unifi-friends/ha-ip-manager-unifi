@@ -1512,12 +1512,17 @@
  "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Klicke Geräte in der Tabelle oder Liste an, um sie auszuwählen. Hier erscheinen dann die Zusammenfassung, die Aktionen und eine kleine Firewall-Matrix.",
  "with fixed IP": "mit fixer IP",
  "Firewall between the selected devices": "Firewall zwischen den ausgewählten Geräten",
- "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ alles erlaubt · ✕ alles blockiert · ◐ teilweise · ? nicht entschieden – Ping und gängige Dienste, wie der Test in den Gerätedetails. Fahre über eine Zelle für die entscheidenden Regeln.",
- "Only the first 10 devices.": "Nur die ersten 10 Geräte.",
  "Zone default": "Zonen-Standard",
  "allowed": "erlaubt",
  "Selection": "Auswahl",
  "Select one device (details) or several (summary and changes for all)": "Ein Gerät auswählen (Details) oder mehrere (Zusammenfassung und Änderungen für alle)",
  "One device – its details": "Ein Gerät – seine Details",
- "Several devices – select them and change them together": "Mehrere Geräte – auswählen und gemeinsam ändern"
+ "Several devices – select them and change them together": "Mehrere Geräte – auswählen und gemeinsam ändern",
+ "From ↓ To →": "Von ↓ Nach →",
+ "all allowed": "alles erlaubt",
+ "partly": "teilweise",
+ "all blocked": "alles blockiert",
+ "not decided": "nicht entschieden",
+ "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Zeilen: von · Spalten: nach. Ping und gängige Dienste, wie der Test in den Gerätedetails – klicke eine Zelle für die Details an.",
+ "Only the first {0} devices.": "Nur die ersten {0} Geräte."
 }

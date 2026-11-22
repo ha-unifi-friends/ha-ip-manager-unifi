@@ -1512,12 +1512,17 @@
  "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Klick Grät i de Tabälle oder Liste aa zum uswähle. Da erschiined denn d Zämefassig, d Aktione und e chliini Firewall-Matrix.",
  "with fixed IP": "mit fixer IP",
  "Firewall between the selected devices": "Firewall zwüsche de usgwählte Grät",
- "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ alles erlaubt · ✕ alles blockiert · ◐ teilwiis · ? nöd entschide – Ping und gängigi Dienscht, wie de Test i de Grätdetails. Fahr über e Zälle für di entscheidende Regle.",
- "Only the first 10 devices.": "Nume di erschte 10 Grät.",
  "Zone default": "Zone-Standard",
  "allowed": "erlaubt",
  "Selection": "Uswahl",
  "Select one device (details) or several (summary and changes for all)": "Eis Grät uswähle (Details) oder mehreri (Zämefassig und Änderige für alli)",
  "One device – its details": "Eis Grät – sini Details",
- "Several devices – select them and change them together": "Mehreri Grät – uswähle und zäme ändere"
+ "Several devices – select them and change them together": "Mehreri Grät – uswähle und zäme ändere",
+ "From ↓ To →": "Vo ↓ Nach →",
+ "all allowed": "alles erlaubt",
+ "partly": "teilwiis",
+ "all blocked": "alles blockiert",
+ "not decided": "nöd entschide",
+ "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Zeile: vo · Spalte: nach. Ping und gängigi Dienscht, wie de Test i de Grätdetails – klick e Zälle für d Details aa.",
+ "Only the first {0} devices.": "Nume di erschte {0} Grät."
 }

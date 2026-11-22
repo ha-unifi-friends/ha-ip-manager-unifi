@@ -1512,12 +1512,17 @@
  "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Klicka på enheter i tabellen eller listan för att välja dem. Här visas sammanfattningen, åtgärderna och en liten brandväggsmatris.",
  "with fixed IP": "med fast IP",
  "Firewall between the selected devices": "Brandvägg mellan valda enheter",
- "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ allt tillåtet · ✕ allt blockerat · ◐ delvis · ? inte avgjort – ping och vanliga tjänster, som testet i enhetsdetaljerna. Hovra över en cell för reglerna.",
- "Only the first 10 devices.": "Bara de första 10 enheterna.",
  "Zone default": "Zonstandard",
  "allowed": "tillåtna",
  "Selection": "Urval",
  "Select one device (details) or several (summary and changes for all)": "Välj en enhet (detaljer) eller flera (sammanfattning och ändringar för alla)",
  "One device – its details": "En enhet – dess detaljer",
- "Several devices – select them and change them together": "Flera enheter – välj dem och ändra dem samtidigt"
+ "Several devices – select them and change them together": "Flera enheter – välj dem och ändra dem samtidigt",
+ "From ↓ To →": "Från ↓ Till →",
+ "all allowed": "allt tillåtet",
+ "partly": "delvis",
+ "all blocked": "allt blockerat",
+ "not decided": "inte avgjort",
+ "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Rader: från · kolumner: till. Ping och vanliga tjänster, som testet i enhetsdetaljerna – klicka på en cell för detaljer.",
+ "Only the first {0} devices.": "Bara de första {0} enheterna."
 }
