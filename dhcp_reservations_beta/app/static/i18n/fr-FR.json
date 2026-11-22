@@ -1503,5 +1503,9 @@
  "Zone default: {0}": "Défaut de zone : {0}",
  "Search devices and zones": "Rechercher appareils et zones",
  "all devices": "tous les appareils",
- "No match.": "Aucun résultat."
+ "No match.": "Aucun résultat.",
+ "Choose the target": "Choisir la cible",
+ "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Cliquez sur un appareil ou une zone entière (double-clic pour valider). Cliquez sur le nom d’une zone pour la replier.",
+ "All devices of the zone": "Tous les appareils de la zone",
+ "No devices": "Aucun appareil"
 }

@@ -509,7 +509,7 @@
  "In the field now": "Nu in het veld",
  "This device": "Dit apparaat",
  "– inside the DHCP pool": "– in de DHCP-pool",
- "Selected:": "Geselecteerd:",
+ "Selected:": "Gekozen:",
  "With a virtual network override, the fixed IP must be in {0}.": "Met een geforceerd virtueel netwerk moet het vaste IP in {0} liggen.",
  "Please choose an access point.": "Kies een access point.",
  "Please enter a valid MAC address (aa:bb:cc:dd:ee:ff).": "Voer een geldig MAC-adres in (aa:bb:cc:dd:ee:ff).",
@@ -1503,5 +1503,9 @@
  "Zone default: {0}": "Zonestandaard: {0}",
  "Search devices and zones": "Apparaten en zones zoeken",
  "all devices": "alle apparaten",
- "No match.": "Geen resultaat."
+ "No match.": "Geen resultaat.",
+ "Choose the target": "Doel kiezen",
+ "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Klik op een apparaat of een hele zone (dubbelklik neemt het direct over). Klik op een zonenaam om die in te klappen.",
+ "All devices of the zone": "Alle apparaten van de zone",
+ "No devices": "Geen apparaten"
 }

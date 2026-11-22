@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.51.1
+
+- **Target picker of the firewall test** opens as a dialog in the style of the IP picker: search at the top, *Internet*, then one box per zone with its devices (icon, name, IP) – side by side when there is room, below each other on narrow screens. Zones with devices come first. Every zone can be folded (open by default, remembered while the app is open); *All devices of the zone* selects the whole zone. Click selects, *OK* or a double-click takes it.
+
 ## 1.51.0
 
 - **Firewall test moved into the device details** (*Network check & link*, below *Ping*): "Firewall: may this device reach [target] – Check". The target picker has a search at the top and lists *Internet*, then every zone with its devices below (icon, name, IP); a zone stands for all its devices.

@@ -501,17 +501,27 @@ body:not(.rel-mode):not(.cards-mode) .topo-icons{display:none!important}
 .sim-pick{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:7px;width:100%;padding:5px 9px;border:1px solid var(--line-strong);border-radius:6px;background:var(--bg);cursor:pointer;font-size:13px;min-width:0;white-space:nowrap;overflow:hidden}
 .sim-pick:focus-visible{outline:2px solid var(--accent)}.sim-caret{margin-left:auto;color:var(--muted)}
 .sim-ic{flex:none;width:18px;height:18px;display:grid;place-items:center;font-size:13px;overflow:hidden}.sim-ic img,.sim-ic svg{max-width:18px;max-height:18px}
-.sim-pop{display:block;position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:40;background:var(--card);border:1px solid var(--line-strong);border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:6px;min-width:240px}
-.sim-pop[hidden]{display:none}
-.sim-pop input{width:100%;margin-bottom:6px}
-.sim-list{display:grid;max-height:300px;overflow:auto;display:grid;gap:1px}
-.sim-grp{display:grid;gap:1px;padding-top:4px;border-top:1px solid var(--line);margin-top:4px}
-.sim-grp>.sim-it:first-child{font-weight:600}
-.sim-grp>.sim-it:not(:first-child){padding-left:22px}
-.sim-it{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;min-width:0}
-.sim-it:hover,.sim-it:focus-visible{background:var(--hover)}.sim-it.on{background:color-mix(in srgb,var(--accent) 18%,transparent)}
 .sim-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sim-sub{margin-left:auto;font-size:11.5px;flex:none}
-.sim-none{padding:8px}
+/* target picker: zones side by side when there is room, below each other when not */
+dialog#dlgSimTo{border:1px solid var(--line-strong);border-radius:12px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
+dialog#dlgSimTo::backdrop{background:rgba(8,10,14,.55)}
+dialog#dlgSimTo .imp-body{overflow:auto;padding:12px 18px 18px;display:grid;gap:10px}
+.st-q{flex:1 1 200px;max-width:320px;margin-left:auto}
+.st-top{display:flex}
+.st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;align-items:start}
+.st-zone{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px 6px 6px}
+.st-zone>summary{display:flex;align-items:center;gap:8px;padding:6px 6px;cursor:pointer;list-style:none;font-weight:600}
+.st-zone>summary::-webkit-details-marker{display:none}
+.st-zone>summary .fm-chev{margin-left:auto;width:auto;height:auto;font-size:14px}
+.st-zone:not([open])>summary .fm-chev{transform:rotate(-90deg)}
+.st-cnt{font-weight:400;font-size:12px}
+.st-it{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;min-width:0}
+.st-it:hover,.st-it:focus-visible{background:var(--hover)}
+.st-it.on{background:color-mix(in srgb,var(--accent) 22%,transparent);outline:1px solid var(--accent)}
+.st-it.st-all{color:var(--muted);font-style:italic}
+.st-it.st-inet{width:auto;border:1px solid var(--line-strong);padding:7px 14px;font-weight:600}
+.st-none{padding:4px 8px;font-size:12px}
+#simToSel{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
 /* bulk changes */
 .bulk-bar{position:sticky;bottom:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0;padding:8px 12px;border-top:2px solid var(--accent);background:var(--panel);box-shadow:0 -6px 18px rgba(0,0,0,.25);order:9}
 .bulk-bar[hidden]{display:none}
@@ -1413,6 +1423,19 @@ window.I18N = (() => {
     <div class="err" id="nameErr" hidden></div>
     <div class="actions"><button class="btn" type="button" id="nameCancel">Cancel</button><button class="btn primary" type="submit">Save</button></div>
   </form>
+</dialog>
+<dialog id="dlgSimTo" aria-labelledby="simToTitle">
+  <div class="imp">
+    <div class="imp-head"><h2 id="simToTitle">Choose the target</h2><input type="search" id="simQ" class="st-q" placeholder="Search devices and zones" autocomplete="off"><button class="x link" type="button" id="simToClose" aria-label="Close" style="color:var(--muted)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="imp-body">
+      <div class="hint">Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.</div>
+      <div id="simToBody"></div>
+    </div>
+    <div class="imp-foot">
+      <div class="notes"><span class="hint" id="simToSel"></span></div>
+      <button class="btn" type="button" id="simToCancel">Cancel</button><button class="btn primary" type="button" id="simToOk">OK</button>
+    </div>
+  </div>
 </dialog>
 <dialog id="dlgPick" aria-labelledby="pickTitle">
   <div class="imp">
@@ -3407,17 +3430,37 @@ function simTargetLabel(v) {
   if (v.startsWith("zone:")) return `<span class="sim-ic">▦</span><span translate="no">${esc(fwZoneName(v.slice(5)))}</span> <span class="muted">(<span>all devices</span>)</span>`;
   const d = devByMac(v.slice(4)); return d ? `<span class="sim-ic">${devIconHtml(d, store.get("topoIcon", "ha")) || iconHtml(d)}</span><span translate="no">${esc(devName(d))}</span>` : "?";
 }
+const SIMTO = { sel: "", fold: new Set() };
 function simListHtml(c, q) {
-  const ext = fwZoneByKey("external"), t = q.trim().toLowerCase(), hit = s => !t || String(s || "").toLowerCase().includes(t);
-  const item = (v, ic, label, sub) => `<button type="button" class="sim-it${SIM.dst === v ? " on" : ""}" data-simto="${esc(v)}"><span class="sim-ic">${ic}</span><span class="sim-n" translate="no">${label}</span>${sub ? `<span class="sim-sub muted"${/^\d+ device/.test(sub) ? "" : ' translate="no"'}>${sub}</span>` : ""}</button>`;
-  let h = ext && hit("internet") ? item("zone:" + ext.id, "🌐", "Internet", "") : "";
-  for (const z of fwZones().filter(z => z.id !== ext?.id)) {
+  const ext = fwZoneByKey("external"), t = q.trim().toLowerCase(), hit = v => !t || String(v || "").toLowerCase().includes(t);
+  const ic = d => devIconHtml(d, store.get("topoIcon", "ha")) || iconHtml(d);
+  const item = (v, icon, label, sub, cls = "") => `<button type="button" class="st-it ${cls}${SIMTO.sel === v ? " on" : ""}" data-simto="${esc(v)}"><span class="sim-ic">${icon}</span><span class="sim-n" translate="no">${label}</span>${sub ? `<span class="sim-sub muted" translate="no">${sub}</span>` : ""}</button>`;
+  const inet = ext && hit("internet") ? `<div class="st-top">${item("zone:" + ext.id, "🌐", "Internet", "", "st-inet")}</div>` : "";
+  const zs = fwZones().filter(z => z.id !== ext?.id), nDev = z => simDevs(z.id).filter(d => d.mac !== c.mac).length;
+  const cols = [...zs.filter(nDev), ...zs.filter(z => !nDev(z))].map(z => {
     const ds = simDevs(z.id).filter(d => d.mac !== c.mac), zHit = hit(z.name), list = zHit ? ds : ds.filter(d => hit(devName(d)) || hit(d.ip));
-    if (!zHit && !list.length) continue;
-    h += `<div class="sim-grp">${item("zone:" + z.id, "▦", esc(z.name), `${ds.length} ${ds.length === 1 ? "device" : "devices"}`)}${list.map(d => item("dev:" + d.mac, devIconHtml(d, store.get("topoIcon", "ha")) || iconHtml(d), esc(devName(d)), esc(d.ip || ""))).join("")}</div>`;
-  }
-  return h || `<p class="muted sim-none">No match.</p>`;
+    if (!zHit && !list.length) return "";
+    const open = t ? true : !SIMTO.fold.has(z.id); // while searching everything is open
+    return `<details class="st-zone" data-zone="${esc(z.id)}" ${open ? "open" : ""}><summary><span class="st-zn" translate="no">${esc(z.name)}</span><span class="muted st-cnt">${ds.length}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
+      ${item("zone:" + z.id, "▦", esc(I18N.tr("All devices of the zone")), "", "st-all")}${list.map(d => item("dev:" + d.mac, ic(d), esc(devName(d)), esc(d.ip || ""))).join("") }</details>`;
+  }).join("");
+  return inet + (cols ? `<div class="st-grid">${cols}</div>` : "") || `<p class="muted st-none">No match.</p>`;
 }
+function simToOpen() {
+  SIMTO.sel = SIM.dst; $("#simQ").value = ""; simToRender(); $("#dlgSimTo").showModal(); $("#simQ").focus();
+}
+function simToRender() {
+  $("#simToBody").innerHTML = simListHtml(state.sel, $("#simQ").value);
+  $("#simToSel").innerHTML = SIMTO.sel ? `<span>Selected:</span> ${simTargetLabel(SIMTO.sel)}` : "";
+}
+function simToApply() { if (SIMTO.sel) { SIM.dst = SIMTO.sel; SIM.res = null; } $("#dlgSimTo").close(); simRefresh(); }
+$("#simQ").addEventListener("input", simToRender);
+$("#simToClose").addEventListener("click", () => $("#dlgSimTo").close());
+$("#simToCancel").addEventListener("click", () => $("#dlgSimTo").close());
+$("#simToOk").addEventListener("click", simToApply);
+$("#simToBody").addEventListener("click", e => { const b = e.target.closest("[data-simto]"); if (!b) return; SIMTO.sel = b.dataset.simto; for (const x of $("#simToBody").querySelectorAll(".st-it")) x.classList.toggle("on", x === b); $("#simToSel").innerHTML = `<span>Selected:</span> ${simTargetLabel(SIMTO.sel)}`; });
+$("#simToBody").addEventListener("dblclick", e => { const b = e.target.closest("[data-simto]"); if (b) { SIMTO.sel = b.dataset.simto; simToApply(); } });
+$("#simToBody").addEventListener("toggle", e => { const d = e.target.closest?.(".st-zone"); if (!d || $("#simQ").value.trim()) return; d.open ? SIMTO.fold.delete(d.dataset.zone) : SIMTO.fold.add(d.dataset.zone); }, true);
 // common services: one result chip each, like the port check
 const SIM_SVCS = [["Ping", "icmp", null], ["Web", "tcp", 80], ["HTTPS", "tcp", 443], ["DNS", "udp", 53], ["NTP", "udp", 123], ["SSH", "tcp", 22], ["SMB", "tcp", 445], ["RTSP", "tcp", 554], ["MQTT", "tcp", 1883], ["Home Assistant", "tcp", 8123]];
 // the decision for one service; without a deciding rule the zone default of the pair counts (Allow Return = blocked for new connections)
@@ -3430,8 +3473,7 @@ function simDevHtml(c) {
   if (!FW.data || !zoneOf(c)) return "";
   if (SIM.for !== c.mac) { SIM.for = c.mac; SIM.res = null; }
   if (!SIM.dst) SIM.dst = "zone:" + (fwZoneByKey("external")?.id || "");
-  const picker = `<span class="sim-to"><button type="button" class="sim-pick" id="simPickBtn" aria-haspopup="listbox" aria-expanded="false">${simTargetLabel(SIM.dst)}<span class="sim-caret" aria-hidden="true">▾</span></button>
-      <span class="sim-pop" id="simPop" hidden><input type="search" id="simQ" placeholder="Search devices and zones" autocomplete="off"><span class="sim-list" id="simList"></span></span></span>`;
+  const picker = `<span class="sim-to"><button type="button" class="sim-pick" id="simPickBtn" aria-haspopup="dialog">${simTargetLabel(SIM.dst)}<span class="sim-caret" aria-hidden="true">▾</span></button></span>`;
   const btn = `<button class="btn" type="button" id="simGo">${SIM.res ? "Check again" : "Check"}</button>`;
   const r = SIM.res;
   if (!r) return `<div class="foot sim-dev"><span>Firewall: may this device reach</span>${picker}${btn}</div>`;
@@ -3453,18 +3495,10 @@ function runSim() {
   SIM.res = SIM_SVCS.map(([name, proto, port]) => ({ name, port, r: simService(sz, b.zone, c, b.dev, proto, port) }));
   simRefresh();
 }
-function simPop(open) {
-  const p = $("#simPop"); if (!p) return; p.hidden = !open; $("#simPickBtn")?.setAttribute("aria-expanded", String(open));
-  if (open) { $("#simQ").value = ""; $("#simList").innerHTML = simListHtml(state.sel, ""); $("#simQ").focus(); $("#simList .sim-it.on")?.scrollIntoView({ block: "nearest" }); }
-}
 document.addEventListener("click", e => {
   if (e.target.closest("#simGo")) { runSim(); return; }
-  if (e.target.closest("#simPickBtn")) { simPop($("#simPop").hidden); return; }
-  const it = e.target.closest("[data-simto]"); if (it) { SIM.dst = it.dataset.simto; SIM.res = null; simRefresh(); return; }
-  if (!e.target.closest("#simPop") && $("#simPop") && !$("#simPop").hidden) simPop(false);
+  if (e.target.closest("#simPickBtn")) { simToOpen(); return; }
 });
-document.addEventListener("input", e => { if (e.target.id === "simQ") $("#simList").innerHTML = simListHtml(state.sel, e.target.value); });
-document.addEventListener("keydown", e => { if (e.key === "Escape" && $("#simPop") && !$("#simPop").hidden) { e.stopPropagation(); simPop(false); } }, true);
 const FW_LVL = { full: ["Allowed", "allow"], partial: ["Partly allowed", "part"], ret: ["Replies only", "ret"], none: ["Blocked", "block"], "": ["Unknown", "none"] };
 const fwLvlTag = (lvl, extra) => `<span class="fw-lvl ${FW_LVL[lvl][1]}">${FW_LVL[lvl][0]}${extra ? ` <span>${extra}</span>` : ""}</span>`;
 const fwInternet = c => fwDecide(zoneOf(c)?.id, fwZoneByKey("external")?.id, c, null);
