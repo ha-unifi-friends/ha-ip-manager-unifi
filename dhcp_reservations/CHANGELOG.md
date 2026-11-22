@@ -1,5 +1,37 @@
 # Changelog
 
+## 2.0.0 – 2026-11-22
+
+The big update from the beta channel (beta 1.31 – 1.45): firewall, topology and much more device detail.
+
+**Firewall** (new menu item next to *Clients* and *IP Plan*, needs the zone-based firewall of UniFi Network 9+)
+- **Zone matrix** like in UniFi (Allow All, Block All, Allow Return and the number of custom policies per zone pair) and a **policy list** with Hits, Last Hit and Logging; zones with their networks and devices in the sidebar.
+- **Rule chain** of a zone pair: which rule decides first, rules that never apply, redundant rules. **Change the order** and save it in UniFi (needs the new option `api_key`; a version is saved first).
+- **Add firewall rule**: a guided wizard (allow / block, from, to, traffic, check) – also from a client's settings.
+- **Analysis**: device types, zone roles, checks per device, consistency of similar devices, zone and VLAN structure, recommendations, segmentation and tidiness score.
+- **IP changes check the firewall** (edit panel, inline edit, CleanUp, Replace subnet, CSV import, Restore): a warning when a policy uses the old IP, the new IP falls under a policy or the device moves to another zone.
+- Versions also store zones and policies; *Compare* shows what changed.
+
+**Clients: List, Tree and Graph**
+- *Clients* has three tabs: **List** (the table), **Tree** (topology like in UniFi: Internet → gateway → switches → access points → clients, with ports and mesh) and **Graph** (a live force graph like Home Assistant's Zigbee map, auto zoom, labels on / off). All three use the same filters; with a filter the topology shows the matching devices and everything on the way to the internet (purple).
+- Icons in Tree and Graph: off, UniFi or Home Assistant (HA by default, UniFi icon as fallback).
+- New built-in view **Online**; new column and filter **Firewall zone**, **Port VLAN** and **Firewall blocks (24 h)**.
+
+**Device details**
+- **Internet access chain** (*Client → External*): the rules of the device's zone and the rules that name it, in UniFi's order, with the decision ✓ / ✕ – collapsed to one line, paused and special rules bypassed.
+- **Firewall** section (collapsible): zone, *Reaches* / *Reachable from*, what applies zone by zone, paused rules.
+- Blocked connection attempts and scans of the last 24 hours as pills.
+- **Wired devices:** switch and port with a switch view, the **port VLAN** – and it can be changed; warning when a virtual network override cannot work on that port.
+- **WiFi clients:** *Reconnect*. **Access points and switches:** *Locate*, *Restart*, *Disable*.
+- Optional Home Assistant notification about suspicious traffic (*Actions* menu).
+
+**App**
+- Own **AppArmor profile** (better security rating in Home Assistant).
+- After a controller error (HTTP 5xx) the app logs in again and retries instead of needing a restart.
+- Phones: compact header with the menu, tabs and actions in two rows.
+- IP plan: CleanUp starts with *Grouped by HA integration*.
+- License: PolyForm Noncommercial 1.0.0 (free for personal and other noncommercial use).
+
 ## 1.30.0 – 2026-11-01
 
 - **New standard views** in *Clients* (view menu): **Problems** (problems, IP ≠ fixed IP, not in override VLAN, duplicates, wrong network), **New devices** (first seen in the last 7 days, newest first), **Offline with fixed IP** (reservations of devices that are gone, oldest first), **Home Assistant** (devices known to HA, errors first) and **WiFi** (SSID, AP, AP lock, VLAN).

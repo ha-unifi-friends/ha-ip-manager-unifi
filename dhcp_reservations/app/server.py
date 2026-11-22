@@ -31,6 +31,7 @@ KNOWN_PATH = os.environ.get("KNOWN_PATH", "/data/known_devices.json")
 RULES_PATH = os.environ.get("RULES_PATH", "/data/rules.json")
 SCANS_PATH = os.environ.get("SCANS_PATH", "/data/portscans.json")
 VENDORS_PATH = os.environ.get("VENDORS_PATH", "/data/vendors.json")
+FW_SETTINGS_PATH = os.environ.get("FW_SETTINGS_PATH", "/data/fw_settings.json")
 VENDOR_API = os.environ.get("VENDOR_API", "https://api.macvendors.com/")
 KNOWN_LOCK = threading.Lock()
 VENDOR_LOCK = threading.Lock()
@@ -172,11 +173,15 @@ class Unifi:
         self.csrf = ""
         self.lock = threading.Lock()
         self.logged_in = False
+        self.api_key = str(opts.get("api_key") or "").strip()
+        self.int_site = None
 
-    def _raw(self, method, path, body=None, timeout=20):
+    def _raw(self, method, path, body=None, timeout=20, headers=None):
         data = json.dumps(body).encode() if body is not None else None
         req = urllib.request.Request(self.base + path, data=data, method=method)
         req.add_header("Accept", "application/json")
+        for k, v in (headers or {}).items():
+            req.add_header(k, v)
         if data is not None:
             req.add_header("Content-Type", "application/json")
         if self.csrf:
@@ -253,6 +258,29 @@ class Unifi:
             log(f'Using site "{hit.get("name")}" ({hit.get("desc")})')
         self.site = hit.get("name")
 
+    def integration(self, method, path, body=None):
+        """Official Network Integration API (/proxy/network/integration/v1/sites/<uuid>…): with the API key from the
+        configuration, otherwise with the login session. Returns (status, payload)."""
+        hdr = {"X-API-KEY": self.api_key} if self.api_key else None
+        with self.lock:
+            if not self.logged_in:
+                self.login()
+            if not self.int_site:
+                st, res = self._raw("GET", "/proxy/network/integration/v1/sites?limit=200", headers=hdr)
+                if st in (401, 403):
+                    raise UnifiError("The UniFi Integration API refused access (HTTP %d)." % st, 400,
+                                     "Create an API key in UniFi Network › Settings › Control Plane › Integrations and enter it as "
+                                     "api_key. " + CONFIG_PATH_HINT)
+                data = res.get("data") if isinstance(res, dict) else None
+                self.int_site = next((x.get("id") for x in data or [] if isinstance(x, dict) and x.get("internalReference") == self.site), None)
+                if not self.int_site:
+                    raise UnifiError("Site not found in the UniFi Integration API.", 502)
+            st, res = self._raw(method, f"/proxy/network/integration/v1/sites/{self.int_site}{path}", body, headers=hdr)
+        if st in (401, 403):
+            raise UnifiError("The UniFi Integration API refused access (HTTP %d)." % st, 400,
+                             "Create an API key in UniFi Network › Settings › Control Plane › Integrations and enter it as api_key. " + CONFIG_PATH_HINT)
+        return st, res
+
     def call(self, method, path, body=None, v2=False, timeout=20):
         site = urllib.parse.quote(self.site, safe="")
         full = (f"/proxy/network/v2/api/site/{site}{path}" if v2
@@ -262,6 +290,14 @@ class Unifi:
                 self.login()
             status, payload = self._raw(method, full, body, timeout)
             if status in (401, 403):
+                self.login()
+                status, payload = self._raw(method, full, body, timeout)
+            elif status >= 500:
+                # a server error can stick to a stale session (e.g. right after an app or console update): log in
+                # again and retry once instead of failing until the app is restarted
+                log(f"Controller returned HTTP {status} for {method} {path} – logging in again and retrying")
+                time.sleep(1)
+                self.logged_in = False
                 self.login()
                 status, payload = self._raw(method, full, body, timeout)
         if isinstance(payload, list):
@@ -348,6 +384,33 @@ def build_snapshot(api):
         if not mac:
             continue
         rows[mac] = merge_device(rows.get(mac) or merge({}, {}, {}), d, nets)
+    try:
+        profiles = {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
+    except UnifiError as e:
+        log("Port profiles not available:", e)
+        profiles = {}
+    by_mac = {(d.get("mac") or "").lower(): d for d in devs if d.get("mac")}
+    default_net = next((n["id"] for n in nets if n.get("purpose") == "corporate" and n.get("vlan") is None), "")
+    for r in rows.values():
+        if r.get("conn") != "wired" or r.get("is_device"):
+            continue
+        # why the port is unknown, shown in the details: no switch reported, a switch that is not adopted here, no port number
+        if not r.get("sw_mac"):
+            r["port_why"] = "no_switch"
+        elif r["sw_mac"] not in by_mac:
+            r["port_why"] = "unknown_switch"
+        elif not r.get("port"):
+            r["port_why"] = "no_port"
+        else:
+            r["port_vlan"] = port_vlan(by_mac[r["sw_mac"]], r["port"], profiles, default_net)
+    switches = {}
+    for d in devs:
+        pt = [p for p in d.get("port_table") or [] if isinstance(p, dict) and p.get("port_idx") is not None]
+        kind = DEVICE_KIND.get(str(d.get("type", "")), "device")
+        if not d.get("mac") or not pt or (kind not in ("switch", "gateway") and len(pt) < 4):
+            continue
+        switches[d["mac"].lower()] = {"mac": d["mac"].lower(), "name": d.get("name") or d["mac"], "model": d.get("model") or "",
+                                      "ports": [switch_port(p) for p in sorted(pt, key=lambda p: int(p.get("port_idx") or 0))]}
     aps = sorted(({"mac": d["mac"].lower(), "name": d.get("name") or d["mac"]}
                   for d in devs if d.get("mac") and str(d.get("type", "")).startswith("uap")
                   and str(d.get("device_category") or "ap") == "ap"),
@@ -355,9 +418,133 @@ def build_snapshot(api):
     return {
         "networks": nets,
         "aps": aps,
+        "switches": switches,
         "clients": sorted(rows.values(), key=lambda r: (r["name"] or r["hostname"] or r["mac"]).lower()),
         "fetched_at": int(time.time()),
     }
+
+
+def port_vlan(dev, idx, profiles, default_net):
+    """VLAN setup of one switch port: the native (untagged) network and which networks are tagged.
+    A port override wins; it may point to a port profile. Without an override UniFi uses the default network, all tagged.
+    Older UniFi versions describe it with "forward" (all / native / customize / disabled)."""
+    try:
+        idx = int(idx)
+    except (TypeError, ValueError):
+        return None
+    ov = next((o for o in dev.get("port_overrides") or [] if str(o.get("port_idx")) == str(idx)), None)
+    pt = next((p for p in dev.get("port_table") or [] if str(p.get("port_idx")) == str(idx)), {}) or {}
+    src, prof = ("override", None) if ov else ("default", None)
+    cfg = dict(ov or {})
+    pid = cfg.get("portconf_id") or (pt.get("portconf_id") if not ov else None)
+    builtin = pid in profiles and (profiles[pid].get("attr_no_delete") or str(profiles[pid].get("name") or "").lower() in ("all", "default"))
+    if pid and pid in profiles and not builtin:  # a port profile decides the VLANs of the port (UniFi's "All" is the default, no real profile)
+        prof = profiles[pid]
+        cfg = {**prof, **{k: v for k, v in cfg.items() if k in ("name", "port_idx")}}
+        src = "profile"
+    fwd = str(cfg.get("forward") or "").lower()
+    native = cfg.get("native_networkconf_id") or ""
+    mgmt = str(cfg.get("tagged_vlan_mgmt") or "").lower()
+    tagged_ids, excluded = list(cfg.get("tagged_networkconf_ids") or []), list(cfg.get("excluded_networkconf_ids") or [])
+    if fwd == "disabled":
+        tagged = "disabled"
+    elif mgmt in ("block_all", "custom", "auto"):
+        tagged = {"block_all": "none", "custom": "custom", "auto": "all"}[mgmt]
+    elif fwd == "native":
+        tagged = "none"
+    elif fwd == "customize":
+        tagged = "custom"
+    else:
+        tagged = "all"
+    return {"switch": dev.get("name") or dev.get("mac") or "", "switch_mac": (dev.get("mac") or "").lower(), "port": idx,
+            "port_name": (ov or {}).get("name") or pt.get("name") or "", "native": native or default_net,
+            "native_default": not native, "tagged": tagged, "tagged_ids": tagged_ids, "excluded_ids": excluded,
+            "source": src, "profile": (prof or {}).get("name") or ""}
+
+
+def switch_port(p):
+    """One port of a switch for the port view: link, speed, PoE, uplink."""
+    poe = bool(p.get("port_poe"))
+    try:
+        watts = round(float(p.get("poe_power") or 0), 2) if poe else 0
+    except (TypeError, ValueError):
+        watts = 0
+    return {"idx": int(p.get("port_idx")), "name": p.get("name") or "", "up": bool(p.get("up")), "speed": int(p.get("speed") or 0),
+            "enabled": p.get("enable") is not False, "poe": poe, "poe_w": watts, "uplink": bool(p.get("is_uplink")),
+            "sfp": bool(p.get("sfp_found")) or str(p.get("media") or "").upper().startswith("SFP")}
+
+
+def set_port_vlan(api, body, user=""):
+    """Change the native (untagged) network of one switch port – UniFi "Native VLAN / Network" of the port.
+    Refused for uplink ports, ports with a UniFi device behind them (it would lose its controller) and ports that use a
+    port profile (the profile decides there). A version is saved first; the other settings of the port are kept."""
+    sw_mac, native = str(body.get("switch_mac") or "").lower(), str(body.get("native_id") or "")
+    try:
+        idx = int(body.get("port"))
+    except (TypeError, ValueError):
+        raise UnifiError("Unknown port.", 400)
+    nets = {n["_id"]: n for n in api.call("GET", "/rest/networkconf")}
+    if native not in nets or nets[native].get("purpose") == "wan":
+        raise UnifiError("Unknown network.", 400)
+    devs = api.call("GET", "/stat/device")
+    dev = next((d for d in devs if (d.get("mac") or "").lower() == sw_mac), None)
+    if not dev or not dev.get("_id"):
+        raise UnifiError("The switch was not found – reload and try again.", 409)
+    pt = next((p for p in dev.get("port_table") or [] if str(p.get("port_idx")) == str(idx)), None)
+    if pt is None:
+        raise UnifiError(f"Port {idx} does not exist on {dev.get('name') or sw_mac}.", 400)
+    if pt.get("is_uplink"):
+        raise UnifiError(f"Port {idx} is the uplink of {dev.get('name') or sw_mac} – changing it would cut the switch off.", 400)
+    behind = [d.get("name") or d.get("mac") for d in devs if ((d.get("uplink") or d.get("last_uplink") or {}).get("uplink_mac") or "").lower() == sw_mac
+              and str((d.get("uplink") or d.get("last_uplink") or {}).get("uplink_remote_port")) == str(idx)]
+    if behind:
+        raise UnifiError(f"{', '.join(behind)} is connected to port {idx} – a UniFi device would lose its controller. Change it in UniFi.", 400)
+    ovs = [dict(o) for o in dev.get("port_overrides") or []]
+    ov = next((o for o in ovs if str(o.get("port_idx")) == str(idx)), None)
+    try:
+        profiles = {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
+    except UnifiError:
+        profiles = {}
+    pid = (ov or {}).get("portconf_id") or (pt.get("portconf_id") if not ov else None)
+    prof = profiles.get(pid) if pid else None
+    # UniFi's built-in "All" profile is what a port without own settings uses – that is no real profile
+    if prof and not (prof.get("attr_no_delete") or str(prof.get("name") or "").lower() in ("all", "default")):
+        raise UnifiError(f"Port {idx} uses the port profile “{prof.get('name')}” – change the profile or the port in UniFi.", 400)
+    if ov is not None and pid:
+        ov.pop("portconf_id", None)
+    if ov is None:
+        ov = {"port_idx": idx, "op_mode": "switch", "tagged_vlan_mgmt": "auto"}
+        ovs.append(ov)
+    old = ov.get("native_networkconf_id") or ""
+    ov["native_networkconf_id"] = native
+    ver = create_version(api, "auto", f"Before port VLAN {dev.get('name') or sw_mac} port {idx} → {nets[native].get('name')}", user)
+    api.call("PUT", f"/rest/device/{urllib.parse.quote(str(dev['_id']), safe='')}", {"port_overrides": ovs})
+    log("Port VLAN changed:", dev.get("name") or sw_mac, "port", idx, old or "(default)", "->", nets[native].get("name"))
+    return {"ok": True, "version": ver["id"]}
+
+
+def device_cmd(api, body):
+    """Locate (LED blinks), restart, disable / enable an adopted access point or switch – like the buttons in UniFi.
+    Not for the gateway (a restart cuts Home Assistant off too); switches cannot be disabled here (whole parts of the network)."""
+    mac, action = clean_mac(body.get("mac")), str(body.get("action") or "")
+    dev = next((d for d in api.call("GET", "/stat/device") if (d.get("mac") or "").lower() == mac), None)
+    if not dev:
+        raise UnifiError("The UniFi device was not found – reload and try again.", 409)
+    kind = DEVICE_KIND.get(str(dev.get("type", "")), "device")
+    if kind not in ("ap", "switch"):
+        raise UnifiError("Only access points and switches can be controlled here.", 400)
+    if action in ("locate", "unlocate"):
+        api.call("POST", "/cmd/devmgr", {"cmd": "set-locate" if action == "locate" else "unset-locate", "mac": mac})
+    elif action == "restart":
+        api.call("POST", "/cmd/devmgr", {"cmd": "restart", "mac": mac, "reboot_type": "soft"})
+    elif action in ("disable", "enable"):
+        if kind != "ap":
+            raise UnifiError("Only access points can be disabled here.", 400)
+        api.call("PUT", f"/rest/device/{urllib.parse.quote(str(dev['_id']), safe='')}", {"disabled": action == "disable"})
+    else:
+        raise UnifiError("Unknown action.", 400)
+    log("Device", action + ":", dev.get("name") or mac)
+    return {"ok": True}
 
 
 DEVICE_KIND = {"uap": "ap", "usw": "switch", "udm": "gateway", "ugw": "gateway", "uxg": "gateway", "usg": "gateway"}
@@ -392,6 +579,13 @@ def merge_device(row, d, nets):
         "conn": "wifi" if wireless else "wired",
         "wired": not wireless,
         "uplink": up.get("uplink_device_name") or up.get("name") or "",
+        "sw_mac": (up.get("uplink_mac") or "").lower() if not wireless else "",
+        # the device it hangs on for the topology – also over WiFi (mesh)
+        "up_mac": (up.get("uplink_mac") or "").lower(),
+        "up_wireless": wireless,
+        "dev_id": d.get("_id") or "",
+        "locating": bool(d.get("locating")),
+        "dev_disabled": bool(d.get("disabled")),
         "port": up.get("uplink_remote_port") or up.get("port_idx") if not wireless else None,
         "essid": "",
         "last_seen": d.get("last_seen") or row.get("last_seen") or 0,
@@ -434,6 +628,7 @@ def merge(u, s, a=None):
     return {
         "conn": conn,
         "port": port if conn == "wired" else None,
+        "sw_mac": (s.get("sw_mac") or a.get("sw_mac") or a.get("uplink_mac") or "").lower() if conn == "wired" else "",
         "id": u.get("_id") or s.get("user_id") or s.get("_id"),
         "known": bool(u.get("_id")),
         "mac": (u.get("mac") or s.get("mac") or "").lower(),
@@ -743,6 +938,24 @@ def ha_host():
     return _HA_HOST["v"]
 
 
+HA_HOST_NAME = re.compile(r"^(homeassistant|home-assistant|hassio|hass)(\.|$)", re.I)
+
+
+def ha_host_ids(api):
+    """IPs and MACs of the Home Assistant host: from the Supervisor, otherwise the UniFi clients named like it."""
+    h = ha_host()
+    ips, macs = list(h.get("ips") or []), list(h.get("macs") or [])
+    if not ips and api:
+        try:
+            for c in build_snapshot(api)["clients"]:
+                if any(HA_HOST_NAME.match(str(c.get(k) or "").strip()) for k in ("name", "hostname")):
+                    ips += [x for x in (c.get("fixed_ip"), c.get("ip")) if x]
+                    macs += [c["mac"]] if c.get("mac") else []
+        except UnifiError:
+            pass
+    return {"ips": sorted(set(ips)), "macs": sorted(set(macs))}
+
+
 def ha_status(d):
     """ok | partial | unavailable | error | disabled | unknown – how the device looks in Home Assistant."""
     if d.get("disabled"):
@@ -792,6 +1005,666 @@ def ha_info(c, devs):
 def normalize_mac(v):
     h = re.sub(r"[^0-9a-f]", "", str(v or "").lower())
     return ":".join(h[i:i + 2] for i in range(0, 12, 2)) if len(h) == 12 else None
+
+
+# ---------------------------------------------------------------- firewall (zone-based, read only)
+# UniFi Network 9+ groups networks into zones; policies allow or block traffic between two zones.
+# Read through the same internal v2 API the UniFi UI uses. Nothing here writes to the firewall.
+FW_POLICY_KEYS = ("name", "description", "enabled", "action", "predefined", "index", "ip_version", "protocol",
+                  "connection_state_type", "connection_states", "create_allow_respond", "logging",
+                  "match_opposite_protocol", "icmp_typename", "icmp_v6_typename", "match_ip_sec",
+                  "hits", "last_hit")  # hits / last_hit (epoch ms): UniFi's counters, also without logging
+FW_HINT = ("The zone-based firewall needs UniFi Network 9.0 or later (Settings › Security › Firewall). "
+           "The UniFi account also needs permission to view the firewall settings.")
+
+
+def _fw_scalar(v):
+    return v is None or isinstance(v, (str, int, float, bool))
+
+
+def _fw_endpoint(e):
+    """Source or destination of a policy: plain values and lists of plain values (zone_id, matching_target,
+    ips, client_macs, network_ids, web_domains, port, ip_group_id …) – field names as UniFi sends them."""
+    out = {}
+    for k, v in (e or {}).items() if isinstance(e, dict) else ():
+        if _fw_scalar(v):
+            out[k] = v
+        elif isinstance(v, list) and all(_fw_scalar(x) for x in v):
+            out[k] = v[:500]
+    return out
+
+
+def fw_policy(p):
+    out = {"id": p.get("_id") or p.get("id") or ""}
+    for k in FW_POLICY_KEYS:
+        if k in p and (_fw_scalar(p[k]) or isinstance(p[k], list)):
+            out[k] = p[k]
+    sch = p.get("schedule")
+    if isinstance(sch, dict):
+        out["schedule"] = {k: v for k, v in sch.items() if _fw_scalar(v) or isinstance(v, list)}
+    out["source"] = _fw_endpoint(p.get("source"))
+    out["destination"] = _fw_endpoint(p.get("destination"))
+    return out
+
+
+def fw_zone(z):
+    return {"id": z.get("_id") or z.get("id") or "", "name": z.get("name") or "?", "key": z.get("zone_key") or "",
+            "default": bool(z.get("default_zone")), "network_ids": [str(x) for x in z.get("network_ids") or []],
+            "role_guess": _zone_role_guess(z.get("name"), z.get("zone_key") or "")}
+
+
+FW_OFF_HINT = ("Switch it on in UniFi Network › Settings › Security › Firewall (“Upgrade to zone-based firewall”). "
+               "UniFi converts the classic rules; afterwards this page shows zones and policies.")
+
+
+def _legacy_rule_count(api):
+    try:
+        return len(api.call("GET", "/rest/firewallrule"))
+    except UnifiError:
+        return None
+
+
+_FW_MODE = {"t": 0, "v": ""}
+
+
+def firewall_mode(api):
+    if time.time() - _FW_MODE["t"] < 600:
+        return _FW_MODE["v"]
+    _FW_MODE.update(t=time.time(), v=_firewall_mode(api))
+    return _FW_MODE["v"]
+
+
+def _firewall_mode(api):
+    """'zone' | 'legacy' | '' (unknown). The web-UI paths answer [] whether the zone-based firewall is off or empty, so
+    the official Integration API decides: it answers 400 api.firewall.zone-based-firewall-not-configured on a site that
+    still uses the classic firewall. A recorded migration (site-feature-migration) means zone-based."""
+    try:
+        mig = api.call("GET", "/site-feature-migration", v2=True)
+        if isinstance(mig, list) and any(isinstance(m, dict) and m.get("feature") == "ZONE_BASED_FIREWALL" for m in mig):
+            return "zone"
+    except UnifiError:
+        pass
+    try:
+        st, res = api.integration("GET", "/firewall/zones")
+        code = " ".join(str((res or {}).get(k) or "") for k in ("code", "errorCode", "message")) if isinstance(res, dict) else ""
+        if st == 400 and "zone-based-firewall-not-configured" in code:
+            return "legacy"
+        if st == 200:
+            return "zone"
+    except (UnifiError, OSError, ValueError) as e:
+        log("Firewall mode via the Integration API not readable:", e)
+    return ""
+
+
+def _fw_off(api, reason):
+    n = _legacy_rule_count(api)
+    return {"available": False, "state": "not_enabled", "legacy_rules": n, "reason": reason, "hint": FW_OFF_HINT}
+
+
+def firewall_state(api):
+    """Zones, policies, address/port groups and the names of all networks (WAN and VPN too).
+    {"available": False, "state": "not_enabled" | "unsupported" | "error", …} otherwise."""
+    try:
+        zones = api.call("GET", "/firewall/zone", v2=True)
+    except UnifiError as e:
+        log("Firewall zones not available:", e)
+        if firewall_mode(api) == "legacy":
+            return _fw_off(api, "The zone-based firewall is not enabled in UniFi.")
+        old = "404" in str(e) or "NotFound" in str(e)
+        return {"available": False, "state": "unsupported" if old else "error", "reason": str(e), "hint": FW_HINT}
+    zones = [fw_zone(z) for z in zones if isinstance(z, dict)] if isinstance(zones, list) else []
+    try:
+        pols = api.call("GET", "/firewall-policies", v2=True)
+    except UnifiError as e:
+        log("Firewall policies not available:", e)
+        return {"available": False, "state": "error", "reason": str(e), "hint": FW_HINT}
+    # an active zone-based firewall always has zones and UniFi's built-in policies
+    if not zones or not isinstance(pols, list) or not pols:
+        if firewall_mode(api) != "zone":
+            return _fw_off(api, "The zone-based firewall is not enabled in UniFi.")
+        return {"available": False, "state": "error", "reason": "The controller returned no zones or policies.", "hint": FW_HINT}
+    policies = sorted((fw_policy(p) for p in pols if isinstance(p, dict)) if isinstance(pols, list) else [],
+                      key=lambda p: (p.get("index") if isinstance(p.get("index"), (int, float)) else 1e9, p.get("name") or ""))
+    groups = []
+    try:  # address and port groups ("Objects"), referenced by ip_group_id / port_group_id
+        for g in api.call("GET", "/rest/firewallgroup"):
+            groups.append({"id": g.get("_id"), "name": g.get("name") or "", "type": g.get("group_type") or "",
+                           "members": [str(x) for x in g.get("group_members") or []][:1000]})
+    except UnifiError as e:
+        log("Firewall groups not available:", e)
+    nets = {}
+    try:
+        for n in api.call("GET", "/rest/networkconf"):
+            if n.get("_id"):
+                nets[n["_id"]] = {"name": n.get("name") or "?", "purpose": n.get("purpose") or "",
+                                  "role_guess": "" if "vpn" in str(n.get("purpose") or "") or n.get("purpose") == "wan" else name_role(n.get("name")),
+                                  "vlan": n.get("vlan") if n.get("vlan_enabled") else None, "subnet": n.get("ip_subnet") or ""}
+    except UnifiError as e:
+        log("Networks for the firewall view not available:", e)
+    host = re.sub(r"^https?://", "", api.base).split("/")[0].split(":")[0]
+    try:
+        ipaddress.ip_address(host)
+    except ValueError:
+        host = ""
+    return {"available": True, "state": "ok", "zones": zones, "policies": policies, "groups": groups, "networks": nets,
+            "controller_ip": host, "fetched_at": int(time.time())}
+
+
+# ---------------------------------------------------------------- firewall: order of the custom policies of one zone pair
+def _int_list(api, path):
+    out, off = [], 0
+    while True:
+        st, res = api.integration("GET", f"{path}{'&' if '?' in path else '?'}offset={off}&limit=200")
+        if st != 200:
+            msg = (res or {}).get("message") or (res or {}).get("code") or f"HTTP {st}" if isinstance(res, dict) else f"HTTP {st}"
+            raise UnifiError(f"UniFi Integration API: {msg}", 502)
+        data = res.get("data") if isinstance(res, dict) else res
+        out += data or []
+        if not data or len(data) < 200 or len(out) >= (res.get("totalCount") or 0 if isinstance(res, dict) else 0):
+            return out
+        off += 200
+
+
+def reorder_fw_policies(api, body, user=""):
+    """body: {source_zone, destination_zone (v2 ids), order: [v2 ids of the pair's custom policies, first = evaluated first]}.
+    The Integration API identifies zones and policies by other ids: they are matched by name."""
+    fw = firewall_state(api)
+    if not fw.get("available"):
+        raise UnifiError(fw.get("reason") or "The zone-based firewall is not available.", 400, fw.get("hint", ""))
+    zones = {z["id"]: z for z in fw["zones"]}
+    sz, dz = str(body.get("source_zone") or ""), str(body.get("destination_zone") or "")
+    if sz not in zones or dz not in zones:
+        raise UnifiError("Unknown zone.", 400)
+    custom = [p for p in fw["policies"] if not p.get("predefined") and p["source"].get("zone_id") == sz and p["destination"].get("zone_id") == dz]
+    order = [str(x) for x in body.get("order") or []]
+    if sorted(order) != sorted(p["id"] for p in custom):
+        raise UnifiError("The rules of this zone pair changed in the meantime – reload and try again.", 409)
+    names = [p.get("name") or "" for p in custom]
+    dup = sorted({n for n in names if names.count(n) > 1})
+    if dup:
+        raise UnifiError(f"Two rules of this zone pair have the same name ({', '.join(dup)}).", 400, "Rename one of them in UniFi – the order is matched by name.")
+    izones = {z.get("name"): z.get("id") for z in _int_list(api, "/firewall/zones")}
+    isz, idz = izones.get(zones[sz]["name"]), izones.get(zones[dz]["name"])
+    if not isz or not idz:
+        raise UnifiError("The zones could not be matched in the UniFi Integration API.", 502)
+    q = f"?sourceFirewallZoneId={isz}&destinationFirewallZoneId={idz}"
+    st, cur = api.integration("GET", "/firewall/policies/ordering" + q)
+    if st != 200:
+        raise UnifiError(f"Reading the order failed (HTTP {st}).", 502)
+    cur = (cur or {}).get("orderedFirewallPolicyIds", cur) or {}
+    before, after = list(cur.get("beforeSystemDefined") or []), list(cur.get("afterSystemDefined") or [])
+    ipol = {p.get("id"): p.get("name") for p in _int_list(api, "/firewall/policies") if isinstance(p, dict)}
+    uuid_of = {}
+    for uid in before + after:
+        uuid_of[ipol.get(uid)] = uid
+    by_id = {p["id"]: p for p in custom}
+    new = []
+    for vid in order:
+        uid = uuid_of.get(by_id[vid].get("name") or "")
+        if not uid:
+            raise UnifiError(f"Rule “{by_id[vid].get('name')}” not found in the UniFi Integration API.", 502)
+        new.append(uid)
+    if sorted(new) != sorted(before + after):
+        raise UnifiError("The rules of this zone pair do not match between the two UniFi APIs – reorder it in UniFi.", 409)
+    nb = len(before)  # keep how many custom rules run before UniFi's built-in ones
+    ver = create_version(api, "auto", f"Before reordering {zones[sz]['name']} → {zones[dz]['name']}", user)
+    st, res = api.integration("PUT", "/firewall/policies/ordering" + q,
+                              {"orderedFirewallPolicyIds": {"beforeSystemDefined": new[:nb], "afterSystemDefined": new[nb:]}})
+    if st not in (200, 204):
+        msg = (res or {}).get("message") or (res or {}).get("code") or "" if isinstance(res, dict) else ""
+        raise UnifiError(f"UniFi did not take the new order (HTTP {st}) {msg}".strip(), 502)
+    log("Firewall order changed:", zones[sz]["name"], "→", zones[dz]["name"], len(new), "rules")
+    return {"ok": True, "version": ver["id"]}
+
+
+# ---------------------------------------------------------------- relations: who talks to whom (UniFi traffic flows)
+FLOW_MAX = int(os.environ.get("FLOW_MAX", "5000"))
+
+
+def is_local_ip(ip):
+    """True for addresses of the own network (private, link-local, multicast or a known subnet), False for the internet,
+    None when there is no usable IP. Flows do not always carry a zone or MAC, so this decides what is "in the network"."""
+    try:
+        a = ipaddress.ip_address(str(ip or "").split("%")[0])
+    except ValueError:
+        return None
+    return bool(a.is_private or a.is_link_local or a.is_multicast or any(a.version == n.version and a in n for n in KNOWN_NETS))
+
+
+def flow_ip_macs(flows):
+    """IP -> MAC from the flows that carry both: a flow without the MAC still belongs to the same device."""
+    out = {}
+    for f in flows:
+        for side in (f.get("source") or {}, f.get("destination") or {}):
+            mac, ip = normalize_mac(side.get("mac") or ""), side.get("ip")
+            if mac and ip and is_local_ip(ip):
+                out.setdefault(ip, mac)
+    return out
+
+
+def flow_side_external(side):
+    """Whether one end of a flow is the internet – by its IP first, the zone name only when there is no IP."""
+    loc = is_local_ip(side.get("ip"))
+    if loc is not None:
+        return not loc
+    return (side.get("zone_name") or "").lower() == "external" or bool(side.get("region") and not side.get("network_name"))
+
+
+def _is_blocked(f):
+    return str(f.get("action") or "").lower() == "blocked"
+
+
+def read_flows(api, frm, to, limit=None, extra=None, check=None):
+    """All flows of a window (page by page, at most `limit`). Raises UnifiError when the console has no flows API.
+    `extra`: more fields for the query (a filter); `check`: every flow of the answer must pass it, otherwise the
+    console ignored the filter and None is returned."""
+    limit = limit or FLOW_MAX
+    flows, page, size = [], 0, 500
+    while len(flows) < limit:
+        try:
+            data = api.call("POST", "/traffic-flows", {"timestampFrom": frm, "timestampTo": to, "pageNumber": page, "pageSize": size, **(extra or {})}, v2=True)
+        except UnifiError:
+            if page == 0:
+                raise
+            break
+        data = [f for f in data if isinstance(f, dict)] if isinstance(data, list) else []
+        if check and not all(check(f) for f in data):
+            return None
+        flows += data
+        if len(data) < size:
+            break
+        page += 1
+    return flows
+
+
+# filters for allowed flows the console may understand – each is tried and only used when the answer holds allowed flows only
+FLOW_ALLOWED_FILTERS = ({"action": ["allowed"]}, {"actions": ["allowed"]}, {"action": "allowed"}, {"actions": ["ALLOWED"]})
+
+
+def read_flows_split(api, frm, to):
+    """Like read_flows; when the limit is reached and (almost) only blocked flows came back – a scan or a device that keeps
+    knocking fills the limit – the allowed flows are read on their own, so they are not pushed out.
+    Returns (flows, info) with info = {"split": bool, "filter": the filter that worked or None}."""
+    flows = read_flows(api, frm, to)
+    info = {"split": False, "filter": None}
+    if len(flows) < FLOW_MAX or sum(1 for f in flows if not _is_blocked(f)) > len(flows) * 0.1:
+        return flows, info
+    for flt in FLOW_ALLOWED_FILTERS:
+        try:
+            allowed = read_flows(api, frm, to, FLOW_MAX // 2, flt, lambda f: not _is_blocked(f))
+        except UnifiError:
+            allowed = None
+        if allowed:
+            seen = {f.get("id") or f.get("_id") for f in allowed} - {None}
+            rest = [f for f in flows if _is_blocked(f) and (f.get("id") or f.get("_id")) not in seen]
+            log("Flows: allowed ones read separately with", flt, "-", len(allowed), "allowed")
+            # the suspicious-traffic check counts all blocked attempts that were read, the relations stay within the limit
+            return allowed + rest[:FLOW_MAX - len(allowed)], {"split": True, "filter": flt, "all": allowed + rest}
+    log("Flows: the console took none of the filters for allowed flows")
+    return flows, info
+
+
+SUSP_PORTS = {22: "SSH", 23: "Telnet", 135: "RPC", 139: "NetBIOS", 445: "SMB", 3389: "RDP", 5900: "VNC"}
+_UNTRUSTED = {"iot", "media", "camera", "printer", "guest", "dmz"}
+_SENSITIVE = {"trusted", "server", "controller"}
+
+
+ROLE_PATTERNS = (  # first match wins – the only place where roles are guessed from names (the UI uses role_guess)
+    (r"contr|ctrl|hub|smart ?home|automation|home ?assistant", "controller"), (r"cam|nvr|protect|video|surveil|überwach", "camera"),
+    (r"media|\btv\b|entertain|stream", "media"), (r"print|drucker", "printer"), (r"iot|smart|things|sensor", "iot"),
+    (r"guest|gast|visitor|hotspot", "guest"), (r"dmz|expos|public", "dmz"), (r"serv|nas|srv|lab|infra|storage", "server"),
+    (r"trust|lan|home|main|corp|user|client|privat|famil|default|office|büro", "trusted"))
+ROLE_BY_KEY = {"internal": "trusted", "hotspot": "guest", "dmz": "dmz", "external": "none", "gateway": "none", "vpn": "none"}
+
+
+def name_role(name):
+    """Role a zone or network name suggests, '' when it says nothing."""
+    n = str(name or "").lower()
+    return next((role for rx, role in ROLE_PATTERNS if re.search(rx, n)), "")
+
+
+def _zone_role_guess(name, key=""):
+    if key in ROLE_BY_KEY:
+        return ROLE_BY_KEY[key]
+    n = str(name or "").strip().lower()
+    if n in ROLE_BY_KEY:  # built-in zones by their (English) name
+        return ROLE_BY_KEY[n]
+    return name_role(n) or "none"
+
+
+def quiet_hosts(api):
+    """Hosts that talk to many devices by design: the Home Assistant host and the UniFi console."""
+    h = ha_host_ids(api)
+    ctl = re.sub(r"^https?://", "", api.base).split("/")[0].split(":")[0]
+    return set(h["ips"]) | set(h["macs"]) | {ctl}
+
+
+def zone_roles_by_name(api):
+    """zone name -> role, from the analysis settings (by zone id) or guessed from the name."""
+    roles = load_fw_settings()["zone_roles"]
+    out = {}
+    try:
+        for z in api.call("GET", "/firewall/zone", v2=True):
+            if isinstance(z, dict) and z.get("name"):
+                out[z["name"]] = roles.get(z.get("_id")) or _zone_role_guess(z["name"], z.get("zone_key") or "")
+    except UnifiError:
+        pass
+    return out
+
+
+def suspicious_patterns(flows, roles, quiet=()):
+    """Patterns that hint at a scan or an attack from inside: one device knocking on many devices or ports, many blocked
+    attempts, remote-access ports from IoT / guest devices, connections from untrusted into trusted zones.
+    `quiet`: IPs / MACs that talk to many devices by design (Home Assistant, the UniFi console) – never reported as scans."""
+    def role(z):
+        return roles.get(z) or _zone_role_guess(z)
+    quiet = {str(x).lower() for x in quiet if x}
+    ipmac = flow_ip_macs(flows)
+    by_src = {}
+    for f in flows:
+        src, dst = f.get("source") or {}, f.get("destination") or {}
+        if (src.get("zone_name") or "").lower() == "external" or not src.get("ip"):
+            continue
+        smac = normalize_mac(src.get("mac") or "") or ipmac.get(src.get("ip")) or ""
+        key = smac or src.get("ip")
+        b = by_src.setdefault(key, {"name": src.get("device_name") or src.get("ip"), "ip": src.get("ip"), "mac": smac,
+                                    "zone": src.get("zone_name") or "", "hosts": set(), "ports": {}, "blocked": 0, "remote": {}, "lateral": {},
+                                    "flows": 0, "role": role(src.get("zone_name"))})
+        b["flows"] += int(f.get("count") or 1)
+        internal = not flow_side_external(dst)
+        dip, port = dst.get("ip"), dst.get("port")
+        if internal and dip:
+            b["hosts"].add(dip)
+            if port not in (None, ""):
+                b["ports"].setdefault(dip, set()).add(port)
+        if str(f.get("action") or "").lower() == "blocked":
+            b["blocked"] += int(f.get("count") or 1)
+        rs, rd = role(src.get("zone_name")), role(dst.get("zone_name"))
+        if internal and rs in _UNTRUSTED:
+            try:
+                p = int(port)
+            except (TypeError, ValueError):
+                p = 0
+            if p in SUSP_PORTS:
+                b["remote"].setdefault(SUSP_PORTS[p], set()).add(dst.get("device_name") or dip or "?")
+            if rd in _SENSITIVE and str(f.get("action") or "").lower() != "blocked":
+                k = dst.get("device_name") or dip or "?"
+                b["lateral"][k] = b["lateral"].get(k, 0) + 1
+    out = []
+    for key, b in by_src.items():
+        who = {"src": key, "name": b["name"], "ip": b["ip"], "mac": b["mac"], "zone": b["zone"]}
+        # many hosts or ports is normal for controllers, servers and trusted devices – unless the firewall blocks a large share
+        mostly_blocked = b["flows"] and b["blocked"] / b["flows"] >= 0.3
+        scanner = (b["role"] in _UNTRUSTED or mostly_blocked) and not ({str(b["ip"]).lower(), b["mac"]} & quiet)
+        if scanner and len(b["hosts"]) >= 20:
+            out.append({**who, "kind": "scan_hosts", "count": len(b["hosts"]), "text": f"contacted {len(b['hosts'])} devices in the network"})
+        for dip, ports in b["ports"].items() if scanner else ():
+            if len(ports) >= 25:
+                out.append({**who, "kind": "scan_ports", "count": len(ports), "target": dip, "text": f"probed {len(ports)} ports on {dip}"})
+        if b["blocked"] >= 50 and not ({str(b["ip"]).lower(), b["mac"]} & quiet):
+            out.append({**who, "kind": "blocked", "count": b["blocked"], "text": f"{b['blocked']} connection attempts blocked by the firewall"})
+        for svc, ts in b["remote"].items():
+            ts = sorted(ts)
+            out.append({**who, "kind": "remote", "count": len(ts), "target": svc,
+                        "text": f"remote-access attempt to {ts[0]} ({svc})" if len(ts) == 1 else
+                        f"remote-access attempts ({svc}) to {len(ts)} devices ({', '.join(ts[:3])}{' …' if len(ts) > 3 else ''})"})
+        if b["lateral"]:
+            out.append({**who, "kind": "lateral", "count": sum(b["lateral"].values()), "target": ", ".join(sorted(b["lateral"])[:5]),
+                        "text": f"opened connections from the {b['zone']} zone into a trusted zone ({', '.join(sorted(b['lateral'])[:3])})"})
+    return sorted(out, key=lambda x: ("scan_hosts", "scan_ports", "remote", "blocked", "lateral").index(x["kind"]))
+
+
+SUSP_PATH = os.environ.get("SUSP_PATH", "/data/suspicious_seen.json")
+SUSP_INTERVAL = int(os.environ.get("SUSP_INTERVAL", "600"))
+
+
+def check_suspicious(api):
+    """Background check (when subscribed): notify Home Assistant about new suspicious patterns of the last minutes."""
+    if not load_fw_settings()["alerts"]["suspicious"]:
+        return []
+    to = int(time.time() * 1000)
+    try:
+        flows = read_flows(api, to - (SUSP_INTERVAL + 300) * 1000, to, 5000)
+    except UnifiError as e:
+        log("Suspicious traffic check: flows not available:", e)
+        return []
+    pats = suspicious_patterns(flows, zone_roles_by_name(api), quiet_hosts(api))
+    seen = _read_json(SUSP_PATH, {})
+    now = time.time()
+    seen = {k: t for k, t in seen.items() if now - t < 6 * 3600}  # the same pattern is reported again after 6 hours
+    new = [p for p in pats if f"{p['kind']}|{p['src']}|{p.get('target', '')}" not in seen]
+    for p in new:
+        seen[f"{p['kind']}|{p['src']}|{p.get('target', '')}"] = now
+    _write_json(SUSP_PATH, seen)
+    if new:
+        log("Suspicious network traffic:", "; ".join(f"{p['name']} {p['text']}" for p in new))
+        try:
+            for p in new:
+                ha_call("/events/clients_reservations_suspicious_traffic", p)
+            ha_call("/services/persistent_notification/create", {
+                "title": "Suspicious network traffic",
+                "message": "\n".join(f"- **{p['name']}** ({p['ip']}, zone {p['zone'] or '?'}): {p['text']}" for p in new[:15])
+                + "\n\nOpen *IP Manager › Relations* and filter *Suspicious*.",
+                "notification_id": "clients_reservations_suspicious_" + str(int(now))})
+        except UnifiError as e:
+            log("Suspicious traffic notification failed:", e)
+    return new
+
+
+def suspicious_worker():
+    time.sleep(60)
+    while True:
+        try:
+            if API:
+                check_suspicious(API)
+        except Exception as e:  # noqa: BLE001
+            log("Suspicious traffic check failed:", e)
+        time.sleep(SUSP_INTERVAL)
+
+
+SUSP_RECENT = {"t": 0, "data": None}
+SUSP_RECENT_LOCK = threading.Lock()
+
+
+def suspicious_recent(api):
+    """Suspicious-traffic findings of the last 24 hours for the device details – kept 5 minutes, so opening devices
+    does not read the flows again each time."""
+    with SUSP_RECENT_LOCK:
+        if SUSP_RECENT["data"] is not None and time.time() - SUSP_RECENT["t"] < 300:
+            return SUSP_RECENT["data"]
+        to = int(time.time() * 1000)
+        try:
+            flows, split = read_flows_split(api, to - 24 * 3600 * 1000, to)
+        except UnifiError as e:
+            return {"available": False, "reason": str(e), "suspicious": []}
+        data = {"available": True, "from": to - 24 * 3600 * 1000, "to": to,
+                "suspicious": suspicious_patterns(split.get("all") or flows, zone_roles_by_name(api), quiet_hosts(api))}
+        SUSP_RECENT.update(t=time.time(), data=data)
+        return data
+
+
+
+def _fw_ip_ok(v):
+    try:
+        if "-" in v:
+            a, b = (ipaddress.ip_address(x.strip()) for x in v.split("-", 1))
+            return a.version == b.version and int(a) <= int(b)
+        ipaddress.ip_network(v, strict=False)
+        return True
+    except ValueError:
+        return False
+
+
+def _fw_new_endpoint(e, side, zones):
+    e = e or {}
+    zid = str(e.get("zone_id") or "")
+    if zid not in zones:
+        raise UnifiError(f"Unknown {side} zone.", 400)
+    target = str(e.get("target") or "ANY").upper()
+    out = {"zone_id": zid, "matching_target": "ANY", "port_matching_type": "ANY", "match_opposite_ports": False}
+    if target == "CLIENT":
+        macs = [m for m in (normalize_mac(x) for x in e.get("macs") or []) if m]
+        if not macs:
+            raise UnifiError(f"Pick at least one device as {side}.", 400)
+        out.update(matching_target="CLIENT", client_macs=macs[:200])
+    elif target == "IP":
+        ips = [str(x).strip() for x in e.get("ips") or [] if str(x).strip()]
+        bad = [x for x in ips if not _fw_ip_ok(x)]
+        if not ips or bad:
+            raise UnifiError(f"Invalid {side} IP: {', '.join(bad) or 'none given'}", 400)
+        out.update(matching_target="IP", matching_target_type="SPECIFIC", ips=ips[:200], match_opposite_ips=False)
+        if side == "source":
+            out["match_mac"] = False
+    elif target == "WEB":
+        if side != "destination" or zones[zid].get("key") != "external":
+            raise UnifiError("Domains can only be the destination in the External zone.", 400)
+        doms = [str(x).strip().lower() for x in e.get("domains") or [] if str(x).strip()]
+        bad = [x for x in doms if not _DOMAIN_RE.match(x)]
+        if not doms or bad:
+            raise UnifiError(f"Invalid domain: {', '.join(bad) or 'none given'}", 400)
+        out.update(matching_target="WEB", web_domains=doms[:100])
+    elif target != "ANY":
+        raise UnifiError(f"Unsupported {side} type.", 400)
+    port = str(e.get("port") or "").replace(" ", "")
+    if port:
+        if not _PORT_RE.match(port) or any(int(x) > 65535 for x in re.split(r"[-,]", port)):
+            raise UnifiError(f"Invalid {side} port “{port}”.", 400)
+        out.update(port_matching_type="SPECIFIC", port=port)
+    return out
+
+
+def _fw_side_hits(ep, zone_id_of_ip, ip, mac):
+    """Does this endpoint cover the host with this ip / mac?"""
+    if ep["zone_id"] != zone_id_of_ip:
+        return False
+    t = ep["matching_target"]
+    if t == "ANY":
+        return True
+    if t == "CLIENT":
+        return bool(mac) and mac in ep.get("client_macs", [])
+    if t == "IP":
+        try:
+            a = ipaddress.ip_address(ip)
+        except ValueError:
+            return False
+        for x in ep.get("ips", []):
+            if "-" in x:
+                lo, hi = (ipaddress.ip_address(y.strip()) for y in x.split("-", 1))
+                if int(lo) <= int(a) <= int(hi):
+                    return True
+            elif a in ipaddress.ip_network(x, strict=False):
+                return True
+    return False
+
+
+def create_fw_policy(api, body, user=""):
+    fw = firewall_state(api)
+    if not fw.get("available"):
+        raise UnifiError(fw.get("reason") or "The zone-based firewall is not available.", 400, fw.get("hint", ""))
+    zones = {z["id"]: z for z in fw["zones"]}
+    name = str(body.get("name") or "").strip()[:128]
+    if not name:
+        raise UnifiError("Give the rule a name.", 400)
+    action = str(body.get("action") or "").upper()
+    if action not in ("ALLOW", "BLOCK", "REJECT"):
+        raise UnifiError("Unknown action.", 400)
+    proto = str(body.get("protocol") or "all").lower()
+    if proto not in FW_PROTOCOLS:
+        raise UnifiError("Unknown protocol.", 400)
+    ipv = str(body.get("ip_version") or "BOTH").upper()
+    if ipv not in ("BOTH", "IPV4", "IPV6"):
+        raise UnifiError("Unknown IP version.", 400)
+    src = _fw_new_endpoint(body.get("source"), "source", zones)
+    dst = _fw_new_endpoint(body.get("destination"), "destination", zones)
+    if proto == "all" and (src["port_matching_type"] != "ANY" or dst["port_matching_type"] != "ANY"):
+        raise UnifiError("Ports need the protocol TCP, UDP or TCP/UDP.", 400)
+    # never cut Home Assistant off from the UniFi console: it would lock this app out
+    if action != "ALLOW":
+        nets = []
+        for n in api.call("GET", "/rest/networkconf"):
+            if n.get("ip_subnet"):
+                try:
+                    nets.append((ipaddress.ip_interface(n["ip_subnet"]).network, n.get("_id")))
+                except ValueError:
+                    pass
+        zone_of_net = {nid: z["id"] for z in fw["zones"] for nid in z["network_ids"]}
+        gw_zone = next((z["id"] for z in fw["zones"] if z["key"] == "gateway"), "")
+
+        def zone_of_ip(ip):
+            try:
+                a = ipaddress.ip_address(ip)
+            except ValueError:
+                return ""
+            return next((zone_of_net.get(nid, "") for net, nid in nets if a in net), "")
+        h = ha_host_ids(api)
+        ctl = fw.get("controller_ip") or ""
+        ctl_zone = zone_of_ip(ctl) if ctl and not any(ipaddress.ip_address(ctl) == n.network_address + 1 for n, _ in nets if ctl) else gw_zone
+        for ip in h.get("ips") or []:
+            if any(_fw_side_hits(src, zone_of_ip(ip), ip, mac) for mac in (h.get("macs") or [""])) and dst["zone_id"] in (gw_zone, ctl_zone) and \
+                    (dst["matching_target"] == "ANY" or (ctl and _fw_side_hits(dst, dst["zone_id"], ctl, ""))):
+                raise UnifiError("This rule would block Home Assistant from the UniFi console – the app would lock itself out.", 400,
+                                 "Narrow the source or the destination, or create the rule in UniFi if you really want it.")
+    pol = {"name": name, "description": str(body.get("description") or "").strip()[:255], "enabled": body.get("enabled", True) is not False,
+           "action": action, "ip_version": ipv, "protocol": proto, "connection_state_type": "ALL", "connection_states": [],
+           "create_allow_respond": bool(body.get("allow_return")) and action == "ALLOW", "logging": bool(body.get("logging")),
+           "match_ip_sec": False, "match_opposite_protocol": False, "icmp_typename": "ANY", "icmp_v6_typename": "ANY",
+           "schedule": {"mode": "ALWAYS", "repeat_on_days": [], "time_all_day": False},
+           "source": src, "destination": dst}
+    ver = create_version(api, "auto", "Before firewall rule: " + name, user)
+    res = api.call("POST", "/firewall-policies", pol, v2=True)
+    created = res[0] if isinstance(res, list) and res else res if isinstance(res, dict) else {}
+    log("Firewall policy created:", name, action, created.get("_id", "?"))
+    return {"policy": fw_policy(created) if isinstance(created, dict) and created else None, "version": ver["id"]}
+
+
+def firewall_for_version(api):
+    """What a version keeps of the firewall: zones and the custom policies (built-in ones follow from the zones)."""
+    try:
+        fw = firewall_state(api)
+    except Exception as e:  # noqa: BLE001 – a version must never fail because of the firewall
+        log("Firewall not saved in the version:", repr(e))
+        return None
+    if not fw.get("available"):
+        return None
+    # hit counters change all the time – they are not part of a version
+    pols = [{k: v for k, v in p.items() if k not in ("hits", "last_hit")} for p in fw["policies"] if not p.get("predefined")]
+    return {"zones": fw["zones"], "policies": pols,
+            "groups": fw.get("groups") or [], "networks": fw.get("networks") or {}}
+
+
+FW_ROLES = ("trusted", "server", "controller", "iot", "media", "camera", "printer", "guest", "dmz", "none")
+
+
+def load_fw_settings():
+    """Settings of the firewall analysis: the role of each zone (empty = guessed from its name) and
+    profiles the user set for single devices."""
+    d = _read_json(FW_SETTINGS_PATH, {})
+    d = d if isinstance(d, dict) else {}
+    return {"zone_roles": d.get("zone_roles") if isinstance(d.get("zone_roles"), dict) else {},
+            "overrides": d.get("overrides") if isinstance(d.get("overrides"), dict) else {},
+            "alerts": {"suspicious": bool((d.get("alerts") or {}).get("suspicious"))}}
+
+
+def save_fw_settings(body):
+    cur = load_fw_settings()
+    if "zone_roles" in body:
+        roles = {}
+        for k, v in (body.get("zone_roles") or {}).items():
+            if re.fullmatch(r"[A-Za-z0-9_-]{1,40}", str(k)) and v in FW_ROLES:
+                roles[str(k)] = v
+        cur["zone_roles"] = dict(list(roles.items())[:100])
+    if "overrides" in body:
+        ov = {}
+        for k, v in (body.get("overrides") or {}).items():
+            mac = normalize_mac(k)
+            if mac and re.fullmatch(r"[a-z_]{1,30}", str(v or "")):
+                ov[mac] = str(v)
+        cur["overrides"] = dict(list(ov.items())[:2000])
+    if "alerts" in body:
+        cur["alerts"] = {"suspicious": bool((body.get("alerts") or {}).get("suspicious"))}
+    _write_json(FW_SETTINGS_PATH, cur)
+    log("Firewall analysis settings saved:", len(cur["zone_roles"]), "zone roles,", len(cur["overrides"]), "device profiles")
+    return cur
 
 
 # ---------------------------------------------------------------- versions
@@ -859,12 +1732,18 @@ def create_version(api, kind="manual", label="", user=""):
             clients[c["mac"]] = {k: c.get(k) for k in VERSION_FIELDS}
             if ha is not None:  # info only: how Home Assistant saw the device
                 clients[c["mac"]].update(ha_info(c, ha.get(c["mac"], [])))
+    fw = firewall_for_version(api)
     meta = {"id": vid, "created": now, "kind": kind if kind in ("manual", "daily", "auto") else "manual",
             "label": (label or "").strip()[:80], "user": (user or "")[:60], "pinned": False,
             "devices": len(clients), "reserved": sum(1 for c in clients.values() if c.get("use_fixedip"))}
+    if fw is not None:
+        meta["policies"] = len(fw["policies"])
+    data = {"meta": meta, "networks": snap["networks"], "aps": snap.get("aps", []), "clients": clients}
+    if fw is not None:
+        data["firewall"] = fw
     with VERSIONS_LOCK:
         os.makedirs(VERSIONS_DIR, exist_ok=True)
-        _write_json(_vpath(vid), {"meta": meta, "networks": snap["networks"], "aps": snap.get("aps", []), "clients": clients})
+        _write_json(_vpath(vid), data)
         idx = _index()
         idx.append(meta)
         _save_index(idx)
@@ -1436,6 +2315,18 @@ class Handler(BaseHTTPRequestHandler):
                     return self._send(200, body=f.read().replace(b"__ADDON_VERSION__", ADDON_VERSION.encode()), ctype="text/html; charset=utf-8")
             if method == "GET" and path.endswith("/api/snapshot"):
                 return self._send(200, build_snapshot(API))
+            if method == "GET" and path.endswith("/api/firewall"):
+                return self._send(200, firewall_state(API))
+            if method == "GET" and path.endswith("/api/suspicious"):
+                return self._send(200, suspicious_recent(API))
+            if method == "POST" and path.endswith("/api/fw_order"):
+                return self._send(200, reorder_fw_policies(API, self._json_body(), self._user()))
+            if method == "POST" and path.endswith("/api/fw_policy"):
+                return self._send(200, create_fw_policy(API, self._json_body(), self._user()))
+            if method == "GET" and path.endswith("/api/fw_settings"):
+                return self._send(200, load_fw_settings())
+            if method == "POST" and path.endswith("/api/fw_settings"):
+                return self._send(200, save_fw_settings(self._json_body()))
             if method == "POST" and path.endswith("/api/client"):
                 return self._send(200, save_client(API, self._json_body()))
             if method == "POST" and path.endswith("/api/unreserve"):
@@ -1487,6 +2378,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, wake_on_lan(self._json_body()))
             if method == "POST" and path.endswith("/api/check_new"):
                 return self._send(200, {"new": check_new_devices(API)})
+            if method == "POST" and path.endswith("/api/port_vlan"):
+                return self._send(200, set_port_vlan(API, self._json_body(), self._user()))
+            if method == "POST" and path.endswith("/api/device_cmd"):
+                return self._send(200, device_cmd(API, self._json_body()))
             if method == "POST" and path.endswith("/api/reconnect"):
                 return self._send(200, reconnect_client(API, self._json_body().get("mac")))
             if method == "POST" and path.endswith("/api/forget"):
@@ -1539,6 +2434,7 @@ def main():
             log("Controller certificate is not verified. To pin it, set certificate_fingerprint to:", _fmt_fp(fp))
     threading.Thread(target=daily_worker, daemon=True).start()
     threading.Thread(target=watch_worker, daemon=True).start()
+    threading.Thread(target=suspicious_worker, daemon=True).start()
     BoundedServer(("0.0.0.0", PORT), Handler).serve_forever()
 
 

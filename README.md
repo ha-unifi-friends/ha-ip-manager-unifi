@@ -31,7 +31,7 @@ versions you can compare and restore.
 | **One table for everything** | Every client and UniFi device (APs, switches, gateway) with MAC, name, IP address, fixed IP, network/VLAN, connection type (WiFi, wired with switch port, Teleport), locked AP, first and last seen. Sort and filter every column, reorder columns by drag & drop. |
 | **Status at a glance** | Narrow icon columns for **UniFi Status** (online / offline) and **Home Assistant Status**, plus an **IP** pill: *Fix* (reservation or static IP) or *DHCP*. |
 | **Issue hints** | Duplicate IP, fixed IP outside its network or inside the DHCP pool, **IP is not Fixed IP** (the fixed IP is shown in yellow), **not in the override VLAN**, random/private MAC, not on its locked AP, wrong network by your own rules, Telnet/FTP open, duplicate names / DNS records, inactive devices. Every issue is a filter in the sidebar. |
-| **Views** | SharePoint-style views store columns, order, filters and sort. Built-in *All*, *Problems*, *New devices*, *Offline with fixed IP*, *Home Assistant*, *WiFi* and *DHCP Reservations*; views are shared by every browser. |
+| **Views** | SharePoint-style views store columns, order, filters and sort. Built-in *All*, *Online*, *Problems*, *New devices*, *Offline with fixed IP*, *Home Assistant*, *WiFi* and *DHCP Reservations*; views are shared by every browser. |
 | **Inline edit** | Edit names and fixed IPs directly in the table (Enter / ↑ / ↓ move to the next row). |
 | **Light & dark** | *Auto* (follows the system) → *Light* → *Dark*, remembered per browser. |
 
@@ -65,6 +65,15 @@ versions you can compare and restore.
 | **CSV import & export** | Bulk changes with a validated preview and a checkbox per row. An export can be re-imported as is. Hosts-file export of fixed IPs and DNS records. |
 | **Network rules** | “Vendor contains Espressif → IoT”: devices in the wrong network are flagged. |
 | **Safe bulk changes** | Every bulk action (CSV import, restore, replace subnet, names from HA, CleanUp) saves a version of the current settings first, so you can always go back via *Versions › Restore*. |
+
+### Firewall & topology
+
+| | |
+|---|---|
+| **Firewall** | UniFi's zone-based firewall (Network 9+): zone matrix, policy list with hits, the **rule chain** of a zone pair (which rule decides first, rules that never apply), **change the order** and a guided **Add firewall rule** wizard. IP changes warn when a policy uses the old IP or the device changes its zone. |
+| **Firewall analysis** | Device types, zone roles, checks per device, consistency of similar devices, zone and VLAN structure, recommendations and a segmentation score. |
+| **Topology** | *Clients* has the tabs **List**, **Tree** (Internet → gateway → switches → access points → clients, with ports) and **Graph** (a live map like Home Assistant's Zigbee map). The sidebar filters work in all three. |
+| **Device details** | Internet access chain (which rule lets the device out), blocked attempts of the last 24 h, switch and port with the **port VLAN** (changeable), *Reconnect* for WiFi clients, *Locate* / *Restart* / *Disable* for access points and switches. |
 
 ### Versions & history
 
@@ -172,6 +181,7 @@ icon. Its panel is called *IP Manager Beta*. Only install it if you want to try 
 | `site` | `default` | UniFi site name |
 | `verify_ssl` | `false` | Keep off while the console uses its self-signed certificate |
 | `certificate_fingerprint` | – | Pin the controller certificate (SHA-256); the app log shows the value to paste at start |
+| `api_key` | – | Optional UniFi API key (*UniFi Network › Settings › Control Plane › Integrations*), needed to change the order of firewall rules |
 | `daily_version` | `true` | Save one version of the table per day |
 | `auto_version_retention_days` | `30` | Days to keep automatic versions; manual, pinned and baseline versions are kept until deleted |
 | `notify_new_devices` | `true` | Notify Home Assistant about devices with a never-seen MAC |
@@ -185,6 +195,7 @@ icon. Its panel is called *IP Manager Beta*. Only install it if you want to try 
 - The password is stored in the app's options inside Home Assistant (masked in the UI). It is never logged and never sent to the browser.
 - Home Assistant backups contain app options, so keep your backups encrypted.
 - The UI is only reachable through Home Assistant Ingress. The app does not expose a port.
+- The app runs with its own AppArmor profile: it may write only to its data folder and the runtime folders.
 - Pin the controller certificate with `certificate_fingerprint` – the self-signed UniFi certificate is otherwise not verified.
 - Ping, port check and Wake on LAN only work for addresses inside your UniFi networks. CSV exports are protected against formula injection.
 
