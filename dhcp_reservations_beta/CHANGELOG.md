@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.39.1 – 2026-11-22
+
+- **Topology graph** laid out like Home Assistant's Zigbee map: no fixed levels and no border any more – the devices spread freely, each access point or switch forms a cloud with its clients (the more clients, the longer their lines), clients with an unknown connection hang on one shared node.
+- **Auto zoom**: once the layout has settled the view zooms so everything is visible; the new button next to + / − does it again at any time. Zooming or moving by hand ends it.
+
 ## 1.39.0 – 2026-11-22
 
 **Relations becomes Network** – with the topology as the new start:
