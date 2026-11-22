@@ -1525,5 +1525,10 @@
  "not decided": "nöd entschide",
  "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Zeile: vo · Spalte: nach. Ping und gängigi Dienscht, wie de Test i de Grätdetails – klick e Zälle für d Details aa.",
  "Only the first {0} devices.": "Nume di erschte {0} Grät.",
- "Remove from the selection": "Us de Uswahl entferne"
+ "Remove from the selection": "Us de Uswahl entferne",
+ "The selected client is put into this network. If it has a fixed IP in another network, it is skipped.": "De usgwählti Client wird i das Netzwerk tue. Het er e fixi IP imene andere Netzwerk, wird er übersprunge.",
+ "The note of the selected client is replaced (empty = remove).": "D Notiz vom usgwählte Client wird ersetzt (läär = entferne).",
+ "The selected WiFi client is disconnected for a moment.": "De usgwählti WLAN-Client wird churz trennt.",
+ "The virtual network override of the selected client is switched off.": "S erzwungnige Netzwerk vom usgwählte Client wird usgschaltet.",
+ "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "D fixi IP wird entfernt. Name und Notiz bliibed; s Grät überchunnt wieder e Adrässe us em DHCP-Pool."
 }

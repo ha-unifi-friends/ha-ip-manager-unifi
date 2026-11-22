@@ -205,7 +205,7 @@ dialog#dlgVer > .imp > div[hidden]{display:none}
 td.num{text-align:right;font-variant-numeric:tabular-nums}
 .rst-scope{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
 #cmpTitle{font-size:14px}
-dialog#dlgVer::backdrop,dialog#dlgHa::backdrop,dialog.small::backdrop,dialog#dlgSub::backdrop{background:rgba(8,10,14,.55)}
+dialog::backdrop{background:rgba(8,10,14,.55)}
 dialog.small form{display:grid;gap:12px;padding:18px}
 dialog.small h2{margin:0;font-size:15px}
 dialog#dlgPick{border:1px solid var(--line-strong);border-radius:12px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
@@ -342,10 +342,8 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .danger-zone p{margin:0;font-size:12px;color:var(--muted)}
 
 /* ---------- CSV-Import ---------- */
-dialog#dlgImport{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
-dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
+dialog#dlgImport,dialog#dlgSimTo{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgRules{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(820px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
-dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
 .plan-view{flex:1;min-height:0;display:flex;flex-direction:column}
 .plan-scroll{flex:1;min-height:0;overflow:auto;padding:14px max(16px,env(safe-area-inset-right)) 18px 16px}
 .plan-view .imp-foot{border-top:1px solid var(--line);background:var(--panel)}
@@ -360,7 +358,6 @@ body.fw-mode .topbar{border-bottom:2px solid var(--accent)}
 body:not(.fw-mode) .fw-only{display:none!important}
 body.rel-mode #lnkCols,body.rel-mode #btnInline,body.rel-mode #btnNew{display:none}
 body.rel-mode .topbar{border-bottom:2px solid var(--accent)}
-body:not(.rel-mode) .rel-only{display:none!important}
 body.plan-mode .cli-tabs,body.fw-mode .cli-tabs{display:none!important}
 body:not(.plan-mode):not(.fw-mode) .topbar{border-bottom:2px solid var(--accent)}
 .rel-box{border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 0 8px;margin:10px 0 14px;overflow:hidden}
@@ -503,8 +500,6 @@ body:not(.rel-mode):not(.cards-mode) .topo-icons{display:none!important}
 .sim-ic{flex:none;width:18px;height:18px;display:grid;place-items:center;font-size:13px;overflow:hidden}.sim-ic img,.sim-ic svg{max-width:18px;max-height:18px}
 .sim-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sim-sub{margin-left:auto;font-size:11.5px;flex:none}
 /* target picker: zones side by side when there is room, below each other when not */
-dialog#dlgSimTo{border:1px solid var(--line-strong);border-radius:12px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
-dialog#dlgSimTo::backdrop{background:rgba(8,10,14,.55)}
 dialog#dlgSimTo .imp-body{overflow:auto;padding:12px 18px 18px;display:grid;gap:10px}
 .st-q{flex:1 1 200px;max-width:320px;margin-left:auto}
 .st-top{display:flex}
@@ -524,7 +519,7 @@ dialog#dlgSimTo .imp-body{overflow:auto;padding:12px 18px 18px;display:grid;gap:
 #simToSel{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
 /* selection in the detail pane */
 @media (max-width:760px){body.sel-split .detail{inset:auto 0 0 0;width:100vw;height:50vh;height:50dvh;border-left:0;border-top:2px solid var(--accent);box-shadow:0 -8px 24px rgba(0,0,0,.3)}
-body.sel-split .tablewrap{padding-bottom:50vh;padding-bottom:50dvh}}
+body.sel-split .tablewrap,body.sel-split #relView{padding-bottom:50vh;padding-bottom:50dvh}}
 .sel-top{display:flex;gap:14px;margin-bottom:2px}
 .sel-sum{display:grid;gap:10px}.sel-big{font-size:14px}.sel-big b{font-size:22px}.sel-big .muted{font-size:12.5px}
 .sel-grp{display:grid;gap:4px}.sel-gt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
@@ -535,24 +530,23 @@ body.sel-split .tablewrap{padding-bottom:50vh;padding-bottom:50dvh}}
 .sel-pill b.sm-id{font-weight:700}
 #paneSel{min-height:0;grid-auto-rows:max-content}
 .sel-acts{display:grid;gap:6px}.sel-act{justify-content:flex-start;width:100%}
-.sel-mx-card{overflow-x:auto}
 .sel-mx{border-collapse:separate;border-spacing:3px;font-size:11.5px;width:100%;table-layout:fixed;min-width:calc(var(--cols) * 25px + 50px)}
 .sel-mx th{font-weight:600;color:var(--muted);text-align:center;padding:2px 4px;white-space:nowrap}
-.sel-mx th.sm-row{text-align:right;color:var(--muted)}
+.sel-mx th.sm-row{text-align:right}
 .sel-mx .sm-corner,.sel-mx th.sm-row{width:44px}
 .sm-hd{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1px 4px}
 .sm-rh{display:flex;align-items:center;justify-content:space-between;gap:4px;padding-right:2px}
 .sm-hic{display:inline-grid;place-items:center;width:16px;height:16px;overflow:hidden;color:var(--muted)}.sm-hic img,.sm-hic svg{max-width:16px;max-height:16px}
 td.sm-c.on{outline:2px solid var(--accent);outline-offset:1px}
 .sm-scroll{overflow-x:auto}
-.sm-lp{padding:2px 3px 2px 3px;font-size:12px;gap:5px}.sm-lp>span{padding-left:4px}
-.sm-id{order:-1;background:var(--bg);color:#a855f7;min-width:22px}
-.sel-mx th.sm-n{color:#a855f7}
+.sm-lp{padding:2px 3px;font-size:12px;gap:5px}.sm-lp>span{padding-left:4px}
+.sm-id{order:-1;background:var(--bg);color:var(--gwc);min-width:22px}
+.sel-mx th.sm-n{color:var(--gwc)}
 .sm-x{all:unset;cursor:pointer;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;font-size:10px;color:var(--muted)}
 .sm-x:hover,.sm-x:focus-visible{background:var(--hover);color:var(--fg)}
 .sm-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:11.5px;color:var(--muted);margin-top:8px}.sm-key .sm-c{display:inline-grid;place-items:center;width:20px;height:18px}.sm-kp{display:inline-flex;align-items:center;gap:5px;margin-right:8px;white-space:nowrap}
 .smx-res{display:grid;gap:6px;margin:0 0 10px;padding:8px 10px;border:1px solid var(--accent);border-radius:8px;background:color-mix(in srgb,var(--accent) 8%,var(--card))}
-.smx-res[hidden]{display:none}.smx-t{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px 6px}.smx-h{display:flex;align-items:center;gap:8px;font-size:13px}.smx-h .x{margin-left:auto;color:var(--muted)}
+.smx-t{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px 6px}.smx-h{display:flex;align-items:center;gap:8px;font-size:13px}.smx-h .x{margin-left:auto;color:var(--muted)}
 .sm-c{height:24px;padding:0;text-align:center;border-radius:5px;font-weight:700;cursor:pointer}.sm-c.sm-self{cursor:default}td.sm-c:not(.sm-self):hover{outline:2px solid var(--accent)}
 .sm-allow{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
 .sm-block{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
@@ -564,7 +558,6 @@ td.sm-c.on{outline:2px solid var(--accent);outline-offset:1px}
 body.plan-mode .ms-seg,body.fw-mode .ms-seg{display:none}
 body.sel-mode .tt-card.picked,body.sel-mode .tt-c.picked{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,var(--card));box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 45%,transparent)}
 body.sel-mode .rel-n.picked .core{stroke:var(--accent);stroke-width:4}
-@media (max-width:760px){body.sel-split #relView{padding-bottom:50vh;padding-bottom:50dvh}}
 body.sel-mode #tbody tr td:first-child{box-shadow:inset 3px 0 0 transparent}
 body.sel-mode #tbody tr.picked{background:color-mix(in srgb,var(--accent) 16%,transparent)}
 body.sel-mode #tbody tr.picked td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
@@ -573,10 +566,12 @@ body.sel-mode .lc::after{content:"";flex:none;width:18px;height:18px;border-radi
 body.sel-mode .lc.picked::after{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 3px var(--card)}
 /* what changed since the last visit */
 .chg-box{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:8px 12px 0;padding:8px 12px;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:10px;background:color-mix(in srgb,var(--accent) 8%,var(--card));font-size:13px}
-.chg-box[hidden]{display:none}.chg-box .sp{flex:1}
+.chg-box .sp{flex:1}
 .chg-t{font-weight:600}.chg-d{font-size:12px}
 .chg-c{all:unset;cursor:pointer;padding:3px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line-strong);font-size:12.5px}
-.chg-c:hover{border-color:var(--accent)}.chg-c[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chg-c:hover{border-color:var(--accent)}
+.chg-c:focus-visible,.st-it:focus-visible,.sm-x:focus-visible,.lc:focus-visible,td.sm-c:focus-visible,.sel-act:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.rel-n:focus{outline:none}.rel-n:focus-visible .core{stroke:var(--accent);stroke-width:3}.chg-c[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .chg-c.probs b{color:var(--warn)}.chg-c.newDev b{color:var(--ok)}.chg-c.gone b{color:var(--bad)}
 .chg-c[aria-pressed="true"] b{color:#fff}
 body.plan-mode .chg-box,body.fw-mode .chg-box,body.rel-mode .chg-box{display:none}
@@ -593,7 +588,7 @@ body.plan-mode .chg-box,body.fw-mode .chg-box,body.rel-mode .chg-box{display:non
 .lc-p{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted);font-size:11.5px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}.lc-n b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
 .lc-s{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lc-fix{color:var(--warn)}
-.lc-w{display:flex;flex-wrap:wrap;gap:4px}
+.lc-w{display:contents}
 .lc-empty{padding:24px;text-align:center;grid-column:1/-1}
 body.cards-mode #lnkCols,body.cards-mode #btnInline{display:none}
 .act-icons{display:none;align-items:center;gap:8px;padding:6px 10px;color:var(--muted)}
@@ -761,7 +756,6 @@ body.fw-mode #btnNew{display:none}
 .fw-hit.paused{border-style:dashed}
 .fw-hit .fw-lvl{font-size:12px}
 dialog#dlgFwRoles,dialog#dlgFwWiz{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
-dialog#dlgFwRoles::backdrop,dialog#dlgFwWiz::backdrop{background:rgba(8,10,14,.55)}
 #fwRoleRows .rule-row{grid-template-columns:minmax(120px,200px) 1fr}
 .wz-steps{display:flex;gap:4px;padding:10px 16px 0;flex-wrap:wrap}
 .wz-st{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);background:var(--bg);color:var(--muted);border-radius:999px;padding:4px 12px 4px 4px;font:inherit;font-size:12.5px;cursor:pointer}
@@ -1217,7 +1211,7 @@ window.I18N = (() => {
         <div class="menu" id="viewMenu" role="menu" hidden></div>
       </div>
       <span id="count"></span>
-      <span class="seg ms-seg" role="group" aria-label="Selection" title="Select one device (details) or several (summary and changes for all)"><span class="ms-ic" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 3l14 7-6 2-2 6z"/><path d="M13 12l5 5" stroke-linecap="round"/></svg></span><button type="button" data-ms="0" aria-pressed="true" title="One device – its details">1</button><button type="button" data-ms="1" aria-pressed="false" title="Several devices – select them and change them together">n</button></span>
+      <span class="seg ms-seg" role="group" aria-label="Selection" title="Select one device (details) or several (summary and changes for all)"><span class="ms-ic" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 3l14 7-6 2-2 6z"/><path d="M13 12l5 5" stroke-linecap="round"/></svg></span><button type="button" data-ms="0" aria-pressed="true" title="One device – its details" aria-label="One device – its details">1</button><button type="button" data-ms="1" aria-pressed="false" title="Several devices – select them and change them together" aria-label="Several devices – select them and change them together">n</button></span>
       <span class="tb-break" aria-hidden="true"></span>
       <div class="cl-tabs plan-tabs plan-only" role="tablist"><button type="button" role="tab" data-pt="cur" aria-selected="true">Current</button><button type="button" role="tab" data-pt="clean" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M14 3 9.5 11.5"/><path d="M5 13.5h9l1.5 7.5H3.5z"/><path d="M8 17v4M11 17v4"/><path d="M18 3v3M16.5 4.5h3M20 9v2M19 10h2"/></svg>CleanUp Proposal</button></div>
       <div class="cl-tabs plan-tabs fw-only" role="tablist"><button type="button" role="tab" data-ft="mx" aria-selected="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Matrix</button><button type="button" role="tab" data-ft="an" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6M11 8v6"/></svg>Analysis</button></div>
@@ -1708,7 +1702,7 @@ function computeWarnings() {
   for (const c of state.clients) if (c.mac && !c.is_device && c.name) (byName[c.name.trim().toLowerCase()] ||= []).push(c);
   for (const c of state.clients) if (c.local_dns_record_enabled && c.local_dns_record) (byDns[c.local_dns_record.trim().toLowerCase()] ||= []).push(c);
   state.clients.forEach((c, i) => {
-    c._key = c.mac || "tp" + i;
+    c._key = c.mac || c.key || "tp" + i; // Teleport sessions have no MAC – the server sends a stable key
     // the device's current (or last known) address is not its fixed IP – e.g. it has not renewed its lease yet
     c._ipMismatch = !!(c.use_fixedip && c.fixed_ip && c.ip && c.ip !== c.fixed_ip);
     const w = [];
@@ -1768,7 +1762,7 @@ const FACETS = [
   // "Changed since <version>" (new or changed devices) for the baseline + latest versions, max 5
   { id: "base", title: "Baseline", emptyText: "Save a version to see which devices are new or changed since then.", ready: () => !!state.baseReady,
     multi: c => !c.mac ? [] : [...(state.recentSet?.has(c.mac) || (c.first_seen && c.first_seen >= Date.now() / 1000 - 7 * 86400) ? ["recent"] : []), ...(state.baseSets || []).filter(b => b.cats.has(c.mac)).map(b => "chg:" + b.id)],
-    opts: () => [["recent", "Changed in the last 7 days"], ...(state.baseSets || []).map(b => ["chg:" + b.id, `Changed since ${b.isBaseline ? "★ " : ""}${isoDateTime(b.created)}${b.label ? " · " + b.label : ""}`])] },
+    opts: () => [["recent", (rv => rv ? `Changed since ${isoDateTime(rv.created)}` : "Changed in the last 7 days")(VER.loaded ? recentVersion() : null)], ...(state.baseSets || []).map(b => ["chg:" + b.id, `Changed since ${b.isBaseline ? "★ " : ""}${isoDateTime(b.created)}${b.label ? " · " + b.label : ""}`])] },
   { id: "ha", title: "Home Assistant", ready: () => state.haOk !== undefined, multi: c => { if (!c.mac) return []; const ds = haOf(c); if (!ds.length) return ["no"]; const w = haWorst(ds); return ["yes", ...(["error", "unavailable"].includes(w) ? ["bad"] : []), ...ds.flatMap(d => haDoms(c, d)).map(x => "d:" + x)]; },
     opts: () => [["yes", "Known to Home Assistant"], ["no", "Not in Home Assistant"], ["bad", "Unavailable in HA"], ...uniq(state.clients.flatMap(c => haOf(c).flatMap(d => haDoms(c, d)))).map(x => ["d:" + x, "Integration: " + x])] },
 ];
@@ -1946,31 +1940,50 @@ function rows() {
 }
 
 // ---------- bulk changes: select several devices in the table or the list, then change them together ----------
-const BULK = { on: false, keys: new Set(), busy: false, act: "" };
+const BULK = { on: false, keys: new Set(), busy: false, rcT: 0 };
 const bulkDevs = () => state.clients.filter(c => BULK.keys.has(keyOf(c)));
+const bulkCl = cs => cs.filter(c => !c.is_device && c.mac); // the clients a bulk action can change
+// marks the selection in every view (table, list, tree, graph) – also for screen readers
 function bulkMarks() {
-  for (const tr of document.querySelectorAll("#tbody tr[data-k]")) tr.classList.toggle("picked", BULK.keys.has(tr.dataset.k));
-  for (const b of document.querySelectorAll("#topoTree [data-ttdev]")) b.classList.toggle("picked", BULK.keys.has(b.dataset.ttdev));
-  for (const g of document.querySelectorAll("#relGraph g[data-reln]")) g.classList.toggle("picked", BULK.keys.has(g.dataset.reln));
-  document.body.classList.toggle("sel-mode", BULK.on);
+  const on = BULK.on, has = k => BULK.keys.has(k), aria = (el, a, v) => on ? el.setAttribute(a, String(v)) : el.removeAttribute(a);
+  for (const tr of document.querySelectorAll("#tbody tr[data-k]")) { const v = has(tr.dataset.k); tr.classList.toggle("picked", v); aria(tr, "aria-selected", v); }
+  for (const b of document.querySelectorAll("#cardList .lc[data-k]")) { const v = has(b.dataset.k); b.classList.toggle("picked", v); aria(b, "aria-pressed", v); }
+  for (const b of document.querySelectorAll("#topoTree [data-ttdev]")) { const c = devByMac(b.dataset.ttdev); b.classList.toggle("picked", !!c && has(keyOf(c))); }
+  for (const g of document.querySelectorAll("#relGraph g[data-reln]")) { const c = relDev(g.dataset.reln); g.classList.toggle("picked", !!c && has(keyOf(c))); } // nodes known by IP too
+  document.body.classList.toggle("sel-mode", on);
 }
-function bulkToggle(k) { BULK.keys.has(k) ? BULK.keys.delete(k) : BULK.keys.add(k); bulkMarks(); for (const b of document.querySelectorAll("#cardList .lc[data-k]")) b.classList.toggle("picked", BULK.keys.has(b.dataset.k)); renderBulk(); }
+function bulkToggle(k) { BULK.keys.has(k) ? BULK.keys.delete(k) : BULK.keys.add(k); bulkMarks(); renderBulk(); }
+// a click on a device: selects it in multi-select, opens its details otherwise
+function pickOrOpen(c) { if (!c) return false; if (BULK.on) bulkToggle(keyOf(c)); else openPanel(c); return true; }
 function setBulk(on) { BULK.on = on; if (!on) BULK.keys.clear(); for (const b of document.querySelectorAll("[data-ms]")) b.setAttribute("aria-pressed", String((b.dataset.ms === "1") === on)); renderAll(); }
 document.querySelectorAll("[data-ms]").forEach(b => b.addEventListener("click", () => { const on = b.dataset.ms === "1"; if (on !== BULK.on) setBulk(on); }));
-document.addEventListener("keydown", e => { if (e.key === "Escape" && BULK.on && !document.querySelector("dialog[open]")) setBulk(false); });
+// Escape leaves multi-select – but not while typing, or when it closes a menu or dialog
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape" || !BULK.on || document.querySelector("dialog[open]") || e.target.closest?.("input,textarea,select")) return;
+  if (["#langMenu", "#viewMenu", "#actMenu", "#colPanel"].some(id => $(id) && !$(id).hidden)) return;
+  setBulk(false);
+});
 // the selection always uses the detail pane – on phones as the lower half of the screen, the list stays above
 function renderBulk() {
   selPane(BULK.on && !isPlan() && !isFw());
 }
 // ---------- selection in the detail pane: summary, actions and a small firewall matrix ----------
+const SELP = { key: "" }; // what the pane shows – it is only rebuilt when that changes
+function hideSelPane() {
+  const pane = $("#paneSel"); SELP.key = ""; $("#detail").style.width = "";
+  if (pane.hidden) return false;
+  pane.hidden = true; pane.innerHTML = ""; $("#detail").querySelector(".tabs").hidden = false; return true;
+}
 function selPane(on) {
   const pane = $("#paneSel"), d = $("#detail");
+  if (on && !$("#colPanel").hidden) on = false; // the column chooser uses the same place – the selection comes back when it closes
   document.body.classList.toggle("sel-split", !!on);
-  d.style.width = "";
-  if (!on) { if (!pane.hidden) { pane.hidden = true; pane.innerHTML = ""; d.querySelector(".tabs").hidden = false; if (!state.sel) d.hidden = true; } return; }
-  state.sel = null; markSel(); closeCols();
+  if (!on) { if (hideSelPane() && !state.sel) d.hidden = true; return; }
+  if (pane.hidden) { state.sel = null; markSel(); }
   d.hidden = false; d.querySelector(".tabs").hidden = true; $("#paneInfo").hidden = true; $("#paneEdit").hidden = true; pane.hidden = false;
-  const cs = bulkDevs();
+  const cs = bulkDevs(), key = [[...BULK.keys].join(","), state.rev, FW.data?.fetched_at || 0, BULK.busy, window.innerWidth > 760].join("|");
+  if (key === SELP.key) return; // same selection and data: keep the open matrix result and the scroll position
+  SELP.key = key; d.style.width = "";
   $("#dTitle").textContent = cs.length ? I18N.tr(`${cs.length} selected`) : I18N.tr("Multi-select");
   pane.innerHTML = selPaneHtml(cs);
   // desktop: the pane grows with the matrix (up to twice its normal width) before the matrix scrolls
@@ -1978,7 +1991,7 @@ function selPane(on) {
   if (t && window.innerWidth > 760) {
     const extra = d.getBoundingClientRect().width - pane.querySelector(".sm-scroll").clientWidth; // paddings of pane and card
     const need = Math.ceil(parseFloat(getComputedStyle(t).minWidth) + extra);
-    d.style.width = `${Math.min(800, Math.max(400, need))}px`; fitTopbarSoon();
+    d.style.width = `${Math.min(800, Math.max(400, Math.round(window.innerWidth * 0.5)), Math.max(400, need))}px`; fitTopbarSoon(); // at most half the window
   }
 }
 const selCount = (list, key, label) => { const m = new Map(); for (const c of list) { const k = key(c); if (k == null) continue; m.set(k, (m.get(k) || 0) + 1); } return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => [label(k), n]); };
@@ -1990,13 +2003,13 @@ function selDevList(cs) {
   return `<div class="sel-grp"><div class="sel-gt">${I18N.tr("Devices")}</div><div class="sel-pills">${cs.map(c => `<span class="sel-pill sm-lp">${num.has(c) ? `<b class="sm-id">${num.get(c)}</b>` : ""}<span translate="no">${esc(devName(c))}</span><button type="button" class="sm-x" data-unsel="${esc(keyOf(c))}" title="${esc(I18N.tr("Remove from the selection"))}" aria-label="${esc(I18N.tr("Remove from the selection"))}">✕</button></span>`).join("")}</div></div>`;
 }
 function selPaneHtml(cs) {
-  const n = cs.length, cl = cs.filter(c => !c.is_device);
+  const n = cs.length, cl = bulkCl(cs);
   const head = `<div class="sel-top"><button type="button" class="link" data-bulk="all">Select all shown</button><button type="button" class="link" data-bulk="none" ${n ? "" : "disabled"}>None</button></div>`;
   if (!n) return head + `<p class="hint">Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.</p>`;
   const conn = selCount(cs, c => c.is_device ? "dev" : c.conn || "", k => k === "dev" ? I18N.tr("UniFi devices") : I18N.tr(CONN_LABEL[k] || "Unknown"));
   const nets = selCount(cs, c => c.network_id || "", k => `<span translate="no">${esc(netLabel(k) || "–")}</span>`);
   const vno = selCount(cl.filter(c => c.vno_id), c => c.vno_id, k => `<span translate="no">${esc(netLabel(k) || "?")}</span>`);
-  const inet = FW.data ? selCount(cl.filter(c => c.mac), c => fwInternet(c).lvl, k => I18N.tr(FW_LVL[k]?.[0] || "Unknown")) : [];
+  const inet = FW.data ? selCount(cl, c => fwInternet(c).lvl, k => I18N.tr(FW_LVL[k]?.[0] || "Unknown")) : [];
   const fixed = cl.filter(c => c.use_fixedip).length, online = cs.filter(c => c.online).length;
   const rc = cs.filter(canReconnect).length, vnoN = cl.filter(c => c.vno_id).length;
   const btn = (act, label, cnt, title) => `<button type="button" class="btn sel-act" data-bulk="${act}" ${!cnt || BULK.busy ? "disabled" : ""} title="${esc(title)}"><span>${label}</span>${cnt != null ? ` <span class="muted">(${cnt})</span>` : ""}</button>`;
@@ -2010,11 +2023,12 @@ function selPaneHtml(cs) {
       ${btn("unres", "Release fixed IP", fixed, "Remove the fixed IP – the devices get an address from the DHCP pool again")}
       ${btn("note", "Note…", cl.length, "Set the same note for the selected clients")}
       ${btn("rc", "Reconnect WiFi", rc, "Disconnect the selected WiFi clients for a moment so they ask for a new address")}
-      ${FW.data ? btn("fw", "Firewall rule…", cl.filter(c => c.mac).length, "Create a firewall rule for the selected devices") : ""}
+      ${FW.data ? btn("fw", "Firewall rule…", cl.length, "Create a firewall rule for the selected devices") : ""}
     </div>`;
 }
 // who may reach whom among the selected devices (and the internet) – ping and the common services, like the device test
 const SELMX = { max: 30, pairs: [] };
+const VERDICT = { allow: "✓", block: "✕", part: "◐", unknown: "?" };
 // matrix headers: the Home Assistant logo of the device, its UniFi icon as fallback
 const smIcon = c => devIconHtml(c, "ha") || iconHtml(c);
 const selMxDevs = cs => cs.filter(c => c.mac && zoneOf(c)).slice(0, SELMX.max); // the devices of the matrix, numbered 1 …
@@ -2026,11 +2040,11 @@ function selMatrixHtml(cs) {
   const cell = (a, dz, b) => {
     const r = SIM_SVCS.map(([name, proto, port]) => ({ name, port, r: simService(zoneOf(a).id, dz, a, b, proto, port) }));
     const ok = r.filter(x => x.r.verdict === "allow").length, no = r.filter(x => x.r.verdict === "block").length;
-    const v = ok === r.length ? ["allow", "✓"] : no === r.length ? ["block", "✕"] : ok ? ["part", "◐"] : ["unknown", "?"];
-    const idx = SELMX.pairs.push({ a, b, r }) - 1;
-    return `<td class="sm-c sm-${v[0]}" data-smx="${idx}" title="${esc(`${devName(a)} → ${b ? devName(b) : "Internet"}: ${ok}/${r.length} ${I18N.tr("allowed")}`)}">${v[1]}</td>`;
+    const v = ok === r.length ? "allow" : no === r.length ? "block" : ok ? "part" : "unknown";
+    const idx = SELMX.pairs.push({ a, b, r }) - 1, t = esc(`${devName(a)} → ${b ? devName(b) : "Internet"}: ${ok}/${r.length} ${I18N.tr("allowed")}`);
+    return `<td class="sm-c sm-${v}" data-smx="${idx}" tabindex="0" role="button" title="${t}" aria-label="${t}">${VERDICT[v]}</td>`;
   };
-  const keyLeg = `<div class="sm-key">${[["allow", "✓", "all allowed"], ["part", "◐", "partly"], ["block", "✕", "all blocked"], ["unknown", "?", "not decided"]].map(([k, i, l]) => `<span class="sm-kp"><span class="sm-c sm-${k}">${i}</span><span>${l}</span></span>`).join("")}</div>`;
+  const keyLeg = `<div class="sm-key">${[["allow", "all allowed"], ["part", "partly"], ["block", "all blocked"], ["unknown", "not decided"]].map(([k, l]) => `<span class="sm-kp"><span class="sm-c sm-${k}">${VERDICT[k]}</span><span>${l}</span></span>`).join("")}</div>`;
   const head = `<tr><th class="sm-corner"></th>${ds.map((d, i) => `<th class="sm-n" title="${esc(devName(d))}" translate="no"><span class="sm-hd"><span>${i + 1}</span><span class="sm-hic">${smIcon(d)}</span></span></th>`).join("")}${ext ? `<th title="Internet">🌐</th>` : ""}</tr>`;
   const rows = ds.map((a, i) => `<tr><th class="sm-row sm-n" title="${esc(devName(a))}" translate="no"><span class="sm-rh"><span>${i + 1}</span><span class="sm-hic">${smIcon(a)}</span></span></th>${ds.map(b => b === a ? `<td class="sm-c sm-self">–</td>` : cell(a, zoneOf(b).id, b)).join("")}${ext ? cell(a, ext.id, null) : ""}</tr>`).join("");
   const ncol = ds.length + (ext ? 1 : 0);
@@ -2050,11 +2064,14 @@ function bulkAsk(act, cs) {
   return new Promise(res => {
     const d = $("#dlgBulk"), net = act === "vno";
     $("#bulkTitle").textContent = I18N.tr(net ? "Override network" : "Set note");
-    $("#bulkText").textContent = I18N.tr(net ? `${cs.length} clients are put into this network. A client with a fixed IP in another network is skipped.` : `The note of ${cs.length} clients is replaced (empty = remove).`);
+    const one = cs.length === 1;
+    $("#bulkText").textContent = I18N.tr(net ? (one ? "The selected client is put into this network. If it has a fixed IP in another network, it is skipped." : `${cs.length} clients are put into this network. A client with a fixed IP in another network is skipped.`) : one ? "The note of the selected client is replaced (empty = remove)." : `The note of ${cs.length} clients is replaced (empty = remove).`);
     $("#bulkNetF").hidden = !net; $("#bulkNoteF").hidden = net;
     if (net) $("#bulkNet").innerHTML = state.networks.filter(n => n.subnet).map(n => `<option value="${esc(n.id)}" translate="no">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("");
     else $("#bulkNote").value = "";
-    const done = v => { d.close(); $("#formBulk").onsubmit = null; $("#bulkCancel").onclick = null; res(v); };
+    let fin = false;
+    const done = v => { if (fin) return; fin = true; $("#formBulk").onsubmit = null; $("#bulkCancel").onclick = null; if (d.open) d.close(); res(v); };
+    d.addEventListener("close", () => done(null), { once: true }); // Escape closes the dialog without an answer
     $("#formBulk").onsubmit = e => { e.preventDefault(); done(net ? $("#bulkNet").value : $("#bulkNote").value.trim()); };
     $("#bulkCancel").onclick = () => done(null);
     d.showModal(); (net ? $("#bulkNet") : $("#bulkNote")).focus();
@@ -2065,21 +2082,19 @@ async function bulkRun(label, cs, fn) {
   if (!(await autoVersion(`Before bulk change: ${label}`))) { BULK.busy = false; renderBulk(); return; }
   let ok = 0; const fails = [];
   for (const c of cs) { try { await fn(c); ok++; } catch (e) { fails.push(`${devName(c)}: ${e.message}`); } }
-  BULK.busy = false;
   toast(fails.length ? `${ok} changed, ${fails.length} failed – ${fails[0]}` : `${ok} changed`);
-  await load();
+  try { await load(); } finally { BULK.busy = false; renderBulk(); } // the buttons come back with the new data
 }
 async function bulkAct(act) {
   if (act === "all") { for (const c of rows()) BULK.keys.add(keyOf(c)); renderAll(); return; }
   if (act === "none") { BULK.keys.clear(); renderAll(); return; }
-  if (act === "done") { setBulk(false); return; }
-  const cs = bulkDevs(), cl = cs.filter(c => !c.is_device && c.mac);
+  const cs = bulkDevs(), cl = bulkCl(cs);
   if (act === "fw") { openWizFor(cl); return; }
   if (act === "rc") {
-    const rc = cs.filter(canReconnect); if (!(await askConfirm(I18N.tr("Reconnect WiFi"), I18N.tr(`${rc.length} WiFi clients are disconnected for a moment, one per second.`)))) return;
+    const rc = cs.filter(canReconnect); if (!(await askConfirm(I18N.tr("Reconnect WiFi"), I18N.tr(rc.length === 1 ? "The selected WiFi client is disconnected for a moment." : `${rc.length} WiFi clients are disconnected for a moment, one per second.`)))) return;
     BULK.busy = true; renderBulk(); let ok = 0;
     for (const c of rc) { try { await api("api/reconnect", { mac: c.mac }); ok++; } catch {} await new Promise(r => setTimeout(r, 1000)); }
-    BULK.busy = false; renderBulk(); toast(`${ok} reconnected`); setTimeout(() => load(), 15000); return;
+    BULK.busy = false; renderBulk(); toast(`${ok} reconnected`); clearTimeout(BULK.rcT); BULK.rcT = setTimeout(() => load(), 15000); return;
   }
   if (act === "vno") {
     const nid = await bulkAsk("vno", cl); if (!nid) return;
@@ -2087,19 +2102,20 @@ async function bulkAct(act) {
     await bulkRun("network override", todo, c => api("api/client", clientBody(c, { vno_enabled: true, vno_id: nid })));
   } else if (act === "novno") {
     const todo = cl.filter(c => !!c.vno_id);
-    if (!(await askConfirm(I18N.tr("Remove override"), I18N.tr(`The virtual network override of ${todo.length} clients is switched off.`)))) return;
+    if (!(await askConfirm(I18N.tr("Remove override"), I18N.tr(todo.length === 1 ? "The virtual network override of the selected client is switched off." : `The virtual network override of ${todo.length} clients is switched off.`)))) return;
     await bulkRun("remove override", todo, c => api("api/client", clientBody(c, { vno_enabled: false, vno_id: "" })));
   } else if (act === "unres") {
     const todo = cl.filter(c => c.use_fixedip);
-    if (!(await askConfirm(I18N.tr("Release fixed IP"), I18N.tr(`${todo.length} fixed IPs are removed. Names and notes are kept; the devices get an address from the DHCP pool again.`)))) return;
+    if (!(await askConfirm(I18N.tr("Release fixed IP"), I18N.tr(todo.length === 1 ? "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again." : `${todo.length} fixed IPs are removed. Names and notes are kept; the devices get an address from the DHCP pool again.`)))) return;
     await bulkRun("release fixed IPs", todo, c => api("api/unreserve", { mac: c.mac }));
   } else if (act === "note") {
     const note = await bulkAsk("note", cl); if (note == null) return;
     await bulkRun("note", cl, c => api("api/client", clientBody(c, { note })));
   }
 }
+$("#paneSel").addEventListener("keydown", e => { const m = (e.key === "Enter" || e.key === " ") && e.target.closest("[data-smx]"); if (m) { e.preventDefault(); selMxOpen(+m.dataset.smx); } });
 $("#paneSel").addEventListener("click", e => { const u = e.target.closest("[data-unsel]"); if (u) { bulkToggle(u.dataset.unsel); return; } if (e.target.closest("[data-smxclose]")) { $("#smxRes").hidden = true; $("#paneSel td.sm-c.on")?.classList.remove("on"); SELMX.open = null; return; } const m = e.target.closest("[data-smx]"); if (m) { selMxOpen(+m.dataset.smx); return; } const b = e.target.closest("[data-bulk]"); if (b && !b.disabled) bulkAct(b.dataset.bulk); });
-$("#mnSelect").addEventListener("click", () => { if (isPlan() || isFw()) setView("clients"); else if (isRel()) setView("clients"); setBulk(true); });
+$("#mnSelect").addEventListener("click", () => { if (isPlan() || isFw()) setView("clients"); setBulk(true); }); // tree and graph select too
 // firewall wizard for several devices: "Selected devices" of the zone most of them are in
 function openWizFor(cs) {
   openWiz(null);
@@ -2113,10 +2129,10 @@ function openWizFor(cs) {
 
 // ---------- what changed since the last visit: a snapshot in the browser, compared on every render ----------
 const SEEN_KEY = "seenState";
-const fwSig = p => JSON.stringify([p.name, p.action, p.enabled !== false, p.index, p.source?.zone_id, p.destination?.zone_id]);
+const fwSig = p => JSON.stringify([p.name, p.action, p.enabled !== false, p.source?.zone_id, p.destination?.zone_id]); // not the index: one new rule on top shifts all others
 function seenSnapshot() {
   const dev = {};
-  for (const c of state.clients) dev[keyOf(c)] = [devName(c), c.use_fixedip ? c.fixed_ip || "" : "", c._warn.map(w => w[1]).sort().join("|")];
+  for (const c of state.clients) if (c.mac) dev[c.mac] = [devName(c), c.use_fixedip ? c.fixed_ip || "" : "", c._warn.map(w => w[1]).sort().join("|")];
   const fw = FW.data ? Object.fromEntries(FW.data.policies.filter(p => !p.predefined).map(p => [p.id, fwSig(p)])) : null;
   return { t: Date.now(), dev, fw };
 }
@@ -2124,38 +2140,42 @@ function seenDiff() {
   const old = store.get(SEEN_KEY, null); if (!old?.dev) return null;
   const cur = seenSnapshot(), d = { since: old.t, newDev: [], gone: [], probs: [], fixed: [], fw: 0 };
   for (const c of state.clients) {
-    const k = keyOf(c), o = old.dev[k], n = cur.dev[k];
+    if (!c.mac) continue; // Teleport sessions without a MAC come and go – not a change
+    const k = c.mac, o = old.dev[k], n = cur.dev[k];
     if (!o) { d.newDev.push(k); continue; }
     if (o[1] !== n[1]) d.fixed.push(k);
     const before = new Set(o[2] ? o[2].split("|") : []);
     if (n[2] && n[2].split("|").some(w => !before.has(w))) d.probs.push(k);
   }
-  for (const k of Object.keys(old.dev)) if (!cur.dev[k]) d.gone.push(old.dev[k][0]);
+  for (const k of Object.keys(old.dev)) if (!cur.dev[k] && k.includes(":")) d.gone.push(old.dev[k][0]); // older snapshots also stored Teleport rows
   if (old.fw && cur.fw) { const ids = new Set([...Object.keys(old.fw), ...Object.keys(cur.fw)]); for (const id of ids) if (old.fw[id] !== cur.fw[id]) d.fw++; }
   d.any = d.newDev.length + d.gone.length + d.probs.length + d.fixed.length + d.fw > 0;
   return d;
 }
-function markSeen() { store.set(SEEN_KEY, seenSnapshot()); state.pick = null; renderAll(); }
+function markSeen() { store.set(SEEN_KEY, seenSnapshot()); CHG.memo = null; state.pick = null; renderAll(); }
 function renderChg() {
   const box = $("#chgBox");
   if (!state.clients.length || state.loading) { box.hidden = true; return; }
-  if (!store.get(SEEN_KEY, null)) store.set(SEEN_KEY, seenSnapshot()); // first visit: nothing to compare yet
-  const d = seenDiff();
+  const seen = store.get(SEEN_KEY, null);
+  if (!seen) { store.set(SEEN_KEY, seenSnapshot()); CHG.memo = null; } // first visit: nothing to compare yet
+  const mk = [state.rev, FW.data?.fetched_at || 0, seen?.t].join("|");
+  if (CHG.memo?.key !== mk) CHG.memo = { key: mk, d: seenDiff() }; // the comparison only changes with new data
+  const d = CHG.memo.d;
   if (!d?.any) { box.hidden = true; return; }
-  const chip = (id, n, one, many, keys, title = "") => n ? `<button type="button" class="chg-c ${id}" data-chg="${id}" aria-pressed="${state.pick?.id === id}"${title ? ` title="${esc(title)}"` : ""}><b>${n}</b> <span>${n === 1 ? one : many}</span></button>` : "";
-  CHG.keys = { newDev: d.newDev, probs: d.probs, fixed: d.fixed };
+  const chip = (id, n, one, many, title = "") => n ? `<button type="button" class="chg-c ${id}" data-chg="${id}" aria-pressed="${state.pick?.id === id}"${title ? ` title="${esc(title)}"` : ""}><b>${n}</b> <span>${n === 1 ? one : many}</span></button>` : "";
+  CHG.keys = { newDev: d.newDev, probs: d.probs, fixed: d.fixed }; CHG.gone = d.gone;
   box.innerHTML = `<span class="chg-t">Since your last visit</span> <span class="muted chg-d">${isoDateTime(d.since / 1000)}</span>
-    ${chip("newDev", d.newDev.length, "new device", "new devices")}${chip("probs", d.probs.length, "device with new issues", "devices with new issues")}${chip("fixed", d.fixed.length, "fixed IP changed", "fixed IPs changed")}${chip("gone", d.gone.length, "device removed", "devices removed", null, d.gone.join(", "))}${chip("fw", d.fw, "firewall rule changed", "firewall rules changed")}
+    ${chip("newDev", d.newDev.length, "new device", "new devices")}${chip("probs", d.probs.length, "device with new issues", "devices with new issues")}${chip("fixed", d.fixed.length, "fixed IP changed", "fixed IPs changed")}${chip("gone", d.gone.length, "device removed", "devices removed", d.gone.join(", "))}${chip("fw", d.fw, "firewall rule changed", "firewall rules changed")}
     <span class="sp"></span><button type="button" class="link" id="chgSeen">Mark as seen</button>`;
   box.hidden = false;
 }
-const CHG = { keys: {} };
+const CHG = { keys: {}, gone: [], memo: null };
 $("#chgBox").addEventListener("click", e => {
   if (e.target.closest("#chgSeen")) { markSeen(); return; }
   const b = e.target.closest("[data-chg]"); if (!b) return;
   const id = b.dataset.chg;
   if (id === "fw") { setView("fw"); return; }
-  if (id === "gone") return; // only the tooltip – they are no longer in UniFi
+  if (id === "gone") { toast(`${I18N.tr("Removed")}: ${CHG.gone.join(", ")}`); return; } // no longer in UniFi – nothing to filter
   state.pick = state.pick?.id === id ? null : { id, keys: new Set(CHG.keys[id] || []) };
   renderAll();
 });
@@ -2181,9 +2201,8 @@ function renderCards(list) {
       ${icMode === "none" ? "" : `<span class="lc-ic">${icMode === "ha" && haDom(c) ? devIconHtml(c, "ha", true) : `<span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span>`}</span>`}
       <span class="lc-m">
         <span class="lc-n"><span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span><b translate="no">${esc(devName(c))}</b>
-          <span class="lc-ps">${colTd("ipmode", c)}${CONN_LABEL[c.conn] ? `<span class="lc-p">${CONN_LABEL[c.conn]}</span>` : ""}${colTd("uplink", c) && colTd("uplink", c) !== CONN_LABEL[c.conn] ? `<span class="lc-p" translate="no">${colTd("uplink", c)}</span>` : ""}${netLabel(c.network_id) ? `<span class="lc-p" translate="no">${esc(netLabel(c.network_id))}</span>` : ""}</span></span>
-        <span class="lc-s"><span class="mono" translate="no">${esc(c.ip || "–")}</span>${fixedOther ? ` <span class="muted">→</span> <span class="mono lc-fix" translate="no" title="Fixed IP">${esc(c.fixed_ip)}</span>` : ""}</span>
-        ${c._warn.length ? `<span class="lc-w">${colTd("_warn", c)}</span>` : ""}
+          <span class="lc-s"><span class="mono" translate="no">${esc(c.ip || "–")}</span>${fixedOther ? ` <span class="muted">→</span> <span class="mono lc-fix" translate="no" title="Fixed IP">${esc(c.fixed_ip)}</span>` : ""}</span>
+          <span class="lc-ps">${colTd("ipmode", c)}${CONN_LABEL[c.conn] ? `<span class="lc-p">${CONN_LABEL[c.conn]}</span>` : ""}${c.uplink && c.conn !== "teleport" ? `<span class="lc-p"><span translate="no">${esc(c.uplink)}</span>${c.conn === "wired" && c.port ? ` <span>Port</span> ${esc(String(c.port))}` : ""}</span>` : ""}${netLabel(c.network_id) ? `<span class="lc-p" translate="no">${esc(netLabel(c.network_id))}</span>` : ""}${c._warn.length ? `<span class="lc-w">${colTd("_warn", c)}</span>` : ""}</span></span>
       </span></button>`;
   }).join("");
 }
@@ -2226,7 +2245,7 @@ function applyCols() {
   persist(); buildHead(); renderAll(); renderCols();
 }
 function openCols() { if (!$("#detail").hidden) closePanel(); $("#side").classList.remove("open"); renderCols(); $("#colPanel").hidden = false; }
-function closeCols() { $("#colPanel").hidden = true; }
+function closeCols() { const was = !$("#colPanel").hidden; $("#colPanel").hidden = true; if (was && BULK.on) renderBulk(); } // the selection pane comes back
 $("#colClose").addEventListener("click", closeCols);
 $("#colDone").addEventListener("click", closeCols);
 $("#colRestore").addEventListener("click", () => { state.hiddenCols = []; state.colOrder = []; applyCols(); });
@@ -2368,6 +2387,8 @@ function setView(v) {
   for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(rel ? b.dataset.rt === REL.tab : b.dataset.rt === listMode()));
   $("#planNets").hidden = !plan; $("#fwSide").hidden = !fw; $(".tablewrap").hidden = plan || fw || rel; $("#planView").hidden = !plan; $("#fwView").hidden = !fw;
   if (rel) { closeCols(); PLAN.tab = "cur"; openRel(); } else if (plan) { closeCols(); openPlan(); } else if (fw) { closeCols(); PLAN.tab = "cur"; renderFw(); } else { PLAN.tab = "cur"; renderTable(); }
+  document.body.classList.toggle("cards-mode", !plan && !fw && !rel && listMode() === "cards");
+  renderBulk(); // the selection pane belongs to the clients, tree and graph – not to IP plan and firewall
   fitTopbarSoon();
 }
 // texts of the top bar change (count, time, translation, plan tabs): fit again
@@ -3314,7 +3335,7 @@ function fwMiniChainHtml(c) {
     <details class="card fw-mini${items.some(x => x.sp || x.off) ? " has-by" : ""}" id="fwMini"${open ? " open" : ""}><summary class="fm-sum" title="${esc(flow ? "Normal traffic of this device reaches the internet" : `Normal traffic of this device is blocked by ${stop.p.name || "a rule"}`)}"><span class="fm-n dev">${iconHtml(c)}</span>${strip}<span class="fm-n net${flow ? " on" : ""}">🌐</span><span class="fm-v ${flow ? "ok" : "no"}" aria-label="${flow ? "Reaches the internet" : "Blocked"}">${flow ? "✓" : "✕"}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
     <div class="fw-named">${lane}</div><p class="hint" style="margin:6px 0 0">Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.</p>${items.some(x => x.sp) ? `<p class="hint" style="margin:4px 0 0">Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.</p>` : ""}${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}${fwNamedHtml(c, true, { src: z.id, dst: ext.id })}</details>`;
 }
-document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); if (e.target.id === "fwInfo") store.set("fwInfoOpen", e.target.open); if (e.target.id === "swInfo") store.set("swInfoOpen", e.target.open); if (e.target.id === "fwSim") store.set("fwSimOpen", e.target.open); }, true);
+document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); if (e.target.id === "fwInfo") store.set("fwInfoOpen", e.target.open); if (e.target.id === "swInfo") store.set("swInfoOpen", e.target.open); }, true);
 // the rules that name this client (by MAC, IP or network) – boxes like in the rule chain, paused ones grey
 function fwNamedHtml(c, inner, skip) {
   if (!FW.data || !c?.mac) return "";
@@ -3501,6 +3522,7 @@ function fwSimulate(q) {
   for (const p of fwSeq(q.sz, q.dz).seq) {
     const step = { p, st: "" }; out.steps.push(step);
     if (p.enabled === false) { step.st = "paused"; continue; }
+    if (String(p.ip_version || "BOTH").toUpperCase() === "IPV6") { step.st = "ipv6"; continue; } // the test is about IPv4 addresses
     // UniFi's built-in rules other than the zone default only cover special cases (invalid connections, LTE failover …)
     const isDefault = fwTarget(p.source) === "ANY" && fwTarget(p.destination) === "ANY" && fwPortAny(p.source) && fwPortAny(p.destination) && fwProto(p) === "All" && fwCst(p) === "ALL" && !fwSched(p);
     if (p.predefined && !isDefault) { step.st = "special"; continue; }
@@ -3510,7 +3532,7 @@ function fwSimulate(q) {
     const md = fwSideMatch(p.destination, q.dst);
     if (!ms || !md) { step.st = "other"; continue; } // names other devices
     if (fwCst(p) === "RESPOND_ONLY") { step.st = "replies"; continue; } // only answers to connections from the other side
-    if (fwCst(p) !== "ALL") { step.st = "state"; continue; }
+    if (fwCst(p) !== "ALL" && !(p.connection_states || []).some(x => String(x).toUpperCase() === "NEW")) { step.st = "state"; continue; } // only for established / related … connections
     if (ms === "some" || md === "some") { step.st = "some"; continue; } // only some of the devices or addresses (zone question, domains …)
     if (q.proto !== "all" && !fwProtoHas(p, q.proto)) { step.st = "proto"; continue; }
     if (q.proto === "all" && String(p.protocol || "all").toLowerCase() !== "all") { step.st = "some"; continue; }
@@ -3534,13 +3556,13 @@ function simTargetLabel(v) {
   const ext = fwZoneByKey("external");
   if (!v || v === "zone:" + ext?.id) return `<span class="sim-ic">🌐</span><span>Internet</span>`;
   if (v.startsWith("zone:")) return `<span class="sim-ic">▦</span><span translate="no">${esc(fwZoneName(v.slice(5)))}</span> <span class="muted">(<span>all devices</span>)</span>`;
-  const d = devByMac(v.slice(4)); return d ? `<span class="sim-ic">${devIconHtml(d, store.get("topoIcon", "ha")) || iconHtml(d)}</span><span translate="no">${esc(devName(d))}</span>` : "?";
+  const d = devByMac(v.slice(4)); return d ? `<span class="sim-ic">${prefIcon(d)}</span><span translate="no">${esc(devName(d))}</span>` : "?";
 }
 const SIMTO = { sel: "", fold: new Set() };
+const prefIcon = d => devIconHtml(d, store.get("topoIcon", "ha")) || iconHtml(d); // the icon chosen for tree and graph
 function simListHtml(c, q) {
   const ext = fwZoneByKey("external"), t = q.trim().toLowerCase(), hit = v => !t || String(v || "").toLowerCase().includes(t);
-  const ic = d => devIconHtml(d, store.get("topoIcon", "ha")) || iconHtml(d);
-  const item = (v, icon, label, sub, cls = "") => `<button type="button" class="st-it ${cls}${SIMTO.sel === v ? " on" : ""}" data-simto="${esc(v)}"><span class="sim-ic">${icon}</span><span class="sim-n" translate="no">${label}</span>${sub ? `<span class="sim-sub muted" translate="no">${sub}</span>` : ""}</button>`;
+  const item = (v, icon, label, sub, cls = "") => `<button type="button" class="st-it ${cls}${SIMTO.sel === v ? " on" : ""}" data-simto="${esc(v)}" aria-pressed="${SIMTO.sel === v}"><span class="sim-ic">${icon}</span><span class="sim-n" translate="no">${label}</span>${sub ? `<span class="sim-sub muted" translate="no">${sub}</span>` : ""}</button>`;
   const inet = ext && hit("internet") ? `<div class="st-top">${item("zone:" + ext.id, "🌐", "Internet", "", "st-inet")}</div>` : "";
   const zs = fwZones().filter(z => z.id !== ext?.id), nDev = z => simDevs(z.id).filter(d => d.mac !== c.mac).length;
   const cols = [...zs.filter(nDev), ...zs.filter(z => !nDev(z))].map(z => {
@@ -3548,7 +3570,7 @@ function simListHtml(c, q) {
     if (!zHit && !list.length) return "";
     const open = t ? true : !SIMTO.fold.has(z.id); // while searching everything is open
     return `<details class="st-zone" data-zone="${esc(z.id)}" ${open ? "open" : ""}><summary><span class="st-zn" translate="no">${esc(z.name)}</span><span class="muted st-cnt">${ds.length}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
-      ${item("zone:" + z.id, "▦", esc(I18N.tr("All devices of the zone")), "", "st-all")}${list.map(d => item("dev:" + d.mac, ic(d), esc(devName(d)), esc(d.ip || ""))).join("") }</details>`;
+      ${item("zone:" + z.id, "▦", esc(I18N.tr("All devices of the zone")), "", "st-all")}${list.map(d => item("dev:" + d.mac, prefIcon(d), esc(devName(d)), esc(d.ip || ""))).join("") }</details>`;
   }).join("");
   return inet + (cols ? `<div class="st-grid">${cols}</div>` : "") || `<p class="muted st-none">No match.</p>`;
 }
@@ -3564,7 +3586,7 @@ $("#simQ").addEventListener("input", simToRender);
 $("#simToClose").addEventListener("click", () => $("#dlgSimTo").close());
 $("#simToCancel").addEventListener("click", () => $("#dlgSimTo").close());
 $("#simToOk").addEventListener("click", simToApply);
-$("#simToBody").addEventListener("click", e => { const b = e.target.closest("[data-simto]"); if (!b) return; SIMTO.sel = b.dataset.simto; for (const x of $("#simToBody").querySelectorAll(".st-it")) x.classList.toggle("on", x === b); $("#simToSel").innerHTML = `<span>Selected:</span> ${simTargetLabel(SIMTO.sel)}`; });
+$("#simToBody").addEventListener("click", e => { const b = e.target.closest("[data-simto]"); if (!b) return; SIMTO.sel = b.dataset.simto; for (const x of $("#simToBody").querySelectorAll(".st-it")) { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", String(x === b)); } $("#simToSel").innerHTML = `<span>Selected:</span> ${simTargetLabel(SIMTO.sel)}`; });
 $("#simToBody").addEventListener("dblclick", e => { const b = e.target.closest("[data-simto]"); if (b) { SIMTO.sel = b.dataset.simto; simToApply(); } });
 $("#simToBody").addEventListener("toggle", e => { const d = e.target.closest?.(".st-zone"); if (!d || $("#simQ").value.trim()) return; d.open ? SIMTO.fold.delete(d.dataset.zone) : SIMTO.fold.add(d.dataset.zone); }, true);
 // common services: one result chip each, like the port check
@@ -3581,18 +3603,18 @@ function simDevHtml(c) {
   if (!SIM.dst) SIM.dst = "zone:" + (fwZoneByKey("external")?.id || "");
   const picker = `<span class="sim-to"><button type="button" class="sim-pick" id="simPickBtn" aria-haspopup="dialog">${simTargetLabel(SIM.dst)}<span class="sim-caret" aria-hidden="true">▾</span></button></span>`;
   const btn = `<button class="btn" type="button" id="simGo">${SIM.res ? "Check again" : "Check"}</button>`;
-  const r = SIM.res;
-  if (!r) return `<div class="foot sim-dev"><span>Firewall: may this device reach</span>${picker}${btn}</div>`;
-  return `<div class="foot sim-dev"><span>Firewall: may this device reach</span>${picker}${btn}</div>${simResultHtml(r)}`;
+  return `<div class="foot sim-dev"><span>Firewall: may this device reach</span>${picker}${btn}</div>${SIM.res ? simResultHtml(SIM.res) : ""}`;
 }
 // summary line and chips of a check (list of { name, port, r }), like the port check
 function simResultHtml(r) {
   const ok = r.filter(x => x.r.verdict === "allow").length, no = r.filter(x => x.r.verdict === "block").length, unk = r.length - ok - no;
   const sum = ok === r.length ? `<b style="color:var(--ok)">✓ <span>Allowed</span></b>` : no === r.length ? `<b style="color:var(--bad)">✕ <span>Blocked</span></b>` : unk === r.length ? `<b class="muted">? <span>Not decided</span></b>` : `<b style="color:var(--warn)">◐ ${ok} of ${r.length} allowed</b>`;
-  const why = x => x.r.by ? `${x.r.by.name || "?"}${x.r.by.predefined ? " (built-in)" : ""}` : x.r.dflt ? `Zone default: ${FW_DEF[x.r.dflt]}` : "No rule decides for exactly this – it depends on the device or address";
+  // tooltips are put together here, so each part is translated on its own
+  const why = x => x.r.by ? `${x.r.by.name || "?"}${x.r.by.predefined ? ` · ${I18N.tr("built-in")}` : ""}` : I18N.tr(x.r.dflt ? `Zone default: ${FW_DEF[x.r.dflt]}` : "No rule decides for exactly this – it depends on the device or address");
+  const when = x => x.r.notes.length ? ` · ${I18N.tr("At certain times another rule decides:")} ${x.r.notes.map(p => p.name).join(", ")}` : "";
   // everything the same: one chip instead of ten
-  const same = ok === r.length ? ["allow", "All ports open", "✓"] : no === r.length ? ["block", "All ports blocked", "✕"] : unk === r.length ? ["unknown", "No rule and no default between these zones", "?"] : null;
-  const chips = same ? `<span class="pchip sim-${same[0]}" title="${esc(why(r[0]))}"><span>${same[1]}</span><span class="sim-m" aria-hidden="true">${same[2]}</span></span>` : r.map(x => `<span class="pchip sim-${x.r.verdict}" title="${esc(why(x))}${x.r.notes.length ? esc(" · at certain times: " + x.r.notes.map(p => p.name).join(", ")) : ""}">${x.port != null ? `<b>${x.port}</b>` : ""}<span>${esc(x.name)}</span><span class="sim-m" aria-hidden="true">${x.r.verdict === "allow" ? "✓" : x.r.verdict === "block" ? "✕" : "?"}</span></span>`).join("");
+  const same = ok === r.length ? ["allow", "All ports open"] : no === r.length ? ["block", "All ports blocked"] : unk === r.length ? ["unknown", "No rule and no default between these zones"] : null;
+  const chips = same ? `<span class="pchip sim-${same[0]}" title="${esc(why(r[0]))}"><span>${same[1]}</span><span class="sim-m" aria-hidden="true">${VERDICT[same[0]]}</span></span>` : r.map(x => `<span class="pchip sim-${x.r.verdict}" title="${esc(why(x) + when(x))}">${x.port != null ? `<b>${x.port}</b>` : ""}<span translate="no">${esc(x.name)}</span><span class="sim-m" aria-hidden="true">${VERDICT[x.r.verdict] || "?"}</span></span>`).join("");
   const rules = [...new Map(r.filter(x => x.r.by).map(x => [x.r.by.id, x.r.by])).values()];
   return `<div class="sim-res"><span>${sum}</span>${rules.length ? ` <span class="muted">· <span>decided by</span></span> ${rules.map(p => `<button type="button" class="link" data-fwpol="${esc(p.id)}" translate="no">${esc(p.name || "?")}</button>`).join(", ")}` : ""}</div>
     <div class="port-list">${chips}</div>`;
@@ -4120,7 +4142,14 @@ function fwCovers(q, p) {
 }
 const fwIsAllow = p => String(p.action || "").toUpperCase() === "ALLOW";
 // evaluation order of a zone pair: custom rules before UniFi's built-in ones, then built-in, then custom rules placed after them
+const FWSEQ = { src: null, m: new Map() };
 function fwSeq(s, d, order) {
+  if (order) return fwSeqCalc(s, d, order);
+  if (FWSEQ.src !== FW.byPair) { FWSEQ.src = FW.byPair; FWSEQ.m.clear(); } // new firewall data (or a version's) – start over
+  const k = s + ">" + d; let r = FWSEQ.m.get(k); if (!r) FWSEQ.m.set(k, r = fwSeqCalc(s, d));
+  return r;
+}
+function fwSeqCalc(s, d, order) {
   const all = FW.byPair[s + ">" + d] || [], pre = all.filter(p => p.predefined).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
   const minPre = pre.length ? (pre[0].index ?? 0) : Infinity;
   let cust = all.filter(p => !p.predefined).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
@@ -4362,7 +4391,7 @@ function relDraw() {
   const node = n => {
     const p = P[n], r = rad(n), k = kind(n), s = sub(n);
     const shape = k === "inet" ? `<rect class="core" x="${-r}" y="${-r}" width="${2 * r}" height="${2 * r}" rx="4"/>` : `<circle class="core" r="${r.toFixed(1)}"/>`;
-    return `<g class="rel-n nk-${k}" data-reln="${esc(n)}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><title>${esc([relLabel(n), relIp(n), s].filter(Boolean).join(" · "))}</title>${shape}${G.icon(n, r)}<text class="rel-l" x="${(r + 5).toFixed(1)}" y="${s ? -1 : 4}" translate="no">${esc(lbl(n))}</text>${s ? `<text class="rel-s" x="${(r + 5).toFixed(1)}" y="11" translate="no">${esc(s)}</text>` : ""}</g>`;
+    return `<g class="rel-n nk-${k}" data-reln="${esc(n)}" tabindex="0" role="button" aria-label="${esc(relLabel(n))}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><title>${esc([relLabel(n), relIp(n), s].filter(Boolean).join(" · "))}</title>${shape}${G.icon(n, r)}<text class="rel-l" x="${(r + 5).toFixed(1)}" y="${s ? -1 : 4}" translate="no">${esc(lbl(n))}</text>${s ? `<text class="rel-s" x="${(r + 5).toFixed(1)}" y="11" translate="no">${esc(s)}</text>` : ""}</g>`;
   };
   box.innerHTML = `<svg class="rel-svg${REL.labels ? "" : " no-lbl"}" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Network topology"><rect class="rel-bg" width="${W}" height="${H}"/><g class="rel-vp" transform="translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})">
     ${list.map(line).join("")}
@@ -4540,11 +4569,13 @@ document.querySelectorAll("[data-rt]").forEach(t => t.addEventListener("click", 
 }));
 $("#relView").addEventListener("click", e => {
   if (REL.noClick) return;
-  const n = e.target.closest("[data-reln]"); if (n) { const c = relDev(n.dataset.reln); if (c && BULK.on) { bulkToggle(keyOf(c)); return; } if (c) openPanel(c); else toast(n.dataset.reln === "internet" ? "The internet has no details" : "Not a known device – " + n.dataset.reln.replace(/^ip:/, "")); return; }
+  const n = e.target.closest("[data-reln]"); if (n) { relNodeAct(n); return; }
   const ed = e.target.closest("[data-rele]");
   if (ed && !e.target.closest("button")) { const [a, b] = ed.dataset.rele.split("|"), c = relDev(b) || relDev(a); if (c) openPanel(c); }
 });
 document.querySelectorAll("[data-topoicon]").forEach(b => b.addEventListener("click", () => { REL.topoIcon = b.dataset.topoicon; store.set("topoIcon", REL.topoIcon); isRel() ? renderRel() : renderTable(); }));
+function relNodeAct(n) { if (!pickOrOpen(relDev(n.dataset.reln))) toast(n.dataset.reln === "internet" ? "The internet has no details" : "Not a known device – " + n.dataset.reln.replace(/^ip:/, "")); }
+$("#relView").addEventListener("keydown", e => { const n = (e.key === "Enter" || e.key === " ") && e.target.closest?.("[data-reln]"); if (n) { e.preventDefault(); relNodeAct(n); } });
 function openRel() { REL.topoKey = null; renderRel(); } // opening the view zooms the graph to fit again
 
 // ---------- detail panel ----------
@@ -4553,7 +4584,7 @@ function setTab(t) {
   $("#paneInfo").hidden = t !== "info"; $("#paneEdit").hidden = t !== "edit";
 }
 function openPanel(c, tab) {
-  if (!$("#paneSel").hidden) { $("#paneSel").hidden = true; $("#detail").querySelector(".tabs").hidden = false; }
+  hideSelPane();
   if (state.returnTo && c?.mac !== state.returnMac) state.returnTo = null; // user moved on to another device
   closeCols(); state.sel = c; $("#detail").hidden = false; $("#side").classList.remove("open");
   $("#dTitle").textContent = c ? (c.name || c.hostname || c.mac || "Client") : "New reservation";
@@ -4569,9 +4600,10 @@ function markSel() {
   const k = state.sel ? keyOf(state.sel) : null;
   for (const el of document.querySelectorAll("#planGridWrap .pc, #clGrid .pc")) el.classList.toggle("selc", !!state.sel?.mac && el.dataset.mac === state.sel.mac);
   for (const tr of $("#tbody").querySelectorAll("tr[data-k]")) tr.classList.toggle("sel", tr.dataset.k === k);
+  for (const el of document.querySelectorAll("#cardList .lc[data-k]")) el.classList.toggle("sel", el.dataset.k === k);
 }
 function closePanel() {
-  if (!$("#paneSel").hidden) { $("#paneSel").hidden = true; $("#detail").querySelector(".tabs").hidden = false; }
+  hideSelPane();
   state.sel = null; $("#detail").hidden = true; markSel();
   // came from a dialog via "Open …" → go back to it, with its state kept
   const back = state.returnTo; state.returnTo = null;
@@ -4908,7 +4940,7 @@ async function doForget(btn) {
 $("#tabInfo").addEventListener("click", () => setTab("info"));
 $("#tabEdit").addEventListener("click", () => setTab("edit"));
 $("#dClose").addEventListener("click", () => { if (!$("#paneSel").hidden) setBulk(false); else closePanel(); });
-document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (document.querySelector("dialog[open]") || !$("#langMenu").hidden) return; if (!$("#detail").hidden) closePanel(); else if (!$("#colPanel").hidden) closeCols(); });
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (document.querySelector("dialog[open]") || !$("#langMenu").hidden) return; if (BULK.on && !$("#paneSel").hidden) return; /* the selection: handled above */ if (!$("#detail").hidden) closePanel(); else if (!$("#colPanel").hidden) closeCols(); });
 
 // ---------- CSV ----------
 // CSV cell; values starting with = + - @ tab or CR get a leading ' so spreadsheets do not run them as formulas (CWE-1236)
@@ -5963,8 +5995,8 @@ $("#btnVer").addEventListener("click", openVersions);
 $("#mnVer").addEventListener("click", openVersions); // phones: the header button has no room
 
 // ---------- wiring ----------
-$("#cardList").addEventListener("click", e => { const b = e.target.closest(".lc[data-k]"); if (!b) return; if (BULK.on) { bulkToggle(b.dataset.k); return; } const c = state.clients.find(x => keyOf(x) === b.dataset.k); if (c) openPanel(c); });
-$("#tbody").addEventListener("click", e => { if (e.target.closest("input.ie")) return; const tr = e.target.closest("tr[data-k]"); if (!tr) return; if (BULK.on) { bulkToggle(tr.dataset.k); return; } const c = state.clients.find(x => keyOf(x) === tr.dataset.k); if (c) openPanel(c); });
+$("#cardList").addEventListener("click", e => { const b = e.target.closest(".lc[data-k]"); if (b) pickOrOpen(state.clients.find(x => keyOf(x) === b.dataset.k)); });
+$("#tbody").addEventListener("click", e => { if (e.target.closest("input.ie")) return; const tr = e.target.closest("tr[data-k]"); if (tr) pickOrOpen(state.clients.find(x => keyOf(x) === tr.dataset.k)); });
 $("#q").addEventListener("input", e => { state.q = e.target.value; renderAll(); });
 $("#btnReload").addEventListener("click", load);
 // filter pane: the blue icon hides / shows it (mobile: slide-in, desktop: collapse)
