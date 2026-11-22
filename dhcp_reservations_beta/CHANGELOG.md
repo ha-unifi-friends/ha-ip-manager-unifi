@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.38.0 – 2026-11-22
+
+- **Access points and switches** get a card at the bottom of their settings, like in UniFi: **Locate** (the LED blinks; click again to stop), **Restart** and – for access points – **Disable** / **Enable**. Restart and Disable ask first; the card then says what was sent. Not offered for the gateway (a restart would cut Home Assistant off too); switches cannot be disabled here.
+
 ## 1.37.2 – 2026-11-22
 
 - **Port VLAN warning** only when the override really does not work: a wired device that already is in the wanted network (some switches and gateways assign the VLAN by MAC) gets no “Port VLAN is …” issue and no note.

@@ -515,6 +515,30 @@ def set_port_vlan(api, body, user=""):
     return {"ok": True, "version": ver["id"]}
 
 
+def device_cmd(api, body):
+    """Locate (LED blinks), restart, disable / enable an adopted access point or switch – like the buttons in UniFi.
+    Not for the gateway (a restart cuts Home Assistant off too); switches cannot be disabled here (whole parts of the network)."""
+    mac, action = clean_mac(body.get("mac")), str(body.get("action") or "")
+    dev = next((d for d in api.call("GET", "/stat/device") if (d.get("mac") or "").lower() == mac), None)
+    if not dev:
+        raise UnifiError("The UniFi device was not found – reload and try again.", 409)
+    kind = DEVICE_KIND.get(str(dev.get("type", "")), "device")
+    if kind not in ("ap", "switch"):
+        raise UnifiError("Only access points and switches can be controlled here.", 400)
+    if action in ("locate", "unlocate"):
+        api.call("POST", "/cmd/devmgr", {"cmd": "set-locate" if action == "locate" else "unset-locate", "mac": mac})
+    elif action == "restart":
+        api.call("POST", "/cmd/devmgr", {"cmd": "restart", "mac": mac, "reboot_type": "soft"})
+    elif action in ("disable", "enable"):
+        if kind != "ap":
+            raise UnifiError("Only access points can be disabled here.", 400)
+        api.call("PUT", f"/rest/device/{urllib.parse.quote(str(dev['_id']), safe='')}", {"disabled": action == "disable"})
+    else:
+        raise UnifiError("Unknown action.", 400)
+    log("Device", action + ":", dev.get("name") or mac)
+    return {"ok": True}
+
+
 DEVICE_KIND = {"uap": "ap", "usw": "switch", "udm": "gateway", "ugw": "gateway", "uxg": "gateway", "usg": "gateway"}
 
 
@@ -548,6 +572,9 @@ def merge_device(row, d, nets):
         "wired": not wireless,
         "uplink": up.get("uplink_device_name") or up.get("name") or "",
         "sw_mac": (up.get("uplink_mac") or "").lower() if not wireless else "",
+        "dev_id": d.get("_id") or "",
+        "locating": bool(d.get("locating")),
+        "dev_disabled": bool(d.get("disabled")),
         "port": up.get("uplink_remote_port") or up.get("port_idx") if not wireless else None,
         "essid": "",
         "last_seen": d.get("last_seen") or row.get("last_seen") or 0,
@@ -2414,6 +2441,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, {"new": check_new_devices(API)})
             if method == "POST" and path.endswith("/api/port_vlan"):
                 return self._send(200, set_port_vlan(API, self._json_body(), self._user()))
+            if method == "POST" and path.endswith("/api/device_cmd"):
+                return self._send(200, device_cmd(API, self._json_body()))
             if method == "POST" and path.endswith("/api/reconnect"):
                 return self._send(200, reconnect_client(API, self._json_body().get("mac")))
             if method == "POST" and path.endswith("/api/forget"):
