@@ -1515,5 +1515,9 @@
  "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ allt tillåtet · ✕ allt blockerat · ◐ delvis · ? inte avgjort – ping och vanliga tjänster, som testet i enhetsdetaljerna. Hovra över en cell för reglerna.",
  "Only the first 10 devices.": "Bara de första 10 enheterna.",
  "Zone default": "Zonstandard",
- "allowed": "tillåtna"
+ "allowed": "tillåtna",
+ "Selection": "Urval",
+ "Select one device (details) or several (summary and changes for all)": "Välj en enhet (detaljer) eller flera (sammanfattning och ändringar för alla)",
+ "One device – its details": "En enhet – dess detaljer",
+ "Several devices – select them and change them together": "Flera enheter – välj dem och ändra dem samtidigt"
 }

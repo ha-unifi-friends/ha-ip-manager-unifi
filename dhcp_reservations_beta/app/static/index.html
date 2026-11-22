@@ -475,7 +475,7 @@ body:not(.rel-mode):not(.cards-mode) .topo-icons{display:none!important}
 /* the view selector of the list and the icon switch of tree / graph sit low, next to the tabs, just above the line */
 .topbar>.viewsel,.topbar .topo-icons{align-self:flex-end;margin-bottom:-5px}
 #count{align-self:flex-end;margin-bottom:2px}
-@container main (max-width:559px){.topbar{row-gap:2px}.topbar>.viewsel,.topbar .ms-tgl{order:5}.topbar .ms-tgl{margin-left:auto}.topbar .ms-l{display:none}.topbar #count{order:1;margin-left:auto;font-size:12px;white-space:nowrap;align-self:center;margin-bottom:0}.topbar #count .cnt-l{display:none}.topbar #count .cnt-s{display:inline}body:not(.plan-mode):not(.fw-mode) .topbar .grp{margin-left:0}#btnInline{display:none}#btnActions svg + .lbl + svg,#btnActions svg:last-child:not(:first-child){display:none}} /* phone: view and count next to the tabs; less room between menu and tabs */
+@container main (max-width:559px){.topbar{row-gap:2px}.topbar>.viewsel,.topbar .ms-seg{order:5}.topbar .ms-seg{margin-left:auto}.topbar #count{order:1;margin-left:auto;font-size:12px;white-space:nowrap;align-self:center;margin-bottom:0}.topbar #count .cnt-l{display:none}.topbar #count .cnt-s{display:inline}body:not(.plan-mode):not(.fw-mode) .topbar .grp{margin-left:0}#btnInline{display:none}#btnActions svg + .lbl + svg,#btnActions svg:last-child:not(:first-child){display:none}} /* phone: view and count next to the tabs; less room between menu and tabs */
 /* the icon switch moves into the Actions menu when the top bar has no room for it */
 .cnt-s{display:none}
 @container main (max-width:385px){.cnt-l{display:none}.cnt-s{display:inline}}
@@ -547,15 +547,8 @@ body.sel-split .tablewrap{padding-bottom:50vh;padding-bottom:50dvh}}
 .sm-unknown{background:var(--chip);color:var(--muted)}.sm-self{color:var(--faint)}
 /* bulk changes */
 /* multi-select switch in the top bar (clients view only) */
-.ms-tgl{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:var(--muted);flex:none;user-select:none}
-.ms-tgl input{position:absolute;opacity:0;width:1px;height:1px}
-.ms-sl{position:relative;width:32px;height:18px;border-radius:999px;background:var(--line-strong);transition:background .15s}
-.ms-sl::after{content:"";position:absolute;left:2px;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .15s}
-.ms-tgl input:checked + .ms-sl{background:var(--accent)}.ms-tgl input:checked + .ms-sl::after{transform:translateX(14px)}
-.ms-tgl input:focus-visible + .ms-sl{outline:2px solid var(--accent);outline-offset:2px}
-.ms-tgl input:checked ~ .ms-l{color:var(--fg)}
-body.plan-mode .ms-tgl,body.fw-mode .ms-tgl,body.rel-mode .ms-tgl{display:none}
-.topbar.tb-s3 .ms-l{display:none}
+.ms-seg{flex:none}.ms-seg button{min-width:30px;padding:4px 10px;font-weight:700;font-size:13px}
+body.plan-mode .ms-seg,body.fw-mode .ms-seg,body.rel-mode .ms-seg{display:none}
 body.sel-mode #tbody tr td:first-child{box-shadow:inset 3px 0 0 transparent}
 body.sel-mode #tbody tr.picked{background:color-mix(in srgb,var(--accent) 16%,transparent)}
 body.sel-mode #tbody tr.picked td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
@@ -1206,7 +1199,7 @@ window.I18N = (() => {
         <div class="menu" id="viewMenu" role="menu" hidden></div>
       </div>
       <span id="count"></span>
-      <label class="ms-tgl" title="Select several devices and change them together"><input type="checkbox" id="msToggle" role="switch"><span class="ms-sl" aria-hidden="true"></span><span class="ms-l">Multi-select</span></label>
+      <span class="seg ms-seg" role="group" aria-label="Selection" title="Select one device (details) or several (summary and changes for all)"><button type="button" data-ms="0" aria-pressed="true" title="One device – its details">1</button><button type="button" data-ms="1" aria-pressed="false" title="Several devices – select them and change them together">n</button></span>
       <span class="tb-break" aria-hidden="true"></span>
       <div class="cl-tabs plan-tabs plan-only" role="tablist"><button type="button" role="tab" data-pt="cur" aria-selected="true">Current</button><button type="button" role="tab" data-pt="clean" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M14 3 9.5 11.5"/><path d="M5 13.5h9l1.5 7.5H3.5z"/><path d="M8 17v4M11 17v4"/><path d="M18 3v3M16.5 4.5h3M20 9v2M19 10h2"/></svg>CleanUp Proposal</button></div>
       <div class="cl-tabs plan-tabs fw-only" role="tablist"><button type="button" role="tab" data-ft="mx" aria-selected="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Matrix</button><button type="button" role="tab" data-ft="an" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6M11 8v6"/></svg>Analysis</button></div>
@@ -1939,8 +1932,8 @@ const BULK = { on: false, keys: new Set(), busy: false, act: "" };
 const bulkDevs = () => state.clients.filter(c => BULK.keys.has(keyOf(c)));
 function bulkMarks() { for (const tr of document.querySelectorAll("#tbody tr[data-k]")) tr.classList.toggle("picked", BULK.keys.has(tr.dataset.k)); document.body.classList.toggle("sel-mode", BULK.on); }
 function bulkToggle(k) { BULK.keys.has(k) ? BULK.keys.delete(k) : BULK.keys.add(k); bulkMarks(); for (const b of document.querySelectorAll("#cardList .lc[data-k]")) b.classList.toggle("picked", BULK.keys.has(b.dataset.k)); renderBulk(); }
-function setBulk(on) { BULK.on = on; if (!on) BULK.keys.clear(); $("#msToggle").checked = on; renderAll(); }
-$("#msToggle").addEventListener("change", e => setBulk(e.target.checked));
+function setBulk(on) { BULK.on = on; if (!on) BULK.keys.clear(); for (const b of document.querySelectorAll("[data-ms]")) b.setAttribute("aria-pressed", String((b.dataset.ms === "1") === on)); renderAll(); }
+document.querySelectorAll("[data-ms]").forEach(b => b.addEventListener("click", () => { const on = b.dataset.ms === "1"; if (on !== BULK.on) setBulk(on); }));
 document.addEventListener("keydown", e => { if (e.key === "Escape" && BULK.on && !document.querySelector("dialog[open]")) setBulk(false); });
 // the selection always uses the detail pane – on phones as the lower half of the screen, the list stays above
 function renderBulk() {

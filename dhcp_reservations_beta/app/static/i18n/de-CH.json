@@ -1515,5 +1515,9 @@
  "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ alles erlaubt · ✕ alles blockiert · ◐ teilwiis · ? nöd entschide – Ping und gängigi Dienscht, wie de Test i de Grätdetails. Fahr über e Zälle für di entscheidende Regle.",
  "Only the first 10 devices.": "Nume di erschte 10 Grät.",
  "Zone default": "Zone-Standard",
- "allowed": "erlaubt"
+ "allowed": "erlaubt",
+ "Selection": "Uswahl",
+ "Select one device (details) or several (summary and changes for all)": "Eis Grät uswähle (Details) oder mehreri (Zämefassig und Änderige für alli)",
+ "One device – its details": "Eis Grät – sini Details",
+ "Several devices – select them and change them together": "Mehreri Grät – uswähle und zäme ändere"
 }
