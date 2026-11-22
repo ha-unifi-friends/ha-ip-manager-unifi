@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.42.1 – 2026-11-22
+
+- **Internet access chain** (device details) also finds rules that name the device under an older MAC address: when a rule names a client with the same name but another MAC – typically a private WiFi address that changed – the rule counts for the device, is marked ⚠ and a note says how to fix it in UniFi. Network (VLAN) rules and device rules stay together in one chain.
+- The pills *Last 24 hours* (blocked attempts, scans) moved right above the internet access chain.
+
 ## 1.42.0 – 2026-11-22
 
 - **Device details:** above *Firewall* a small **rule chain for the internet access** of the device – the rules from its zone to *External* that concern it (source *Any*, the device itself, its IP or network), in their order, paused rules left out. The first rule that decides all its internet traffic is outlined, the rules after it are greyed out (never reached for this device). A click opens the rule in the firewall view.
