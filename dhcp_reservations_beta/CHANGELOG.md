@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.41.4 – 2026-11-22
+
+- **Topology:** offline devices appear only with *Offline devices* ticked – also while a filter or search of the sidebar is active (before, an active filter showed its offline hits too). Filtering for *Status: Offline* still shows them.
+
 ## 1.41.3 – 2026-11-22
 
 - **IP plan › CleanUp proposal** starts with the strategy **Grouped by HA integration** instead of *Pool only*.

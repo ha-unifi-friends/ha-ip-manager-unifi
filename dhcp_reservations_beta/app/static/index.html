@@ -3801,7 +3801,9 @@ function topoModel() {
   const byMac = new Map(state.clients.filter(c => c.mac).map(c => [c.mac, c]));
   const active = topoFiltered(), hit = active ? new Set(rows().map(c => c.mac).filter(Boolean)) : new Set();
   TOPO_HIT = hit;
-  const shown = c => REL.topoOff || c.online || hit.has(c.mac);
+  // offline devices only with the box ticked – or when the sidebar asks for them (Status: Offline)
+  const offOk = REL.topoOff || !!state.facets.status?.includes("off");
+  const shown = c => offOk || c.online;
   let devs = state.clients.filter(c => c.is_device && shown(c));
   const gw0 = devs.find(d => d.device_kind === "gateway");
   let clients = REL.topoCli || active ? state.clients.filter(c => !c.is_device && c.mac && c.conn !== "teleport" && shown(c)) : [];
