@@ -509,7 +509,7 @@
  "In the field now": "I fältet nu",
  "This device": "Denna enhet",
  "– inside the DHCP pool": "– i DHCP-poolen",
- "Selected:": "Vald:",
+ "Selected:": "Valt:",
  "With a virtual network override, the fixed IP must be in {0}.": "Med tvingat virtuellt nätverk måste den fasta IP:n ligga i {0}.",
  "Please choose an access point.": "Välj en accesspunkt.",
  "Please enter a valid MAC address (aa:bb:cc:dd:ee:ff).": "Ange en giltig MAC-adress (aa:bb:cc:dd:ee:ff).",
@@ -1503,5 +1503,9 @@
  "Zone default: {0}": "Zonstandard: {0}",
  "Search devices and zones": "Sök enheter och zoner",
  "all devices": "alla enheter",
- "No match.": "Ingen träff."
+ "No match.": "Ingen träff.",
+ "Choose the target": "Välj mål",
+ "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Klicka på en enhet eller en hel zon (dubbelklick väljer direkt). Klicka på zonens namn för att fälla ihop den.",
+ "All devices of the zone": "Alla enheter i zonen",
+ "No devices": "Inga enheter"
 }

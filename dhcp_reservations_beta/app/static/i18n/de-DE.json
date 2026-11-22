@@ -509,7 +509,7 @@
  "In the field now": "Aktuell im Feld",
  "This device": "Dieses Gerät",
  "– inside the DHCP pool": "– im DHCP-Pool",
- "Selected:": "Ausgewählt:",
+ "Selected:": "Gewählt:",
  "With a virtual network override, the fixed IP must be in {0}.": "Mit erzwungenem virtuellem Netzwerk muss die fixe IP in {0} liegen.",
  "Please choose an access point.": "Bitte wähle einen Access Point.",
  "Please enter a valid MAC address (aa:bb:cc:dd:ee:ff).": "Bitte gib eine gültige MAC-Adresse ein (aa:bb:cc:dd:ee:ff).",
@@ -1503,5 +1503,9 @@
  "Zone default: {0}": "Zonen-Standard: {0}",
  "Search devices and zones": "Geräte und Zonen suchen",
  "all devices": "alle Geräte",
- "No match.": "Kein Treffer."
+ "No match.": "Kein Treffer.",
+ "Choose the target": "Ziel wählen",
+ "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Klicke ein Gerät oder eine ganze Zone an (Doppelklick übernimmt sofort). Ein Klick auf den Zonennamen klappt sie ein.",
+ "All devices of the zone": "Alle Geräte der Zone",
+ "No devices": "Keine Geräte"
 }

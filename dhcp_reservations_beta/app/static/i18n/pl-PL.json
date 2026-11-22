@@ -1503,5 +1503,9 @@
  "Zone default: {0}": "Domyślne strefy: {0}",
  "Search devices and zones": "Szukaj urządzeń i stref",
  "all devices": "wszystkie urządzenia",
- "No match.": "Brak wyników."
+ "No match.": "Brak wyników.",
+ "Choose the target": "Wybierz cel",
+ "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Kliknij urządzenie lub całą strefę (dwuklik od razu ją wybiera). Kliknij nazwę strefy, aby ją zwinąć.",
+ "All devices of the zone": "Wszystkie urządzenia strefy",
+ "No devices": "Brak urządzeń"
 }
