@@ -1470,5 +1470,10 @@
  "paused": "pausad",
  "Normal traffic of this device reaches the internet": "Normal trafik från den här enheten når internet",
  "Normal traffic of this device is blocked by {0}": "Normal trafik från den här enheten blockeras av {0}",
- "Reaches the internet": "Når internet"
+ "Reaches the internet": "Når internet",
+ "Client · other MAC": "Klient · annan MAC",
+ "Client · {0}": "Klient · {0}",
+ "Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.": "Zonregler och reglerna för den här klienten, i den ordning UniFi kontrollerar dem – den första matchande regeln avgör.",
+ "More rules that name this client": "Fler regler som anger den här klienten",
+ "Network · {0}": "Nätverk · {0}"
 }

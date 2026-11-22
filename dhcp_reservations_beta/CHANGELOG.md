@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.42.3 – 2026-11-22
+
+- **Internet access chain, opened:** one list in the order UniFi checks the rules, zone rules and the rules for this client mixed – numbered boxes in the look of the rule chain that wrap instead of scrolling. Each box says where it comes from: *Zone*, *Network · …* or *Client · MAC / IP* (or *other MAC*). Paused rules are grey.
+- Below it, *More rules that name this client*: the rules of other zone pairs (or with the client as destination) that name it. The list moved out of the firewall card; without an internet chain (e.g. no zone) it stands on its own.
+
 ## 1.42.2 – 2026-11-22
 
 - **Internet access chain** (device details) is titled *Client → External* and folds away (closed by default, remembered). Closed it shows one line: the device on the left, the internet on the right, the rule icons in between (✓ allow, ✕ block, Ⅱ paused, ↩ replies only). A green line runs from the device through the rules and stops at the first rule that blocks all normal traffic of the device; behind the internet a green ✓ or a red ✕ says at a glance whether normal traffic gets out.

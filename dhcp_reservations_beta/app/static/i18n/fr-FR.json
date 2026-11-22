@@ -1470,5 +1470,10 @@
  "paused": "en pause",
  "Normal traffic of this device reaches the internet": "Le trafic normal de cet appareil atteint Internet",
  "Normal traffic of this device is blocked by {0}": "Le trafic normal de cet appareil est bloqué par {0}",
- "Reaches the internet": "Atteint Internet"
+ "Reaches the internet": "Atteint Internet",
+ "Client · other MAC": "Client · autre MAC",
+ "Client · {0}": "Client · {0}",
+ "Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.": "Les règles de zone et celles de ce client, dans l'ordre où UniFi les vérifie – la première règle qui correspond décide.",
+ "More rules that name this client": "Autres règles qui désignent ce client",
+ "Network · {0}": "Réseau · {0}"
 }
