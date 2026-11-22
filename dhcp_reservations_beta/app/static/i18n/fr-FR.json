@@ -1491,5 +1491,6 @@
  "names this device under another MAC": "désigne cet appareil sous une autre MAC",
  "Can this device reach …? Test a connection": "Cet appareil peut-il joindre … ? Tester une connexion",
  "Recently changed": "Modifiés récemment",
- "Changed in the last 7 days": "Modifiés ces 7 derniers jours"
+ "Changed in the last 7 days": "Modifiés ces 7 derniers jours",
+ "Multi-select": "Sélection multiple"
 }

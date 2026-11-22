@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.50.2
+
+- **Multi-select switch** in the top bar of the table and the list (next to the device count): on – click devices to select them; off – back to normal (the selection is cleared). *Escape* and *Done* also end it; *Actions › Select devices…* still works.
+- The bulk bar shows the selection on the left and the actions on the right.
+
 ## 1.50.1
 
 - **List:** the icon switch (None / UniFi / Home Assistant) is offered for the list too – the same choice as for the tree and the graph (in the Actions menu when the top bar has no room).
