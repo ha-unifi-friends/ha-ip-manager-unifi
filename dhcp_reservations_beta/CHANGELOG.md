@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.10
+
+- **Selection slider:** a mouse-pointer icon left of «1 | n» makes clear what the slider is for.
+
 ## 1.52.9
 
 - **Tree and Graph:** the slider «1 | n» is offered there too. In «n» mode a click on a device in the tree or a node in the graph selects it (marked in purple) and the selection pane shows the summary, firewall matrix and actions – just like in the table.
