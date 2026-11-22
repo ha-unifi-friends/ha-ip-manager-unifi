@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.43.1
+
+- Topology graph: devices that match the filter are marked purple instead of red.
+
 ## 1.43.0
 
 - Menu order: Clients, Topology, IP Plan, Firewall – Topology uses the same filter pane as Clients, so it now sits right next to it.
