@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.45.0
+
+- Tree and Graph keep the view selector and show "X of Y devices" next to it – on phones too (narrow phones show the short form, e.g. 2/21).
+- The icon switch of Tree and Graph moves into the *Actions* menu when the top bar has no room for it (always on phones).
+- New built-in view *Online*, right below *All*: the same columns as *All*, filtered to online devices.
+- Tree and Graph shorten the button labels like the list instead of overflowing.
+
 ## 1.44.3
 
 - Top bar: the view selector (List) and the icon switch (Tree, Graph) sit lower, next to the tabs just above the line. On phones they are right-aligned and the gap between the menu and the tabs is smaller – the header is about 20 px lower.
