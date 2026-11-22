@@ -1456,5 +1456,7 @@
  "Tree": "Träd",
  "Filter hit": "Filterträff",
  "Notify me in Home Assistant about suspicious traffic": "Meddela mig i Home Assistant om misstänkt trafik",
- "Icons": "Ikoner"
+ "Icons": "Ikoner",
+ "UniFi icons": "UniFi-ikoner",
+ "Home Assistant integration logos": "Logotyper för Home Assistant-integrationer"
 }
