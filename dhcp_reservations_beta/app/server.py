@@ -429,7 +429,8 @@ def port_vlan(dev, idx, profiles, default_net):
     src, prof = ("override", None) if ov else ("default", None)
     cfg = dict(ov or {})
     pid = cfg.get("portconf_id") or (pt.get("portconf_id") if not ov else None)
-    if pid and pid in profiles:  # a port profile decides the VLANs of the port
+    builtin = pid in profiles and (profiles[pid].get("attr_no_delete") or str(profiles[pid].get("name") or "").lower() in ("all", "default"))
+    if pid and pid in profiles and not builtin:  # a port profile decides the VLANs of the port (UniFi's "All" is the default, no real profile)
         prof = profiles[pid]
         cfg = {**prof, **{k: v for k, v in cfg.items() if k in ("name", "port_idx")}}
         src = "profile"
@@ -463,6 +464,55 @@ def switch_port(p):
     return {"idx": int(p.get("port_idx")), "name": p.get("name") or "", "up": bool(p.get("up")), "speed": int(p.get("speed") or 0),
             "enabled": p.get("enable") is not False, "poe": poe, "poe_w": watts, "uplink": bool(p.get("is_uplink")),
             "sfp": bool(p.get("sfp_found")) or str(p.get("media") or "").upper().startswith("SFP")}
+
+
+def set_port_vlan(api, body, user=""):
+    """Change the native (untagged) network of one switch port – UniFi "Native VLAN / Network" of the port.
+    Refused for uplink ports, ports with a UniFi device behind them (it would lose its controller) and ports that use a
+    port profile (the profile decides there). A version is saved first; the other settings of the port are kept."""
+    sw_mac, native = str(body.get("switch_mac") or "").lower(), str(body.get("native_id") or "")
+    try:
+        idx = int(body.get("port"))
+    except (TypeError, ValueError):
+        raise UnifiError("Unknown port.", 400)
+    nets = {n["_id"]: n for n in api.call("GET", "/rest/networkconf")}
+    if native not in nets or nets[native].get("purpose") == "wan":
+        raise UnifiError("Unknown network.", 400)
+    devs = api.call("GET", "/stat/device")
+    dev = next((d for d in devs if (d.get("mac") or "").lower() == sw_mac), None)
+    if not dev or not dev.get("_id"):
+        raise UnifiError("The switch was not found – reload and try again.", 409)
+    pt = next((p for p in dev.get("port_table") or [] if str(p.get("port_idx")) == str(idx)), None)
+    if pt is None:
+        raise UnifiError(f"Port {idx} does not exist on {dev.get('name') or sw_mac}.", 400)
+    if pt.get("is_uplink"):
+        raise UnifiError(f"Port {idx} is the uplink of {dev.get('name') or sw_mac} – changing it would cut the switch off.", 400)
+    behind = [d.get("name") or d.get("mac") for d in devs if ((d.get("uplink") or d.get("last_uplink") or {}).get("uplink_mac") or "").lower() == sw_mac
+              and str((d.get("uplink") or d.get("last_uplink") or {}).get("uplink_remote_port")) == str(idx)]
+    if behind:
+        raise UnifiError(f"{', '.join(behind)} is connected to port {idx} – a UniFi device would lose its controller. Change it in UniFi.", 400)
+    ovs = [dict(o) for o in dev.get("port_overrides") or []]
+    ov = next((o for o in ovs if str(o.get("port_idx")) == str(idx)), None)
+    try:
+        profiles = {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
+    except UnifiError:
+        profiles = {}
+    pid = (ov or {}).get("portconf_id") or (pt.get("portconf_id") if not ov else None)
+    prof = profiles.get(pid) if pid else None
+    # UniFi's built-in "All" profile is what a port without own settings uses – that is no real profile
+    if prof and not (prof.get("attr_no_delete") or str(prof.get("name") or "").lower() in ("all", "default")):
+        raise UnifiError(f"Port {idx} uses the port profile “{prof.get('name')}” – change the profile or the port in UniFi.", 400)
+    if ov is not None and pid:
+        ov.pop("portconf_id", None)
+    if ov is None:
+        ov = {"port_idx": idx, "op_mode": "switch", "tagged_vlan_mgmt": "auto"}
+        ovs.append(ov)
+    old = ov.get("native_networkconf_id") or ""
+    ov["native_networkconf_id"] = native
+    ver = create_version(api, "auto", f"Before port VLAN {dev.get('name') or sw_mac} port {idx} → {nets[native].get('name')}", user)
+    api.call("PUT", f"/rest/device/{urllib.parse.quote(str(dev['_id']), safe='')}", {"port_overrides": ovs})
+    log("Port VLAN changed:", dev.get("name") or sw_mac, "port", idx, old or "(default)", "->", nets[native].get("name"))
+    return {"ok": True, "version": ver["id"]}
 
 
 DEVICE_KIND = {"uap": "ap", "usw": "switch", "udm": "gateway", "ugw": "gateway", "uxg": "gateway", "usg": "gateway"}
@@ -2362,6 +2412,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, wake_on_lan(self._json_body()))
             if method == "POST" and path.endswith("/api/check_new"):
                 return self._send(200, {"new": check_new_devices(API)})
+            if method == "POST" and path.endswith("/api/port_vlan"):
+                return self._send(200, set_port_vlan(API, self._json_body(), self._user()))
             if method == "POST" and path.endswith("/api/reconnect"):
                 return self._send(200, reconnect_client(API, self._json_body().get("mac")))
             if method == "POST" and path.endswith("/api/forget"):

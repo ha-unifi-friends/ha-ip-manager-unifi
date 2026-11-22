@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.37.0 – 2026-11-22
+
+- **Change the port VLAN:** the *Switch port* card in the settings of a wired device can change the native (untagged) VLAN of its switch port. The target network is preselected when the device does not match its port. Before changing, it lists all devices on the port that move along; a version is saved first and the other settings of the port are kept. Not offered for uplink ports, ports with a UniFi device behind them (it would lose its controller) and ports with a port profile – the reason is shown.
+- UniFi's built-in “All” port profile counts as the default, not as a profile.
+- **Details pane** never gets wider than the pane (no horizontal scrolling); the Home Assistant badge in the switch view has its intended small size.
+
 ## 1.36.3 – 2026-11-22
 
 - **Reconnect** button for WiFi clients at the bottom of the settings: disconnects the device from the WiFi for a moment, it connects again and asks for a new IP address. Greyed out while the device is offline.

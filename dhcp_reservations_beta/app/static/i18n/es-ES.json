@@ -1365,7 +1365,6 @@
  "In UniFi Network open Settings › CyberSecure › Traffic Logging and set Flow Logging to All Traffic.": "En UniFi Network abre Settings › CyberSecure › Traffic Logging y pon Flow Logging en All Traffic.",
  "The switch port decides here.": "Aquí decide el puerto del switch.",
  "Wired to {0}, port {1} – its native VLAN is {2}.": "Por cable a {0}, puerto {1} – su VLAN nativa es {2}.",
- "A virtual network override usually has no effect on wired devices. To move the device to {0}, set the port's native VLAN in UniFi (Devices › switch › port › Native VLAN / Network).": "Forzar una red virtual normalmente no tiene efecto en dispositivos por cable. Para mover el dispositivo a {0}, cambia la VLAN nativa del puerto en UniFi (Devices › switch › puerto › Native VLAN / Network).",
  "The port uses the profile {0}.": "El puerto usa el perfil {0}.",
  "Other devices on this port get the new native VLAN too.": "Los demás dispositivos de este puerto también reciben la nueva VLAN nativa.",
  "Port VLAN is {0}": "VLAN del puerto: {0}",
@@ -1393,5 +1392,18 @@
  "Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP).": "Desconecta el dispositivo del Wi-Fi un momento. Vuelve a conectarse enseguida y pide una nueva dirección IP (DHCP).",
  "Only possible while the device is connected to the WiFi.": "Solo es posible mientras el dispositivo está conectado al Wi-Fi.",
  "{0} is reconnecting – the status updates in a few seconds": "{0} se está reconectando – el estado se actualiza en unos segundos",
- "Reconnect failed: {0}": "Error al reconectar: {0}"
+ "Reconnect failed: {0}": "Error al reconectar: {0}",
+ "This port is the uplink of the switch.": "Este puerto es el uplink del switch.",
+ "{0} (UniFi device) is on this port.": "{0} (dispositivo UniFi) está en este puerto.",
+ "The port uses the profile {0} – change it in UniFi.": "El puerto usa el perfil {0} – cámbialo en UniFi.",
+ "Port VLAN can be changed in UniFi only:": "La VLAN del puerto solo se puede cambiar en UniFi:",
+ "Native VLAN of the port": "VLAN nativa del puerto",
+ "Change…": "Cambiar…",
+ "Port {0} on {1}: {2} → {3}": "Puerto {0} en {1}: {2} → {3}",
+ "These devices move along:": "Estos dispositivos también cambian:",
+ "They get an address in the new network at their next DHCP renewal (unplug or restart helps). A fixed IP in the old network no longer fits. A version is saved first.": "Reciben una dirección en la nueva red en la próxima renovación DHCP (desconectar o reiniciar ayuda). Una IP fija de la red antigua ya no encaja. Antes se guarda una versión.",
+ "Change port VLAN": "Cambiar VLAN del puerto",
+ "The port already has this VLAN": "El puerto ya tiene esta VLAN",
+ "Port VLAN changed to {0} – the switch applies it in a few seconds": "VLAN del puerto cambiada a {0} – el switch la aplica en unos segundos",
+ "A virtual network override usually has no effect on wired devices. To move the device to {0}, change the native VLAN of the port – in the Switch port card of the settings or in UniFi.": "Forzar una red virtual normalmente no tiene efecto en dispositivos por cable. Para mover el dispositivo a {0}, cambia la VLAN nativa del puerto – en la tarjeta «Puerto del switch» de los ajustes o en UniFi."
 }

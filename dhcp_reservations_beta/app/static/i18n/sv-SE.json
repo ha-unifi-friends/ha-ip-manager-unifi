@@ -1365,7 +1365,6 @@
  "In UniFi Network open Settings › CyberSecure › Traffic Logging and set Flow Logging to All Traffic.": "Öppna Settings › CyberSecure › Traffic Logging i UniFi Network och ställ Flow Logging på All Traffic.",
  "The switch port decides here.": "Här avgör switchporten.",
  "Wired to {0}, port {1} – its native VLAN is {2}.": "Kabelansluten till {0}, port {1} – dess native-VLAN är {2}.",
- "A virtual network override usually has no effect on wired devices. To move the device to {0}, set the port's native VLAN in UniFi (Devices › switch › port › Native VLAN / Network).": "Att tvinga ett virtuellt nätverk fungerar oftast inte för trådbundna enheter. För att flytta enheten till {0}, ändra portens native-VLAN i UniFi (Devices › switch › port › Native VLAN / Network).",
  "The port uses the profile {0}.": "Porten använder profilen {0}.",
  "Other devices on this port get the new native VLAN too.": "Andra enheter på den här porten får också det nya native-VLAN:et.",
  "Port VLAN is {0}": "Port-VLAN är {0}",
@@ -1393,5 +1392,18 @@
  "Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP).": "Kopplar bort enheten från wifi en kort stund. Den ansluter direkt igen och ber om en ny IP-adress (DHCP).",
  "Only possible while the device is connected to the WiFi.": "Bara möjligt medan enheten är ansluten till wifi.",
  "{0} is reconnecting – the status updates in a few seconds": "{0} ansluter igen – statusen uppdateras om några sekunder",
- "Reconnect failed: {0}": "Återanslutning misslyckades: {0}"
+ "Reconnect failed: {0}": "Återanslutning misslyckades: {0}",
+ "This port is the uplink of the switch.": "Den här porten är switchens uplink.",
+ "{0} (UniFi device) is on this port.": "{0} (UniFi-enhet) sitter på den här porten.",
+ "The port uses the profile {0} – change it in UniFi.": "Porten använder profilen {0} – ändra den i UniFi.",
+ "Port VLAN can be changed in UniFi only:": "Port-VLAN kan bara ändras i UniFi:",
+ "Native VLAN of the port": "Portens native-VLAN",
+ "Change…": "Ändra…",
+ "Port {0} on {1}: {2} → {3}": "Port {0} på {1}: {2} → {3}",
+ "These devices move along:": "De här enheterna flyttas med:",
+ "They get an address in the new network at their next DHCP renewal (unplug or restart helps). A fixed IP in the old network no longer fits. A version is saved first.": "De får en adress i det nya nätverket vid nästa DHCP-förnyelse (koppla ur eller starta om hjälper). En fast IP i det gamla nätverket passar inte längre. En version sparas först.",
+ "Change port VLAN": "Ändra port-VLAN",
+ "The port already has this VLAN": "Porten har redan detta VLAN",
+ "Port VLAN changed to {0} – the switch applies it in a few seconds": "Port-VLAN ändrat till {0} – switchen tillämpar det om några sekunder",
+ "A virtual network override usually has no effect on wired devices. To move the device to {0}, change the native VLAN of the port – in the Switch port card of the settings or in UniFi.": "Att tvinga ett virtuellt nätverk fungerar oftast inte för trådbundna enheter. För att flytta enheten till {0}, ändra portens native-VLAN – i kortet ”Switchport” i inställningarna eller i UniFi."
 }
