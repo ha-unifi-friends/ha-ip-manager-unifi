@@ -390,20 +390,21 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .rel-rec{display:grid;gap:6px;margin:12px 0 0;padding:9px 12px;border-radius:8px;font-size:12.5px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 .rel-rec>div>b{color:var(--warn)}
 .swcard{padding:10px 10px 8px}
-.swgrid{display:flex;gap:6px;overflow-x:auto;padding:2px 2px 6px;position:relative}
-.swc{display:grid;grid-template-rows:58px 46px 46px 58px;gap:6px;flex:none;width:52px}
-.swc:has(> :nth-child(2):last-child){grid-template-rows:58px 46px}
-.swd{all:unset;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:3px;min-width:0;cursor:pointer;border-radius:6px;padding:2px 0}
-.swd.b{justify-content:flex-start}
+.swgrid{display:grid;gap:5px}
+.swr{display:grid;grid-template-columns:minmax(0,1fr) 42px 42px minmax(0,1fr);gap:6px;align-items:center}
+.swr.one{grid-template-columns:42px minmax(0,1fr)}
+.swd{all:unset;box-sizing:border-box;display:flex;flex-direction:row-reverse;align-items:center;gap:7px;min-width:0;height:42px;cursor:pointer;border-radius:6px;padding:0 4px}
+.swd.b{flex-direction:row}
 .swd:empty{cursor:default}
 .swd:hover:not(:empty){background:color-mix(in srgb,var(--fg) 6%,transparent)}
-.swi{position:relative;width:34px;height:34px;border-radius:7px;background:var(--chip);display:grid;place-items:center;overflow:visible}
-.swi img{width:30px;height:30px;object-fit:contain}
+.swi{position:relative;flex:none;width:30px;height:30px;border-radius:7px;background:var(--chip);display:grid;place-items:center;overflow:visible}
+.swi img{width:26px;height:26px;object-fit:contain}
 .swha{position:absolute;right:-5px;bottom:-5px;width:16px;height:16px;border-radius:50%;background:var(--card);display:grid;place-items:center;box-shadow:0 0 0 1px var(--line)}
-.swn{font-size:10.5px;max-width:52px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.swn{font-size:11.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.swd:not(.b) .swn{text-align:right}
 .swd.me .swn{color:var(--fg);font-weight:600}
-.swp{position:relative;border-radius:6px;display:flex;align-items:flex-end;padding:4px 6px;font-size:12px;font-weight:600;color:#14321c}
-.swp .swic{position:absolute;top:4px;right:5px;display:flex}
+.swp{position:relative;height:42px;border-radius:6px;display:flex;align-items:flex-end;padding:3px 5px;font-size:12px;font-weight:600;color:#14321c}
+.swp .swic{position:absolute;top:3px;right:4px;display:flex}
 .swp.gbe{background:#5fcf6f}.swp.fe{background:#b6d34a}.swp.down{background:color-mix(in srgb,var(--fg) 22%,var(--card));color:var(--fg)}.swp.off{background:transparent;border:1px dashed var(--line-strong);color:var(--muted)}
 .swp.me{outline:3px solid var(--accent);outline-offset:2px;z-index:1}
 .swleg{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;color:var(--muted);margin-top:4px}
@@ -1458,10 +1459,13 @@ function switchHtml(c) {
     return `<button type="button" class="swd ${below ? "b" : ""}${o.mac === c.mac ? " me" : ""}" data-swdev="${esc(o.mac)}" title="${esc(os.map(devName).join(", "))}"><span class="swi">${iconHtml(o)}${ha ? `<span class="swha">${brandImg("homeassistant", 12)}</span>` : ""}</span><span class="swn" translate="no">${esc(nm)}${os.length > 1 ? ` +${os.length - 1}` : ""}</span></button>`;
   };
   const tile = p => `<div class="swp ${st(p)}${String(p.idx) === String(c.port) ? " me" : ""}" title="${esc([`Port ${p.idx}${p.name && p.name !== "Port " + p.idx ? " · " + p.name : ""}`, speed(p), p.poe_w ? `PoE ${p.poe_w} W` : "", p.uplink ? "Uplink" : "", ...on(p).map(devName)].filter(Boolean).join(" · "))}"><span class="swno">${p.idx}</span>${p.uplink ? `<span class="swic">${SW_UP}</span>` : p.poe ? `<span class="swic">${SW_BOLT}</span>` : ""}</div>`;
-  const ps = sw.ports, two = ps.length > 8, cols = [];
-  if (two) for (let i = 0; i < ps.length; i += 2) cols.push([ps[i], ps[i + 1]]); else ps.forEach(p => cols.push([p]));
-  const grid = cols.map(([a, b]) => `<div class="swc">${dev(a, false)}${tile(a)}${b ? tile(b) + dev(b, true) : ""}</div>`).join("");
-  return `<div class="sec-title"><span>Switch</span> · <span translate="no">${esc(sw.name)}</span></div><div class="card swcard"><div class="swgrid" id="swGrid">${grid}</div>
+  // turned by 90° to fit the details pane: one row per port pair, odd ports left, even right, the devices beside them
+  const ps = sw.ports, two = ps.length > 8, rows = [];
+  if (two) for (let i = 0; i < ps.length; i += 2) rows.push([ps[i], ps[i + 1]]); else ps.forEach(p => rows.push([p]));
+  const grid = rows.map(([a, b]) => two
+    ? `<div class="swr">${dev(a, false)}${tile(a)}${b ? tile(b) + dev(b, true) : "<div></div><div></div>"}</div>`
+    : `<div class="swr one">${tile(a)}${dev(a, true)}</div>`).join("");
+  return `<div class="sec-title"><span>Switch</span> · <span translate="no">${esc(sw.name)}</span></div><div class="card swcard"><div class="swgrid ${two ? "" : "one"}" id="swGrid">${grid}</div>
     <div class="swleg"><span><i class="gbe"></i>GbE</span><span><i class="fe"></i>FE</span><span><i class="down"></i>Disconnected</span><span><i class="off"></i>Disabled</span><span>${SW_BOLT} PoE</span><span>${SW_UP} Uplink</span></div></div>`;
 }
 function computeWarnings() {
@@ -3991,7 +3995,6 @@ function renderInfo() {
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
-  const swm = $("#swGrid .swp.me"); if (swm) { const g = $("#swGrid"); g.scrollLeft = Math.max(0, swm.offsetLeft - g.clientWidth / 2 + swm.offsetWidth / 2); }
   $("#swGrid")?.addEventListener("click", e => { const b = e.target.closest("[data-swdev]"); if (!b) return; const o = devByMac(b.dataset.swdev); if (o && o.mac !== c.mac) openPanel(o); });
   $("#portBox")?.addEventListener("click", e => { if (e.target.closest("#btnScan")) scanPorts(c); else if (e.target.closest("#btnPing")) pingDev(c); });
   $("#btnWol")?.addEventListener("click", async e => {
