@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.41.5 – 2026-11-22
+
+- **Topology:** the boxes *Clients* and *Offline devices* are gone – the topology follows the filters of the sidebar only. Without a filter it shows everything (offline devices too, like the client table); *Status: Online* hides offline devices, *Type: UniFi devices* shows the infrastructure without clients. The devices on the way to the hits are always shown.
+
 ## 1.41.4 – 2026-11-22
 
 - **Topology:** offline devices appear only with *Offline devices* ticked – also while a filter or search of the sidebar is active (before, an active filter showed its offline hits too). Filtering for *Status: Offline* still shows them.

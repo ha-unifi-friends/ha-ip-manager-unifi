@@ -1150,8 +1150,6 @@ window.I18N = (() => {
       <div class="plan-scroll">
         <div class="plan-head topo-only"><h3>Network topology</h3><span class="hint">How the devices are connected – click a device for its details.</span></div>
         <div class="cl-ctrl rel-ctrl topo-only">
-          <label class="opt"><input type="checkbox" id="topoCli"><span>Clients</span></label>
-          <label class="opt"><input type="checkbox" id="topoOff"><span>Offline devices</span></label>
           <span class="sp"></span>
           <span class="topo-ic-lbl muted">Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none">None</button><button type="button" data-topoicon="unifi">UniFi</button><button type="button" data-topoicon="ha">Home Assistant</button></span>
         </div>
@@ -3610,7 +3608,7 @@ $("#fwChain").addEventListener("dragend", () => { FW.drag = null; for (const x o
 // ---------- topology view: shared helpers, live force layout, drawing ----------
 // standard ports get a colour (the dominant port of a pair colours its arrows)
 const REL_PORTS = [["DNS", [53, 853], "#14b8a6"], ["Web", [80, 443, 8080, 8443], "#3b82f6"], ["NTP", [123], "#a3a3a3"], ["MQTT", [1883, 8883], "#f59e0b"], ["Camera / RTSP", [554], "#ec4899"], ["Home Assistant", [8123], "#0ea5e9"], ["ESPHome", [6053], "#22c55e"], ["SSH / remote", [22, 3389, 5900], "#ef4444"], ["Files / SMB", [139, 445, 2049], "#8b5cf6"], ["Discovery (mDNS / SSDP)", [5353, 1900], "#84cc16"], ["Streaming / casting", [8008, 8009, 7000, 1400, 32400], "#f97316"], ["Other", [], "#94a3b8"]];
-const REL = { tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoCli: store.get("topoCli", true), topoOff: store.get("topoOff", false), topoIcon: store.get("topoIcon", "unifi"), sel: null, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false };
+const REL = { tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoIcon: store.get("topoIcon", "unifi"), sel: null, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false };
 const isRel = () => document.body.classList.contains("rel-mode");
 // the device behind a node id (MAC, "ip:…", "internet")
 function relDev(id) { if (id === "internet") return null; if (id.startsWith("ip:")) { const ip = id.slice(3); return state.clients.find(c => c.ip === ip || (c.use_fixedip && c.fixed_ip === ip)) || null; } return devByMac(id); }
@@ -3698,7 +3696,6 @@ function renderRel() {
   document.body.classList.add("topo-mode");
   $("#topoTree").hidden = REL.tab !== "tree"; $("#relGraphBox").hidden = REL.tab !== "topo";
   if (REL.tab !== "topo" && REL.sim) { if (REL.sim.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; }
-  $("#topoCli").checked = REL.topoCli; $("#topoOff").checked = REL.topoOff;
   for (const b of document.querySelectorAll("[data-topoicon]")) b.setAttribute("aria-pressed", String(b.dataset.topoicon === REL.topoIcon));
   renderTopo();
 }
@@ -3801,12 +3798,10 @@ function topoModel() {
   const byMac = new Map(state.clients.filter(c => c.mac).map(c => [c.mac, c]));
   const active = topoFiltered(), hit = active ? new Set(rows().map(c => c.mac).filter(Boolean)) : new Set();
   TOPO_HIT = hit;
-  // offline devices only with the box ticked – or when the sidebar asks for them (Status: Offline)
-  const offOk = REL.topoOff || !!state.facets.status?.includes("off");
-  const shown = c => offOk || c.online;
-  let devs = state.clients.filter(c => c.is_device && shown(c));
+  // everything – or, with a filter of the sidebar (status, type, search …), its hits and the devices on the way to them
+  let devs = state.clients.filter(c => c.is_device);
   const gw0 = devs.find(d => d.device_kind === "gateway");
-  let clients = REL.topoCli || active ? state.clients.filter(c => !c.is_device && c.mac && c.conn !== "teleport" && shown(c)) : [];
+  let clients = state.clients.filter(c => !c.is_device && c.mac && c.conn !== "teleport");
   // the device a node hangs on: UniFi devices by their uplink (wired or mesh), clients by switch / access point
   const gw = gw0 || state.clients.find(d => d.is_device && d.device_kind === "gateway");
   const parent = c => {
@@ -3885,8 +3880,6 @@ function renderTopo() {
   }
 }
 $("#topoTree").addEventListener("click", e => { if (e.target.closest("summary")) return; const b = e.target.closest("[data-ttdev]"); if (!b) return; const c = devByMac(b.dataset.ttdev); if (c) { openPanel(c); $("#topoTree").querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); $("#topoTree").querySelectorAll(`[data-ttdev="${CSS.escape(c.mac)}"]`).forEach(x => x.classList.add("sel")); } });
-$("#topoCli").addEventListener("change", e => { REL.topoCli = e.target.checked; store.set("topoCli", REL.topoCli); REL.pos = {}; renderRel(); });
-$("#topoOff").addEventListener("change", e => { REL.topoOff = e.target.checked; store.set("topoOff", REL.topoOff); REL.pos = {}; renderRel(); });
 // hovering a device lights up its relations and neighbours
 $("#relGraph").addEventListener("mouseover", e => {
   const svg = $("#relGraph svg"); if (!svg) return;
