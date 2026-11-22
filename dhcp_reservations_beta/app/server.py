@@ -1475,98 +1475,6 @@ def suspicious_recent(api):
         return data
 
 
-def traffic_relations(api, qs):
-    """Traffic flows of a time window, summed up per pair (initiator → target): bytes both ways, ports, domains,
-    what UniFi did (allowed / blocked). The console keeps about 7 days and caps a query at 10,000 flows."""
-    now = int(time.time() * 1000)
-    try:
-        to = int(qs.get("to") or now)
-        frm = int(qs.get("from") or to - 24 * 3600 * 1000)
-    except ValueError:
-        raise UnifiError("Invalid time range.", 400)
-    to = min(to, now)
-    frm = max(frm, to - 7 * 24 * 3600 * 1000)
-    if frm >= to:
-        raise UnifiError("The start must be before the end.", 400)
-    try:
-        flows, split = read_flows_split(api, frm, to)
-    except UnifiError as e:
-        return {"available": False, "reason": str(e),
-                "hint": "Traffic flows need UniFi Network 9 or later (Insights › Flows) and a gateway that records them."}
-    nodes, edges = {}, {}
-    ipmac = flow_ip_macs(flows)
-
-    def node(side):
-        mac = normalize_mac(side.get("mac") or "") or ipmac.get(side.get("ip")) or ""
-        zone = side.get("zone_name") or ""
-        if mac:
-            nid = mac
-        elif flow_side_external(side):
-            nid = "internet"
-        else:
-            nid = "ip:" + str(side.get("ip") or "?")
-        n = nodes.setdefault(nid, {"name": "", "ip": "", "mac": mac or "", "zone": zone, "network": side.get("network_name") or ""})
-        if nid != "internet":
-            n["name"] = n["name"] or side.get("device_name") or side.get("client_name") or ""
-            n["ip"] = n["ip"] or side.get("ip") or ""
-        return nid
-    for f in flows:
-        src, dst = f.get("source") or {}, f.get("destination") or {}
-        a, b = node(src), node(dst)
-        if a == b:
-            continue
-        td = f.get("traffic_data") or {}
-        e = edges.setdefault(a + "|" + b, {"a": a, "b": b, "ab": 0, "ba": 0, "flows": 0, "blocked": 0, "ports": {}, "domains": {},
-                                         "first": 0, "last": 0, "policies": set(), "a_zone": src.get("zone_name") or "",
-                                         "b_zone": dst.get("zone_name") or "", "a_net": src.get("network_name") or "",
-                                         "b_net": dst.get("network_name") or "", "ips": set()})
-        n = int(f.get("count") or 1)
-        e["ab"] += int(td.get("bytes_tx") or 0)
-        e["ba"] += int(td.get("bytes_rx") or 0)
-        e["flows"] += n
-        if str(f.get("action") or "").lower() == "blocked":
-            e["blocked"] += n
-        proto, port = str(f.get("protocol") or "").upper(), dst.get("port")
-        k = f"{proto}/{port}" if port not in (None, "") else proto
-        pr = e["ports"].setdefault(k, {"proto": proto, "port": port, "service": f.get("service") or "", "bytes": 0, "flows": 0, "blocked": 0})
-        pr["bytes"] += int(td.get("bytes_total") or 0)
-        pr["flows"] += n
-        if str(f.get("action") or "").lower() == "blocked":
-            pr["blocked"] += n
-        for d in (dst.get("domains") or [])[:3]:
-            e["domains"][d] = e["domains"].get(d, 0) + int(td.get("bytes_total") or 0)
-        if b == "internet" and dst.get("ip") and len(e["ips"]) < 50:
-            e["ips"].add(dst.get("ip"))
-        t0, t1 = f.get("flow_start_time") or 0, f.get("flow_end_time") or f.get("time") or 0
-        e["first"] = min(e["first"] or t0, t0) if t0 else e["first"]
-        e["last"] = max(e["last"], t1)
-        for pol in f.get("policies") or []:
-            if isinstance(pol, dict):
-                e["policies"].add(f"{pol.get('type') or ''}:{pol.get('internal_type') or ''}")
-    out = []
-    for e in edges.values():
-        e["policies"] = sorted(e["policies"])
-        e["ips"] = sorted(e["ips"])
-        e["domains"] = [d for d, _ in sorted(e["domains"].items(), key=lambda x: -x[1])[:8]]
-        e["ports"] = sorted(e["ports"].values(), key=lambda x: -x["bytes"])[:20]
-        out.append(e)
-    susp = suspicious_patterns(split.get("all") or flows, zone_roles_by_name(api), quiet_hosts(api))
-    # the pairs of suspicious devices are kept even without data (blocked scans), so "Show" finds all of them
-    hot = {x["src"] for x in susp} | {"ip:" + str(x["ip"]) for x in susp if x.get("ip")}
-    out.sort(key=lambda e: (e["a"] not in hot, -(e["ab"] + e["ba"])))
-    log("Relations:", len(flows), "flows,", len(out), "pairs")
-    nblk = sum(1 for f in flows if _is_blocked(f))
-    return {"available": True, "from": frm, "to": to, "flows": len(flows), "truncated": len(flows) >= FLOW_MAX,
-            "actions": {"allowed": len(flows) - nblk, "blocked": nblk}, "split": split["split"],
-            "nodes": nodes, "edges": out[:3000], "suspicious": susp,
-            "alerts": load_fw_settings()["alerts"]}
-
-
-# ---------------------------------------------------------------- firewall: create one policy
-FW_PROTOCOLS = ("all", "tcp", "udp", "tcp_udp")
-_PORT_RE = re.compile(r"^\d{1,5}(-\d{1,5})?(,\d{1,5}(-\d{1,5})?)*$")
-_DOMAIN_RE = re.compile(r"^(\*\.)?[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,62}[a-z0-9])?)+$")
-
 
 def _fw_ip_ok(v):
     try:
@@ -2403,9 +2311,6 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, firewall_state(API))
             if method == "GET" and path.endswith("/api/suspicious"):
                 return self._send(200, suspicious_recent(API))
-            if method == "GET" and path.endswith("/api/relations"):
-                qs = dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(self.path).query))
-                return self._send(200, traffic_relations(API, qs))
             if method == "POST" and path.endswith("/api/fw_order"):
                 return self._send(200, reorder_fw_policies(API, self._json_body(), self._user()))
             if method == "POST" and path.endswith("/api/fw_policy"):
