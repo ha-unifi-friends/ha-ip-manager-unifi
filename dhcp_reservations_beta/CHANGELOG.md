@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.41.10 – 2026-11-22
+
+- **Phones, Clients:** the view selector (e.g. *All*) sits on the left below the menu points, the buttons on the right in the same row.
+
 ## 1.41.9 – 2026-11-22
 
 - **Phones:** *Refresh* and *Actions* (and *+*) sit at the top right in the row of the menu points; the tabs follow below on the blue line. The header is one row lower.
