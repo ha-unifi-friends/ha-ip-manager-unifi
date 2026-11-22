@@ -582,7 +582,9 @@ body.plan-mode .chg-box,body.fw-mode .chg-box,body.rel-mode .chg-box{display:non
 .lc.off{opacity:.7}
 .lc-ic{position:relative;flex:none;display:grid;place-items:center;width:34px;height:34px}
 .lc-m{display:grid;gap:3px;min-width:0;flex:1}
-.lc-n{display:flex;align-items:center;gap:7px;min-width:0}.lc-n .dot{flex:none}.lc-n b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.lc-n{display:flex;align-items:center;flex-wrap:wrap;gap:5px 7px;min-width:0}.lc-n .dot{flex:none}
+.lc-ps{display:contents}
+.lc-p{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted);font-size:11.5px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}.lc-n b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
 .lc-s{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lc-fix{color:var(--warn)}
 .lc-w{display:flex;flex-wrap:wrap;gap:4px}
@@ -2157,9 +2159,9 @@ function renderCards(list) {
     return `<button type="button" class="lc${keyOf(c) === sel ? " sel" : ""}${c.online ? "" : " off"}${BULK.keys.has(keyOf(c)) ? " picked" : ""}" data-k="${esc(keyOf(c))}">
       ${icMode === "none" ? "" : `<span class="lc-ic">${icMode === "ha" && haDom(c) ? devIconHtml(c, "ha", true) : `<span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span>`}</span>`}
       <span class="lc-m">
-        <span class="lc-n"><span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span><b translate="no">${esc(devName(c))}</b>${colTd("ipmode", c)}</span>
-        <span class="lc-s"><span class="mono" translate="no">${esc(c.ip || "–")}</span>${fixedOther ? ` <span class="muted">→</span> <span class="mono lc-fix" translate="no" title="Fixed IP">${esc(c.fixed_ip)}</span>` : ""}${netLabel(c.network_id) ? ` · <span translate="no">${esc(netLabel(c.network_id))}</span>` : ""}</span>
-        <span class="lc-s muted">${[CONN_LABEL[c.conn] ? `<span>${CONN_LABEL[c.conn]}</span>` : "", colTd("uplink", c) && colTd("uplink", c) !== CONN_LABEL[c.conn] ? `<span translate="no">${colTd("uplink", c)}</span>` : ""].filter(Boolean).join(" · ")}</span>
+        <span class="lc-n"><span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span><b translate="no">${esc(devName(c))}</b>
+          <span class="lc-ps">${colTd("ipmode", c)}${CONN_LABEL[c.conn] ? `<span class="lc-p">${CONN_LABEL[c.conn]}</span>` : ""}${colTd("uplink", c) && colTd("uplink", c) !== CONN_LABEL[c.conn] ? `<span class="lc-p" translate="no">${colTd("uplink", c)}</span>` : ""}${netLabel(c.network_id) ? `<span class="lc-p" translate="no">${esc(netLabel(c.network_id))}</span>` : ""}</span></span>
+        <span class="lc-s"><span class="mono" translate="no">${esc(c.ip || "–")}</span>${fixedOther ? ` <span class="muted">→</span> <span class="mono lc-fix" translate="no" title="Fixed IP">${esc(c.fixed_ip)}</span>` : ""}</span>
         ${c._warn.length ? `<span class="lc-w">${colTd("_warn", c)}</span>` : ""}
       </span></button>`;
   }).join("");
