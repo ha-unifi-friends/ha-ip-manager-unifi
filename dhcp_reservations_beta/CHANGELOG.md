@@ -2,7 +2,7 @@
 
 ## 1.42.7
 
-- Topology: with the icon switch on *HA*, devices without a Home Assistant logo show their UniFi icon instead of an empty spot – in the tree and in the graph.
+- Topology: with the icon switch on *HA*, devices without a Home Assistant logo show their UniFi icon instead of an empty spot – in the tree and in the graph. *HA* is now the default icon setting.
 
 ## 1.42.6
 
