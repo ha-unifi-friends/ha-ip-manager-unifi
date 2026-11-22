@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.41.0 – 2026-11-22
+
+- **Topology:** new switch **Icons – None / UniFi / Home Assistant** for tree and graph: no icons (plain dots), UniFi's device icons, or the logo of the Home Assistant integration a device belongs to. With icons the clients in the graph are drawn a little bigger.
+- The graph zooms to fit again whenever the view or the *Graph* tab is opened.
+- **Cleaned up:** the code of the former traffic graph and list is removed (time range, traffic filters, relation list, suspicious card, the `api/relations` endpoint). The suspicious-traffic check, its Home Assistant notification, the pills in the device details and the client filter stay.
+
 ## 1.40.0 – 2026-11-22
 
 **Network becomes Topology:**

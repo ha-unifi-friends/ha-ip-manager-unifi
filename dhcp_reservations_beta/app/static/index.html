@@ -356,13 +356,8 @@ body.fw-mode .topbar{border-bottom:2px solid var(--accent)}
 body:not(.fw-mode) .fw-only{display:none!important}
 body.rel-mode #lnkCols,body.rel-mode .topbar>.viewsel,body.rel-mode #count,body.rel-mode #btnInline,body.rel-mode #btnNew{display:none}
 body.rel-mode .topbar{border-bottom:2px solid var(--accent)}
-#relSide{padding-top:4px;margin-bottom:6px}
-#relSide .plan-hint{margin:10px 2px 4px;font-size:12px}
-.rel-sc .l1{font-size:13px}
-.rel-sc .l1 b{font-weight:500}
 .rel-ctrl{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:2px 0 10px}
 .rel-ctrl .sp{flex:1}
-.rel-ctrl input[type=datetime-local]{width:auto}
 body:not(.rel-mode) .rel-only{display:none!important}
 .rel-box{border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 0 8px;margin:10px 0 14px;overflow:hidden}
 #relGraph{position:relative;touch-action:none}
@@ -388,8 +383,6 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .rel-legend i.nk{width:10px;height:10px;border-radius:50%;background:var(--nc)}
 .rel-legend i.nk-inet{border-radius:2px}
 .rel-legend .lsep{width:1px;height:12px;background:var(--line)}
-.rel-rec{display:grid;gap:6px;margin:12px 0 0;padding:9px 12px;border-radius:8px;font-size:12.5px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
-.rel-rec>div>b{color:var(--warn)}
 .swcard{padding:10px 10px 8px;min-width:0}
 .swgrid,.swr{min-width:0;max-width:100%}
 .swgrid{display:grid;gap:5px}
@@ -435,8 +428,6 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .port-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin:6px 0 2px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 .port-note>b:first-child{color:var(--warn)}
 /* network topology */
-body:not(.topo-mode) #relView .topo-only{display:none!important}
-body.topo-mode #relView .traffic-only,body.topo-mode #relView .rel-ctrl:not(.topo-only),body.topo-mode #relMsg,body.topo-mode #relRec,body.topo-mode #relSusp,body.topo-mode #relFocus,body.topo-mode.rel-mode #relSide{display:none!important}
 .topo-tree{overflow:auto;padding:18px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);margin:10px 0 14px}
 .tt-wrap{display:flex;justify-content:center;min-width:max-content}
 .tt-node{display:flex;flex-direction:column;align-items:center}
@@ -473,38 +464,15 @@ body.topo-mode #relView .traffic-only,body.topo-mode #relView .rel-ctrl:not(.top
 .tt-link.wl{color:var(--accent)}
 .mi.mi-chk{display:flex;align-items:center;gap:8px;cursor:pointer}
 .mi.mi-chk input{margin:0}
+.tt-noic{display:block;width:8px;height:8px;border-radius:50%;background:var(--line-strong)}
+.topo-ic-lbl{font-size:12.5px}
 .tt-unk{margin-top:18px;display:grid;justify-items:center}
-.rel-focus{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px}
-.rs-list{display:grid;gap:4px;margin-top:6px}
-.rs-row{display:grid;grid-template-columns:minmax(170px,240px) 1fr auto;gap:4px 12px;align-items:center;padding:5px 8px;border-radius:6px;background:color-mix(in srgb,var(--fg) 3%,transparent)}
-.rs-row:hover{background:color-mix(in srgb,var(--fg) 7%,transparent)}
-.rs-who{min-width:0;display:flex;flex-direction:column;line-height:1.3}
-.rs-who b{color:var(--fg);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.rs-who .muted{font-size:11.5px}
-.rs-f{display:flex;flex-wrap:wrap;gap:4px}
 .rs-c{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--fg);white-space:nowrap}
 .rs-c.bad{background:color-mix(in srgb,var(--bad) 16%,transparent)}
-.rs-ext{margin-top:6px}
-.rs-ext summary{display:block;font-weight:400;cursor:pointer;font-size:12.5px;padding:4px 0;color:var(--muted)}
-.rs-ext summary b{color:var(--fg)}
-.rs-ext summary::before{content:"▸ "}.rs-ext[open] summary::before{content:"▾ "}
-.rs-ext .rs-c{background:var(--chip)}
-@media (max-width:700px){.rs-row{grid-template-columns:1fr auto}.rs-f{grid-column:1/-1}}
-.rel-who{display:flex;gap:8px;align-items:flex-start}
-.rel-who i{flex:none;width:10px;height:10px;border-radius:50%;margin-top:4px;background:var(--nc)}
-.rel-arrow{color:var(--muted);text-align:center;font-size:15px}
-.rel-vol{min-width:110px}
-.rel-vol .bar{height:4px;border-radius:2px;background:var(--chip);margin-top:4px;overflow:hidden}
-.rel-vol .bar span{display:block;height:100%;background:var(--accent)}
-.rel-table tr.st-bad td:first-child{box-shadow:inset 3px 0 var(--bad)}
-.rel-table tr.st-warn td:first-child{box-shadow:inset 3px 0 var(--warn)}
 
 .rel-e.bad{stroke-dasharray:none;animation:relpulse 1.6s ease-in-out infinite}
 .rel-e.blk{stroke-dasharray:5 4}
 .rel-e.unexp{filter:drop-shadow(0 0 3px var(--warn));animation:relpulse 2.2s ease-in-out infinite}
-.rel-susp{margin:14px 0 12px}
-.rel-susp .fa-h .sp{flex:1}
-.rel-susp .fa-h .opt{font-weight:400;font-size:12.5px;padding:0}
 .rel-legend i.unexp{background:var(--warn);box-shadow:0 0 4px var(--warn)}
 @keyframes relpulse{50%{opacity:.45}}
 .rel-n{cursor:pointer}
@@ -512,12 +480,6 @@ body.topo-mode #relView .traffic-only,body.topo-mode #relView .rel-ctrl:not(.top
 .rel-legend span{display:inline-flex;align-items:center;gap:5px}
 .rel-legend i{display:inline-block;width:16px;height:4px;border-radius:2px}
 .rel-legend i.dash{background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 7px)}
-.imp-table.rel-table{max-height:none}
-.rel-table td{white-space:normal!important;font-size:12.5px}
-.rel-table td .muted{font-size:11.5px}
-.rel-table tr{cursor:pointer}
-.rel-table tr.sel td{background:var(--sel)}
-.rel-port{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;border-left:3px solid var(--pc);background:var(--chip);margin:1px 2px 1px 0;white-space:nowrap}
 @container main (max-width:1060px){body.rel-mode .view-switch button svg + *,body.fw-mode .view-switch button svg + *{display:none}}
 body.fw-mode #btnNew{display:none}
 .fw-chain{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:10px 12px 12px;margin:-4px 0 14px}
@@ -1064,7 +1026,7 @@ window.I18N = (() => {
     <div class="side-scroll">
       <details id="planNets" open hidden><summary>Networks<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary><nav class="plan-nets" id="planStats" aria-label="Networks"></nav><p class="hint plan-hint">Click an address to open the device, or a free one to reserve it. Devices outside the filters below are greyed out.</p></details>
       <details id="fwSide" open hidden><summary>Zones<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary><nav class="plan-nets" id="fwZones" aria-label="Zones"></nav><p class="hint plan-hint">Click a zone to see its policies in both directions. The firewall is shown read only – change it in UniFi.</p></details>
-      <details id="relSide" open hidden><summary>Show<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary><nav class="plan-nets" id="relScopes" aria-label="Relations filter"></nav><p class="hint plan-hint">Built from UniFi's traffic flows (Insights › Flows). Click a device to open it, an arrow or a row to highlight the relation.</p></details>
+      
       <div id="facets"></div>
     </div>
     <div class="side-foot"><div class="side-links"><button class="link" type="button" id="lnkClear" disabled>Clear filters</button><button class="link" type="button" id="lnkCols">Customize columns</button></div><div class="foot-row"><span id="appVer" title="IP Manager for UniFi – app version"></span><span class="sp"></span><span class="lang-wrap"><button type="button" class="theme-btn lang-btn" id="btnLang" aria-haspopup="menu" aria-expanded="false" title="Language"></button><div class="lang-menu" id="langMenu" role="menu" hidden></div></span><button type="button" class="theme-btn" id="btnTheme"></button></div></div>
@@ -1181,30 +1143,14 @@ window.I18N = (() => {
     <section class="plan-view rel-view" id="relView" hidden aria-label="Network">
       <div class="plan-scroll">
         <div class="plan-head topo-only"><h3>Network topology</h3><span class="hint">How the devices are connected – click a device for its details.</span></div>
-        <div class="plan-head traffic-only"><h3>Traffic</h3><span class="hint">Who talks to whom – one arrow per direction, the width is the data volume, the colour the port.</span></div>
         <div class="cl-ctrl rel-ctrl topo-only">
           <label class="opt"><input type="checkbox" id="topoCli"><span>Clients</span></label>
           <label class="opt"><input type="checkbox" id="topoOff"><span>Offline devices</span></label>
+          <span class="sp"></span>
+          <span class="topo-ic-lbl muted">Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none">None</button><button type="button" data-topoicon="unifi">UniFi</button><button type="button" data-topoicon="ha">Home Assistant</button></span>
         </div>
         <div class="topo-tree topo-only" id="topoTree" hidden></div>
-        <div class="cl-ctrl rel-ctrl">
-          <span class="seg" role="group" aria-label="Time range"><button type="button" data-relp="1h">1 h</button><button type="button" data-relp="6h">6 h</button><button type="button" data-relp="24h">24 h</button><button type="button" data-relp="7d">7 days</button><button type="button" data-relp="custom">From – to</button></span>
-          <span id="relCustom" hidden><label>From <input type="datetime-local" id="relFrom"></label> <label>to <input type="datetime-local" id="relTo"></label> <button class="btn primary" type="button" id="relLoad">Show</button></span>
-          <label class="opt" title="Untick to see only the communication inside your network"><input type="checkbox" id="relInet"><span>Internet traffic</span></label>
-          <label class="opt" title="Home Assistant talks to almost every device – untick to hide it"><input type="checkbox" id="relHa"><span>Home Assistant traffic</span></label>
-          <label class="opt" title="Access points, switches and the gateway"><input type="checkbox" id="relUnifi"><span>UniFi devices</span></label>
-          <label class="opt" title="Devices recognised as NAS or server"><input type="checkbox" id="relNas"><span>NAS / server</span></label>
-          <label class="opt" title="Devices recognised as printers"><input type="checkbox" id="relPrinter"><span>Printers</span></label>
-          <label class="opt" title="Connections UniFi's firewall blocked completely – untick to see only what got through"><input type="checkbox" id="relBlk"><span>Blocked by the firewall</span></label>
-          <span class="sp"></span>
-          <div class="search fw-search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="relQ" placeholder="Search devices, ports, domains" aria-label="Search relations"></div>
-        </div>
-        <div id="relMsg"></div>
-        <div id="relRec"></div>
-        <div id="relSusp"></div>
-        <div id="relFocus"></div>
         <div class="rel-box" id="relGraphBox"><div id="relGraph"></div><div class="rel-legend" id="relLegend"></div></div>
-        <div class="imp-table rel-table" id="relListBox" hidden><table><thead><tr><th>From (starts)</th><th></th><th>To</th><th>Data</th><th>Ports</th><th>Flows</th><th>Notes</th></tr></thead><tbody id="relRows"></tbody></table></div>
       </div>
     </section>
   </main>
@@ -1961,7 +1907,7 @@ function setView(v) {
   if (!["clients", "plan", "fw", "rel"].includes(v)) v = "clients";
   const plan = v === "plan", fw = v === "fw", rel = v === "rel";
   document.body.classList.toggle("plan-mode", plan); document.body.classList.toggle("fw-mode", fw); document.body.classList.toggle("rel-mode", rel); store.set("view", v);
-  $("#relSide").hidden = !rel; $("#relView").hidden = !rel;
+  $("#relView").hidden = !rel;
   for (const b of document.querySelectorAll("[data-vw]")) b.setAttribute("aria-pressed", String(b.dataset.vw === v));
   $("#planNets").hidden = !plan; $("#fwSide").hidden = !fw; $(".tablewrap").hidden = plan || fw || rel; $("#planView").hidden = !plan; $("#fwView").hidden = !fw;
   if (rel) { closeCols(); PLAN.tab = "cur"; openRel(); } else if (plan) { closeCols(); openPlan(); } else if (fw) { closeCols(); PLAN.tab = "cur"; renderFw(); } else { PLAN.tab = "cur"; renderTable(); }
@@ -3655,104 +3601,15 @@ $("#fwChain").addEventListener("drop", e => {
 });
 $("#fwChain").addEventListener("dragend", () => { FW.drag = null; for (const x of $("#fwChain").querySelectorAll(".dragging,.drop-before,.drop-after")) x.classList.remove("dragging", "drop-before", "drop-after"); });
 
-// ---------- Relations: who talks to whom (UniFi traffic flows), with the firewall's verdict ----------
+// ---------- topology view: shared helpers, live force layout, drawing ----------
 // standard ports get a colour (the dominant port of a pair colours its arrows)
 const REL_PORTS = [["DNS", [53, 853], "#14b8a6"], ["Web", [80, 443, 8080, 8443], "#3b82f6"], ["NTP", [123], "#a3a3a3"], ["MQTT", [1883, 8883], "#f59e0b"], ["Camera / RTSP", [554], "#ec4899"], ["Home Assistant", [8123], "#0ea5e9"], ["ESPHome", [6053], "#22c55e"], ["SSH / remote", [22, 3389, 5900], "#ef4444"], ["Files / SMB", [139, 445, 2049], "#8b5cf6"], ["Discovery (mDNS / SSDP)", [5353, 1900], "#84cc16"], ["Streaming / casting", [8008, 8009, 7000, 1400, 32400], "#f97316"], ["Other", [], "#94a3b8"]];
-const relPortCat = port => REL_PORTS.find(c => c[1].includes(+port)) || REL_PORTS[REL_PORTS.length - 1];
-const REL = { data: null, err: null, busy: false, preset: store.get("relPreset", "24h"), from: null, to: null, inet: store.get("relInet", true), ha: store.get("relHa", true), unifi: store.get("relUnifi", true), nas: store.get("relNas", true), printer: store.get("relPrinter", true), blk: store.get("relBlk", false), scope: store.get("relScope", "all"), tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoCli: store.get("topoCli", true), topoOff: store.get("topoOff", false), topoQ: "", q: "", sel: null, focus: null, suspAll: false, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false, max: 120 };
-const REL_SCOPES = [["all", "All relations"], ["zone", "Within a firewall zone"], ["vlan", "Within a VLAN"], ["xvlan", "Across VLANs"], ["inet", "To the internet"], ["vendor", "Same vendor"], ["integ", "Same HA integration"], ["ha", "With Home Assistant"], ["susp", "Suspicious"], ["unexp", "Unexpected"], ["rules", "Against the firewall rules"], ["blocked", "Blocked by UniFi"]];
+const REL = { tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoCli: store.get("topoCli", true), topoOff: store.get("topoOff", false), topoIcon: store.get("topoIcon", "unifi"), sel: null, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false };
 const isRel = () => document.body.classList.contains("rel-mode");
-function relRange() {
-  const now = Date.now(), h = { "1h": 1, "6h": 6, "24h": 24, "7d": 168 }[REL.preset];
-  if (h) return [now - h * 3600e3, now];
-  return [REL.from || now - 24 * 3600e3, REL.to || now];
-}
-async function loadRel() {
-  const [f, t] = relRange(); REL.busy = true; REL.err = null; renderRel();
-  try { const d = await api(`api/relations?from=${Math.round(f)}&to=${Math.round(t)}`); if (d.available) { REL.data = d; REL.pos = {}; } else { REL.data = null; REL.err = { msg: d.reason, hint: d.hint }; } }
-  catch (e) { REL.data = null; REL.err = { msg: e.message, hint: e.hint }; }
-  finally { REL.busy = false; renderRel(); }
-}
 // the device behind a node id (MAC, "ip:…", "internet")
 function relDev(id) { if (id === "internet") return null; if (id.startsWith("ip:")) { const ip = id.slice(3); return state.clients.find(c => c.ip === ip || (c.use_fixedip && c.fixed_ip === ip)) || null; } return devByMac(id); }
-function relLabel(id) { if (id === "internet") return "Internet"; const c = relDev(id), n = REL.data?.nodes[id]; return c ? devName(c) : n?.name || n?.ip || id.replace(/^ip:/, ""); }
-// what the current rules say about a flow: first matching rule for protocol + port (and domain / IP for the internet)
-function fwFlowVerdict(sz, dz, src, dst, proto, port, extra) {
-  if (!FW.data || !sz || !dz) return null;
-  const ps = (FW.byPair[sz + ">" + dz] || []).filter(p => p.enabled !== false && fwCst(p) !== "RESPOND_ONLY").sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
-  const T = String(proto || "").toUpperCase(), P = +port;
-  const protoOk = p => { const x = String(p.protocol || "all").toLowerCase(); return x === "all" || (x === "tcp_udp" ? ["TCP", "UDP"].includes(T) : x.toUpperCase() === T); };
-  const portOk = e => { if (fwPortAny(e)) return true; if (!P) return false; let hit = String(e.port || "").split(",").some(r => { const [a, b] = r.split("-").map(Number); return b ? P >= a && P <= b : P === a; }); const g = e.port_group_id && FW.groupById[e.port_group_id]; if (g) hit = g.members.some(m => { const [a, b] = String(m).split("-").map(Number); return b ? P >= a && P <= b : P === a; }); return e.match_opposite_ports ? !hit : hit; };
-  const sideOk = (e, dev, isDst) => {
-    const t = fwTarget(e);
-    if (t === "ANY") return true;
-    if (dev) return fwSideMatch(e, dev) === "all";
-    if (t === "IP") return ((isDst ? extra?.ips : extra?.srcIps) || []).some(ip => fwIpEntries(e).some(r => ipEntryHas(r.entry, ip)) !== !!e.match_opposite_ips);
-    if (isDst && t === "WEB") return (extra?.domains || []).some(d => fwList(e, "web_domains").some(w => d === w || d.endsWith("." + w.replace(/^\*\./, ""))));
-    if (isDst && t === "REGION") return !!extra?.region && fwList(e, "regions").includes(extra.region);
-    return false;
-  };
-  for (const p of ps) if (protoOk(p) && sideOk(p.source, src, false) && sideOk(p.destination, dst, true) && portOk(p.destination)) return { allow: fwIsAllow(p), by: p };
-  return null;
-}
-function relEdges() {
-  const D = REL.data; if (!D) return [];
-  return D.edges.map(e => {
-    const ca = relDev(e.a), cb = relDev(e.b), za = ca ? zoneOf(ca) : FW.data?.zones.find(z => z.name === e.a_zone), zb = e.b === "internet" ? fwZoneByKey("external") : cb ? zoneOf(cb) : FW.data?.zones.find(z => z.name === e.b_zone);
-    const na = ca?.network_id || "", nb = cb?.network_id || "";
-    // flows UniFi let through although the current rules would block them (rules changed, or a gap in the analysis)
-    const bad = [];
-    if (FW.data && za && zb) for (const pt of e.ports) {
-      if (pt.flows - pt.blocked <= 0) continue;
-      const v = fwFlowVerdict(za.id, zb.id, ca, cb, pt.proto, pt.port, { domains: e.domains, ips: e.b === "internet" ? e.ips : e.b.startsWith("ip:") ? [e.b.slice(3)] : [], srcIps: e.a.startsWith("ip:") ? [e.a.slice(3)] : [] });
-      if (v && !v.allow) bad.push({ pt, by: v.by });
-    }
-    const top = e.ports[0], cat = relPortCat(top?.port);
-    const domsA = ca ? [...new Set(haOf(ca).flatMap(h => haDoms(ca, h)))] : [], domsB = cb ? [...new Set(haOf(cb).flatMap(h => haDoms(cb, h)))] : [];
-    const vk = c => String(c?.oui || "").split(/[ ,.]/)[0].toLowerCase();
-    // communication one would not expect from the device types and zone roles
-    const pa = ca ? fwClassify(ca) : null, pb = cb ? fwClassify(cb) : null, ok = x => x && x.conf >= 0.55;
-    const ra = ok(pa) ? pa.p.a : fwZoneRole(za), rb = e.b === "internet" ? "internet" : ok(pb) ? pb.p.a : fwZoneRole(zb), unexp = [];
-    const toHaOut = cb && isHaHost(cb) && ok(pa) && pa.p.ha === "out";
-    if (FW_UNTRUSTED.has(ra) && ra !== "guest" && FW_SENSITIVE.has(rb) && !toHaOut) unexp.push(`${FW_ROLE_SHORT[ra]} → ${FW_ROLE_SHORT[rb]}`);
-    if (e.b === "internet" && ok(pa) && pa.p.net === "none") unexp.push(`${pa.p.name} → Internet`);
-    if (fwZoneRole(za) === "guest" && cb && !(zb && fwZoneRole(zb) === "guest")) unexp.push("Guest → own network");
-    if (FW_UNTRUSTED.has(ra) && e.ports.some(x => [22, 23, 3389, 5900].includes(+x.port))) unexp.push("Remote access from an IoT device");
-    return { ...e, ca, cb, za, zb, na, nb, bad, cat, unexp, nasA: ok(pa) && pa.p.id === "nas", nasB: ok(pb) && pb.p.id === "nas", prA: ok(pa) && pa.p.id === "printer", prB: ok(pb) && pb.p.id === "printer",
-      susp: (REL.data.suspicious || []).filter(x => x.src === e.a || "ip:" + x.src === e.a || (x.mac && x.mac === e.a) || (x.ip && "ip:" + x.ip === e.a)), sameVendor: !!(ca && cb && vk(ca) && vk(ca) === vk(cb)), sameInteg: domsA.some(x => domsB.includes(x)), integ: domsA.filter(x => domsB.includes(x)) };
-  });
-}
-function relFilter(list) {
-  const s = REL.scope, q = REL.q.trim().toLowerCase();
-  const fo = REL.focus;
-  return list.filter(e => {
-    if (fo) return [e.a, e.b].some(id => relSrcMatch(id, fo)) && (!q || relQMatch(e, q)); // one device: all of its relations, whatever is ticked
-    if (s === "susp") return e.susp.length > 0 && (!q || relQMatch(e, q)); // all suspicious devices, whatever is ticked
-    if (!REL.blk && s !== "blocked" && s !== "susp" && e.blocked >= e.flows) return false; // only blocked attempts
-    if (!REL.inet && (e.b === "internet" || e.a === "internet")) return false;
-    const isHa = (e.ca && isHaHost(e.ca)) || (e.cb && isHaHost(e.cb));
-    if (!REL.ha && isHa && s !== "ha") return false;
-    if (s === "ha" && !isHa) return false;
-    if (!REL.unifi && (e.ca?.is_device || e.cb?.is_device)) return false;
-    if (!REL.nas && (e.nasA || e.nasB)) return false;
-    if (!REL.printer && (e.prA || e.prB)) return false;
-    if (s === "susp" && !e.susp.length) return false;
-    if (s === "unexp" && !e.unexp.length && !e.bad.length) return false;
-    if (s === "zone" && !(e.za && e.zb && e.za.id === e.zb.id)) return false;
-    if (s === "vlan" && !(e.na && e.na === e.nb)) return false;
-    if (s === "xvlan" && !(e.na && e.nb && e.na !== e.nb)) return false;
-    if (s === "inet" && e.b !== "internet") return false;
-    if (s === "vendor" && !e.sameVendor) return false;
-    if (s === "integ" && !e.sameInteg) return false;
-    if (s === "rules" && !e.bad.length) return false;
-    if (s === "blocked" && !e.blocked) return false;
-    if (q && !relQMatch(e, q)) return false;
-    return true;
-  });
-}
-const relQMatch = (e, q) => [relLabel(e.a), relLabel(e.b), e.a_zone, e.b_zone, ...e.domains, ...e.ports.map(p => p.service + " " + p.port)].join(" ").toLowerCase().includes(q);
+function relLabel(id) { if (id === "internet") return "Internet"; const c = relDev(id); return c ? devName(c) : id.replace(/^ip:/, ""); }
 const relBytes = n => n >= 1e9 ? (n / 1e9).toFixed(1) + " GB" : n >= 1e6 ? (n / 1e6).toFixed(1) + " MB" : n >= 1e3 ? Math.round(n / 1e3) + " kB" : n + " B";
-const relPriv = ip => /^(10\.|127\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|169\.254\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|f[cd][0-9a-f]{2}:|fe80:)/i.test(String(ip || ""));
 const relByIp = ip => ip ? state.clients.find(c => c.ip === ip || (c.use_fixedip && c.fixed_ip === ip)) || null : null;
 const relIpName = ip => { const c = relByIp(ip); return c ? devName(c) : ip; };
 const REL_ICONS = { ha_host: "🏠", camera: "📷", printer: "🖨", nas: "🗄", tv: "📺", cast: "📺", airplay: "📺", console: "🎮", speaker: "🔊", sonos: "🔊", computer: "💻", hue: "💡", wled: "💡", shelly: "⚡", tasmota: "⚡", tuya: "⚡", esphome: "⚙", esp_generic: "⚙", zigbee: "📡" };
@@ -3762,15 +3619,8 @@ function relIcon(id) {
   if (c.is_device) return "U";
   const k = fwClassify(c); return k && k.conf >= 0.55 ? REL_ICONS[k.p.id] || "" : "";
 }
-const relZoneCol = z => { const i = z ? fwZones().findIndex(x => x.id === z.id) : -1; return i < 0 ? "#64748b" : `hsl(${(i * 67 + 200) % 360} 60% 55%)`; };
 // the address shown under a name
-const relIp = id => id === "internet" ? "" : relDev(id)?.ip || REL.data?.nodes[id]?.ip || id.replace(/^ip:/, "");
-// a source of the suspicious list ("aa:bb…" or an IP) → node id in the graph
-const relSrcMatch = (id, src) => {
-  if (id === src || id === "ip:" + src) return true;
-  const g = (REL.data?.suspicious || []).find(x => x.src === src), c = g ? (g.mac ? devByMac(g.mac) : relByIp(g.ip)) : devByMac(src) || relByIp(src);
-  return !!c && relDev(id) === c;
-};
+const relIp = id => id === "internet" ? "" : relDev(id)?.ip || id.replace(/^ip:/, "");
 // live force layout in the manner of d3-force (as in Home Assistant's Zigbee map): devices repel each other, relations
 // pull like springs, devices of a firewall zone gather; dragging a device makes its neighbours follow and wobble
 function relSimInit(nodes, links, W, H, grp, mrg, mrgL, rad, inet, cenOv) {
@@ -3836,88 +3686,15 @@ async function loadDevSusp(c) {
   const mine = devSuspOf(c);
   $("#devSusp").innerHTML = mine.length ? `<div class="dev-susp"><span class="muted">Last 24 hours:</span> ${mine.map(relSuspChip).join("")}</div>` : "";
 }
-// suspicious traffic: one row per device, the findings as chips; scans from the internet folded into one line
-function relSuspHtml(sp) {
-  const groups = new Map();
-  for (const x of sp) { if (!groups.has(x.src)) groups.set(x.src, { x, items: [] }); groups.get(x.src).items.push(x); }
-  const all = [...groups.values()], ext = all.filter(g => !g.x.mac && !relPriv(g.x.ip)), int = all.filter(g => !ext.includes(g));
-  const text = relSuspText, chip = relSuspChip;
-  const row = g => {
-    const x = g.x, c = x.mac ? devByMac(x.mac) : relByIp(x.ip), name = c ? devName(c) : x.name && x.name !== x.ip ? x.name : x.ip;
-    const sub = [name !== x.ip ? x.ip : "", x.zone].filter(Boolean).join(" · ");
-    return `<div class="rs-row"><span class="rs-who"><b translate="no" title="${esc(name)}">${esc(name)}</b>${sub ? `<span class="muted" translate="no">${esc(sub)}</span>` : ""}</span><span class="rs-f">${g.items.map(chip).join("")}</span><button type="button" class="btn sm" data-relfocus="${esc(x.src)}" title="Show only the relations of this device">Show</button></div>`;
-  };
-  const LIM = 6, shown = REL.suspAll ? int : int.slice(0, LIM);
-  let h = int.length ? `<div class="rs-list">${shown.map(row).join("")}</div>` : "";
-  if (int.length > LIM) h += `<button type="button" class="link" data-relsuspall style="margin-top:6px">${REL.suspAll ? "Show less" : `Show all ${int.length} devices`}</button>`;
-  if (ext.length) {
-    const tg = [...new Set(ext.flatMap(g => g.items.map(x => x.target).filter(Boolean)))];
-    h += `<details class="rs-ext"${int.length ? "" : " open"}><summary><b>${ext.length} addresses from the internet</b> <span>knocked on your network</span>${tg.length ? ` <span class="muted" translate="no">(${esc(tg.slice(0, 3).join(", "))})</span>` : ""}</summary><div class="rs-f">${ext.map(g => {
-      const ports = Math.max(0, ...g.items.filter(x => x.kind === "scan_ports").map(x => x.count)), bl = g.items.find(x => x.kind === "blocked")?.count || 0;
-      return `<span class="rs-c" title="${esc(g.items.map(text).join(" · "))}"><b translate="no">${esc(g.x.ip)}</b>${ports ? ` · <span>${ports} ports</span>` : ""}${bl ? ` · <span>${bl} blocked</span>` : ""}</span>`;
-    }).join("")}</div></details>`;
-  }
-  return h;
-}
 function renderRel() {
   if (!isRel()) return;
-  const D = REL.data;
-  for (const b of document.querySelectorAll("[data-relp]")) b.setAttribute("aria-pressed", String(b.dataset.relp === REL.preset));
   for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(b.dataset.rt === REL.tab));
-  // topology (tree or graph): the devices and how they are plugged together – no traffic flows needed
-  const topo = isTopo(); document.body.classList.toggle("topo-mode", topo);
-  $("#topoTree").hidden = REL.tab !== "tree";
-  if (topo) { $("#relGraphBox").hidden = REL.tab !== "topo"; $("#relListBox").hidden = true; $("#topoCli").checked = REL.topoCli; $("#topoOff").checked = REL.topoOff; renderTopo(); return; }
-  $("#relCustom").hidden = REL.preset !== "custom"; $("#relInet").checked = REL.inet; $("#relHa").checked = REL.ha; $("#relUnifi").checked = REL.unifi; $("#relNas").checked = REL.nas; $("#relPrinter").checked = REL.printer; $("#relBlk").checked = REL.blk; $("#relLoad").disabled = REL.busy;
-  $("#relScopes").innerHTML = REL_SCOPES.map(([k, l]) => { return `<button type="button" class="pn rel-sc ${REL.scope === k ? "on" : ""}" data-relsc="${k}" aria-pressed="${REL.scope === k}"><span class="l1"><b>${l}</b><span class="sp"></span><span class="muted" data-relcnt="${k}"></span></span></button>`; }).join("");
-  const sp = D?.suspicious || [], on = !!FWS.alerts?.suspicious, nSrc = new Set(sp.map(x => x.src)).size;
-  $("#relSusp").innerHTML = `<div class="fa-card ${sp.length ? "bad" : "info"} rel-susp"><span class="fa-dot"></span><div class="fa-c"><div class="fa-h"><span>Suspicious network traffic</span>${D ? ` <span class="fa-n" title="Sources">${nSrc}</span>` : ""}<span class="sp"></span>${sp.length ? `<button type="button" class="btn sm" data-relsusp>Show in the graph</button>` : ""}<label class="opt" title="Checks the flows every 10 minutes and sends a Home Assistant notification and the event clients_reservations_suspicious_traffic"><input type="checkbox" id="relAlert" ${on ? "checked" : ""}><span>Notify me in Home Assistant</span></label></div>
-    <div class="fa-d">${!D ? "<span>Scans (one device knocking on many devices or ports), many blocked attempts, remote-access ports from IoT or guest devices and connections from untrusted into trusted zones.</span>" : sp.length ? relSuspHtml(sp) : "<span>Nothing suspicious in this time range.</span>"}</div></div></div>`;
-  const gb = $("#relGraphBox"), lb = $("#relListBox"); gb.hidden = REL.tab !== "graph"; lb.hidden = REL.tab !== "list";
-  if (REL.busy) { $("#relMsg").innerHTML = `<p class="muted"><span class="spin"></span> Loading the traffic flows from UniFi …</p>`; return; }
-  if (!D) { if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; $("#relGraph").innerHTML = ""; $("#relRows").innerHTML = ""; $("#relFocus").innerHTML = ""; $("#relListN").textContent = ""; $("#relMsg").innerHTML = REL.err ? `<div class="banner fw-ban"><b>Relations not available:</b> ${esc(REL.err.msg || "")}${REL.err.hint ? `<div class="banner-hint"><b>Hint:</b> ${esc(REL.err.hint)}</div>` : ""}</div>` : `<p class="hint">Pick a time range and click <b>Show</b>.</p>`; return; }
-  const all = relEdges(), list = relFilter(all).slice(0, REL.max);
-  const sv = [REL.scope, REL.focus]; REL.focus = null; // the sidebar counts the whole network, also while one device is shown
-  for (const [k] of REL_SCOPES) { const el = document.querySelector(`[data-relcnt="${k}"]`); if (el) { REL.scope = k; el.textContent = relFilter(all).length; } }
-  [REL.scope, REL.focus] = sv;
-  $("#relListN").textContent = list.length;
-  $("#relRec").innerHTML = relRecHtml(D);
-  $("#relMsg").innerHTML = `<div class="sumrow"><span class="pill">Flows <b>${D.flows.toLocaleString(I18N.locale)}</b></span><span class="pill">Relations <b>${all.length}</b></span><span class="pill">Shown <b>${list.length}</b></span>${D.split ? `<span class="pill" title="Blocked flows filled the limit – the allowed ones were read on their own">Allowed <b>${D.actions.allowed.toLocaleString(I18N.locale)}</b> · <span>blocked</span> <b>${D.actions.blocked.toLocaleString(I18N.locale)}</b></span>` : ""}${!REL.blk && !REL.focus && !["blocked", "susp"].includes(REL.scope) && all.some(e => e.blocked >= e.flows) ? `<span class="pill" title="Tick “Blocked by the firewall” to show them">Blocked, hidden <b>${all.filter(e => e.blocked >= e.flows).length}</b></span>` : ""}${all.some(e => e.bad.length) ? `<span class="pill" title="Flows that UniFi let through although the current rules would block them">Against the rules <b style="color:var(--bad)">${all.filter(e => e.bad.length).length}</b></span>` : ""}<span class="pill">${isoDateTime(D.from / 1000)} – ${isoDateTime(D.to / 1000)}</span>${D.truncated ? `<span class="pill" title="Only the first flows of the window were read">${D.flows} <span>flows read – narrow the time range for all</span></span>` : ""}</div>`;
-  if (REL.focus) {
-    const g = sp.find(x => x.src === REL.focus), c = g?.mac ? devByMac(g.mac) : relByIp(g?.ip || REL.focus), name = c ? devName(c) : g?.name || REL.focus;
-    const peers = new Set(list.map(e => relSrcMatch(e.a, REL.focus) ? e.b : e.a)), blk = list.filter(e => e.blocked).length;
-    $("#relFocus").innerHTML = `<div class="rel-focus"><span class="pill"><span>Only the relations of</span> <b translate="no">${esc(name)}</b></span><span class="pill">Counterparts <b>${peers.size}</b></span>${blk ? `<span class="pill">Blocked by UniFi <b>${blk}</b></span>` : ""}<button type="button" class="link" data-relunfocus>Show all</button></div>`;
-  } else $("#relFocus").innerHTML = "";
-  // zone of each node (from the device, or from the flow)
-  const zn = n => n ? { id: "n:" + n, name: n } : null, nz = {}; for (const e of list) { nz[e.a] ??= e.za || zn(e.a_zone); nz[e.b] ??= e.b === "internet" ? null : e.zb || zn(e.b_zone); }
-  const ncol = id => id === "internet" ? "#64748b" : relZoneCol(nz[id]);
-  const suspSrc = new Set(sp.map(x => x.src)), isSusp = id => [...suspSrc].some(s => relSrcMatch(id, s));
-  if (REL.tab !== "graph") { if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; }
-  if (REL.tab === "graph") {
-    const box = $("#relGraph"), W = Math.max(640, box.clientWidth || 900), H = Math.max(560, Math.min(920, Math.round(W * 0.62)));
-    const nodes = [...new Set(list.flatMap(e => [e.a, e.b]))], max = Math.max(1, ...list.flatMap(e => [e.ab, e.ba]));
-    const deg = {}; for (const e of list) { deg[e.a] = (deg[e.a] || 0) + 1; deg[e.b] = (deg[e.b] || 0) + 1; }
-    const dmax = Math.max(1, ...Object.values(deg));
-    // like a Zigbee map: devices many others talk to (gateway, Home Assistant, servers) are the big "routers"
-    const kind = id => { if (id === "internet") return "inet"; if (isSusp(id)) return "susp"; const c = relDev(id); if (c?.is_device) return "unifi"; if (c && isHaHost(c)) return "ha"; return (deg[id] || 0) >= Math.max(4, dmax * 0.25) ? "hub" : "dev"; };
-    const rad = id => id === "internet" ? 13 : 6 + 7 * Math.sqrt((deg[id] || 1) / dmax);
-    const lbl = id => { const s = relLabel(id); return s.length > 26 ? s.slice(0, 25) + "…" : s; };
-    const sub = id => id === "internet" ? "" : [nz[id]?.name, relIp(id) !== relLabel(id) ? relIp(id) : ""].filter(Boolean).join(" · ");
-    // labels sit to the right of the dot: room on the right, little on the left
-    const grp = {}, mrg = {}, mrgL = {}; for (const n of nodes) { grp[n] = n === "internet" ? "internet" : nz[n]?.id || "?"; mrg[n] = Math.max(lbl(n).length * 6.4, sub(n).length * 5.6) + rad(n) + 10; mrgL[n] = rad(n) + 8; }
-    relSimInit(nodes, list, W, H, grp, mrg, mrgL, rad);
-    REL.g = { list, nodes, W, H, max, rad, lbl, sub, kind };
-    relDraw(); relRun();
-    const kinds = new Set(nodes.map(kind)), KL = [["inet", "Internet"], ["unifi", "UniFi device"], ["ha", "Home Assistant"], ["hub", "Talks to many devices"], ["dev", "Device"], ["susp", "Suspicious"]];
-    $("#relLegend").innerHTML = KL.filter(([k]) => kinds.has(k)).map(([k, l]) => `<span><i class="nk nk-${k}"></i>${l}</span>`).join("") + `<span class="lsep"></span>` + REL_PORTS.filter(c => list.some(e => e.cat === c)).map(c => `<span><i style="background:${c[2]}"></i>${esc(c[0])}</span>`).join("") + `<span><i style="background:var(--bad)"></i>Against the firewall rules</span><span><i class="dash"></i>Blocked by UniFi</span><span class="muted">Line width = data volume · drag devices, Ctrl + wheel or the buttons to zoom</span>`;
-  }
-  if (REL.tab === "list") {
-    const rows = [...list].sort((x, y) => (y.ab + y.ba) - (x.ab + x.ba)), vmax = Math.max(1, ...rows.map(e => e.ab + e.ba));
-    const who = (id, z, net, extra) => { const name = relLabel(id), ip = relIp(id), sub = [ip !== name ? ip : "", z?.name, net, ...(extra || [])].filter(Boolean).join(" · "); return `<div class="rel-who"><i style="--nc:${ncol(id)}"></i><div><b translate="no">${relIcon(id) && relIcon(id) !== "U" ? relIcon(id) + " " : ""}${esc(name)}</b>${sub ? `<div class="muted" translate="no">${esc(sub)}</div>` : ""}</div></div>`; };
-    $("#relRows").innerHTML = rows.map(e => `<tr class="${REL.sel === e.a + "|" + e.b ? "sel " : ""}${e.bad.length || e.susp.length ? "st-bad" : e.unexp.length || e.blocked ? "st-warn" : ""}" data-rele="${esc(e.a + "|" + e.b)}"><td>${who(e.a, e.za || (e.a_zone ? { name: e.a_zone } : null), e.a_net)}</td><td class="rel-arrow" aria-hidden="true">${e.ba ? "⇄" : "→"}</td><td>${who(e.b, e.b === "internet" ? null : e.zb || (e.b_zone ? { name: e.b_zone } : null), e.b_net, e.domains.slice(0, 2))}</td>
-      <td class="rel-vol" title="${esc(`→ ${relBytes(e.ab)} · ← ${relBytes(e.ba)}`)}"><b>${relBytes(e.ab + e.ba)}</b><div class="muted">→ ${relBytes(e.ab)} · ← ${relBytes(e.ba)}</div><div class="bar"><span style="width:${(100 * Math.sqrt((e.ab + e.ba) / vmax)).toFixed(0)}%"></span></div></td><td>${e.ports.slice(0, 4).map(x => `<span class="rel-port" style="--pc:${relPortCat(x.port)[2]}" translate="no">${esc(x.service || x.proto)} ${esc(x.port ?? "")}</span>`).join(" ")}${e.ports.length > 4 ? ` <span class="muted">+${e.ports.length - 4}</span>` : ""}</td>
-      <td class="num">${e.flows.toLocaleString(I18N.locale)}</td><td><div class="chg-list">${e.bad.map(b => `<span class="fa-f bad">✕ ${esc(b.pt.proto)} ${esc(b.pt.port ?? "")}: <span>blocked today by</span> <button type="button" class="link" data-fwpol="${esc(b.by.id)}" translate="no">${esc(b.by.name)}</button></span>`).join("")}${e.susp.map(x => `<span class="fa-f bad">⚠ <span>Suspicious:</span> <span>${esc(x.kind === "scan_ports" ? `probed ${x.count} ports on ${relIpName(x.target)}` : x.text)}</span></span>`).join("")}${e.unexp.map(u => `<span class="fa-f warn">⚠ <span>Unexpected:</span> <span translate="no">${esc(u)}</span></span>`).join("")}${e.blocked ? `<span class="fa-f warn">${e.blocked} <span>flows blocked by UniFi</span></span>` : ""}${e.sameInteg ? `<span class="muted" translate="no">${esc(e.integ.map(x => HA_DOM_NAMES[x] || x).join(", "))}</span>` : ""}</div></td></tr>`).join("") || `<tr><td colspan="7" class="muted">No relation matches.</td></tr>`;
-  }
+  document.body.classList.add("topo-mode");
+  $("#topoTree").hidden = REL.tab !== "tree"; $("#relGraphBox").hidden = REL.tab !== "topo";
+  if (REL.tab !== "topo" && REL.sim) { if (REL.sim.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; }
+  $("#topoCli").checked = REL.topoCli; $("#topoOff").checked = REL.topoOff;
+  for (const b of document.querySelectorAll("[data-topoicon]")) b.setAttribute("aria-pressed", String(b.dataset.topoicon === REL.topoIcon));
+  renderTopo();
 }
 // draws the graph from REL.g and REL.pos once; the simulation then only moves the elements (relMove)
 function relGeo(e, from, to) {
@@ -3939,7 +3716,7 @@ function relDraw() {
   const node = n => {
     const p = P[n], r = rad(n), k = kind(n), s = sub(n), ic = relIcon(n);
     const shape = k === "inet" ? `<rect class="core" x="${-r}" y="${-r}" width="${2 * r}" height="${2 * r}" rx="4"/>` : `<circle class="core" r="${r.toFixed(1)}"/>`;
-    return `<g class="rel-n nk-${k}" data-reln="${esc(n)}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><title>${esc([relLabel(n), relIp(n), s].filter(Boolean).join(" · "))}</title>${shape}${ic && r >= 9 ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${ic}</text>` : ""}<text class="rel-l" x="${(r + 5).toFixed(1)}" y="${s ? -1 : 4}" translate="no">${esc(lbl(n))}</text>${s ? `<text class="rel-s" x="${(r + 5).toFixed(1)}" y="11" translate="no">${esc(s)}</text>` : ""}</g>`;
+    return `<g class="rel-n nk-${k}" data-reln="${esc(n)}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><title>${esc([relLabel(n), relIp(n), s].filter(Boolean).join(" · "))}</title>${shape}${G.icon ? G.icon(n, r) : ic && r >= 9 ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${ic}</text>` : ""}<text class="rel-l" x="${(r + 5).toFixed(1)}" y="${s ? -1 : 4}" translate="no">${esc(lbl(n))}</text>${s ? `<text class="rel-s" x="${(r + 5).toFixed(1)}" y="11" translate="no">${esc(s)}</text>` : ""}</g>`;
   };
   box.innerHTML = `<svg class="rel-svg${list.some(e => REL.sel === e.a + "|" + e.b) ? " has-sel" : ""}" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Relations graph"><defs>${markers}</defs><rect class="rel-bg" width="${W}" height="${H}"/><g class="rel-vp" transform="translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})">
     ${list.map(e => arrow(e, e.a, e.b, e.ab, false) + arrow(e, e.b, e.a, e.ba, true)).join("")}
@@ -3991,20 +3768,27 @@ $("#relGraph").addEventListener("click", e => {
   else if (z.dataset.relzoom === "auto") { REL.autoFit = false; relFit(); }
   else { REL.autoFit = false; relZoom(z.dataset.relzoom === "in" ? 1.25 : 0.8); }
 }, true);
-// the flows read hold no allowed connection: say why and what helps (no UniFi switch is touched)
-function relRecHtml(D) {
-  const A = D.actions; if (!A || !D.flows || A.allowed > 0) return "";
-  return D.truncated
-    ? `<div class="rel-rec"><div><b>Only blocked flows were read</b> – <span>UniFi returned the first ${D.flows.toLocaleString(I18N.locale)} flows of the time range, all of them blocked (often a device that keeps knocking).</span> <span>Choose a shorter time range to see the allowed traffic as well.</span></div></div>`
-    : `<div class="rel-rec"><div><b>No allowed traffic in this time range</b> – <span>UniFi recorded only blocked connections.</span></div>
-      <div><b>How to record allowed traffic:</b> <span>In UniFi Network open Settings › CyberSecure › Traffic Logging and set Flow Logging to All Traffic.</span> <span class="muted">The names can differ between UniFi versions. Some consoles need internal storage (SSD) for it, and some gateways (e.g. UDM, UDR, Express) only log blocked traffic.</span></div></div>`;
-}
 $("#mnSusp").addEventListener("change", async e => {
   try { await saveFwSettings({ alerts: { suspicious: e.target.checked } }); toast(e.target.checked ? "Home Assistant will be notified about suspicious traffic" : "Suspicious-traffic notifications are off"); }
   catch (err) { e.target.checked = !e.target.checked; toast(err.message); }
 });
 // ---------- network topology: which device hangs on which (like UniFi's topology) ----------
-const isTopo = () => true; // the traffic graph and list were removed – the view only shows the topology
+// icons of the topology: none, UniFi's device icons or the logo of the Home Assistant integration
+const topoHaDom = c => { const ds = haOf(c); return ds.length ? haDoms(c, ds[0])[0] || "" : isHaHost(c) ? "homeassistant" : ""; };
+function topoIconHtml(c, big) {
+  if (REL.topoIcon === "none") return "";
+  if (REL.topoIcon === "ha") { const d = topoHaDom(c); return d ? brandImg(d, big ? 26 : 16) : `<span class="tt-noic"></span>`; }
+  return iconHtml(c, big);
+}
+function topoIconSvg(id, r) {
+  const c = relDev(id), m = REL.topoIcon, s = r * 1.5, img = url => `<image href="${esc(url)}" x="${(-s / 2).toFixed(1)}" y="${(-s / 2).toFixed(1)}" width="${s.toFixed(1)}" height="${s.toFixed(1)}" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>`;
+  if (m === "none" || id === "?") return "";
+  if (id === "internet") return `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">🌐</text>`;
+  if (!c) return "";
+  if (m === "ha") { const d = topoHaDom(c); return d ? img(`https://brands.home-assistant.io/_/${d}/icon.png`) : ""; }
+  if (c.icon_id) return img(`https://static.ubnt.com/fingerprint/0/${encodeURIComponent(c.icon_id)}_257x257.png`);
+  const t = relIcon(id); return t ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${t}</text>` : "";
+}
 const topoFiltered = () => !!(state.q.trim() || Object.values(state.facets).some(a => a?.length) || Object.values(state.colFilters).some(Boolean));
 let TOPO_HIT = new Set();
 function topoModel() {
@@ -4043,11 +3827,11 @@ const topoMatch = c => !!c?.mac && TOPO_HIT.has(c.mac); // filtered by the sideb
 function topoSub(c) { return c.is_device ? [c.device_model, c.ip].filter(Boolean).join(" · ") : [c.ip, c.oui].filter(Boolean).join(" · "); }
 function topoTreeHtml(M) {
   const seen = new Set();
-  const card = c => `<button type="button" class="tt-card${c.online ? "" : " off"}${topoMatch(c) ? " hit" : ""}${state.sel?.mac === c.mac ? " sel" : ""}" data-ttdev="${esc(c.mac)}" title="${esc([devName(c), topoSub(c), c.online ? "" : "offline"].filter(Boolean).join(" · "))}"><span class="tt-ic">${iconHtml(c, true)}</span><span class="tt-tx"><b translate="no">${esc(devName(c))}</b><span class="muted" translate="no">${esc(topoSub(c))}</span></span></button>`;
+  const card = c => `<button type="button" class="tt-card${c.online ? "" : " off"}${topoMatch(c) ? " hit" : ""}${state.sel?.mac === c.mac ? " sel" : ""}" data-ttdev="${esc(c.mac)}" title="${esc([devName(c), topoSub(c), c.online ? "" : "offline"].filter(Boolean).join(" · "))}">${REL.topoIcon === "none" ? "" : `<span class="tt-ic">${topoIconHtml(c, true)}</span>`}<span class="tt-tx"><b translate="no">${esc(devName(c))}</b><span class="muted" translate="no">${esc(topoSub(c))}</span></span></button>`;
   const clientsHtml = cl => {
     if (!cl.length) return "";
     const hit = cl.some(topoMatch), open = hit || cl.length <= 6;
-    return `<details class="tt-cli"${open ? " open" : ""}><summary>${cl.length} ${cl.length === 1 ? "client" : "clients"}</summary><div class="tt-cl">${cl.map(k => `<button type="button" class="tt-c${k.online ? "" : " off"}${topoMatch(k) ? " hit" : ""}${state.sel?.mac === k.mac ? " sel" : ""}" data-ttdev="${esc(k.mac)}" title="${esc([devName(k), topoSub(k)].filter(Boolean).join(" · "))}"><span class="tt-ci">${iconHtml(k)}</span><span class="tt-cn" translate="no">${esc(devName(k))}</span><span class="tt-cp muted" translate="no">${esc(M.link(k))}</span></button>`).join("")}</div></details>`;
+    return `<details class="tt-cli"${open ? " open" : ""}><summary>${cl.length} ${cl.length === 1 ? "client" : "clients"}</summary><div class="tt-cl">${cl.map(k => `<button type="button" class="tt-c${k.online ? "" : " off"}${topoMatch(k) ? " hit" : ""}${state.sel?.mac === k.mac ? " sel" : ""}" data-ttdev="${esc(k.mac)}" title="${esc([devName(k), topoSub(k)].filter(Boolean).join(" · "))}"><span class="tt-ci">${topoIconHtml(k)}</span><span class="tt-cn" translate="no">${esc(devName(k))}</span><span class="tt-cp muted" translate="no">${esc(M.link(k))}</span></button>`).join("")}</div></details>`;
   };
   const node = id => {
     if (seen.has(id)) return ""; seen.add(id);
@@ -4072,14 +3856,15 @@ function topoGraph(M) {
   }
   const deg = {}; for (const e of edges) { deg[e.a] = (deg[e.a] || 0) + 1; deg[e.b] = (deg[e.b] || 0) + 1; }
   const kind = id => id === "internet" ? "inet" : id === "?" ? "dev" : topoMatch(M.byMac.get(id)) ? "susp" : M.byMac.get(id)?.is_device ? "unifi" : isHaHost(M.byMac.get(id)) ? "ha" : "dev";
-  const rad = id => { const c = M.byMac.get(id); return id === "internet" ? 13 : id === "?" ? 9 : !c?.is_device ? 6 : c.device_kind === "gateway" ? 15 : c.device_kind === "switch" ? 12 : 10; };
+  const ico = REL.topoIcon !== "none";
+  const rad = id => { const c = M.byMac.get(id); return id === "internet" ? 13 : id === "?" ? 9 : !c?.is_device ? (ico ? 9 : 6) : c.device_kind === "gateway" ? 15 : c.device_kind === "switch" ? 12 : 10; };
   const lbl = id => { const s = id === "?" ? I18N.tr("Connection not known") : relLabel(id); return s.length > 26 ? s.slice(0, 25) + "…" : s; };
   const sub = id => { const c = M.byMac.get(id); return c ? topoSub(c) : ""; };
   const grp = {}, mrg = {}, mrgL = {}; for (const n of nodes) { grp[n] = "t"; mrg[n] = Math.max(lbl(n).length * 6.4, sub(n).length * 5.6) + rad(n) + 10; mrgL[n] = rad(n) + 8; }
   // a new set of devices (other filter, clients on / off): zoom to fit again once it has settled
   const key = nodes.join(","); if (key !== REL.topoKey) { REL.topoKey = key; REL.autoFit = true; }
   relSimInit(nodes, edges, W, H, grp, mrg, mrgL, rad, { free: true });
-  REL.g = { list: edges, nodes, W, H, max: 1, rad, lbl, sub, kind };
+  REL.g = { list: edges, nodes, W, H, max: 1, rad, lbl, sub, kind, icon: topoIconSvg };
   relDraw(); if (REL.autoFit && REL.sim.alpha < 0.03) { REL.autoFit = false; relFit(); } relRun();
 }
 function renderTopo() {
@@ -4105,39 +3890,15 @@ $("#relGraph").addEventListener("mouseover", e => {
   for (const p of svg.querySelectorAll("path[data-rele]")) { const [a, b] = p.dataset.rele.split("|"); if (a !== id && b !== id) continue; p.classList.add("on"); svg.querySelector(`[data-reln="${CSS.escape(a === id ? b : a)}"]`)?.classList.add("on"); }
 });
 $("#relGraph").addEventListener("mouseleave", () => { const svg = $("#relGraph svg"); if (svg) { svg.classList.remove("hl"); svg.dataset.hl = ""; } });
-document.querySelectorAll("[data-rt]").forEach(t => t.addEventListener("click", () => {
-  REL.tab = t.dataset.rt; store.set("relTab", REL.tab); REL.pos = {}; REL.view = { k: 1, x: 0, y: 0 };
-  if (!isTopo() && !REL.data && !REL.busy) loadRel(); else renderRel();
-}));
-$("#relFocus").addEventListener("click", e => { if (e.target.closest("[data-relunfocus]")) { REL.focus = null; REL.view = { k: 1, x: 0, y: 0 }; REL.pos = {}; renderRel(); } });
+document.querySelectorAll("[data-rt]").forEach(t => t.addEventListener("click", () => { REL.tab = t.dataset.rt; store.set("relTab", REL.tab); REL.pos = {}; REL.view = { k: 1, x: 0, y: 0 }; REL.topoKey = null; renderRel(); }));
 $("#relView").addEventListener("click", e => {
-  const p = e.target.closest("[data-relp]"); if (p) { REL.preset = p.dataset.relp; store.set("relPreset", REL.preset); if (REL.preset !== "custom") loadRel(); else renderRel(); return; }
-  if (e.target.closest("#relLoad")) { REL.from = new Date($("#relFrom").value).getTime() || null; REL.to = new Date($("#relTo").value).getTime() || null; loadRel(); return; }
+  const ic = e.target.closest("[data-topoicon]"); if (ic) { REL.topoIcon = ic.dataset.topoicon; store.set("topoIcon", REL.topoIcon); renderRel(); return; }
   if (REL.noClick) return;
   const n = e.target.closest("[data-reln]"); if (n) { const c = relDev(n.dataset.reln); if (c) openPanel(c); else toast(n.dataset.reln === "internet" ? "The internet has no details" : "Not a known device – " + n.dataset.reln.replace(/^ip:/, "")); return; }
   const ed = e.target.closest("[data-rele]");
-  if (ed && !e.target.closest("button")) {
-    REL.sel = ed.dataset.rele; renderRel();
-    const [a, b] = ed.dataset.rele.split("|"), c = relDev(a) || relDev(b); // the device that starts it, else the other end
-    if (c) openPanel(c); else toast("No known device in this relation");
-  }
+  if (ed && !e.target.closest("button")) { const [a, b] = ed.dataset.rele.split("|"), c = relDev(b) || relDev(a); if (c) openPanel(c); }
 });
-$("#relInet").addEventListener("change", e => { REL.inet = e.target.checked; store.set("relInet", REL.inet); REL.pos = {}; renderRel(); });
-for (const [id, k, sk] of [["#relUnifi", "unifi", "relUnifi"], ["#relNas", "nas", "relNas"], ["#relPrinter", "printer", "relPrinter"], ["#relBlk", "blk", "relBlk"]]) $(id).addEventListener("change", e => { REL[k] = e.target.checked; store.set(sk, REL[k]); REL.pos = {}; renderRel(); });
-$("#relSusp").addEventListener("change", async e => {
-  if (!e.target.matches("#relAlert")) return;
-  try { await saveFwSettings({ alerts: { suspicious: e.target.checked } }); toast(e.target.checked ? "Home Assistant will be notified about suspicious traffic" : "Suspicious-traffic notifications are off"); }
-  catch (err) { e.target.checked = !e.target.checked; toast(err.message); }
-});
-$("#relSusp").addEventListener("click", e => {
-  if (e.target.closest("[data-relsuspall]")) { REL.suspAll = !REL.suspAll; renderRel(); return; }
-  const f = e.target.closest("[data-relfocus]"); if (f) { REL.focus = f.dataset.relfocus; REL.view = { k: 1, x: 0, y: 0 }; REL.scope = "all"; REL.q = ""; $("#relQ").value = ""; REL.pos = {}; renderRel(); $("#relFocus").scrollIntoView({ block: "nearest", behavior: "smooth" }); return; }
-  if (!e.target.closest("[data-relsusp]")) return; REL.view = { k: 1, x: 0, y: 0 }; REL.scope = "susp"; REL.focus = null; REL.tab = "graph"; REL.q = ""; $("#relQ").value = ""; REL.pos = {}; renderRel();
-});
-$("#relHa").addEventListener("change", e => { REL.ha = e.target.checked; store.set("relHa", REL.ha); REL.pos = {}; renderRel(); });
-$("#relQ").addEventListener("input", e => { REL.q = e.target.value; renderRel(); });
-$("#relScopes").addEventListener("click", e => { const b = e.target.closest("[data-relsc]"); if (!b) return; REL.scope = b.dataset.relsc; store.set("relScope", REL.scope); REL.pos = {}; $("#side").classList.remove("open"); renderRel(); });
-function openRel() { const now = new Date(), iso = d => new Date(d - d.getTimezoneOffset() * 60e3).toISOString().slice(0, 16); if (!$("#relTo").value) { $("#relTo").value = iso(now); $("#relFrom").value = iso(new Date(now - 24 * 3600e3)); } if (!REL.data && !REL.busy && !isTopo()) loadRel(); else renderRel(); }
+function openRel() { REL.topoKey = null; renderRel(); } // opening the view zooms the graph to fit again
 
 // ---------- detail panel ----------
 function setTab(t) {

@@ -1455,5 +1455,6 @@
  "Auto zoom – show everything": "Zoom automático – mostrar todo",
  "Tree": "Árbol",
  "Filter hit": "Resultado del filtro",
- "Notify me in Home Assistant about suspicious traffic": "Avisarme en Home Assistant si hay tráfico sospechoso"
+ "Notify me in Home Assistant about suspicious traffic": "Avisarme en Home Assistant si hay tráfico sospechoso",
+ "Icons": "Iconos"
 }
