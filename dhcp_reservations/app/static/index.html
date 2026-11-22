@@ -205,7 +205,7 @@ dialog#dlgVer > .imp > div[hidden]{display:none}
 td.num{text-align:right;font-variant-numeric:tabular-nums}
 .rst-scope{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
 #cmpTitle{font-size:14px}
-dialog#dlgVer::backdrop,dialog#dlgHa::backdrop,dialog.small::backdrop,dialog#dlgSub::backdrop{background:rgba(8,10,14,.55)}
+dialog::backdrop{background:rgba(8,10,14,.55)}
 dialog.small form{display:grid;gap:12px;padding:18px}
 dialog.small h2{margin:0;font-size:15px}
 dialog#dlgPick{border:1px solid var(--line-strong);border-radius:12px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
@@ -342,10 +342,8 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .danger-zone p{margin:0;font-size:12px;color:var(--muted)}
 
 /* ---------- CSV-Import ---------- */
-dialog#dlgImport{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
-dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
+dialog#dlgImport,dialog#dlgSimTo{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgRules{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(820px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
-dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
 .plan-view{flex:1;min-height:0;display:flex;flex-direction:column}
 .plan-scroll{flex:1;min-height:0;overflow:auto;padding:14px max(16px,env(safe-area-inset-right)) 18px 16px}
 .plan-view .imp-foot{border-top:1px solid var(--line);background:var(--panel)}
@@ -360,7 +358,6 @@ body.fw-mode .topbar{border-bottom:2px solid var(--accent)}
 body:not(.fw-mode) .fw-only{display:none!important}
 body.rel-mode #lnkCols,body.rel-mode #btnInline,body.rel-mode #btnNew{display:none}
 body.rel-mode .topbar{border-bottom:2px solid var(--accent)}
-body:not(.rel-mode) .rel-only{display:none!important}
 body.plan-mode .cli-tabs,body.fw-mode .cli-tabs{display:none!important}
 body:not(.plan-mode):not(.fw-mode) .topbar{border-bottom:2px solid var(--accent)}
 .rel-box{border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:0 0 8px;margin:10px 0 14px;overflow:hidden}
@@ -471,11 +468,11 @@ body:not(.plan-mode):not(.fw-mode) .topbar{border-bottom:2px solid var(--accent)
 .topo-icons{display:inline-flex;align-items:center;gap:8px;flex:none}
 .topo-ic-lbl{font-size:12.5px}
 .topo-icons .seg button{padding:4px 10px;font-size:12.5px}
-body:not(.rel-mode) .topo-icons{display:none!important}
+body:not(.rel-mode):not(.cards-mode) .topo-icons{display:none!important}
 /* the view selector of the list and the icon switch of tree / graph sit low, next to the tabs, just above the line */
-.topbar>.viewsel,.topbar .topo-icons{align-self:flex-end;margin-bottom:-5px}
+.topbar>.viewsel,.topbar .topo-icons,.topbar .ms-seg{align-self:flex-end;margin-bottom:-5px}
 #count{align-self:flex-end;margin-bottom:2px}
-@container main (max-width:559px){.topbar{row-gap:2px}.topbar>.viewsel,.topbar #count{order:5}#count{font-size:12px;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}} /* phone: view and count next to the tabs; less room between menu and tabs */
+@container main (max-width:559px){.topbar{row-gap:2px}.topbar>.viewsel,.topbar .ms-seg{order:5}.topbar .ms-seg{margin-left:auto}.topbar #count{order:1;margin-left:auto;font-size:12px;white-space:nowrap;align-self:center;margin-bottom:0}.topbar #count .cnt-l{display:none}.topbar #count .cnt-s{display:inline}body:not(.plan-mode):not(.fw-mode) .topbar .grp{margin-left:0}#btnInline{display:none}#btnActions svg + .lbl + svg,#btnActions svg:last-child:not(:first-child){display:none}} /* phone: view and count next to the tabs; less room between menu and tabs */
 /* the icon switch moves into the Actions menu when the top bar has no room for it */
 .cnt-s{display:none}
 @container main (max-width:385px){.cnt-l{display:none}.cnt-s{display:inline}}
@@ -489,8 +486,113 @@ body:not(.rel-mode) .topo-icons{display:none!important}
 .topbar.tb-s4 .cli-tabs .tl{display:none}.topbar.tb-s4 .cli-tabs svg{margin-right:0!important}.topbar.tb-s4 .plan-tabs button[role="tab"]{padding:8px 9px 10px}
 .topbar.tb-s5 #count{display:none}.topbar.tb-s5 .plan-size{display:none}
 .topbar.tb-s6{flex-wrap:wrap;row-gap:8px}.topbar.tb-s6 .grp{margin-left:auto}
+/* rule simulation */
+.ports-in{display:flex;flex-direction:column;gap:8px}
+.sim-dev{border-top:1px solid var(--line);padding-top:8px;flex-wrap:wrap}
+.sim-to{position:relative;flex:1 1 160px;min-width:0;display:block}
+.sim-res{font-size:12.5px;margin-top:2px}
+.pchip.sim-allow{border-color:color-mix(in srgb,var(--ok) 60%,transparent);background:color-mix(in srgb,var(--ok) 12%,transparent)}
+.pchip.sim-block{border-color:color-mix(in srgb,var(--bad) 60%,transparent);background:color-mix(in srgb,var(--bad) 12%,transparent)}
+.pchip.sim-unknown{border-style:dashed;color:var(--muted)}
+.pchip .sim-m{font-weight:700}.pchip.sim-allow .sim-m{color:var(--ok)}.pchip.sim-block .sim-m{color:var(--bad)}
+.sim-pick{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:7px;width:100%;padding:5px 9px;border:1px solid var(--line-strong);border-radius:6px;background:var(--bg);cursor:pointer;font-size:13px;min-width:0;white-space:nowrap;overflow:hidden}
+.sim-pick:focus-visible{outline:2px solid var(--accent)}.sim-caret{margin-left:auto;color:var(--muted)}
+.sim-ic{flex:none;width:18px;height:18px;display:grid;place-items:center;font-size:13px;overflow:hidden}.sim-ic img,.sim-ic svg{max-width:18px;max-height:18px}
+.sim-n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sim-sub{margin-left:auto;font-size:11.5px;flex:none}
+/* target picker: zones side by side when there is room, below each other when not */
+dialog#dlgSimTo .imp-body{overflow:auto;padding:12px 18px 18px;display:grid;gap:10px}
+.st-q{flex:1 1 200px;max-width:320px;margin-left:auto}
+.st-top{display:flex}
+.st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;align-items:start}
+.st-zone{border:1px solid var(--line);border-radius:10px;background:var(--card);padding:4px 6px 6px}
+.st-zone>summary{display:flex;align-items:center;gap:8px;padding:6px 6px;cursor:pointer;list-style:none;font-weight:600}
+.st-zone>summary::-webkit-details-marker{display:none}
+.st-zone>summary .fm-chev{margin-left:auto;width:auto;height:auto;font-size:14px}
+.st-zone:not([open])>summary .fm-chev{transform:rotate(-90deg)}
+.st-cnt{font-weight:400;font-size:12px}
+.st-it{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:8px;width:100%;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px;min-width:0}
+.st-it:hover,.st-it:focus-visible{background:var(--hover)}
+.st-it.on{background:color-mix(in srgb,var(--accent) 22%,transparent);outline:1px solid var(--accent)}
+.st-it.st-all{color:var(--muted);font-style:italic}
+.st-it.st-inet{width:auto;border:1px solid var(--line-strong);padding:7px 14px;font-weight:600}
+.st-none{padding:4px 8px;font-size:12px}
+#simToSel{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+/* selection in the detail pane */
+@media (max-width:760px){body.sel-split .detail{inset:auto 0 0 0;width:100vw;height:50vh;height:50dvh;border-left:0;border-top:2px solid var(--accent);box-shadow:0 -8px 24px rgba(0,0,0,.3)}
+body.sel-split .tablewrap,body.sel-split #relView{padding-bottom:50vh;padding-bottom:50dvh}}
+.sel-top{display:flex;gap:14px;margin-bottom:2px}
+.sel-sum{display:grid;gap:10px}.sel-big{font-size:14px}.sel-big b{font-size:22px}.sel-big .muted{font-size:12.5px}
+.sel-grp{display:grid;gap:4px}.sel-gt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.sel-pills{display:flex;flex-wrap:wrap;gap:5px}
+.sel-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 4px 3px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line-strong);font-size:12.5px;max-width:100%}
+.sel-pill>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel-pill b{min-width:20px;padding:0 6px;border-radius:999px;background:var(--bg);text-align:center;font-size:12px}
+.sel-pill b.sm-id{font-weight:700}
+#paneSel{min-height:0;grid-auto-rows:max-content}
+.sel-acts{display:grid;gap:6px}.sel-act{justify-content:flex-start;width:100%}
+.sel-mx{border-collapse:separate;border-spacing:3px;font-size:11.5px;width:100%;table-layout:fixed;min-width:calc(var(--cols) * 25px + 50px)}
+.sel-mx th{font-weight:600;color:var(--muted);text-align:center;padding:2px 4px;white-space:nowrap}
+.sel-mx th.sm-row{text-align:right}
+.sel-mx .sm-corner,.sel-mx th.sm-row{width:44px}
+.sm-hd{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1px 4px}
+.sm-rh{display:flex;align-items:center;justify-content:space-between;gap:4px;padding-right:2px}
+.sm-hic{display:inline-grid;place-items:center;width:16px;height:16px;overflow:hidden;color:var(--muted)}.sm-hic img,.sm-hic svg{max-width:16px;max-height:16px}
+td.sm-c.on{outline:2px solid var(--accent);outline-offset:1px}
+.sm-scroll{overflow-x:auto}
+.sm-lp{padding:2px 3px;font-size:12px;gap:5px}.sm-lp>span{padding-left:4px}
+.sm-id{order:-1;background:var(--bg);color:var(--gwc);min-width:22px}
+.sel-mx th.sm-n{color:var(--gwc)}
+.sm-x{all:unset;cursor:pointer;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;font-size:10px;color:var(--muted)}
+.sm-x:hover,.sm-x:focus-visible{background:var(--hover);color:var(--fg)}
+.sm-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:11.5px;color:var(--muted);margin-top:8px}.sm-key .sm-c{display:inline-grid;place-items:center;width:20px;height:18px}.sm-kp{display:inline-flex;align-items:center;gap:5px;margin-right:8px;white-space:nowrap}
+.smx-res{display:grid;gap:6px;margin:0 0 10px;padding:8px 10px;border:1px solid var(--accent);border-radius:8px;background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+.smx-t{display:inline-flex;align-items:center;flex-wrap:wrap;gap:4px 6px}.smx-h{display:flex;align-items:center;gap:8px;font-size:13px}.smx-h .x{margin-left:auto;color:var(--muted)}
+.sm-c{height:24px;padding:0;text-align:center;border-radius:5px;font-weight:700;cursor:pointer}.sm-c.sm-self{cursor:default}td.sm-c:not(.sm-self):hover{outline:2px solid var(--accent)}
+.sm-allow{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.sm-block{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+.sm-part{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.sm-unknown{background:var(--chip);color:var(--muted)}.sm-self{color:var(--faint)}
+/* bulk changes */
+/* multi-select switch in the top bar (clients view only) */
+.ms-seg{flex:none;align-items:center}.ms-seg .ms-ic{display:inline-flex;color:var(--muted);padding:0 2px 0 8px}.ms-seg button{min-width:30px;padding:4px 10px;font-weight:700;font-size:13px}
+body.plan-mode .ms-seg,body.fw-mode .ms-seg{display:none}
+body.sel-mode .tt-card.picked,body.sel-mode .tt-c.picked{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 18%,var(--card));box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 45%,transparent)}
+body.sel-mode .rel-n.picked .core{stroke:var(--accent);stroke-width:4}
+body.sel-mode #tbody tr td:first-child{box-shadow:inset 3px 0 0 transparent}
+body.sel-mode #tbody tr.picked{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+body.sel-mode #tbody tr.picked td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.lc.picked{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--card))}
+body.sel-mode .lc::after{content:"";flex:none;width:18px;height:18px;border-radius:5px;border:2px solid var(--line-strong);align-self:center}
+body.sel-mode .lc.picked::after{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 3px var(--card)}
+/* what changed since the last visit */
+.chg-box{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:8px 12px 0;padding:8px 12px;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:10px;background:color-mix(in srgb,var(--accent) 8%,var(--card));font-size:13px}
+.chg-box .sp{flex:1}
+.chg-t{font-weight:600}.chg-d{font-size:12px}
+.chg-c{all:unset;cursor:pointer;padding:3px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line-strong);font-size:12.5px}
+.chg-c:hover{border-color:var(--accent)}
+.chg-c:focus-visible,.st-it:focus-visible,.sm-x:focus-visible,.lc:focus-visible,td.sm-c:focus-visible,.sel-act:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.rel-n:focus{outline:none}.rel-n:focus-visible .core{stroke:var(--accent);stroke-width:3}.chg-c[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chg-c.probs b{color:var(--warn)}.chg-c.newDev b{color:var(--ok)}.chg-c.gone b{color:var(--bad)}
+.chg-c[aria-pressed="true"] b{color:#fff}
+body.plan-mode .chg-box,body.fw-mode .chg-box,body.rel-mode .chg-box{display:none}
+/* clients as cards */
+.cardlist{display:grid;gap:8px;padding:10px 12px 16px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));align-content:start}
+.lc{all:unset;box-sizing:border-box;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);cursor:pointer;min-width:0}
+.lc:hover{border-color:var(--line-strong)}.lc:focus-visible{outline:2px solid var(--accent)}
+.lc.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.lc.off{opacity:.7}
+.lc-ic{position:relative;flex:none;display:grid;place-items:center;width:34px;height:34px}
+.lc-m{display:grid;gap:3px;min-width:0;flex:1}
+.lc-n{display:flex;align-items:center;flex-wrap:wrap;gap:5px 7px;min-width:0}.lc-n .dot{flex:none}
+.lc-ps{display:contents}
+.lc-p{display:inline-block;padding:1px 8px;border-radius:999px;background:var(--chip);border:1px solid var(--line);color:var(--muted);font-size:11.5px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}.lc-n b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:14px}
+.lc-s{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lc-fix{color:var(--warn)}
+.lc-w{display:contents}
+.lc-empty{padding:24px;text-align:center;grid-column:1/-1}
+body.cards-mode #lnkCols,body.cards-mode #btnInline{display:none}
 .act-icons{display:none;align-items:center;gap:8px;padding:6px 10px;color:var(--muted)}
-@container main (max-width:1240px){body.rel-mode .topbar .topo-icons{display:none!important}body.rel-mode .act-icons{display:flex}}
+@container main (max-width:1240px){body.rel-mode .topbar .topo-icons,body.cards-mode .topbar .topo-icons{display:none!important}body.rel-mode .act-icons,body.cards-mode .act-icons{display:flex}}
 .act-icons .seg button{padding:4px 10px;font-size:12.5px}
 .tt-unk{margin-top:18px;display:grid;justify-items:center}
 .rs-c{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--fg);white-space:nowrap}
@@ -654,7 +756,6 @@ body.fw-mode #btnNew{display:none}
 .fw-hit.paused{border-style:dashed}
 .fw-hit .fw-lvl{font-size:12px}
 dialog#dlgFwRoles,dialog#dlgFwWiz{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(720px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
-dialog#dlgFwRoles::backdrop,dialog#dlgFwWiz::backdrop{background:rgba(8,10,14,.55)}
 #fwRoleRows .rule-row{grid-template-columns:minmax(120px,200px) 1fr}
 .wz-steps{display:flex;gap:4px;padding:10px 16px 0;flex-wrap:wrap}
 .wz-st{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);background:var(--bg);color:var(--muted);border-radius:999px;padding:4px 12px 4px 4px;font:inherit;font-size:12.5px;cursor:pointer}
@@ -1104,17 +1205,18 @@ window.I18N = (() => {
     <div class="topbar">
       <button class="btn menu-btn" id="btnMenu" type="button" title="Show filters" aria-label="Show filters"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></button>
       <div class="seg view-switch" role="group" aria-label="View"><button type="button" data-vw="clients" title="Clients" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg><span>Clients</span></button><button type="button" data-vw="plan" title="IP Plan" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>IP Plan</span></button><button type="button" data-vw="fw" title="Firewall" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="M4 12h16M12 3v18"/></svg><span>Firewall</span></button></div>
-      <div class="cl-tabs plan-tabs cli-tabs" role="tablist"><button type="button" role="tab" data-rt="list" aria-selected="true" title="List"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg><span class="tl">List</span></button><button type="button" role="tab" data-rt="tree" aria-selected="false" title="Tree"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="9" y="2.5" width="6" height="5" rx="1"/><rect x="2.5" y="16.5" width="6" height="5" rx="1"/><rect x="15.5" y="16.5" width="6" height="5" rx="1"/><path d="M12 7.5V12M5.5 16.5V12h13v4.5"/></svg><span class="tl">Tree</span></button><button type="button" role="tab" data-rt="topo" aria-selected="false" title="Graph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><circle cx="12" cy="13" r="1.8"/><path d="M12 7.5v3.7M10.6 14.3 6.8 16.4M13.4 14.3l3.8 2.1"/></svg><span class="tl">Graph</span></button></div>
+      <div class="cl-tabs plan-tabs cli-tabs" role="tablist"><button type="button" role="tab" data-rt="list" aria-selected="true" title="Table"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></svg><span class="tl">Table</span></button><button type="button" role="tab" data-rt="cards" aria-selected="false" title="List"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg><span class="tl">List</span></button><button type="button" role="tab" data-rt="tree" aria-selected="false" title="Tree"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="9" y="2.5" width="6" height="5" rx="1"/><rect x="2.5" y="16.5" width="6" height="5" rx="1"/><rect x="15.5" y="16.5" width="6" height="5" rx="1"/><path d="M12 7.5V12M5.5 16.5V12h13v4.5"/></svg><span class="tl">Tree</span></button><button type="button" role="tab" data-rt="topo" aria-selected="false" title="Graph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><circle cx="12" cy="13" r="1.8"/><path d="M12 7.5v3.7M10.6 14.3 6.8 16.4M13.4 14.3l3.8 2.1"/></svg><span class="tl">Graph</span></button></div>
       <div class="viewsel">
         <button class="btn view-btn" id="btnView" type="button" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="viewName">All</span><span class="mod" id="viewMod" hidden title="Unsaved changes">•</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="menu" id="viewMenu" role="menu" hidden></div>
       </div>
       <span id="count"></span>
+      <span class="seg ms-seg" role="group" aria-label="Selection" title="Select one device (details) or several (summary and changes for all)"><span class="ms-ic" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M5 3l14 7-6 2-2 6z"/><path d="M13 12l5 5" stroke-linecap="round"/></svg></span><button type="button" data-ms="0" aria-pressed="true" title="One device – its details" aria-label="One device – its details">1</button><button type="button" data-ms="1" aria-pressed="false" title="Several devices – select them and change them together" aria-label="Several devices – select them and change them together">n</button></span>
       <span class="tb-break" aria-hidden="true"></span>
       <div class="cl-tabs plan-tabs plan-only" role="tablist"><button type="button" role="tab" data-pt="cur" aria-selected="true">Current</button><button type="button" role="tab" data-pt="clean" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M14 3 9.5 11.5"/><path d="M5 13.5h9l1.5 7.5H3.5z"/><path d="M8 17v4M11 17v4"/><path d="M18 3v3M16.5 4.5h3M20 9v2M19 10h2"/></svg>CleanUp Proposal</button></div>
       <div class="cl-tabs plan-tabs fw-only" role="tablist"><button type="button" role="tab" data-ft="mx" aria-selected="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Matrix</button><button type="button" role="tab" data-ft="an" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6M11 8v6"/></svg>Analysis</button></div>
       
-      <span class="topo-icons rel-only"><span class="topo-ic-lbl muted">Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none" title="No icons">None</button><button type="button" data-topoicon="unifi" title="UniFi icons">UniFi</button><button type="button" data-topoicon="ha" title="Home Assistant integration logos">Home Assistant</button></span></span>
+      <span class="topo-icons"><span class="topo-ic-lbl muted">Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none" title="No icons">None</button><button type="button" data-topoicon="unifi" title="UniFi icons">UniFi</button><button type="button" data-topoicon="ha" title="Home Assistant integration logos">Home Assistant</button></span></span>
       <span class="sp"></span>
       <span class="plan-icons-slot plan-only"></span>
       <div class="grp">
@@ -1125,6 +1227,7 @@ window.I18N = (() => {
         <div class="viewsel actsel">
           <button class="btn icon-btn" id="btnActions" type="button" aria-haspopup="menu" aria-expanded="false" title="Actions"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span class="lbl">Actions</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
           <div class="menu right" id="actMenu" role="menu" hidden>
+          <button class="mi" role="menuitem" id="mnSelect" type="button" title="Select several devices and change them together"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><path d="m4.5 6.5 1.5 1.5 3-3"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 6.5h7M14 17.5h7"/></svg><span>Select devices…</span></button>
           <button class="mi" role="menuitem" id="btnHa" type="button" title="Take device names from Home Assistant"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 12 3l9 8M5 9.5V21h14V9.5M10 21v-6h4v6"/></svg><span>Names from Home Assistant…</span></button>
           <button class="mi" role="menuitem" id="btnSub" type="button" title="Replace subnet"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg><span>Replace subnet…</span></button>
           <button class="mi" role="menuitem" id="btnImp" type="button" title="Import CSV"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Import CSV…</span></button>
@@ -1141,11 +1244,13 @@ window.I18N = (() => {
       </div>
     </div>
     <div id="banner" class="banner" hidden></div>
+    <div class="chg-box" id="chgBox" hidden></div>
     <div class="tablewrap">
       <table>
         <thead><tr class="h" id="headRow"></tr><tr class="f" id="filterRow"></tr></thead>
         <tbody id="tbody"><tr><td class="empty" colspan="14"><span class="spin"></span> Loading data from the controller …</td></tr></tbody>
       </table>
+      <div class="cardlist" id="cardList" hidden></div>
     </div>
     <section class="plan-view" id="planView" hidden aria-label="IP plan">
       <div class="plan-scroll">
@@ -1234,6 +1339,7 @@ window.I18N = (() => {
       <button type="button" role="tab" id="tabEdit" aria-selected="false" title="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
     </div>
     <div class="d-body" id="paneInfo"></div>
+    <div class="d-body" id="paneSel" hidden></div>
     <div class="d-body" id="paneEdit" hidden>
       <form class="form card" id="formEdit" novalidate>
         <div class="field"><label for="fMac">MAC address</label><input id="fMac" class="mono" autocomplete="off" placeholder="aa:bb:cc:dd:ee:ff"></div>
@@ -1325,6 +1431,15 @@ window.I18N = (() => {
     <div class="actions"><button class="btn" type="button" id="haWarnCancel">Cancel</button><button class="btn danger" type="submit" id="haWarnOk" disabled>Change anyway</button></div>
   </form>
 </dialog>
+<dialog id="dlgBulk" class="small" aria-labelledby="bulkTitle">
+  <form method="dialog" id="formBulk" novalidate>
+    <h2 id="bulkTitle">Change devices</h2>
+    <p class="hint" id="bulkText"></p>
+    <div class="field" id="bulkNetF"><label for="bulkNet">Network</label><select id="bulkNet"></select></div>
+    <div class="field" id="bulkNoteF"><label for="bulkNote">Note</label><input id="bulkNote" maxlength="200" autocomplete="off"></div>
+    <div class="actions"><button class="btn" type="button" id="bulkCancel">Cancel</button><button class="btn primary" type="submit" id="bulkOk">Apply</button></div>
+  </form>
+</dialog>
 <dialog id="dlgName" class="small" aria-labelledby="nameTitle">
   <form method="dialog" id="formName" novalidate>
     <h2 id="nameTitle">Save view</h2>
@@ -1332,6 +1447,19 @@ window.I18N = (() => {
     <div class="err" id="nameErr" hidden></div>
     <div class="actions"><button class="btn" type="button" id="nameCancel">Cancel</button><button class="btn primary" type="submit">Save</button></div>
   </form>
+</dialog>
+<dialog id="dlgSimTo" aria-labelledby="simToTitle">
+  <div class="imp">
+    <div class="imp-head"><h2 id="simToTitle">Choose the target</h2><input type="search" id="simQ" class="st-q" placeholder="Search devices and zones" autocomplete="off"><button class="x link" type="button" id="simToClose" aria-label="Close" style="color:var(--muted)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button></div>
+    <div class="imp-body">
+      <div class="hint">Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.</div>
+      <div id="simToBody"></div>
+    </div>
+    <div class="imp-foot">
+      <div class="notes"><span class="hint" id="simToSel"></span></div>
+      <button class="btn" type="button" id="simToCancel">Cancel</button><button class="btn primary" type="button" id="simToOk">OK</button>
+    </div>
+  </div>
 </dialog>
 <dialog id="dlgPick" aria-labelledby="pickTitle">
   <div class="imp">
@@ -1563,8 +1691,9 @@ function switchHtml(c) {
   const grid = rows.map(([a, b]) => two
     ? `<div class="swr">${dev(a, false)}${tile(a)}${b ? tile(b) + dev(b, true) : "<div></div><div></div>"}</div>`
     : `<div class="swr one">${tile(a)}${dev(a, true)}</div>`).join("");
-  return `<div class="sec-title"><span>Switch</span> · <span translate="no">${esc(sw.name)}</span></div><div class="card swcard"><div class="swgrid ${two ? "" : "one"}" id="swGrid">${grid}</div>
-    <div class="swleg"><span><i class="gbe"></i>GbE</span><span><i class="fe"></i>FE</span><span><i class="down"></i>Disconnected</span><span><i class="off"></i>Disabled</span><span>${SW_BOLT} PoE</span><span>${SW_UP} Uplink</span></div></div>`;
+  // collapsed by default like Firewall – the open state is remembered
+  return `<details class="fw-info" id="swInfo"${store.get("swInfoOpen", false) ? " open" : ""}><summary class="sec-title fi-sum"><span><span>Switch</span> · <span translate="no">${esc(sw.name)}</span></span><span class="fm-chev" aria-hidden="true">▾</span></summary><div class="card swcard"><div class="swgrid ${two ? "" : "one"}" id="swGrid">${grid}</div>
+    <div class="swleg"><span><i class="gbe"></i>GbE</span><span><i class="fe"></i>FE</span><span><i class="down"></i>Disconnected</span><span><i class="off"></i>Disabled</span><span>${SW_BOLT} PoE</span><span>${SW_UP} Uplink</span></div></div></details>`;
 }
 function computeWarnings() {
   state.rev = (state.rev || 0) + 1; // data revision: caches built from the clients (firewall analysis) follow it
@@ -1573,7 +1702,7 @@ function computeWarnings() {
   for (const c of state.clients) if (c.mac && !c.is_device && c.name) (byName[c.name.trim().toLowerCase()] ||= []).push(c);
   for (const c of state.clients) if (c.local_dns_record_enabled && c.local_dns_record) (byDns[c.local_dns_record.trim().toLowerCase()] ||= []).push(c);
   state.clients.forEach((c, i) => {
-    c._key = c.mac || "tp" + i;
+    c._key = c.mac || c.key || "tp" + i; // Teleport sessions have no MAC – the server sends a stable key
     // the device's current (or last known) address is not its fixed IP – e.g. it has not renewed its lease yet
     c._ipMismatch = !!(c.use_fixedip && c.fixed_ip && c.ip && c.ip !== c.fixed_ip);
     const w = [];
@@ -1632,8 +1761,8 @@ const FACETS = [
   { id: "fwa", title: "Firewall analysis", ready: () => !!FW.data, multi: c => c.mac ? fwDevCodes(c) : [], opts: () => FW.data ? [["find", "With findings"], ["zone", "Wrong zone"], ["grp", "Unlike similar devices"], ["access", "Access problems"], ["unk", "Device type not recognised"]] : [] },
   // "Changed since <version>" (new or changed devices) for the baseline + latest versions, max 5
   { id: "base", title: "Baseline", emptyText: "Save a version to see which devices are new or changed since then.", ready: () => !!state.baseReady,
-    multi: c => !c.mac ? [] : (state.baseSets || []).filter(b => b.cats.has(c.mac)).map(b => "chg:" + b.id),
-    opts: () => (state.baseSets || []).map(b => ["chg:" + b.id, `Changed since ${b.isBaseline ? "★ " : ""}${isoDateTime(b.created)}${b.label ? " · " + b.label : ""}`]) },
+    multi: c => !c.mac ? [] : [...(state.recentSet?.has(c.mac) || (c.first_seen && c.first_seen >= Date.now() / 1000 - 7 * 86400) ? ["recent"] : []), ...(state.baseSets || []).filter(b => b.cats.has(c.mac)).map(b => "chg:" + b.id)],
+    opts: () => [["recent", (rv => rv ? `Changed since ${isoDateTime(rv.created)}` : "Changed in the last 7 days")(VER.loaded ? recentVersion() : null)], ...(state.baseSets || []).map(b => ["chg:" + b.id, `Changed since ${b.isBaseline ? "★ " : ""}${isoDateTime(b.created)}${b.label ? " · " + b.label : ""}`])] },
   { id: "ha", title: "Home Assistant", ready: () => state.haOk !== undefined, multi: c => { if (!c.mac) return []; const ds = haOf(c); if (!ds.length) return ["no"]; const w = haWorst(ds); return ["yes", ...(["error", "unavailable"].includes(w) ? ["bad"] : []), ...ds.flatMap(d => haDoms(c, d)).map(x => "d:" + x)]; },
     opts: () => [["yes", "Known to Home Assistant"], ["no", "Not in Home Assistant"], ["bad", "Unavailable in HA"], ...uniq(state.clients.flatMap(c => haOf(c).flatMap(d => haDoms(c, d)))).map(x => ["d:" + x, "Integration: " + x])] },
 ];
@@ -1805,11 +1934,278 @@ function baseFiltered() {
   });
 }
 function rows() {
-  const list = baseFiltered().filter(c => FACETS.every(f => passFacet(f, c, state.facets[f.id])));
+  const list = baseFiltered().filter(c => FACETS.every(f => passFacet(f, c, state.facets[f.id])) && (!state.pick || state.pick.keys.has(keyOf(c))));
   const col = COLS.find(c => c.key === state.sort.key) || COLS[1];
   return list.sort((a, b) => { const x = col.val(a), y = col.val(b); return (x < y ? -1 : x > y ? 1 : 0) * state.sort.dir || (a.name || a.hostname || "").localeCompare(b.name || b.hostname || "", "de"); });
 }
 
+// ---------- bulk changes: select several devices in the table or the list, then change them together ----------
+const BULK = { on: false, keys: new Set(), busy: false, rcT: 0 };
+const bulkDevs = () => state.clients.filter(c => BULK.keys.has(keyOf(c)));
+const bulkCl = cs => cs.filter(c => !c.is_device && c.mac); // the clients a bulk action can change
+// marks the selection in every view (table, list, tree, graph) – also for screen readers
+function bulkMarks() {
+  const on = BULK.on, has = k => BULK.keys.has(k), aria = (el, a, v) => on ? el.setAttribute(a, String(v)) : el.removeAttribute(a);
+  for (const tr of document.querySelectorAll("#tbody tr[data-k]")) { const v = has(tr.dataset.k); tr.classList.toggle("picked", v); aria(tr, "aria-selected", v); }
+  for (const b of document.querySelectorAll("#cardList .lc[data-k]")) { const v = has(b.dataset.k); b.classList.toggle("picked", v); aria(b, "aria-pressed", v); }
+  for (const b of document.querySelectorAll("#topoTree [data-ttdev]")) { const c = devByMac(b.dataset.ttdev); b.classList.toggle("picked", !!c && has(keyOf(c))); }
+  for (const g of document.querySelectorAll("#relGraph g[data-reln]")) { const c = relDev(g.dataset.reln); g.classList.toggle("picked", !!c && has(keyOf(c))); } // nodes known by IP too
+  document.body.classList.toggle("sel-mode", on);
+}
+function bulkToggle(k) { BULK.keys.has(k) ? BULK.keys.delete(k) : BULK.keys.add(k); bulkMarks(); renderBulk(); }
+// a click on a device: selects it in multi-select, opens its details otherwise
+function pickOrOpen(c) { if (!c) return false; if (BULK.on) bulkToggle(keyOf(c)); else openPanel(c); return true; }
+function setBulk(on) { BULK.on = on; if (!on) BULK.keys.clear(); for (const b of document.querySelectorAll("[data-ms]")) b.setAttribute("aria-pressed", String((b.dataset.ms === "1") === on)); renderAll(); }
+document.querySelectorAll("[data-ms]").forEach(b => b.addEventListener("click", () => { const on = b.dataset.ms === "1"; if (on !== BULK.on) setBulk(on); }));
+// Escape leaves multi-select – but not while typing, or when it closes a menu or dialog
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape" || !BULK.on || document.querySelector("dialog[open]") || e.target.closest?.("input,textarea,select")) return;
+  if (["#langMenu", "#viewMenu", "#actMenu", "#colPanel"].some(id => $(id) && !$(id).hidden)) return;
+  setBulk(false);
+});
+// the selection always uses the detail pane – on phones as the lower half of the screen, the list stays above
+function renderBulk() {
+  selPane(BULK.on && !isPlan() && !isFw());
+}
+// ---------- selection in the detail pane: summary, actions and a small firewall matrix ----------
+const SELP = { key: "" }; // what the pane shows – it is only rebuilt when that changes
+function hideSelPane() {
+  const pane = $("#paneSel"); SELP.key = ""; $("#detail").style.width = "";
+  if (pane.hidden) return false;
+  pane.hidden = true; pane.innerHTML = ""; $("#detail").querySelector(".tabs").hidden = false; return true;
+}
+function selPane(on) {
+  const pane = $("#paneSel"), d = $("#detail");
+  if (on && !$("#colPanel").hidden) on = false; // the column chooser uses the same place – the selection comes back when it closes
+  document.body.classList.toggle("sel-split", !!on);
+  if (!on) { if (hideSelPane() && !state.sel) d.hidden = true; return; }
+  if (pane.hidden) { state.sel = null; markSel(); }
+  d.hidden = false; d.querySelector(".tabs").hidden = true; $("#paneInfo").hidden = true; $("#paneEdit").hidden = true; pane.hidden = false;
+  const cs = bulkDevs(), key = [[...BULK.keys].join(","), state.rev, FW.data?.fetched_at || 0, BULK.busy, window.innerWidth > 760].join("|");
+  if (key === SELP.key) return; // same selection and data: keep the open matrix result and the scroll position
+  SELP.key = key; d.style.width = "";
+  $("#dTitle").textContent = cs.length ? I18N.tr(`${cs.length} selected`) : I18N.tr("Multi-select");
+  pane.innerHTML = selPaneHtml(cs);
+  // desktop: the pane grows with the matrix (up to twice its normal width) before the matrix scrolls
+  const t = pane.querySelector(".sel-mx");
+  if (t && window.innerWidth > 760) {
+    const extra = d.getBoundingClientRect().width - pane.querySelector(".sm-scroll").clientWidth; // paddings of pane and card
+    const need = Math.ceil(parseFloat(getComputedStyle(t).minWidth) + extra);
+    d.style.width = `${Math.min(800, Math.max(400, Math.round(window.innerWidth * 0.5)), Math.max(400, need))}px`; fitTopbarSoon(); // at most half the window
+  }
+}
+const selCount = (list, key, label) => { const m = new Map(); for (const c of list) { const k = key(c); if (k == null) continue; m.set(k, (m.get(k) || 0) + 1); } return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => [label(k), n]); };
+// one summary line: a small title and pills "label n" that wrap
+const selPills = (title, rows, cls = "") => rows.length ? `<div class="sel-grp"><div class="sel-gt">${title}</div><div class="sel-pills">${rows.map(([k, n]) => `<span class="sel-pill ${cls}"><span>${k}</span><b>${n}</b></span>`).join("")}</div></div>` : "";
+// the selected devices with the number they have in the matrix; ✕ removes one from the selection
+function selDevList(cs) {
+  const num = new Map((FW.data ? selMxDevs(cs) : []).map((c, i) => [c, i + 1]));
+  return `<div class="sel-grp"><div class="sel-gt">${I18N.tr("Devices")}</div><div class="sel-pills">${cs.map(c => `<span class="sel-pill sm-lp">${num.has(c) ? `<b class="sm-id">${num.get(c)}</b>` : ""}<span translate="no">${esc(devName(c))}</span><button type="button" class="sm-x" data-unsel="${esc(keyOf(c))}" title="${esc(I18N.tr("Remove from the selection"))}" aria-label="${esc(I18N.tr("Remove from the selection"))}">✕</button></span>`).join("")}</div></div>`;
+}
+function selPaneHtml(cs) {
+  const n = cs.length, cl = bulkCl(cs);
+  const head = `<div class="sel-top"><button type="button" class="link" data-bulk="all">Select all shown</button><button type="button" class="link" data-bulk="none" ${n ? "" : "disabled"}>None</button></div>`;
+  if (!n) return head + `<p class="hint">Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.</p>`;
+  const conn = selCount(cs, c => c.is_device ? "dev" : c.conn || "", k => k === "dev" ? I18N.tr("UniFi devices") : I18N.tr(CONN_LABEL[k] || "Unknown"));
+  const nets = selCount(cs, c => c.network_id || "", k => `<span translate="no">${esc(netLabel(k) || "–")}</span>`);
+  const vno = selCount(cl.filter(c => c.vno_id), c => c.vno_id, k => `<span translate="no">${esc(netLabel(k) || "?")}</span>`);
+  const inet = FW.data ? selCount(cl, c => fwInternet(c).lvl, k => I18N.tr(FW_LVL[k]?.[0] || "Unknown")) : [];
+  const fixed = cl.filter(c => c.use_fixedip).length, online = cs.filter(c => c.online).length;
+  const rc = cs.filter(canReconnect).length, vnoN = cl.filter(c => c.vno_id).length;
+  const btn = (act, label, cnt, title) => `<button type="button" class="btn sel-act" data-bulk="${act}" ${!cnt || BULK.busy ? "disabled" : ""} title="${esc(title)}"><span>${label}</span>${cnt != null ? ` <span class="muted">(${cnt})</span>` : ""}</button>`;
+  return head + `
+    <div class="card sel-sum"><div class="sel-big"><b>${n}</b> <span>selected</span> <span class="muted">· ${online} <span>online</span> · ${fixed} <span>with fixed IP</span></span></div>
+      ${selPills(I18N.tr("Connection"), conn)}${selPills(I18N.tr("Networks"), nets)}${selPills(I18N.tr("Virtual network override"), vno)}${selPills(I18N.tr("Reaches the internet"), inet)}${selDevList(cs)}</div>
+    ${selMatrixHtml(cs)}
+    <div class="sec-title">Actions</div><div class="sel-acts">
+      ${btn("vno", "Override network…", cl.length, "Put the selected clients into a network (VLAN), regardless of WiFi or switch port")}
+      ${btn("novno", "Remove override", vnoN, "Switch the virtual network override off")}
+      ${btn("unres", "Release fixed IP", fixed, "Remove the fixed IP – the devices get an address from the DHCP pool again")}
+      ${btn("note", "Note…", cl.length, "Set the same note for the selected clients")}
+      ${btn("rc", "Reconnect WiFi", rc, "Disconnect the selected WiFi clients for a moment so they ask for a new address")}
+      ${FW.data ? btn("fw", "Firewall rule…", cl.length, "Create a firewall rule for the selected devices") : ""}
+    </div>`;
+}
+// who may reach whom among the selected devices (and the internet) – ping and the common services, like the device test
+const SELMX = { max: 30, pairs: [] };
+const VERDICT = { allow: "✓", block: "✕", part: "◐", unknown: "?" };
+// matrix headers: the Home Assistant logo of the device, its UniFi icon as fallback
+const smIcon = c => devIconHtml(c, "ha") || iconHtml(c);
+const selMxDevs = cs => cs.filter(c => c.mac && zoneOf(c)).slice(0, SELMX.max); // the devices of the matrix, numbered 1 …
+function selMatrixHtml(cs) {
+  if (!FW.data) return "";
+  const ds = selMxDevs(cs), ext = fwZoneByKey("external");
+  if (!ds.length) return "";
+  SELMX.pairs = []; SELMX.open = null;
+  const cell = (a, dz, b) => {
+    const r = SIM_SVCS.map(([name, proto, port]) => ({ name, port, r: simService(zoneOf(a).id, dz, a, b, proto, port) }));
+    const ok = r.filter(x => x.r.verdict === "allow").length, no = r.filter(x => x.r.verdict === "block").length;
+    const v = ok === r.length ? "allow" : no === r.length ? "block" : ok ? "part" : "unknown";
+    const idx = SELMX.pairs.push({ a, b, r }) - 1, t = esc(`${devName(a)} → ${b ? devName(b) : "Internet"}: ${ok}/${r.length} ${I18N.tr("allowed")}`);
+    return `<td class="sm-c sm-${v}" data-smx="${idx}" tabindex="0" role="button" title="${t}" aria-label="${t}">${VERDICT[v]}</td>`;
+  };
+  const keyLeg = `<div class="sm-key">${[["allow", "all allowed"], ["part", "partly"], ["block", "all blocked"], ["unknown", "not decided"]].map(([k, l]) => `<span class="sm-kp"><span class="sm-c sm-${k}">${VERDICT[k]}</span><span>${l}</span></span>`).join("")}</div>`;
+  const head = `<tr><th class="sm-corner"></th>${ds.map((d, i) => `<th class="sm-n" title="${esc(devName(d))}" translate="no"><span class="sm-hd"><span>${i + 1}</span><span class="sm-hic">${smIcon(d)}</span></span></th>`).join("")}${ext ? `<th title="Internet">🌐</th>` : ""}</tr>`;
+  const rows = ds.map((a, i) => `<tr><th class="sm-row sm-n" title="${esc(devName(a))}" translate="no"><span class="sm-rh"><span>${i + 1}</span><span class="sm-hic">${smIcon(a)}</span></span></th>${ds.map(b => b === a ? `<td class="sm-c sm-self">–</td>` : cell(a, zoneOf(b).id, b)).join("")}${ext ? cell(a, ext.id, null) : ""}</tr>`).join("");
+  const ncol = ds.length + (ext ? 1 : 0);
+  return `<div class="sec-title">Firewall between the selected devices</div><div class="card sel-mx-card"><div id="smxRes" class="smx-res" hidden></div><div class="sm-scroll"><table class="sel-mx" style="--cols:${ncol}">${head}${rows}</table></div>${keyLeg}
+    <p class="hint" style="margin:6px 0 0">Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.${cs.length > ds.length ? ` <span>Only the first ${SELMX.max} devices.</span>` : ""}</p></div>`;
+}
+// a cell of the matrix: the same result as the device test, shown above the matrix (click again to hide)
+function selMxOpen(i) {
+  const x = SELMX.pairs[i], box = $("#smxRes"); if (!x || !box) return;
+  const was = $("#paneSel td.sm-c.on"); was?.classList.remove("on");
+  if (SELMX.open === i && !box.hidden) { box.hidden = true; SELMX.open = null; return; }
+  SELMX.open = i; $(`#paneSel td[data-smx="${i}"]`)?.classList.add("on");
+  box.innerHTML = `<div class="smx-h"><b class="smx-t"><span class="sm-hic">${smIcon(x.a)}</span><span translate="no">${esc(devName(x.a))}</span> → ${x.b ? `<span class="sm-hic">${smIcon(x.b)}</span><span translate="no">${esc(devName(x.b))}</span>` : `<span class="sm-hic">🌐</span><span>Internet</span>`}</b><button type="button" class="x link" data-smxclose aria-label="Close">✕</button></div>${simResultHtml(x.r)}`;
+  box.hidden = false;
+}
+function bulkAsk(act, cs) {
+  return new Promise(res => {
+    const d = $("#dlgBulk"), net = act === "vno";
+    $("#bulkTitle").textContent = I18N.tr(net ? "Override network" : "Set note");
+    const one = cs.length === 1;
+    $("#bulkText").textContent = I18N.tr(net ? (one ? "The selected client is put into this network. If it has a fixed IP in another network, it is skipped." : `${cs.length} clients are put into this network. A client with a fixed IP in another network is skipped.`) : one ? "The note of the selected client is replaced (empty = remove)." : `The note of ${cs.length} clients is replaced (empty = remove).`);
+    $("#bulkNetF").hidden = !net; $("#bulkNoteF").hidden = net;
+    if (net) $("#bulkNet").innerHTML = state.networks.filter(n => n.subnet).map(n => `<option value="${esc(n.id)}" translate="no">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("");
+    else $("#bulkNote").value = "";
+    let fin = false;
+    const done = v => { if (fin) return; fin = true; $("#formBulk").onsubmit = null; $("#bulkCancel").onclick = null; if (d.open) d.close(); res(v); };
+    d.addEventListener("close", () => done(null), { once: true }); // Escape closes the dialog without an answer
+    $("#formBulk").onsubmit = e => { e.preventDefault(); done(net ? $("#bulkNet").value : $("#bulkNote").value.trim()); };
+    $("#bulkCancel").onclick = () => done(null);
+    d.showModal(); (net ? $("#bulkNet") : $("#bulkNote")).focus();
+  });
+}
+async function bulkRun(label, cs, fn) {
+  BULK.busy = true; renderBulk();
+  if (!(await autoVersion(`Before bulk change: ${label}`))) { BULK.busy = false; renderBulk(); return; }
+  let ok = 0; const fails = [];
+  for (const c of cs) { try { await fn(c); ok++; } catch (e) { fails.push(`${devName(c)}: ${e.message}`); } }
+  toast(fails.length ? `${ok} changed, ${fails.length} failed – ${fails[0]}` : `${ok} changed`);
+  try { await load(); } finally { BULK.busy = false; renderBulk(); } // the buttons come back with the new data
+}
+async function bulkAct(act) {
+  if (act === "all") { for (const c of rows()) BULK.keys.add(keyOf(c)); renderAll(); return; }
+  if (act === "none") { BULK.keys.clear(); renderAll(); return; }
+  const cs = bulkDevs(), cl = bulkCl(cs);
+  if (act === "fw") { openWizFor(cl); return; }
+  if (act === "rc") {
+    const rc = cs.filter(canReconnect); if (!(await askConfirm(I18N.tr("Reconnect WiFi"), I18N.tr(rc.length === 1 ? "The selected WiFi client is disconnected for a moment." : `${rc.length} WiFi clients are disconnected for a moment, one per second.`)))) return;
+    BULK.busy = true; renderBulk(); let ok = 0;
+    for (const c of rc) { try { await api("api/reconnect", { mac: c.mac }); ok++; } catch {} await new Promise(r => setTimeout(r, 1000)); }
+    BULK.busy = false; renderBulk(); toast(`${ok} reconnected`); clearTimeout(BULK.rcT); BULK.rcT = setTimeout(() => load(), 15000); return;
+  }
+  if (act === "vno") {
+    const nid = await bulkAsk("vno", cl); if (!nid) return;
+    const todo = cl.filter(c => !(c.use_fixedip && c._resNet && c._resNet !== nid));
+    await bulkRun("network override", todo, c => api("api/client", clientBody(c, { vno_enabled: true, vno_id: nid })));
+  } else if (act === "novno") {
+    const todo = cl.filter(c => !!c.vno_id);
+    if (!(await askConfirm(I18N.tr("Remove override"), I18N.tr(todo.length === 1 ? "The virtual network override of the selected client is switched off." : `The virtual network override of ${todo.length} clients is switched off.`)))) return;
+    await bulkRun("remove override", todo, c => api("api/client", clientBody(c, { vno_enabled: false, vno_id: "" })));
+  } else if (act === "unres") {
+    const todo = cl.filter(c => c.use_fixedip);
+    if (!(await askConfirm(I18N.tr("Release fixed IP"), I18N.tr(todo.length === 1 ? "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again." : `${todo.length} fixed IPs are removed. Names and notes are kept; the devices get an address from the DHCP pool again.`)))) return;
+    await bulkRun("release fixed IPs", todo, c => api("api/unreserve", { mac: c.mac }));
+  } else if (act === "note") {
+    const note = await bulkAsk("note", cl); if (note == null) return;
+    await bulkRun("note", cl, c => api("api/client", clientBody(c, { note })));
+  }
+}
+$("#paneSel").addEventListener("keydown", e => { const m = (e.key === "Enter" || e.key === " ") && e.target.closest("[data-smx]"); if (m) { e.preventDefault(); selMxOpen(+m.dataset.smx); } });
+$("#paneSel").addEventListener("click", e => { const u = e.target.closest("[data-unsel]"); if (u) { bulkToggle(u.dataset.unsel); return; } if (e.target.closest("[data-smxclose]")) { $("#smxRes").hidden = true; $("#paneSel td.sm-c.on")?.classList.remove("on"); SELMX.open = null; return; } const m = e.target.closest("[data-smx]"); if (m) { selMxOpen(+m.dataset.smx); return; } const b = e.target.closest("[data-bulk]"); if (b && !b.disabled) bulkAct(b.dataset.bulk); });
+$("#mnSelect").addEventListener("click", () => { if (isPlan() || isFw()) setView("clients"); setBulk(true); }); // tree and graph select too
+// firewall wizard for several devices: "Selected devices" of the zone most of them are in
+function openWizFor(cs) {
+  openWiz(null);
+  const byZone = {}; for (const c of cs) { const z = zoneOf(c)?.id; if (z) (byZone[z] ||= []).push(c.mac); }
+  const [zone, macs] = Object.entries(byZone).sort((a, b) => b[1].length - a[1].length)[0] || ["", []];
+  Object.assign(WZ.src, { mode: "devs", zone, macs });
+  WZ.dst.mode = "inet"; WZ.dst.zone = fwZoneByKey("external")?.id || WZ.dst.zone;
+  if (Object.keys(byZone).length > 1) toast(`The devices are in ${Object.keys(byZone).length} zones – the rule uses the ${macs.length} in the zone most of them are in.`);
+  renderWiz();
+}
+
+// ---------- what changed since the last visit: a snapshot in the browser, compared on every render ----------
+const SEEN_KEY = "seenState";
+const fwSig = p => JSON.stringify([p.name, p.action, p.enabled !== false, p.source?.zone_id, p.destination?.zone_id]); // not the index: one new rule on top shifts all others
+function seenSnapshot() {
+  const dev = {};
+  for (const c of state.clients) if (c.mac) dev[c.mac] = [devName(c), c.use_fixedip ? c.fixed_ip || "" : "", c._warn.map(w => w[1]).sort().join("|")];
+  const fw = FW.data ? Object.fromEntries(FW.data.policies.filter(p => !p.predefined).map(p => [p.id, fwSig(p)])) : null;
+  return { t: Date.now(), dev, fw };
+}
+function seenDiff() {
+  const old = store.get(SEEN_KEY, null); if (!old?.dev) return null;
+  const cur = seenSnapshot(), d = { since: old.t, newDev: [], gone: [], probs: [], fixed: [], fw: 0 };
+  for (const c of state.clients) {
+    if (!c.mac) continue; // Teleport sessions without a MAC come and go – not a change
+    const k = c.mac, o = old.dev[k], n = cur.dev[k];
+    if (!o) { d.newDev.push(k); continue; }
+    if (o[1] !== n[1]) d.fixed.push(k);
+    const before = new Set(o[2] ? o[2].split("|") : []);
+    if (n[2] && n[2].split("|").some(w => !before.has(w))) d.probs.push(k);
+  }
+  for (const k of Object.keys(old.dev)) if (!cur.dev[k] && k.includes(":")) d.gone.push(old.dev[k][0]); // older snapshots also stored Teleport rows
+  if (old.fw && cur.fw) { const ids = new Set([...Object.keys(old.fw), ...Object.keys(cur.fw)]); for (const id of ids) if (old.fw[id] !== cur.fw[id]) d.fw++; }
+  d.any = d.newDev.length + d.gone.length + d.probs.length + d.fixed.length + d.fw > 0;
+  return d;
+}
+function markSeen() { store.set(SEEN_KEY, seenSnapshot()); CHG.memo = null; state.pick = null; renderAll(); }
+function renderChg() {
+  const box = $("#chgBox");
+  if (!state.clients.length || state.loading) { box.hidden = true; return; }
+  const seen = store.get(SEEN_KEY, null);
+  if (!seen) { store.set(SEEN_KEY, seenSnapshot()); CHG.memo = null; } // first visit: nothing to compare yet
+  const mk = [state.rev, FW.data?.fetched_at || 0, seen?.t].join("|");
+  if (CHG.memo?.key !== mk) CHG.memo = { key: mk, d: seenDiff() }; // the comparison only changes with new data
+  const d = CHG.memo.d;
+  if (!d?.any) { box.hidden = true; return; }
+  const chip = (id, n, one, many, title = "") => n ? `<button type="button" class="chg-c ${id}" data-chg="${id}" aria-pressed="${state.pick?.id === id}"${title ? ` title="${esc(title)}"` : ""}><b>${n}</b> <span>${n === 1 ? one : many}</span></button>` : "";
+  CHG.keys = { newDev: d.newDev, probs: d.probs, fixed: d.fixed }; CHG.gone = d.gone;
+  box.innerHTML = `<span class="chg-t">Since your last visit</span> <span class="muted chg-d">${isoDateTime(d.since / 1000)}</span>
+    ${chip("newDev", d.newDev.length, "new device", "new devices")}${chip("probs", d.probs.length, "device with new issues", "devices with new issues")}${chip("fixed", d.fixed.length, "fixed IP changed", "fixed IPs changed")}${chip("gone", d.gone.length, "device removed", "devices removed", d.gone.join(", "))}${chip("fw", d.fw, "firewall rule changed", "firewall rules changed")}
+    <span class="sp"></span><button type="button" class="link" id="chgSeen">Mark as seen</button>`;
+  box.hidden = false;
+}
+const CHG = { keys: {}, gone: [], memo: null };
+$("#chgBox").addEventListener("click", e => {
+  if (e.target.closest("#chgSeen")) { markSeen(); return; }
+  const b = e.target.closest("[data-chg]"); if (!b) return;
+  const id = b.dataset.chg;
+  if (id === "fw") { setView("fw"); return; }
+  if (id === "gone") { toast(`${I18N.tr("Removed")}: ${CHG.gone.join(", ")}`); return; } // no longer in UniFi – nothing to filter
+  state.pick = state.pick?.id === id ? null : { id, keys: new Set(CHG.keys[id] || []) };
+  renderAll();
+});
+
+// Table or List (cards) for the clients: phones start with the list, wider screens with the table – the choice is kept
+const LIST = { mode: store.get("listMode", "") };
+const listMode = () => LIST.mode || (LIST.mode = window.innerWidth < 700 ? "cards" : "list"); // first visit: decided once by the screen
+const colTd = (k, c) => COLS.find(x => x.key === k).td(c);
+function renderCards(list) {
+  const icMode = store.get("topoIcon", "ha"); // same choice as tree and graph (REL is defined further down)
+  const cards = listMode() === "cards";
+  document.body.classList.toggle("cards-mode", cards && !isPlan() && !isFw() && !isRel());
+  for (const b of document.querySelectorAll("[data-topoicon]")) b.setAttribute("aria-pressed", String(b.dataset.topoicon === icMode));
+  if (!isRel()) for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(b.dataset.rt === listMode()));
+  $("#cardList").hidden = !cards; $(".tablewrap table").hidden = cards;
+  if (!cards) { $("#cardList").innerHTML = ""; return; }
+  if (!state.clients.length) { $("#cardList").innerHTML = `<p class="muted lc-empty">${state.loading ? '<span class="spin"></span> Loading data from the controller …' : "No clients found."}</p>`; return; }
+  if (!list.length) { $("#cardList").innerHTML = `<p class="muted lc-empty">No client matches the filters.</p>`; return; }
+  const sel = state.sel && keyOf(state.sel);
+  $("#cardList").innerHTML = list.map(c => {
+    const fixedOther = c.use_fixedip && c.fixed_ip && c.fixed_ip !== c.ip;
+    return `<button type="button" class="lc${keyOf(c) === sel ? " sel" : ""}${c.online ? "" : " off"}${BULK.keys.has(keyOf(c)) ? " picked" : ""}" data-k="${esc(keyOf(c))}">
+      ${icMode === "none" ? "" : `<span class="lc-ic">${icMode === "ha" && haDom(c) ? devIconHtml(c, "ha", true) : `<span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span>`}</span>`}
+      <span class="lc-m">
+        <span class="lc-n"><span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span><b translate="no">${esc(devName(c))}</b>
+          <span class="lc-s"><span class="mono" translate="no">${esc(c.ip || "–")}</span>${fixedOther ? ` <span class="muted">→</span> <span class="mono lc-fix" translate="no" title="Fixed IP">${esc(c.fixed_ip)}</span>` : ""}</span>
+          <span class="lc-ps">${colTd("ipmode", c)}${CONN_LABEL[c.conn] ? `<span class="lc-p">${CONN_LABEL[c.conn]}</span>` : ""}${c.uplink && c.conn !== "teleport" ? `<span class="lc-p"><span translate="no">${esc(c.uplink)}</span>${c.conn === "wired" && c.port ? ` <span>Port</span> ${esc(String(c.port))}` : ""}</span>` : ""}${netLabel(c.network_id) ? `<span class="lc-p" translate="no">${esc(netLabel(c.network_id))}</span>` : ""}${c._warn.length ? `<span class="lc-w">${colTd("_warn", c)}</span>` : ""}</span></span>
+      </span></button>`;
+  }).join("");
+}
 function renderTable() {
   for (const th of $("#headRow").querySelectorAll("th[data-k]")) {
     const on = th.dataset.k === state.sort.key;
@@ -1822,7 +2218,8 @@ function renderTable() {
   else tb.innerHTML = list.map(c => `<tr data-k="${esc(keyOf(c))}" class="${state.sel && keyOf(state.sel) === keyOf(c) ? "sel" : ""}">${visCols().map(col => `<td${USER_COLS.has(col.key) ? ' translate="no"' : ""}>${col.td(c)}</td>`).join("")}</tr>`).join("");
   if (tw.scrollTop !== keep[0] || tw.scrollLeft !== keep[1]) { tw.scrollTop = keep[0]; tw.scrollLeft = keep[1]; } // never jump on a re-render
   // long text, and a short one for narrow phones
-  $("#count").innerHTML = `<span class="cnt-l">${list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`}</span><span class="cnt-s" translate="no">${list.length === state.clients.length ? list.length : `${list.length}/${state.clients.length}`}</span>`;
+  renderCards(list); renderChg(); bulkMarks(); renderBulk();
+  $("#count").innerHTML = `<span class="cnt-l">${list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`}</span><span class="cnt-s" translate="no">${list.length}/${state.clients.length}</span>`;
   $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" }) : "";
 }
 function renderAll() { renderFacets(); renderTable(); if (isPlan() && !CL.running) renderPlan(); if (isFw()) renderFw(); if (isRel()) renderRel(); }
@@ -1848,7 +2245,7 @@ function applyCols() {
   persist(); buildHead(); renderAll(); renderCols();
 }
 function openCols() { if (!$("#detail").hidden) closePanel(); $("#side").classList.remove("open"); renderCols(); $("#colPanel").hidden = false; }
-function closeCols() { $("#colPanel").hidden = true; }
+function closeCols() { const was = !$("#colPanel").hidden; $("#colPanel").hidden = true; if (was && BULK.on) renderBulk(); } // the selection pane comes back
 $("#colClose").addEventListener("click", closeCols);
 $("#colDone").addEventListener("click", closeCols);
 $("#colRestore").addEventListener("click", () => { state.hiddenCols = []; state.colOrder = []; applyCols(); });
@@ -1987,9 +2384,11 @@ function setView(v) {
   document.body.classList.toggle("plan-mode", plan); document.body.classList.toggle("fw-mode", fw); document.body.classList.toggle("rel-mode", rel); store.set("view", v);
   $("#relView").hidden = !rel;
   for (const b of document.querySelectorAll("[data-vw]")) b.setAttribute("aria-pressed", String(b.dataset.vw === (rel ? "clients" : v))); // tree and graph are views of the clients
-  for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(rel ? b.dataset.rt === REL.tab : b.dataset.rt === "list"));
+  for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(rel ? b.dataset.rt === REL.tab : b.dataset.rt === listMode()));
   $("#planNets").hidden = !plan; $("#fwSide").hidden = !fw; $(".tablewrap").hidden = plan || fw || rel; $("#planView").hidden = !plan; $("#fwView").hidden = !fw;
   if (rel) { closeCols(); PLAN.tab = "cur"; openRel(); } else if (plan) { closeCols(); openPlan(); } else if (fw) { closeCols(); PLAN.tab = "cur"; renderFw(); } else { PLAN.tab = "cur"; renderTable(); }
+  document.body.classList.toggle("cards-mode", !plan && !fw && !rel && listMode() === "cards");
+  renderBulk(); // the selection pane belongs to the clients, tree and graph – not to IP plan and firewall
   fitTopbarSoon();
 }
 // texts of the top bar change (count, time, translation, plan tabs): fit again
@@ -2936,7 +3335,7 @@ function fwMiniChainHtml(c) {
     <details class="card fw-mini${items.some(x => x.sp || x.off) ? " has-by" : ""}" id="fwMini"${open ? " open" : ""}><summary class="fm-sum" title="${esc(flow ? "Normal traffic of this device reaches the internet" : `Normal traffic of this device is blocked by ${stop.p.name || "a rule"}`)}"><span class="fm-n dev">${iconHtml(c)}</span>${strip}<span class="fm-n net${flow ? " on" : ""}">🌐</span><span class="fm-v ${flow ? "ok" : "no"}" aria-label="${flow ? "Reaches the internet" : "Blocked"}">${flow ? "✓" : "✕"}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
     <div class="fw-named">${lane}</div><p class="hint" style="margin:6px 0 0">Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.</p>${items.some(x => x.sp) ? `<p class="hint" style="margin:4px 0 0">Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.</p>` : ""}${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}${fwNamedHtml(c, true, { src: z.id, dst: ext.id })}</details>`;
 }
-document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); if (e.target.id === "fwInfo") store.set("fwInfoOpen", e.target.open); }, true);
+document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); if (e.target.id === "fwInfo") store.set("fwInfoOpen", e.target.open); if (e.target.id === "swInfo") store.set("swInfoOpen", e.target.open); }, true);
 // the rules that name this client (by MAC, IP or network) – boxes like in the rule chain, paused ones grey
 function fwNamedHtml(c, inner, skip) {
   if (!FW.data || !c?.mac) return "";
@@ -3101,6 +3500,136 @@ function fwDecide(sz, dz, src, dst, also) {
   r.lvl = r.extra.some(x => x.allow) ? "partial" : r.ret ? "ret" : "";
   return r;
 }
+// ---------- rule simulation: would a new connection from A to B (protocol, port) be allowed? First matching rule decides ----------
+const SIM = { dst: "", res: null, for: "" };
+// ports of a policy side: "80,443,8000-8100" or an address group of ports; null = any
+function fwPortSet(e) {
+  if (fwPortAny(e)) return null;
+  const g = e.port_group_id && FW.groupById?.[e.port_group_id];
+  const raw = g ? (g.members || []).join(",") : String(e.port || "");
+  return raw.split(/[,\s]+/).filter(Boolean).map(x => { const [a, b] = x.split("-").map(Number); return [a, isNaN(b) ? a : b]; }).filter(r => !isNaN(r[0]));
+}
+const fwPortHas = (e, port) => { const set = fwPortSet(e); if (!set) return true; const hit = set.some(([a, b]) => port >= a && port <= b); return e.match_opposite_ports ? !hit : hit; };
+function fwProtoHas(p, proto) {
+  const v = String(p.protocol || "all").toLowerCase(), not = !!p.match_opposite_protocol;
+  const hit = v === "all" || v === proto || (v === "tcp_udp" && (proto === "tcp" || proto === "udp"));
+  return not ? !hit : hit;
+}
+// q: { sz, dz, src (device or null = the whole zone), dst (device or null), proto: tcp|udp|icmp|all, port: number|null }
+function fwSimulate(q) {
+  const out = { verdict: "", by: null, steps: [], notes: [] };
+  if (!FW.data || !q.sz || !q.dz) return out;
+  for (const p of fwSeq(q.sz, q.dz).seq) {
+    const step = { p, st: "" }; out.steps.push(step);
+    if (p.enabled === false) { step.st = "paused"; continue; }
+    if (String(p.ip_version || "BOTH").toUpperCase() === "IPV6") { step.st = "ipv6"; continue; } // the test is about IPv4 addresses
+    // UniFi's built-in rules other than the zone default only cover special cases (invalid connections, LTE failover …)
+    const isDefault = fwTarget(p.source) === "ANY" && fwTarget(p.destination) === "ANY" && fwPortAny(p.source) && fwPortAny(p.destination) && fwProto(p) === "All" && fwCst(p) === "ALL" && !fwSched(p);
+    if (p.predefined && !isDefault) { step.st = "special"; continue; }
+    let ms = fwSideMatch(p.source, q.src);
+    // a rule that names a client with the same name but another MAC (a private WiFi address that changed) counts for it
+    if (!ms && q.src && fwSameNameMac(p.source, q.src)) { ms = "all"; step.alt = true; }
+    const md = fwSideMatch(p.destination, q.dst);
+    if (!ms || !md) { step.st = "other"; continue; } // names other devices
+    if (fwCst(p) === "RESPOND_ONLY") { step.st = "replies"; continue; } // only answers to connections from the other side
+    if (fwCst(p) !== "ALL" && !(p.connection_states || []).some(x => String(x).toUpperCase() === "NEW")) { step.st = "state"; continue; } // only for established / related … connections
+    if (ms === "some" || md === "some") { step.st = "some"; continue; } // only some of the devices or addresses (zone question, domains …)
+    if (q.proto !== "all" && !fwProtoHas(p, q.proto)) { step.st = "proto"; continue; }
+    if (q.proto === "all" && String(p.protocol || "all").toLowerCase() !== "all") { step.st = "some"; continue; }
+    const portsMatter = q.proto === "tcp" || q.proto === "udp";
+    if (!fwPortAny(p.source)) { step.st = "some"; continue; }
+    if (!fwPortAny(p.destination)) {
+      if (!portsMatter || q.port == null) { step.st = "some"; continue; }
+      if (!fwPortHas(p.destination, q.port)) { step.st = "port"; continue; }
+    }
+    if (fwSched(p)) { step.st = "sched"; out.notes.push(p); continue; } // decides only at certain times – see what applies otherwise
+    step.st = "decides"; out.by = p; out.verdict = fwIsAllow(p) ? "allow" : "block";
+    return out;
+  }
+  out.verdict = "unknown";
+  return out;
+}
+const simParse = v => v.startsWith("dev:") ? { dev: devByMac(v.slice(4)), zone: zoneOf(devByMac(v.slice(4)))?.id } : v.startsWith("zone:") ? { dev: null, zone: v.slice(5) } : { dev: null, zone: "" };
+// in the device details (Network check & link): this device → a target picked from Internet, zones and their devices
+const simDevs = z => state.clients.filter(c => c.mac && zoneOf(c)?.id === z).sort((a, b) => devName(a).localeCompare(devName(b), "de"));
+function simTargetLabel(v) {
+  const ext = fwZoneByKey("external");
+  if (!v || v === "zone:" + ext?.id) return `<span class="sim-ic">🌐</span><span>Internet</span>`;
+  if (v.startsWith("zone:")) return `<span class="sim-ic">▦</span><span translate="no">${esc(fwZoneName(v.slice(5)))}</span> <span class="muted">(<span>all devices</span>)</span>`;
+  const d = devByMac(v.slice(4)); return d ? `<span class="sim-ic">${prefIcon(d)}</span><span translate="no">${esc(devName(d))}</span>` : "?";
+}
+const SIMTO = { sel: "", fold: new Set() };
+const prefIcon = d => devIconHtml(d, store.get("topoIcon", "ha")) || iconHtml(d); // the icon chosen for tree and graph
+function simListHtml(c, q) {
+  const ext = fwZoneByKey("external"), t = q.trim().toLowerCase(), hit = v => !t || String(v || "").toLowerCase().includes(t);
+  const item = (v, icon, label, sub, cls = "") => `<button type="button" class="st-it ${cls}${SIMTO.sel === v ? " on" : ""}" data-simto="${esc(v)}" aria-pressed="${SIMTO.sel === v}"><span class="sim-ic">${icon}</span><span class="sim-n" translate="no">${label}</span>${sub ? `<span class="sim-sub muted" translate="no">${sub}</span>` : ""}</button>`;
+  const inet = ext && hit("internet") ? `<div class="st-top">${item("zone:" + ext.id, "🌐", "Internet", "", "st-inet")}</div>` : "";
+  const zs = fwZones().filter(z => z.id !== ext?.id), nDev = z => simDevs(z.id).filter(d => d.mac !== c.mac).length;
+  const cols = [...zs.filter(nDev), ...zs.filter(z => !nDev(z))].map(z => {
+    const ds = simDevs(z.id).filter(d => d.mac !== c.mac), zHit = hit(z.name), list = zHit ? ds : ds.filter(d => hit(devName(d)) || hit(d.ip));
+    if (!zHit && !list.length) return "";
+    const open = t ? true : !SIMTO.fold.has(z.id); // while searching everything is open
+    return `<details class="st-zone" data-zone="${esc(z.id)}" ${open ? "open" : ""}><summary><span class="st-zn" translate="no">${esc(z.name)}</span><span class="muted st-cnt">${ds.length}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
+      ${item("zone:" + z.id, "▦", esc(I18N.tr("All devices of the zone")), "", "st-all")}${list.map(d => item("dev:" + d.mac, prefIcon(d), esc(devName(d)), esc(d.ip || ""))).join("") }</details>`;
+  }).join("");
+  return inet + (cols ? `<div class="st-grid">${cols}</div>` : "") || `<p class="muted st-none">No match.</p>`;
+}
+function simToOpen() {
+  SIMTO.sel = SIM.dst; $("#simQ").value = ""; simToRender(); $("#dlgSimTo").showModal(); $("#simQ").focus();
+}
+function simToRender() {
+  $("#simToBody").innerHTML = simListHtml(state.sel, $("#simQ").value);
+  $("#simToSel").innerHTML = SIMTO.sel ? `<span>Selected:</span> ${simTargetLabel(SIMTO.sel)}` : "";
+}
+function simToApply() { if (SIMTO.sel) { SIM.dst = SIMTO.sel; SIM.res = null; } $("#dlgSimTo").close(); simRefresh(); }
+$("#simQ").addEventListener("input", simToRender);
+$("#simToClose").addEventListener("click", () => $("#dlgSimTo").close());
+$("#simToCancel").addEventListener("click", () => $("#dlgSimTo").close());
+$("#simToOk").addEventListener("click", simToApply);
+$("#simToBody").addEventListener("click", e => { const b = e.target.closest("[data-simto]"); if (!b) return; SIMTO.sel = b.dataset.simto; for (const x of $("#simToBody").querySelectorAll(".st-it")) { x.classList.toggle("on", x === b); x.setAttribute("aria-pressed", String(x === b)); } $("#simToSel").innerHTML = `<span>Selected:</span> ${simTargetLabel(SIMTO.sel)}`; });
+$("#simToBody").addEventListener("dblclick", e => { const b = e.target.closest("[data-simto]"); if (b) { SIMTO.sel = b.dataset.simto; simToApply(); } });
+$("#simToBody").addEventListener("toggle", e => { const d = e.target.closest?.(".st-zone"); if (!d || $("#simQ").value.trim()) return; d.open ? SIMTO.fold.delete(d.dataset.zone) : SIMTO.fold.add(d.dataset.zone); }, true);
+// common services: one result chip each, like the port check
+const SIM_SVCS = [["Ping", "icmp", null], ["Web", "tcp", 80], ["HTTPS", "tcp", 443], ["DNS", "udp", 53], ["NTP", "udp", 123], ["SSH", "tcp", 22], ["SMB", "tcp", 445], ["RTSP", "tcp", 554], ["MQTT", "tcp", 1883], ["Home Assistant", "tcp", 8123]];
+// the decision for one service; without a deciding rule the zone default of the pair counts (Allow Return = blocked for new connections)
+function simService(sz, dz, src, dst, proto, port) {
+  const r = fwSimulate({ sz, dz, src, dst, proto, port });
+  if (r.verdict === "unknown" && !r.steps.some(x => x.st === "some")) { const def = fwPair(sz, dz).def; r.verdict = def === "allow" ? "allow" : def === "block" || def === "ret" ? "block" : "unknown"; r.dflt = def; }
+  return r;
+}
+function simDevHtml(c) {
+  if (!FW.data || !zoneOf(c)) return "";
+  if (SIM.for !== c.mac) { SIM.for = c.mac; SIM.res = null; }
+  if (!SIM.dst) SIM.dst = "zone:" + (fwZoneByKey("external")?.id || "");
+  const picker = `<span class="sim-to"><button type="button" class="sim-pick" id="simPickBtn" aria-haspopup="dialog">${simTargetLabel(SIM.dst)}<span class="sim-caret" aria-hidden="true">▾</span></button></span>`;
+  const btn = `<button class="btn" type="button" id="simGo">${SIM.res ? "Check again" : "Check"}</button>`;
+  return `<div class="foot sim-dev"><span>Firewall: may this device reach</span>${picker}${btn}</div>${SIM.res ? simResultHtml(SIM.res) : ""}`;
+}
+// summary line and chips of a check (list of { name, port, r }), like the port check
+function simResultHtml(r) {
+  const ok = r.filter(x => x.r.verdict === "allow").length, no = r.filter(x => x.r.verdict === "block").length, unk = r.length - ok - no;
+  const sum = ok === r.length ? `<b style="color:var(--ok)">✓ <span>Allowed</span></b>` : no === r.length ? `<b style="color:var(--bad)">✕ <span>Blocked</span></b>` : unk === r.length ? `<b class="muted">? <span>Not decided</span></b>` : `<b style="color:var(--warn)">◐ ${ok} of ${r.length} allowed</b>`;
+  // tooltips are put together here, so each part is translated on its own
+  const why = x => x.r.by ? `${x.r.by.name || "?"}${x.r.by.predefined ? ` · ${I18N.tr("built-in")}` : ""}` : I18N.tr(x.r.dflt ? `Zone default: ${FW_DEF[x.r.dflt]}` : "No rule decides for exactly this – it depends on the device or address");
+  const when = x => x.r.notes.length ? ` · ${I18N.tr("At certain times another rule decides:")} ${x.r.notes.map(p => p.name).join(", ")}` : "";
+  // everything the same: one chip instead of ten
+  const same = ok === r.length ? ["allow", "All ports open"] : no === r.length ? ["block", "All ports blocked"] : unk === r.length ? ["unknown", "No rule and no default between these zones"] : null;
+  const chips = same ? `<span class="pchip sim-${same[0]}" title="${esc(why(r[0]))}"><span>${same[1]}</span><span class="sim-m" aria-hidden="true">${VERDICT[same[0]]}</span></span>` : r.map(x => `<span class="pchip sim-${x.r.verdict}" title="${esc(why(x) + when(x))}">${x.port != null ? `<b>${x.port}</b>` : ""}<span translate="no">${esc(x.name)}</span><span class="sim-m" aria-hidden="true">${VERDICT[x.r.verdict] || "?"}</span></span>`).join("");
+  const rules = [...new Map(r.filter(x => x.r.by).map(x => [x.r.by.id, x.r.by])).values()];
+  return `<div class="sim-res"><span>${sum}</span>${rules.length ? ` <span class="muted">· <span>decided by</span></span> ${rules.map(p => `<button type="button" class="link" data-fwpol="${esc(p.id)}" translate="no">${esc(p.name || "?")}</button>`).join(", ")}` : ""}</div>
+    <div class="port-list">${chips}</div>`;
+}
+const simRefresh = () => { const b = $("#simDev"); if (b && state.sel) b.innerHTML = simDevHtml(state.sel); };
+function runSim() {
+  const c = state.sel; if (!c) return;
+  const b = simParse(SIM.dst), sz = zoneOf(c)?.id;
+  SIM.res = SIM_SVCS.map(([name, proto, port]) => ({ name, port, r: simService(sz, b.zone, c, b.dev, proto, port) }));
+  simRefresh();
+}
+document.addEventListener("click", e => {
+  if (e.target.closest("#simGo")) { runSim(); return; }
+  if (e.target.closest("#simPickBtn")) { simToOpen(); return; }
+});
 const FW_LVL = { full: ["Allowed", "allow"], partial: ["Partly allowed", "part"], ret: ["Replies only", "ret"], none: ["Blocked", "block"], "": ["Unknown", "none"] };
 const fwLvlTag = (lvl, extra) => `<span class="fw-lvl ${FW_LVL[lvl][1]}">${FW_LVL[lvl][0]}${extra ? ` <span>${extra}</span>` : ""}</span>`;
 const fwInternet = c => fwDecide(zoneOf(c)?.id, fwZoneByKey("external")?.id, c, null);
@@ -3613,7 +4142,14 @@ function fwCovers(q, p) {
 }
 const fwIsAllow = p => String(p.action || "").toUpperCase() === "ALLOW";
 // evaluation order of a zone pair: custom rules before UniFi's built-in ones, then built-in, then custom rules placed after them
+const FWSEQ = { src: null, m: new Map() };
 function fwSeq(s, d, order) {
+  if (order) return fwSeqCalc(s, d, order);
+  if (FWSEQ.src !== FW.byPair) { FWSEQ.src = FW.byPair; FWSEQ.m.clear(); } // new firewall data (or a version's) – start over
+  const k = s + ">" + d; let r = FWSEQ.m.get(k); if (!r) FWSEQ.m.set(k, r = fwSeqCalc(s, d));
+  return r;
+}
+function fwSeqCalc(s, d, order) {
   const all = FW.byPair[s + ">" + d] || [], pre = all.filter(p => p.predefined).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
   const minPre = pre.length ? (pre[0].index ?? 0) : Infinity;
   let cust = all.filter(p => !p.predefined).sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
@@ -3835,6 +4371,7 @@ async function loadDevSusp(c) {
 }
 function renderRel() {
   if (!isRel()) return;
+  queueMicrotask(bulkMarks); // the tree / graph is rebuilt below
   for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(b.dataset.rt === REL.tab));
   $("#topoTree").hidden = REL.tab !== "tree"; $("#relGraphBox").hidden = REL.tab !== "topo";
   if (REL.tab !== "topo" && REL.sim) { if (REL.sim.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; }
@@ -3854,13 +4391,14 @@ function relDraw() {
   const node = n => {
     const p = P[n], r = rad(n), k = kind(n), s = sub(n);
     const shape = k === "inet" ? `<rect class="core" x="${-r}" y="${-r}" width="${2 * r}" height="${2 * r}" rx="4"/>` : `<circle class="core" r="${r.toFixed(1)}"/>`;
-    return `<g class="rel-n nk-${k}" data-reln="${esc(n)}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><title>${esc([relLabel(n), relIp(n), s].filter(Boolean).join(" · "))}</title>${shape}${G.icon(n, r)}<text class="rel-l" x="${(r + 5).toFixed(1)}" y="${s ? -1 : 4}" translate="no">${esc(lbl(n))}</text>${s ? `<text class="rel-s" x="${(r + 5).toFixed(1)}" y="11" translate="no">${esc(s)}</text>` : ""}</g>`;
+    return `<g class="rel-n nk-${k}" data-reln="${esc(n)}" tabindex="0" role="button" aria-label="${esc(relLabel(n))}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><title>${esc([relLabel(n), relIp(n), s].filter(Boolean).join(" · "))}</title>${shape}${G.icon(n, r)}<text class="rel-l" x="${(r + 5).toFixed(1)}" y="${s ? -1 : 4}" translate="no">${esc(lbl(n))}</text>${s ? `<text class="rel-s" x="${(r + 5).toFixed(1)}" y="11" translate="no">${esc(s)}</text>` : ""}</g>`;
   };
   box.innerHTML = `<svg class="rel-svg${REL.labels ? "" : " no-lbl"}" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Network topology"><rect class="rel-bg" width="${W}" height="${H}"/><g class="rel-vp" transform="translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})">
     ${list.map(line).join("")}
     ${nodes.map(node).join("")}</g></svg><div class="rel-zoom"><button type="button" class="btn sm" data-relzoom="in" title="Zoom in">+</button><button type="button" class="btn sm" data-relzoom="out" title="Zoom out">−</button><button type="button" class="btn sm" data-relzoom="auto" title="Auto zoom – show everything"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg></button><button type="button" class="btn sm" data-relzoom="fit" title="Reset the view and the layout">⟲</button><button type="button" class="btn sm" data-relzoom="labels" aria-pressed="${REL.labels}" title="${REL.labels ? "Hide labels" : "Show labels"}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg></button></div>`;
   const byKey = new Map(list.map(e => [e.a + "|" + e.b, e]));
   G.els = { n: [...box.querySelectorAll("g[data-reln]")].map(el => [el, el.dataset.reln]), e: [...box.querySelectorAll("path[data-rele]")].map(el => { const e = byKey.get(el.dataset.rele); return [el, e, e.a, e.b]; }) };
+  bulkMarks();
 }
 function relMove() {
   const G = REL.g, P = REL.pos; if (!G?.els) return;
@@ -3923,7 +4461,7 @@ function topoIconSvg(id, r) {
   if (c.icon_id) return img(`https://static.ubnt.com/fingerprint/0/${encodeURIComponent(c.icon_id)}_257x257.png`);
   const t = relIcon(id); return t ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${t}</text>` : "";
 }
-const topoFiltered = () => !!(state.q.trim() || Object.values(state.facets).some(a => a?.length) || Object.values(state.colFilters).some(Boolean));
+const topoFiltered = () => !!(state.pick || state.q.trim() || Object.values(state.facets).some(a => a?.length) || Object.values(state.colFilters).some(Boolean));
 let TOPO_HIT = new Set();
 function topoModel() {
   const byMac = new Map(state.clients.filter(c => c.mac).map(c => [c.mac, c]));
@@ -4011,7 +4549,7 @@ function renderTopo() {
     $("#relLegend").innerHTML = [["inet", "Internet"], ["unifi", "UniFi device"], ["ha", "Home Assistant"], ["dev", "Client"], ["hit", "Filter hit"]].map(([k, l]) => `<span><i class="nk nk-${k}"></i>${l}</span>`).join("") + `<span class="lsep"></span><span><i style="background:#94a3b8"></i>Cable</span><span><i class="dash"></i>WiFi / mesh</span><span class="muted">${matchMedia("(pointer: coarse)").matches ? "Drag devices, use the buttons to zoom" : "Drag devices, Ctrl + wheel or the buttons to zoom"}</span>`;
   }
 }
-$("#topoTree").addEventListener("click", e => { if (e.target.closest("summary")) return; const b = e.target.closest("[data-ttdev]"); if (!b) return; const c = devByMac(b.dataset.ttdev); if (c) { openPanel(c); $("#topoTree").querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); $("#topoTree").querySelectorAll(`[data-ttdev="${CSS.escape(c.mac)}"]`).forEach(x => x.classList.add("sel")); } });
+$("#topoTree").addEventListener("click", e => { if (e.target.closest("summary")) return; const b = e.target.closest("[data-ttdev]"); if (!b) return; const c = devByMac(b.dataset.ttdev); if (c && BULK.on) { bulkToggle(keyOf(c)); return; } if (c) { openPanel(c); $("#topoTree").querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); $("#topoTree").querySelectorAll(`[data-ttdev="${CSS.escape(c.mac)}"]`).forEach(x => x.classList.add("sel")); } });
 // hovering a device lights up its relations and neighbours
 $("#relGraph").addEventListener("mouseover", e => {
   const svg = $("#relGraph svg"); if (!svg) return;
@@ -4024,18 +4562,20 @@ $("#relGraph").addEventListener("mouseover", e => {
 });
 $("#relGraph").addEventListener("mouseleave", () => { const svg = $("#relGraph svg"); if (svg) { svg.classList.remove("hl"); svg.dataset.hl = ""; } });
 document.querySelectorAll("[data-rt]").forEach(t => t.addEventListener("click", () => {
-  if (t.dataset.rt === "list") { setView("clients"); return; }
+  if (t.dataset.rt === "list" || t.dataset.rt === "cards") { LIST.mode = t.dataset.rt; store.set("listMode", LIST.mode); setView("clients"); return; }
   const same = isRel() && REL.tab === t.dataset.rt; if (same) return;
   REL.tab = t.dataset.rt; store.set("relTab", REL.tab); REL.pos = {}; REL.view = { k: 1, x: 0, y: 0 }; REL.topoKey = null;
   if (isRel()) renderRel(); else setView("rel");
 }));
 $("#relView").addEventListener("click", e => {
   if (REL.noClick) return;
-  const n = e.target.closest("[data-reln]"); if (n) { const c = relDev(n.dataset.reln); if (c) openPanel(c); else toast(n.dataset.reln === "internet" ? "The internet has no details" : "Not a known device – " + n.dataset.reln.replace(/^ip:/, "")); return; }
+  const n = e.target.closest("[data-reln]"); if (n) { relNodeAct(n); return; }
   const ed = e.target.closest("[data-rele]");
   if (ed && !e.target.closest("button")) { const [a, b] = ed.dataset.rele.split("|"), c = relDev(b) || relDev(a); if (c) openPanel(c); }
 });
-document.querySelectorAll("[data-topoicon]").forEach(b => b.addEventListener("click", () => { REL.topoIcon = b.dataset.topoicon; store.set("topoIcon", REL.topoIcon); renderRel(); }));
+document.querySelectorAll("[data-topoicon]").forEach(b => b.addEventListener("click", () => { REL.topoIcon = b.dataset.topoicon; store.set("topoIcon", REL.topoIcon); isRel() ? renderRel() : renderTable(); }));
+function relNodeAct(n) { if (!pickOrOpen(relDev(n.dataset.reln))) toast(n.dataset.reln === "internet" ? "The internet has no details" : "Not a known device – " + n.dataset.reln.replace(/^ip:/, "")); }
+$("#relView").addEventListener("keydown", e => { const n = (e.key === "Enter" || e.key === " ") && e.target.closest?.("[data-reln]"); if (n) { e.preventDefault(); relNodeAct(n); } });
 function openRel() { REL.topoKey = null; renderRel(); } // opening the view zooms the graph to fit again
 
 // ---------- detail panel ----------
@@ -4044,6 +4584,7 @@ function setTab(t) {
   $("#paneInfo").hidden = t !== "info"; $("#paneEdit").hidden = t !== "edit";
 }
 function openPanel(c, tab) {
+  hideSelPane();
   if (state.returnTo && c?.mac !== state.returnMac) state.returnTo = null; // user moved on to another device
   closeCols(); state.sel = c; $("#detail").hidden = false; $("#side").classList.remove("open");
   $("#dTitle").textContent = c ? (c.name || c.hostname || c.mac || "Client") : "New reservation";
@@ -4059,8 +4600,10 @@ function markSel() {
   const k = state.sel ? keyOf(state.sel) : null;
   for (const el of document.querySelectorAll("#planGridWrap .pc, #clGrid .pc")) el.classList.toggle("selc", !!state.sel?.mac && el.dataset.mac === state.sel.mac);
   for (const tr of $("#tbody").querySelectorAll("tr[data-k]")) tr.classList.toggle("sel", tr.dataset.k === k);
+  for (const el of document.querySelectorAll("#cardList .lc[data-k]")) el.classList.toggle("sel", el.dataset.k === k);
 }
 function closePanel() {
+  hideSelPane();
   state.sel = null; $("#detail").hidden = true; markSel();
   // came from a dialog via "Open …" → go back to it, with its state kept
   const back = state.returnTo; state.returnTo = null;
@@ -4082,7 +4625,7 @@ function renderInfo() {
   const n = net(c.network_id), rn = net(c._resNet);
   const kv = (k, v, cls = "") => v === "" || v == null ? "" : `<dt>${k}</dt><dd class="${cls}">${v}</dd>`;
   $("#paneInfo").innerHTML = `
-    <div class="card devcard"><div class="big ${c.icon_id ? "pic" : ""}">${iconHtml(c, true)}</div><div><div class="v">${esc(c.is_device ? `${KIND_LABEL[c.device_kind]} · ${c.device_model}` : (c.oui || CONN_LABEL[c.conn]))}</div><div class="mono muted">${esc(c.mac || "no MAC")}${c.mac ? (isRandomMac(c.mac) && !c.is_device ? ` <span class="muted" style="font-family:inherit;font-size:11px" title="Locally administered (random / private) address – it has no registered vendor">· random MAC</span>` : ` <a class="oui-link" href="https://maclookup.app/macaddress/${esc(c.mac.slice(0, 8).replace(/:/g, "").toUpperCase())}" target="_blank" rel="noopener noreferrer" title="Look up the vendor of ${esc(c.mac.slice(0, 8))} on maclookup.app (only the vendor prefix is sent)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>Lookup vendor</a>`) : ""}</div>${c.oui_src ? `<div class="muted" style="font-size:11px">Vendor from macvendors.com</div>` : ""}</div></div>
+    <div class="card devcard"><div class="big ${c.icon_id ? "pic" : ""}">${iconHtml(c, true)}</div><div><div class="v">${esc(c.is_device ? `${KIND_LABEL[c.device_kind]} · ${c.device_model}` : (c.oui || CONN_LABEL[c.conn]))}</div><div class="mono muted">${esc(c.mac || "no MAC")}${c.mac ? (isRandomMac(c.mac) && !c.is_device ? ` <span class="muted" style="font-family:inherit;font-size:11px" title="Locally administered (random / private) address – it has no registered vendor">· ${I18N.tr("random MAC")}</span>` : ` <a class="oui-link" href="https://maclookup.app/macaddress/${esc(c.mac.slice(0, 8).replace(/:/g, "").toUpperCase())}" target="_blank" rel="noopener noreferrer" title="Look up the vendor of ${esc(c.mac.slice(0, 8))} on maclookup.app (only the vendor prefix is sent)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>${I18N.tr("Lookup vendor")}</a>`) : ""}</div>${c.oui_src ? `<div class="muted" style="font-size:11px">Vendor from macvendors.com</div>` : ""}</div></div>
     ${c._warn.length ? `<div>${c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("")}</div>` : ""}
     <div class="card"><dl class="kv" style="margin:0">
       ${c.is_device ? kv("UniFi name", esc(c.device_name)) : ""}
@@ -4115,7 +4658,7 @@ function renderInfo() {
         <span class="ha-logos">${haDoms(c, d).map(x => brandImg(x, 28)).join("")}</span>
         <div class="ha-info"><b>${esc(d.name_by_user || d.name)}</b><span class="muted">${esc(haDoms(c, d).join(", "))}${d.area ? " · " + esc(d.area) : ""}</span><span>${haDot(d.status)} ${esc(HA_ST[d.status]?.[0] || d.status)}</span>${d.status === "partial" && d.unavailable?.length ? `<details class="ha-unav"><summary>${d.unavailable.length} unavailable ${d.unavailable.length === 1 ? "entity" : "entities"}</summary>${d.unavailable.map(e => `<code>${esc(e)}</code>`).join("")}</details>` : ""}</div>
         <a class="btn" href="/config/devices/device/${encodeURIComponent(d.id)}" target="_blank" rel="noopener" title="Open this device in Home Assistant (new tab)">Open in HA ↗</a></div>`).join("")}</div>` : ""}
-    ${c.mac && webIp(c) ? `<div class="sec-title">Network check &amp; link</div><div class="card ports" id="portBox">${portsHtml(c)}</div>` : ""}
+    ${c.mac && webIp(c) ? `<div class="sec-title">Network check &amp; link</div><div class="card ports"><div id="portBox" class="ports-in">${portsHtml(c)}</div><div id="simDev">${simDevHtml(c)}</div></div>` : ""}
     <div id="devSusp"></div>${fwMiniChainHtml(c) || fwNamedHtml(c)}${fwInfoHtml(c)}
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
@@ -4396,8 +4939,8 @@ async function doForget(btn) {
 }
 $("#tabInfo").addEventListener("click", () => setTab("info"));
 $("#tabEdit").addEventListener("click", () => setTab("edit"));
-$("#dClose").addEventListener("click", closePanel);
-document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (document.querySelector("dialog[open]") || !$("#langMenu").hidden) return; if (!$("#detail").hidden) closePanel(); else if (!$("#colPanel").hidden) closeCols(); });
+$("#dClose").addEventListener("click", () => { if (!$("#paneSel").hidden) setBulk(false); else closePanel(); });
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (document.querySelector("dialog[open]") || !$("#langMenu").hidden) return; if (BULK.on && !$("#paneSel").hidden) return; /* the selection: handled above */ if (!$("#detail").hidden) closePanel(); else if (!$("#colPanel").hidden) closeCols(); });
 
 // ---------- CSV ----------
 // CSV cell; values starting with = + - @ tab or CR get a leading ' so spreadsheets do not run them as formulas (CWE-1236)
@@ -4741,6 +5284,7 @@ const onlyCols = keep => COLS.map(c => c.key).filter(k => !keep.includes(k)); //
 const BUILTIN_VIEWS = [
   { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: {}, sort: { key: "ip", dir: 1 } } },
   { id: "online", name: "Online", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: { status: ["on"] }, sort: { key: "ip", dir: 1 } } },
+  { id: "recent", name: "Recently changed", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: { base: ["recent"] }, sort: { key: "ip", dir: 1 } } },
   { id: "problems", name: "Problems", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "fwblk", "mac", "oui"]), colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "mac", "oui"], colFilters: {}, facets: { hint: ["problem", "mismatch", "vno", "dup", "wrongnet"] }, sort: { key: "ip", dir: 1 } } },
   { id: "new", name: "New devices", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "name", "first_seen", "ip", "mac", "oui", "network_id", "conn", "uplink"]), colOrder: ["online", "ha", "name", "first_seen", "ip", "mac", "oui", "network_id", "conn", "uplink"], colFilters: {}, facets: { fresh: ["7"] }, sort: { key: "first_seen", dir: -1 } } },
   { id: "stale", name: "Offline with fixed IP", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "name", "fixed_ip", "last_seen", "mac", "oui", "network_id", "note"]), colOrder: ["online", "ha", "name", "fixed_ip", "last_seen", "mac", "oui", "network_id", "note"], colFilters: {}, facets: { status: ["off"], res: ["yes"] }, sort: { key: "last_seen", dir: -1 } } },
@@ -5198,8 +5742,14 @@ async function loadVersionsMeta() {
 }
 const BASE_CACHE = {};
 async function baseVersion(id) { if (!BASE_CACHE[id]) BASE_CACHE[id] = await api(`api/versions/${id}`); return BASE_CACHE[id]; }
+// "recently changed" compares with the newest version that is at least 7 days old (or the oldest one there is)
+function recentVersion() {
+  const week = Date.now() / 1000 - 7 * 86400, list = [...VER.list].sort((a, b) => b.created - a.created);
+  return list.find(m => m.created <= week) || list[list.length - 1] || null;
+}
 function baseChoices() {
   const ids = []; if (VER.settings.baseline) ids.push(VER.settings.baseline);
+  const rv = recentVersion(); if (rv && !ids.includes(rv.id)) ids.push(rv.id);
   for (const m of VER.list) { if (ids.length >= 5) break; if (!ids.includes(m.id)) ids.push(m.id); }
   return ids.map(id => VER.list.find(m => m.id === id)).filter(Boolean);
 }
@@ -5212,7 +5762,8 @@ function computeBaseCats() {
     const cats = new Set(diffVersions(BASE_CACHE[m.id], cur).filter(r => r.cats.has("new") || r.cats.has("changed")).map(r => r.mac));
     return { id: m.id, created: m.created, label: m.label, isBaseline: m.id === VER.settings.baseline, cats };
   });
-  const valid = new Set(state.baseSets.map(b => "chg:" + b.id));
+  const rv = recentVersion(); state.recentSet = rv ? state.baseSets.find(b => b.id === rv.id)?.cats || new Set() : new Set();
+  const valid = new Set(["recent", ...state.baseSets.map(b => "chg:" + b.id)]);
   if (state.facets.base) state.facets.base = state.facets.base.filter(v => valid.has(v));
   delete state.facets.baseVer;
   state.baseReady = true;
@@ -5444,7 +5995,8 @@ $("#btnVer").addEventListener("click", openVersions);
 $("#mnVer").addEventListener("click", openVersions); // phones: the header button has no room
 
 // ---------- wiring ----------
-$("#tbody").addEventListener("click", e => { if (e.target.closest("input.ie")) return; const tr = e.target.closest("tr[data-k]"); if (!tr) return; const c = state.clients.find(x => keyOf(x) === tr.dataset.k); if (c) openPanel(c); });
+$("#cardList").addEventListener("click", e => { const b = e.target.closest(".lc[data-k]"); if (b) pickOrOpen(state.clients.find(x => keyOf(x) === b.dataset.k)); });
+$("#tbody").addEventListener("click", e => { if (e.target.closest("input.ie")) return; const tr = e.target.closest("tr[data-k]"); if (tr) pickOrOpen(state.clients.find(x => keyOf(x) === tr.dataset.k)); });
 $("#q").addEventListener("input", e => { state.q = e.target.value; renderAll(); });
 $("#btnReload").addEventListener("click", load);
 // filter pane: the blue icon hides / shows it (mobile: slide-in, desktop: collapse)
@@ -5494,7 +6046,7 @@ $("#btnSide").addEventListener("click", () => { if (mobile()) $("#side").classLi
 document.addEventListener("click", e => { if (mobile() && $("#side").classList.contains("open") && !e.target.closest("#side") && !e.target.closest("#btnMenu")) $("#side").classList.remove("open"); });
 if (store.get("sideOff", false)) document.body.classList.add("side-off");
 $("#lnkCols").addEventListener("click", () => $("#colPanel").hidden ? openCols() : closeCols());
-$("#lnkClear").addEventListener("click", () => { state.facets = {}; state.colFilters = {}; state.q = ""; $("#q").value = ""; persist(); buildHead(); renderAll(); });
+$("#lnkClear").addEventListener("click", () => { state.facets = {}; state.colFilters = {}; state.q = ""; state.pick = null; $("#q").value = ""; persist(); buildHead(); renderAll(); });
 $("#btnImp").addEventListener("click", openImport);
 $("#btnExp").addEventListener("click", exportCsv);
 $("#btnNew").addEventListener("click", () => openPanel(null));
