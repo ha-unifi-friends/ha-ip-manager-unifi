@@ -1476,6 +1476,6 @@
  "Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.": "Zonen-Regeln und die Regeln für diesen Client, in der Reihenfolge, in der UniFi sie prüft – die erste passende Regel entscheidet.",
  "More rules that name this client": "Weitere Regeln, die diesen Client nennen",
  "Network · {0}": "Netzwerk · {0}",
- "Built-in special rules": "Eingebaute Sonderregeln",
- "Only for special cases (invalid connections, LTE failover, guest authorisation …) – not for normal traffic.": "Nur für Sonderfälle (ungültige Verbindungen, LTE-Failover, Gast-Anmeldung …) – nicht für normalen Verkehr."
+ "Special case": "Sonderfall",
+ "Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.": "Abgeblendet: in UniFi eingebaute Sonderregeln – nur für Sonderfälle (ungültige Verbindungen, LTE-Failover, Gast-Anmeldung …), nicht für normalen Verkehr."
 }

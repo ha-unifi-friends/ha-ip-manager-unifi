@@ -1476,6 +1476,6 @@
  "Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.": "Zone-Regle und d Regle für de Client, i de Reihefolg, wo UniFi si prüeft – di erscht passend Regle entscheidet.",
  "More rules that name this client": "Wiiteri Regle, wo de Client nänned",
  "Network · {0}": "Netzwerk · {0}",
- "Built-in special rules": "Iibauti Sonderregle",
- "Only for special cases (invalid connections, LTE failover, guest authorisation …) – not for normal traffic.": "Nume für Sonderfäll (ungültigi Verbindige, LTE-Failover, Gascht-Aamäldig …) – nöd für normale Verkehr."
+ "Special case": "Sonderfall",
+ "Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.": "Abbländet: in UniFi iibauti Sonderregle – nume für Sonderfäll (ungültigi Verbindige, LTE-Failover, Gascht-Aamäldig …), nöd für normale Verkehr."
 }

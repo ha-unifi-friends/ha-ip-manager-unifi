@@ -2,7 +2,7 @@
 
 ## 1.42.4
 
-- Internet access chain: UniFi's built-in special rules (Block Invalid Traffic, Block Non-Permitted Networks Out ULTE, …) are left out of the chain and the green line – the chain shows normal traffic only. They are listed at the bottom of the opened chain as *Built-in special rules*.
+- Internet access chain: UniFi's built-in special rules (Block Invalid Traffic, Block Non-Permitted Networks Out ULTE, …) no longer decide the chain – they stay at their place, dimmed and hanging below the line, and the green line passes over them. The chain judges normal traffic only.
 
 ## 1.42.3 – 2026-11-22
 
