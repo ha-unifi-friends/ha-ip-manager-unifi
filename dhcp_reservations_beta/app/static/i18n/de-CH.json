@@ -1429,5 +1429,6 @@
  "Rule: allow": "Regle: erlaubt",
  "Rules: mixed": "Regle: gmischt",
  "Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules": "Alles erlaube · Alles blockiere · Antwort erlaube = UniFi-Standard vom Zonepaar · – = kein Standard · gstrichlet = vo dine eigete Regle entschide · (n) = Aazahl eigeti Regle",
- "random MAC": "zuefälligi MAC"
+ "random MAC": "zuefälligi MAC",
+ "Table": "Tabälle"
 }

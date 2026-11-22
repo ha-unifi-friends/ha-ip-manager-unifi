@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.47.0
+
+- **Clients: Table · List · Tree · Graph.** The former list is now called *Table*; the new **List** shows one card per device – online dot, icon, name, IP type, IP (and the fixed IP when it differs), network, connection (switch port or access point) and the issues as pills. A tap opens the details. Same filters, search, sort and views as the table.
+- Phones start with the List, wider screens with the Table; the app remembers your choice.
+
 ## 1.46.2
 
 - Device details: the *Switch* section (the ports of the switch) is collapsed by default like *Firewall*; the open state is remembered.
