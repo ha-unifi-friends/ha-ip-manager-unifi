@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.44.2
+
+- Phone: the icon switch is back for Tree and Graph – it takes the place of the view selector of the list and fits next to the tabs even on 320 px wide screens.
+
 ## 1.44.1
 
 - Phone: the icon switch of Tree and Graph is hidden – there is no room for it. The last choice (default *HA*) still applies.
