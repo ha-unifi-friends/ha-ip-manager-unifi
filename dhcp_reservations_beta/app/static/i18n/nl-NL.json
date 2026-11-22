@@ -1465,5 +1465,10 @@
  "never reached for this device": "wordt voor dit apparaat nooit bereikt",
  "The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.": "De regels die dit apparaat betreffen (zijn netwerk en het apparaat zelf), in hun volgorde – de eerste passende regel beslist.",
  "Rules marked ⚠ name a client with the same name but another MAC address": "Met ⚠ gemarkeerde regels noemen een client met dezelfde naam maar een ander MAC-adres",
- "– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.": "– waarschijnlijk een privé-wifi-adres dat is veranderd. Selecteer het apparaat in UniFi opnieuw in deze regels of schakel het privé-adres op het apparaat uit."
+ "– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.": "– waarschijnlijk een privé-wifi-adres dat is veranderd. Selecteer het apparaat in UniFi opnieuw in deze regels of schakel het privé-adres op het apparaat uit.",
+ "Client → External": "Client → External",
+ "paused": "gepauzeerd",
+ "Normal traffic of this device reaches the internet": "Normaal verkeer van dit apparaat bereikt internet",
+ "Normal traffic of this device is blocked by {0}": "Normaal verkeer van dit apparaat wordt geblokkeerd door {0}",
+ "Reaches the internet": "Bereikt internet"
 }

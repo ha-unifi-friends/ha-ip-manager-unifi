@@ -515,6 +515,23 @@ body.fw-mode #btnNew{display:none}
 .lb-w{color:var(--warn);margin-left:auto}
 .lb-n{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lb-s,.lb-h{color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fm-sum{display:flex!important;align-items:center;justify-content:flex-start!important;gap:0;padding:2px 0!important;list-style:none;cursor:pointer}
+.fm-sum::-webkit-details-marker{display:none}
+.fm-n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--chip);border:2px solid var(--line-strong);font-size:14px}
+.fm-n.dev{border-color:var(--ok)}
+.fm-n.net.on{border-color:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.fm-n img{width:20px;height:20px;object-fit:contain}
+.fm-l{flex:1;min-width:6px;height:3px;border-radius:2px;background:var(--line-strong)}
+.fm-l.on{background:var(--ok)}
+.fm-i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff}
+.fm-i.allow{background:var(--ok)}.fm-i.block{background:var(--bad)}.fm-i.ret{background:var(--accent)}.fm-i.off{background:var(--muted)}
+.fm-i.dead{opacity:.4}
+.fm-i.stop{box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 35%,transparent)}
+.fm-v{flex:none;margin-left:6px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff}
+.fm-v.ok{background:var(--ok)}.fm-v.no{background:var(--bad)}
+.fm-chev{flex:none;margin-left:8px;color:var(--muted);transition:transform .15s}
+.fw-mini:not([open]) .fm-chev{transform:rotate(-90deg)}
+.fw-mini[open] .fm-sum{margin-bottom:8px}
 .fw-lane.mini{padding:2px 0 6px}
 .fw-lane.mini .lb{width:118px;padding:5px 7px;font-size:11.5px}
 .fw-lane.mini .lb-h,.fw-lane.mini .lb-s{font-size:10.5px}
@@ -2827,24 +2844,34 @@ function fwMiniChainHtml(c) {
   let reached = true;
   const items = [];
   for (const p of seq) {
-    if (p.enabled === false) continue;
     // the device by its MAC, its IP or its network – or a client with the same name and another MAC (a private WiFi address that changed)
     const m = fwSideMatch(p.source, c), alt = !m && fwSameNameMac(p.source, c);
     if (!m && !alt) continue; // a rule for other devices
+    if (p.enabled === false) { items.push({ p, alt, off: true, dead: !reached }); continue; } // paused: shown, but it decides nothing
     // the first rule that matches all traffic of this device decides – the rules after it are never reached
     const all = (m === "all" || !!alt) && fwTarget(p.destination) === "ANY" && fwPortAny(p.source) && fwPortAny(p.destination) && fwProto(p) === "All" && fwCst(p) === "ALL" && !fwSched(p);
     items.push({ p, alt, dead: !reached, decides: reached && all });
     if (all && reached) reached = false;
   }
   if (!items.length) return "";
-  const icon = p => fwCst(p) === "RESPOND_ONLY" ? "↩" : fwIsAllow(p) ? "✓" : "✕";
-  const cls = p => fwCst(p) === "RESPOND_ONLY" ? "ret" : fwIsAllow(p) ? "allow" : "block";
-  const lane = items.map((x, i) => `<button type="button" class="lb ${cls(x.p)}${x.p.predefined ? " pre" : ""}${x.dead ? " dead" : ""}${x.decides ? " dec" : ""}" data-fwpol="${esc(x.p.id)}" title="${esc(`${x.p.name || "?"} · ${fwShort(x.p.source)} → ${fwShort(x.p.destination)}${x.alt ? ` · names a client with the same name and another MAC (${x.alt}) – a private WiFi address?` : ""}${x.decides ? " · decides for this device" : x.dead ? " · never reached for this device" : ""}`)}">
-      <span class="lb-top">${x.p.predefined ? `<span class="lb-id">🔒</span>` : ""}<span class="lb-ic">${icon(x.p)}</span>${x.alt ? `<span class="lb-w">⚠</span>` : ""}</span>
+  const icon = x => x.off ? "Ⅱ" : fwCst(x.p) === "RESPOND_ONLY" ? "↩" : fwIsAllow(x.p) ? "✓" : "✕";
+  const cls = x => x.off ? "off" : fwCst(x.p) === "RESPOND_ONLY" ? "ret" : fwIsAllow(x.p) ? "allow" : "block";
+  const tip = x => `${x.p.name || "?"} · ${fwShort(x.p.source)} → ${fwShort(x.p.destination)}${x.off ? " · paused" : ""}${x.alt ? ` · names a client with the same name and another MAC (${x.alt}) – a private WiFi address?` : ""}${x.decides ? " · decides for this device" : x.dead ? " · never reached for this device" : ""}`;
+  const lane = items.map((x, i) => `<button type="button" class="lb ${cls(x)}${x.p.predefined ? " pre" : ""}${x.dead ? " dead" : ""}${x.decides ? " dec" : ""}" data-fwpol="${esc(x.p.id)}" title="${esc(tip(x))}">
+      <span class="lb-top">${x.p.predefined ? `<span class="lb-id">🔒</span>` : ""}<span class="lb-ic">${icon(x)}</span>${x.alt ? `<span class="lb-w">⚠</span>` : ""}</span>
       <span class="lb-n" translate="no">${esc(x.p.name || "?")}</span><span class="lb-s" translate="no">→ ${esc(fwShort(x.p.destination))}</span>${typeof x.p.hits === "number" ? `<span class="lb-h">${x.p.hits.toLocaleString(I18N.locale)} <span>hits</span></span>` : ""}</button>${i < items.length - 1 ? `<span class="lb-arr" aria-hidden="true">→</span>` : ""}`).join("");
+  // collapsed: device – rule icons – internet, the green line runs until a rule blocks all normal traffic of the device
+  const stop = items.find(x => x.decides && !fwIsAllow(x.p) && fwCst(x.p) !== "RESPOND_ONLY");
+  let flow = true;
+  const strip = items.map(x => { const seg = `<span class="fm-l${flow ? " on" : ""}"></span><span class="fm-i ${cls(x)}${x.dead ? " dead" : ""}${x === stop ? " stop" : ""}" title="${esc(tip(x))}">${icon(x)}</span>`; if (x === stop) flow = false; return seg; }).join("")
+    + `<span class="fm-l${flow ? " on" : ""}"></span>`;
   const alts = [...new Set(items.filter(x => x.alt).map(x => x.alt))];
-  return `<div class="sec-title"><span>Internet access</span> <span class="muted" translate="no">${esc(z.name)} → ${esc(ext.name)}</span></div><div class="card fw-mini"><div class="fw-lane mini">${lane}</div><p class="hint" style="margin:4px 0 0">The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.</p>${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}</div>`;
+  const open = store.get("fwMiniOpen", false);
+  return `<div class="sec-title"><span>Internet access</span> <span class="muted">Client → External</span></div>
+    <details class="card fw-mini" id="fwMini"${open ? " open" : ""}><summary class="fm-sum" title="${esc(flow ? "Normal traffic of this device reaches the internet" : `Normal traffic of this device is blocked by ${stop.p.name || "a rule"}`)}"><span class="fm-n dev">${iconHtml(c)}</span>${strip}<span class="fm-n net${flow ? " on" : ""}">🌐</span><span class="fm-v ${flow ? "ok" : "no"}" aria-label="${flow ? "Reaches the internet" : "Blocked"}">${flow ? "✓" : "✕"}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
+    <div class="fw-lane mini">${lane}</div><p class="hint" style="margin:4px 0 0">The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.</p>${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}</details>`;
 }
+document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); }, true);
 // a rule names a client with the same name as this device but another MAC: the device's private WiFi address changed
 function fwSameNameMac(e, c) {
   const nm = (c.name || "").trim().toLowerCase(); if (!nm) return "";
