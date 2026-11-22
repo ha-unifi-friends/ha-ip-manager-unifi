@@ -1160,12 +1160,12 @@ window.I18N = (() => {
         <div class="field"><label for="fName">Name</label><input id="fName" autocomplete="off"></div>
         <div class="field"><label for="fNote">Note</label><input id="fNote" autocomplete="off"></div>
       </form>
+      <div class="card" id="portCard" hidden><div class="sec-title" style="margin-top:0">Switch port</div><div id="portCardBody"></div><div class="port-note" id="portHint" hidden></div></div>
       <div class="form card" id="vnoCard">
         <label class="switch" for="fVnoOn"><span>Virtual network override</span><input type="checkbox" id="fVnoOn" form="formEdit"></label>
         <div class="field" id="vnoField"><label for="fVno">Network</label><select id="fVno" form="formEdit"></select></div>
         <div class="hint" id="vnoHint">Puts the client into this network (VLAN) regardless of the Wi-Fi or switch port it uses. A fixed IP must then lie in this network.</div>
         <div class="hint" id="fwVno" hidden></div>
-        <div class="port-note" id="portHint" hidden></div>
       </div>
       <div class="form card">
         <label class="switch" for="fFixed"><span>Fixed IP address</span><input type="checkbox" id="fFixed" form="formEdit"></label>
@@ -3972,7 +3972,7 @@ function renderInfo() {
       ${kv("VLAN ID", n?.vlan ?? "")}
       ${kv("Virtual network override", c.vno_id ? esc(netLabel(c.vno_id) || "active") : "")}
       ${c.port_vlan ? kv("Switch port", `<span translate="no">${esc(c.port_vlan.switch)}</span> · <span>Port</span> ${c.port_vlan.port}${c.port_vlan.port_name && c.port_vlan.port_name !== "Port " + c.port_vlan.port ? ` <span class="muted" translate="no">(${esc(c.port_vlan.port_name)})</span>` : ""}`) : ""}
-      ${c.port_vlan ? kv("Port VLAN", portVlanText(c.port_vlan)) : ""}
+      ${c.port_vlan ? kv("Port VLAN", portVlanText(c.port_vlan)) : c.conn === "wired" && !c.is_device && c.port_why ? kv("Switch port", `<span class="muted">${esc(PORT_WHY[c.port_why] || "")}</span>`) : ""}
       ${kv("Hostname", esc(c.hostname))}
     </dl></div>
     ${c._portMiss ? `<div class="port-note">${portNoteHtml(c._portMiss)}</div>` : ""}
@@ -4026,8 +4026,16 @@ function portNoteHtml(m) {
   const pv = m.pv;
   return `<b>The switch port decides here.</b> <span>${esc(`Wired to ${pv.switch}, port ${pv.port} – its native VLAN is ${m.have?.name || "?"}.`)}</span> <span>${esc(`A virtual network override usually has no effect on wired devices. To move the device to ${m.want?.name || "?"}, set the port's native VLAN in UniFi (Devices › switch › port › Native VLAN / Network).`)}</span>${pv.source === "profile" ? ` <span>${esc(`The port uses the profile ${pv.profile}.`)}</span>` : ""} <span class="muted">Other devices on this port get the new native VLAN too.</span>`;
 }
+const PORT_WHY = { no_switch: "UniFi reports no switch for this device (e.g. behind an unmanaged switch or the connection is not known yet).", unknown_switch: "The switch this device is on is not adopted in this UniFi site.", no_port: "UniFi reports the switch but no port number." };
+function portInfoHtml(c) {
+  const pv = c.port_vlan;
+  if (!pv) return `<p class="hint" style="margin:0">${esc(PORT_WHY[c.port_why] || "The switch port of this device is not known.")}</p>`;
+  return `<dl class="kv" style="margin:0"><dt>Switch</dt><dd><span translate="no">${esc(pv.switch)}</span> · <span>Port</span> ${pv.port}</dd><dt>Port VLAN</dt><dd>${portVlanText(pv)}</dd></dl>`;
+}
 function updatePortHint() {
   const c = state.sel, el = $("#portHint"); if (!el) return;
+  const card = $("#portCard"); card.hidden = !(c?.mac && c.conn === "wired" && !c.is_device);
+  if (!card.hidden) $("#portCardBody").innerHTML = portInfoHtml(c);
   const target = $("#fVnoOn").checked ? $("#fVno").value : $("#fFixed").checked ? $("#fNet").value : "";
   const m = c?.conn === "wired" ? portMismatch(c, target) : null;
   el.innerHTML = m ? portNoteHtml(m) : ""; el.hidden = !m;

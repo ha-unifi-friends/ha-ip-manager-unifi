@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.36.2 – 2026-11-22
+
+- **Settings of a wired device:** a new card **Switch port** above *Virtual network override* always shows the switch, the port and the port VLAN; the note “The switch port decides here” appears in it when the chosen network does not match.
+- When the switch port of a wired device is not known, the details say why (no switch reported, switch not adopted in this site, no port number).
+
 ## 1.36.1 – 2026-11-22
 
 - **Switch view** turned by 90° so it fits the details pane: one row per port pair (odd left, even right), the devices beside their port with the full name; switches with up to 8 ports in one column.
