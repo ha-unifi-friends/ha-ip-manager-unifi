@@ -408,11 +408,7 @@ def build_snapshot(api):
         if not mac:
             continue
         rows[mac] = merge_device(rows.get(mac) or merge({}, {}, {}), d, nets)
-    try:
-        profiles = {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
-    except UnifiError as e:
-        log("Port profiles not available:", e)
-        profiles = {}
+    profiles = port_profiles(api)
     by_mac = {(d.get("mac") or "").lower(): d for d in devs if d.get("mac")}
     default_net = next((n["id"] for n in nets if n.get("purpose") == "corporate" and n.get("vlan") is None), "")
     for r in rows.values():
@@ -461,7 +457,7 @@ def port_vlan(dev, idx, profiles, default_net):
     src, prof = ("override", None) if ov else ("default", None)
     cfg = dict(ov or {})
     pid = cfg.get("portconf_id") or (pt.get("portconf_id") if not ov else None)
-    builtin = pid in profiles and (profiles[pid].get("attr_no_delete") or str(profiles[pid].get("name") or "").lower() in ("all", "default"))
+    builtin = pid in profiles and builtin_profile(profiles[pid])
     if pid and pid in profiles and not builtin:  # a port profile decides the VLANs of the port (UniFi's "All" is the default, no real profile)
         prof = profiles[pid]
         cfg = {**prof, **{k: v for k, v in cfg.items() if k in ("name", "port_idx")}}
@@ -498,6 +494,20 @@ def switch_port(p):
             "sfp": bool(p.get("sfp_found")) or str(p.get("media") or "").upper().startswith("SFP")}
 
 
+def port_profiles(api):
+    """UniFi's switch port profiles by id ({} when the controller does not offer them)."""
+    try:
+        return {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
+    except UnifiError as e:
+        log("Port profiles not available:", e)
+        return {}
+
+
+def builtin_profile(prof):
+    """UniFi's built-in "All" profile is what a port without own settings uses – that is no real profile."""
+    return bool(prof.get("attr_no_delete") or str(prof.get("name") or "").lower() in ("all", "default"))
+
+
 def set_port_vlan(api, body, user=""):
     """Change the native (untagged) network of one switch port – UniFi "Native VLAN / Network" of the port.
     Refused for uplink ports, ports with a UniFi device behind them (it would lose its controller) and ports that use a
@@ -531,14 +541,11 @@ def set_port_vlan(api, body, user=""):
         raise UnifiError(f"Home Assistant is connected to port {idx} – it would lose its network and this app. Change it in UniFi.", 400)
     ovs = [dict(o) for o in dev.get("port_overrides") or []]
     ov = next((o for o in ovs if str(o.get("port_idx")) == str(idx)), None)
-    try:
-        profiles = {p["_id"]: p for p in api.call("GET", "/rest/portconf") if isinstance(p, dict) and p.get("_id")}
-    except UnifiError:
-        profiles = {}
+    profiles = port_profiles(api)
     pid = (ov or {}).get("portconf_id") or (pt.get("portconf_id") if not ov else None)
     prof = profiles.get(pid) if pid else None
     # UniFi's built-in "All" profile is what a port without own settings uses – that is no real profile
-    if prof and not (prof.get("attr_no_delete") or str(prof.get("name") or "").lower() in ("all", "default")):
+    if prof and not builtin_profile(prof):
         raise UnifiError(f"Port {idx} uses the port profile “{prof.get('name')}” – change the profile or the port in UniFi.", 400)
     if ov is not None and pid:
         ov.pop("portconf_id", None)
@@ -895,6 +902,11 @@ HA_TEMPLATE = """{%- set ns = namespace(out=[]) -%}{%- set ns_skip = '(button|ev
 {{ ns.out | tojson }}"""
 
 
+def controller_host(api):
+    """Host name or IP of the UniFi console, without scheme and port."""
+    return re.sub(r"^https?://", "", api.base).split("/")[0].split(":")[0]
+
+
 def supervisor_token():
     """The token is in the environment, or – with the s6 init of the base image – only in s6's env store."""
     for key in ("SUPERVISOR_TOKEN", "HASSIO_TOKEN"):
@@ -912,22 +924,7 @@ def supervisor_token():
 
 
 def ha_devices():
-    token = supervisor_token()
-    base = os.environ.get("HA_API", "http://supervisor/core/api")
-    if not token and "HA_API" not in os.environ:
-        raise UnifiError("Home Assistant API is not available to the app (update the app to grant access).", 500)
-    req = urllib.request.Request(base + "/template", data=json.dumps({"template": HA_TEMPLATE}).encode(), method="POST",
-                                 headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
-    try:
-        raw = urllib.request.urlopen(req, timeout=30).read().decode()
-    except urllib.error.HTTPError as e:
-        raise UnifiError(f"Home Assistant API returned HTTP {e.code}.", 502)
-    except (urllib.error.URLError, OSError) as e:
-        raise UnifiError(f"Home Assistant not reachable: {e}", 502)
-    try:
-        devs = json.loads(raw)
-    except ValueError:
-        raise UnifiError("Unexpected answer from Home Assistant.", 502)
+    devs = ha_call("/template", {"template": HA_TEMPLATE}, timeout=30, strict=True)
     out = []
     for d in devs:
         macs = [m for m in (normalize_mac(x) for x in d.get("macs") or []) if m]
@@ -1171,7 +1168,7 @@ def firewall_state(api):
                                   "vlan": n.get("vlan") if n.get("vlan_enabled") else None, "subnet": n.get("ip_subnet") or ""}
     except UnifiError as e:
         log("Networks for the firewall view not available:", e)
-    host = re.sub(r"^https?://", "", api.base).split("/")[0].split(":")[0]
+    host = controller_host(api)
     try:
         ipaddress.ip_address(host)
     except ValueError:
@@ -1366,7 +1363,7 @@ def _zone_role_guess(name, key=""):
 def quiet_hosts(api):
     """Hosts that talk to many devices by design: the Home Assistant host and the UniFi console."""
     h = ha_host_ids(api)
-    ctl = re.sub(r"^https?://", "", api.base).split("/")[0].split(":")[0]
+    ctl = controller_host(api)
     return set(h["ips"]) | set(h["macs"]) | {ctl}
 
 
@@ -1882,16 +1879,16 @@ def ensure_daily():
 
 
 # ---------------------------------------------------------------- Home Assistant calls
-def ha_call(path, body):
-    """POST to the Home Assistant Core API through the Supervisor."""
+def ha_call(path, body, timeout=20, strict=False):
+    """POST to the Home Assistant Core API through the Supervisor. strict: an answer that is no JSON is an error."""
     token = supervisor_token()
     base = os.environ.get("HA_API", "http://supervisor/core/api")
     if not token and "HA_API" not in os.environ:
-        raise UnifiError("Home Assistant API is not available to the app.", 500)
+        raise UnifiError("Home Assistant API is not available to the app (update the app to grant access).", 500)
     req = urllib.request.Request(base + path, data=json.dumps(body).encode(), method="POST",
                                  headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
     try:
-        raw = urllib.request.urlopen(req, timeout=20).read().decode()
+        raw = urllib.request.urlopen(req, timeout=timeout).read().decode()
     except urllib.error.HTTPError as e:
         raise UnifiError(f"Home Assistant API returned HTTP {e.code}.", 502)
     except (urllib.error.URLError, OSError) as e:
@@ -1899,6 +1896,8 @@ def ha_call(path, body):
     try:
         return json.loads(raw) if raw else {}
     except ValueError:
+        if strict:
+            raise UnifiError("Unexpected answer from Home Assistant.", 502)
         return {}
 
 
@@ -2424,8 +2423,6 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, save_rules(self._json_body()))
             if method == "POST" and path.endswith("/api/wol"):
                 return self._send(200, wake_on_lan(self._json_body()))
-            if method == "POST" and path.endswith("/api/check_new"):
-                return self._send(200, {"new": check_new_devices(API)})
             if method == "POST" and path.endswith("/api/port_vlan"):
                 return self._send(200, set_port_vlan(API, self._json_body(), self._user()))
             if method == "POST" and path.endswith("/api/device_cmd"):
