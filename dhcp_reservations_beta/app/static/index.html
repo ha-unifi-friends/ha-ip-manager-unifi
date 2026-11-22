@@ -1088,7 +1088,7 @@ window.I18N = (() => {
         <div id="planGridWrap"></div>
         <div id="planClean" hidden>
       <div class="cl-ctrl">
-        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="pool" aria-pressed="true" title="Move only the start of the DHCP pool behind the highest fixed IP – no device changes its address">Pool only</button><button type="button" data-cs="min" aria-pressed="false" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="ha" aria-pressed="false" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button></span>
+        <span class="seg" role="group" aria-label="Strategy"><button type="button" data-cs="pool" aria-pressed="false" title="Move only the start of the DHCP pool behind the highest fixed IP – no device changes its address">Pool only</button><button type="button" data-cs="min" aria-pressed="false" title="Only move fixed IPs that would end up in the DHCP pool">Minimal</button><button type="button" data-cs="ha" aria-pressed="true" title="Renumber all fixed IPs in blocks per Home Assistant integration (devices not in HA last)">Grouped by HA integration</button><button type="button" data-cs="group" aria-pressed="false" title="Renumber all fixed IPs in blocks per vendor">Grouped by vendor</button></span>
         <label class="cl-one">Fixed IPs from <b class="mono" id="clFrom"></b> up to <input type="number" id="clEnd" min="2" max="253" title="Empty = automatic suggestion"></label><button class="link cl-one" type="button" id="clEndAuto" hidden title="Back to the automatic suggestion">Auto</button>
         <label class="cl-one">DHCP pool <b class="mono" id="clPool"></b></label>
         <label class="cl-multi" title="Size of the fixed block at the start of every network; empty = a suggestion per network">Fixed block <input type="number" id="clPct" min="10" max="90" step="5" placeholder="auto"> % of each network</label>
@@ -2055,7 +2055,7 @@ $("#planGridWrap").addEventListener("click", e => {
 
 
 // ---------- CleanUp Proposal ----------
-const CL = { strategy: "pool", end: null, rows: [], m: { move: true, rc: false, pool: true }, tab: "plan", running: false, done: false, confirm: false, ha: null };
+const CL = { strategy: "ha", end: null, rows: [], m: { move: true, rc: false, pool: true }, tab: "plan", running: false, done: false, confirm: false, ha: null };
 const NOT_HA = "Not in Home Assistant";
 const haGroupKey = c => [...new Set(haOf(c).flatMap(d => haDoms(c, d)))].sort()[0] || NOT_HA;
 const groupKey = c => { const v = (c.oui || "").replace(/,?\s*(inc|ltd|llc|gmbh|co|corp|corporation|limited|technology|technologies|electronics|trading)\.?\b.*$/i, "").trim(); return v || (c.name || c.hostname || "Other").split(/[\s_-]/)[0] || "Other"; };

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.41.3 – 2026-11-22
+
+- **IP plan › CleanUp proposal** starts with the strategy **Grouped by HA integration** instead of *Pool only*.
+
 ## 1.41.2 – 2026-11-22
 
 - **Phones:** Firewall and Topology get the same header as the IP plan – menu points in the first row, the tabs below on the left, *Refresh* / *Actions* in their own row on the right above the blue line.
