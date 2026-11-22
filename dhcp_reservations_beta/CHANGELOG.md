@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.7
+
+- **Selection matrix:** the result of a clicked cell shows the device icon in front of both names in its title (Home Assistant logo, UniFi icon as fallback; 🌐 for the internet).
+
 ## 1.52.6
 
 - **Selection matrix:** next to each number the device icon – the Home Assistant logo, the UniFi icon as fallback. Columns show number and icon side by side and stack them (number on top) when the cells get narrow; rows show the number on the left and the icon on the right.
