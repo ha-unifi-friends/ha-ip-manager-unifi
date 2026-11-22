@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.44.0
+
+- Clients and Topology are merged: the menu item *Clients* now has three tabs – *List* (the client table), *Tree* and *Graph*. All three use the same filter pane; the icon switch appears only for Tree and Graph.
+- Menu: Clients · IP Plan · Firewall.
+- Phone: the tabs show icons only. Narrower windows shorten the top bar step by step (button labels, then menu labels, then tab labels) instead of overflowing.
+
 ## 1.43.2
 
 - Topology graph: more compact layout – weaker repulsion, shorter links and a little more pull to the centre, so the nodes sit closer together.
