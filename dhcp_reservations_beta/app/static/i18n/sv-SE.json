@@ -1438,5 +1438,18 @@
  "Scans or other suspicious traffic": "Skanningar eller annan misstänkt trafik",
  "No findings": "Inga fynd",
  "Blocked (24 h)": "Blockerat (24 h)",
- "Connection attempts blocked by the firewall in the last 24 hours": "Anslutningsförsök som brandväggen blockerat de senaste 24 timmarna"
+ "Connection attempts blocked by the firewall in the last 24 hours": "Anslutningsförsök som brandväggen blockerat de senaste 24 timmarna",
+ "Topology": "Topologi",
+ "Topology graph": "Topologigraf",
+ "Network topology": "Nätverkstopologi",
+ "How the devices are connected – click a device for its details.": "Hur enheterna är anslutna – klicka på en enhet för detaljer.",
+ "Offline devices": "Offline-enheter",
+ "Search devices": "Sök enheter",
+ "Connection not known": "Anslutning okänd",
+ "Search hit": "Sökträff",
+ "Cable": "Kabel",
+ "WiFi / mesh": "Wifi / mesh",
+ "Drag devices, Ctrl + wheel or the buttons to zoom": "Dra enheter, zooma med Ctrl + scrollhjul eller knapparna",
+ "Mesh": "Mesh",
+ "Internet": "Internet"
 }

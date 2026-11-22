@@ -572,6 +572,9 @@ def merge_device(row, d, nets):
         "wired": not wireless,
         "uplink": up.get("uplink_device_name") or up.get("name") or "",
         "sw_mac": (up.get("uplink_mac") or "").lower() if not wireless else "",
+        # the device it hangs on for the topology – also over WiFi (mesh)
+        "up_mac": (up.get("uplink_mac") or "").lower(),
+        "up_wireless": wireless,
         "dev_id": d.get("_id") or "",
         "locating": bool(d.get("locating")),
         "dev_disabled": bool(d.get("disabled")),

@@ -1199,7 +1199,7 @@
  "New firewall rule": "Neui Firewall-Regle",
  "Firewall rule for {0}": "Firewall-Regle für {0}",
  "What": "Was",
- "Traffic": "Verchehr",
+ "Traffic": "Verkehr",
  "Check": "Prüefe",
  "Next": "Wiiter",
  "Back": "Zrugg",
@@ -1438,5 +1438,18 @@
  "Scans or other suspicious traffic": "Scans oder andere verdächtige Verkehr",
  "No findings": "Kei Fünd",
  "Blocked (24 h)": "Blockiert (24 h)",
- "Connection attempts blocked by the firewall in the last 24 hours": "Vo de Firewall blockierti Verbindigsversüech vo de letschte 24 Stunde"
+ "Connection attempts blocked by the firewall in the last 24 hours": "Vo de Firewall blockierti Verbindigsversüech vo de letschte 24 Stunde",
+ "Topology": "Topologie",
+ "Topology graph": "Topologie-Graph",
+ "Network topology": "Netzwerk-Topologie",
+ "How the devices are connected – click a device for its details.": "Wie d Grät verbunde sind – en Klick uf es Grät zeigt sini Details.",
+ "Offline devices": "Offline-Grät",
+ "Search devices": "Grät sueche",
+ "Connection not known": "Verbindig nöd bekannt",
+ "Search hit": "Suechträffer",
+ "Cable": "Kabel",
+ "WiFi / mesh": "WLAN / Mesh",
+ "Drag devices, Ctrl + wheel or the buttons to zoom": "Grät chasch zieh, Zoom mit Ctrl + Muusrad oder de Chnöpf",
+ "Mesh": "Mesh",
+ "Internet": "Internet"
 }
