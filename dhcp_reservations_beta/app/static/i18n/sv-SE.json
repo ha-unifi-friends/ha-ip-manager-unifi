@@ -1388,5 +1388,10 @@
  "UniFi reports no switch for this device (e.g. behind an unmanaged switch or the connection is not known yet).": "UniFi anger ingen switch för den här enheten (t.ex. bakom en ohanterad switch, eller anslutningen är inte känd än).",
  "The switch this device is on is not adopted in this UniFi site.": "Switchen som enheten sitter på är inte adopterad i den här UniFi-platsen.",
  "UniFi reports the switch but no port number.": "UniFi anger switchen men inget portnummer.",
- "The switch port of this device is not known.": "Switchporten för den här enheten är inte känd."
+ "The switch port of this device is not known.": "Switchporten för den här enheten är inte känd.",
+ "Reconnect": "Anslut igen",
+ "Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP).": "Kopplar bort enheten från wifi en kort stund. Den ansluter direkt igen och ber om en ny IP-adress (DHCP).",
+ "Only possible while the device is connected to the WiFi.": "Bara möjligt medan enheten är ansluten till wifi.",
+ "{0} is reconnecting – the status updates in a few seconds": "{0} ansluter igen – statusen uppdateras om några sekunder",
+ "Reconnect failed: {0}": "Återanslutning misslyckades: {0}"
 }

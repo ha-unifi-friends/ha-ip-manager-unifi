@@ -1388,5 +1388,10 @@
  "UniFi reports no switch for this device (e.g. behind an unmanaged switch or the connection is not known yet).": "UniFi nie podaje przełącznika dla tego urządzenia (np. za niezarządzanym przełącznikiem lub połączenie nie jest jeszcze znane).",
  "The switch this device is on is not adopted in this UniFi site.": "Przełącznik tego urządzenia nie jest przyjęty w tej witrynie UniFi.",
  "UniFi reports the switch but no port number.": "UniFi podaje przełącznik, ale bez numeru portu.",
- "The switch port of this device is not known.": "Port przełącznika tego urządzenia jest nieznany."
+ "The switch port of this device is not known.": "Port przełącznika tego urządzenia jest nieznany.",
+ "Reconnect": "Połącz ponownie",
+ "Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP).": "Na chwilę rozłącza urządzenie z Wi-Fi. Od razu łączy się ponownie i prosi o nowy adres IP (DHCP).",
+ "Only possible while the device is connected to the WiFi.": "Możliwe tylko, gdy urządzenie jest połączone z Wi-Fi.",
+ "{0} is reconnecting – the status updates in a few seconds": "{0} łączy się ponownie – stan zaktualizuje się za kilka sekund",
+ "Reconnect failed: {0}": "Ponowne połączenie nie powiodło się: {0}"
 }

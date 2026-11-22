@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.36.3 – 2026-11-22
+
+- **Reconnect** button for WiFi clients at the bottom of the settings: disconnects the device from the WiFi for a moment, it connects again and asks for a new IP address. Greyed out while the device is offline.
+
 ## 1.36.2 – 2026-11-22
 
 - **Settings of a wired device:** a new card **Switch port** above *Virtual network override* always shows the switch, the port and the port VLAN; the note “The switch port decides here” appears in it when the chosen network does not match.
