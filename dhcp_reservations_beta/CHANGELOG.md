@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.5
+
+- **List:** the extra information of a card – DHCP / Fix, connection type, access point or switch port, network – are pills right of the name (they wrap when needed); below only the IP (and the fixed IP when it differs) and the issues. The cards are shorter.
+
 ## 1.52.4
 
 - **Selection pane:** the numbered devices moved into the summary (*Devices*, below *Reaches the internet*); each has a ✕ to remove it from the selection. The numbers are purple on dark grey – the same purple as the row and column numbers of the matrix, so they are easy to match.
