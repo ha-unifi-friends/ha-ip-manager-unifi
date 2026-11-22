@@ -1452,5 +1452,8 @@
  "Drag devices, Ctrl + wheel or the buttons to zoom": "Sleep apparaten, zoom met Ctrl + scrollwiel of de knoppen",
  "Mesh": "Mesh",
  "Internet": "Internet",
- "Auto zoom – show everything": "Automatisch zoomen – alles tonen"
+ "Auto zoom – show everything": "Automatisch zoomen – alles tonen",
+ "Tree": "Boom",
+ "Filter hit": "Filtertreffer",
+ "Notify me in Home Assistant about suspicious traffic": "Meld verdacht verkeer in Home Assistant"
 }

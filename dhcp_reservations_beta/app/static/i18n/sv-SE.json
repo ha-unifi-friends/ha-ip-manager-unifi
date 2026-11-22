@@ -1452,5 +1452,8 @@
  "Drag devices, Ctrl + wheel or the buttons to zoom": "Dra enheter, zooma med Ctrl + scrollhjul eller knapparna",
  "Mesh": "Mesh",
  "Internet": "Internet",
- "Auto zoom – show everything": "Autozoom – visa allt"
+ "Auto zoom – show everything": "Autozoom – visa allt",
+ "Tree": "Träd",
+ "Filter hit": "Filterträff",
+ "Notify me in Home Assistant about suspicious traffic": "Meddela mig i Home Assistant om misstänkt trafik"
 }

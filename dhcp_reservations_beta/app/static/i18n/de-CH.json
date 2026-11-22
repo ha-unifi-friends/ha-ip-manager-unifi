@@ -1452,5 +1452,8 @@
  "Drag devices, Ctrl + wheel or the buttons to zoom": "Grät chasch zieh, Zoom mit Ctrl + Muusrad oder de Chnöpf",
  "Mesh": "Mesh",
  "Internet": "Internet",
- "Auto zoom – show everything": "Auto-Zoom – alles zeige"
+ "Auto zoom – show everything": "Auto-Zoom – alles zeige",
+ "Tree": "Baum",
+ "Filter hit": "Filterträffer",
+ "Notify me in Home Assistant about suspicious traffic": "Bi verdächtigem Verkehr i Home Assistant benachrichtige"
 }
