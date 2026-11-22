@@ -1423,5 +1423,10 @@
  "Controller error ({0}) – the change may have been applied anyway. Press Refresh and check before trying again.": "Kontrollerfel ({0}) – ändringen kan ändå ha genomförts. Uppdatera och kontrollera innan du försöker igen.",
  "The controller is not available (HTTP {0}) – it may be restarting or updating. Try again in a minute.": "Kontrollern är inte tillgänglig (HTTP {0}) – den kanske startar om eller uppdateras. Försök igen om en minut.",
  "Home Assistant is connected to port {0} – it would lose its network and this app. Change it in UniFi.": "Home Assistant är ansluten till port {0} – den skulle förlora sitt nätverk och den här appen. Ändra det i UniFi.",
- "Invalid Content-Length.": "Ogiltig Content-Length."
+ "Invalid Content-Length.": "Ogiltig Content-Length.",
+ "Drag devices, use the buttons to zoom": "Dra enheter, zooma med knapparna",
+ "Rule: block": "Regel: blockerar",
+ "Rule: allow": "Regel: tillåter",
+ "Rules: mixed": "Regler: blandade",
+ "Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules": "Allow All · Block All · Allow Return = UniFis standard för zonparet · – = ingen standard · streckad = avgörs av dina egna regler · (n) = antal egna regler"
 }

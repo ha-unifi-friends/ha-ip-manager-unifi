@@ -1423,5 +1423,10 @@
  "Controller error ({0}) – the change may have been applied anyway. Press Refresh and check before trying again.": "Error del controlador ({0}) – puede que el cambio se haya aplicado de todos modos. Actualiza y comprueba antes de volver a intentarlo.",
  "The controller is not available (HTTP {0}) – it may be restarting or updating. Try again in a minute.": "El controlador no está disponible (HTTP {0}) – puede que se esté reiniciando o actualizando. Inténtalo de nuevo en un minuto.",
  "Home Assistant is connected to port {0} – it would lose its network and this app. Change it in UniFi.": "Home Assistant está conectado al puerto {0} – perdería su red y esta app. Cámbialo en UniFi.",
- "Invalid Content-Length.": "Content-Length no válido."
+ "Invalid Content-Length.": "Content-Length no válido.",
+ "Drag devices, use the buttons to zoom": "Arrastra los dispositivos, usa los botones para el zoom",
+ "Rule: block": "Regla: bloquea",
+ "Rule: allow": "Regla: permite",
+ "Rules: mixed": "Reglas: mixtas",
+ "Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules": "Permitir todo · Bloquear todo · Permitir retorno = valor por defecto de UniFi del par de zonas · – = sin valor por defecto · discontinuo = decidido por tus reglas · (n) = número de tus reglas"
 }

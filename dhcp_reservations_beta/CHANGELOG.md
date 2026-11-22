@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.46.0
+
+UX improvements from the review:
+- **Firewall matrix:** a zone pair without a UniFi default now shows what your own rules do – *Rule: block*, *Rule: allow* or *Rules: mixed* (dashed frame) – instead of only "– (1)". A legend below the matrix explains the cells. On phones the source zones stay visible while the matrix scrolls sideways.
+- **Versions on phones:** one card per version with all actions; the retention days stay inside the sentence.
+- **View menu on phones** uses the full width and wraps long entries.
+- **German:** one word per thing – *WLAN* (not WiFi / Wi-Fi), *Regel* (not Richtlinie, except UniFi's own menu name), *Aufräum-Vorschlag*; *Nicht mehr anheften* instead of *Lösen*.
+- The main menu (Clients / IP Plan / Firewall) has tooltips when it shows icons only.
+- The graph hint on touch screens no longer mentions Ctrl + wheel; search fields have a visible frame in the light theme.
+
 ## 1.45.2
 
 Clean-up from the review (no visible change intended):
