@@ -400,7 +400,8 @@ def build_snapshot(api):
     for i, a in enumerate(extra):
         r = merge({}, a, a)
         r["mac"] = ""
-        rows[f"teleport:{a.get('id') or a.get('_id') or i}"] = r
+        r["key"] = f"teleport:{a.get('id') or a.get('_id') or i}"  # stable id in the UI (selection, details)
+        rows[r["key"]] = r
     # UniFi devices (APs, switches, gateway) are not in stat/sta – status, IP and uplink come from stat/device.
     devs = api.call("GET", "/stat/device")
     for d in devs:

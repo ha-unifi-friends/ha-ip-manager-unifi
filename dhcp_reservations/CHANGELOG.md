@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.1.0 – 2026-11-22
+
+New features and fixes from beta 1.46.2 – 1.53.1:
+
+**Clients: Table · List · Tree · Graph**
+- New **List** view: one card per device – icon, name, IP right after the name, then pills for IP type, connection, switch port / access point, network and issues. Phones start with the list, wider screens with the table; the choice is kept.
+- Icon switch (None / UniFi / Home Assistant) for list, tree and graph.
+- New built-in views **Online** and **Recently changed** (compared with the newest version at least a week old – the filter names its date).
+
+**What changed since your last visit**
+- A box above the table and the list shows new devices, devices with new issues, changed fixed IPs, removed devices and changed firewall rules since you last marked them as seen; click a chip to filter.
+
+**Multi-select and bulk changes**
+- The slider **1 | n** in the top bar (table, list, tree and graph): in *n* mode a click selects devices instead of opening them.
+- The detail pane then shows the selection: summary as pills (connection, networks, virtual network override, internet access), the numbered devices (✕ removes one), and the actions **override network, remove override, release fixed IP, note, reconnect WiFi, firewall rule**. A version is saved before every bulk change.
+- **Firewall between the selected devices:** a matrix of up to 30 devices plus the internet (✓ all allowed, ◐ partly, ✕ all blocked, ? not decided); click a cell for the details. On desktop the pane grows with the matrix (up to 800 px, at most half the window); on phones it is the lower half of the screen.
+
+**Firewall test in the device details**
+- *Network check & link*: «Firewall: may this device reach [target]» – the target picker lists the internet, every zone and its devices (with search). The check covers ping and common services and shows the deciding rules; IPv6-only rules do not decide the IPv4 test.
+
+**Fixes and polish**
+- Switch section in the device details collapsed by default; missing translations added; singular texts for one device.
+- Keyboard and screen-reader support for the new parts (matrix cells, graph nodes, focus rings, selection state).
+- Escape leaves multi-select only when you are not typing and no menu is open.
+- Teleport sessions get a stable key and no longer appear as new / removed devices.
+
 ## 2.0.1 – 2026-11-22
 
 Fixes and improvements from a full review (beta 1.45.1 – 1.46.1):
