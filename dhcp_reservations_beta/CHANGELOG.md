@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.53.1
+
+- **Top bar:** the «1 | n» switch sits at the same height as the view and icon selectors.
+
 ## 1.53.0
 
 Fixes and improvements from the full review of the new features.
