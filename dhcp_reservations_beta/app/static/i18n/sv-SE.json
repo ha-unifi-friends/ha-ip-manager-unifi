@@ -1475,5 +1475,7 @@
  "Client · {0}": "Klient · {0}",
  "Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.": "Zonregler och reglerna för den här klienten, i den ordning UniFi kontrollerar dem – den första matchande regeln avgör.",
  "More rules that name this client": "Fler regler som anger den här klienten",
- "Network · {0}": "Nätverk · {0}"
+ "Network · {0}": "Nätverk · {0}",
+ "Special case": "Specialfall",
+ "Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.": "Nedtonade: UniFis inbyggda specialregler – bara för specialfall (ogiltiga anslutningar, LTE-failover, gästautentisering …), inte för normal trafik."
 }
