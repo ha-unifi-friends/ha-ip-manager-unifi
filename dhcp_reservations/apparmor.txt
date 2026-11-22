@@ -1,0 +1,47 @@
+#include <tunables/global>
+
+# AppArmor profile of the IP Manager for UniFi. Home Assistant renames the profile to the add-on's slug.
+profile dhcp_reservations flags=(attach_disconnected,mediate_deleted) {
+  #include <abstractions/base>
+
+  # Only the capabilities the start-up (s6-overlay of the base image) and the app need
+  capability chown,
+  capability dac_override,
+  capability dac_read_search,
+  capability fowner,
+  capability fsetid,
+  capability kill,
+  capability setgid,
+  capability setuid,
+  capability net_bind_service,
+  # ping (ICMP echo) uses a raw socket
+  capability net_raw,
+
+  # Network: web UI (ingress), UniFi console, Home Assistant API, ping, port check, Wake-on-LAN broadcast
+  network inet,
+  network inet6,
+  network unix,
+  network netlink raw,
+
+  signal (send, receive),
+
+  # Read and run what is inside the container ...
+  /** rmix,
+  # ... but write only where the app and the start-up need it
+  /data/ r,
+  /data/** rwk,
+  /app/** rw,
+  /tmp/** rwk,
+  /var/tmp/** rwk,
+  /run/** rwk,
+  /var/run/** rwk,
+  /dev/** rw,
+
+  # never touch kernel settings or the host's devices
+  deny /proc/sys/** w,
+  deny /sys/** w,
+  deny mount,
+  deny umount,
+  deny pivot_root,
+  deny ptrace,
+}
