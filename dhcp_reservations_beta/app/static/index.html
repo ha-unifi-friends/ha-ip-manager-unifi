@@ -422,6 +422,13 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .rc-status.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 12%,transparent)}
 .rc-status.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 12%,transparent)}
 .ask-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.dev-acts{display:grid}
+.dev-act{display:grid;gap:2px;padding:9px 0;border-bottom:1px solid var(--line)}
+.dev-act:last-of-type{border-bottom:0}
+.dev-act .link{justify-self:start;font-size:14px;color:var(--accent)}
+.dev-act .link.warn{color:var(--warn)}
+.dev-act .link:disabled{color:var(--muted);cursor:default}
+.dev-act .hint{margin:0;font-size:12px}
 .port-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin:6px 0 2px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 .port-note>b:first-child{color:var(--warn)}
 .rel-focus{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px}
@@ -1208,6 +1215,11 @@ window.I18N = (() => {
         <p id="unresText">Name and note are kept. The device gets an address from the DHCP pool again.</p>
         <button class="btn danger" type="button" id="btnForget">Forget client</button>
         <p id="forgetText">Removes name, note, reservation and history from the controller. This cannot be undone.</p>
+      </div>
+      <div class="card" id="devCard" hidden>
+        <div class="sec-title" id="devCardTitle">UniFi device</div>
+        <div class="dev-acts" id="devActs"></div>
+        <p class="rc-status" id="devStatus" role="status" hidden></p>
       </div>
       <div class="card" id="rcCard" hidden>
         <div class="sec-title">WiFi</div>
@@ -4146,6 +4158,7 @@ function fillForm(c) {
   $("#fAp").value = c?.fixed_ap_mac || c?.ap_mac || state.aps[0]?.mac || "";
   $("#fDnsOn").checked = !!c?.local_dns_record_enabled; $("#fDns").value = c?.local_dns_record || "";
   $("#editErr").hidden = true; $("#dangerZone").hidden = !c?.known;
+  renderDevCard(c);
   if ($("#rcCard").dataset.mac !== (c?.mac || "")) { $("#rcStatus").hidden = true; $("#rcCard").dataset.mac = c?.mac || ""; }
   $("#rcCard").hidden = !(c?.mac && !c.is_device && c.conn === "wifi"); $("#btnReconnect").disabled = !canReconnect(c);
   $("#rcText").textContent = canReconnect(c) ? "Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP)." : "Only possible while the device is connected to the WiFi.";
@@ -4479,6 +4492,38 @@ function askConfirm(title, text, ok = "Confirm") {
     d.showModal(); $("#askOk").focus();
   });
 }
+// access points and switches: locate, restart, disable / enable – like the buttons in UniFi (never the gateway)
+const DEV_ACTS = {
+  locate: ["Locate", "The LED blinks so you can find the device. Click again to stop."],
+  unlocate: ["Stop locating", "The LED stops blinking."],
+  restart: ["Restart", "Restarts the device. Its clients lose the connection for about a minute."],
+  disable: ["Disable", "Switches the access point off until it is enabled again – its WiFi clients move to other access points."],
+  enable: ["Enable", "Switches the access point on again."],
+};
+function renderDevCard(c) {
+  const card = $("#devCard"), ok = !!(c?.is_device && ["ap", "switch"].includes(c.device_kind));
+  if (card.dataset.mac !== (c?.mac || "")) { $("#devStatus").hidden = true; card.dataset.mac = c?.mac || ""; }
+  card.hidden = !ok; if (!ok) return;
+  $("#devCardTitle").textContent = c.device_kind === "ap" ? "Access point" : "Switch";
+  const acts = [c.locating ? "unlocate" : "locate", "restart", ...(c.device_kind === "ap" ? [c.dev_disabled ? "enable" : "disable"] : [])];
+  $("#devActs").innerHTML = acts.map(a => `<div class="dev-act"><button type="button" class="link${a === "disable" || a === "restart" ? " warn" : ""}" data-devact="${a}" ${!c.online && a !== "enable" ? "disabled" : ""}>${DEV_ACTS[a][0]}</button><span class="hint">${DEV_ACTS[a][1]}</span></div>`).join("")
+    + (c.online ? "" : `<p class="hint" style="margin:6px 0 0">The device is offline – only Enable is possible.</p>`);
+}
+$("#devActs").addEventListener("click", async e => {
+  const b = e.target.closest("[data-devact]"), c = state.sel; if (!b || !c?.is_device) return;
+  const a = b.dataset.devact, nm = devName(c), st = $("#devStatus");
+  if (a === "restart" && !await askConfirm(`Restart ${nm}?`, `Are you sure you want to restart ${nm}? Its clients lose the connection for about a minute.`, "Restart")) return;
+  if (a === "disable" && !await askConfirm(`Disable ${nm}?`, `Are you sure you want to disable ${nm}? It stays off until you enable it again – its WiFi clients move to other access points.`, "Disable")) return;
+  b.disabled = true;
+  try {
+    await api("api/device_cmd", { mac: c.mac, action: a });
+    const t = new Date().toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" });
+    st.className = "rc-status ok"; st.textContent = { locate: `✓ ${nm} is blinking (${t}).`, unlocate: `✓ ${nm} stopped blinking (${t}).`, restart: `✓ Restart sent at ${t} – ${nm} is back in about a minute.`, disable: `✓ ${nm} disabled (${t}).`, enable: `✓ ${nm} enabled (${t}).` }[a]; st.hidden = false;
+    if (a === "locate" || a === "unlocate") c.locating = a === "locate";
+    if (a === "disable" || a === "enable") c.dev_disabled = a === "disable";
+    renderDevCard(c); setTimeout(() => load(), a === "restart" ? 60000 : 5000);
+  } catch (err) { st.className = "rc-status bad"; st.textContent = err.message; st.hidden = false; b.disabled = false; }
+});
 const RC_LABEL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>Reconnect</span>`;
 $("#btnReconnect").addEventListener("click", async () => {
   const c = state.sel, b = $("#btnReconnect"), st = $("#rcStatus"); if (!canReconnect(c)) return;
