@@ -1423,5 +1423,10 @@
  "Controller error ({0}) – the change may have been applied anyway. Press Refresh and check before trying again.": "Controllerfout ({0}) – de wijziging is mogelijk toch doorgevoerd. Vernieuw en controleer voordat je het opnieuw probeert.",
  "The controller is not available (HTTP {0}) – it may be restarting or updating. Try again in a minute.": "De controller is niet beschikbaar (HTTP {0}) – mogelijk herstart of update hij. Probeer het over een minuut opnieuw.",
  "Home Assistant is connected to port {0} – it would lose its network and this app. Change it in UniFi.": "Home Assistant zit op poort {0} – het zou zijn netwerk en deze app verliezen. Wijzig het in UniFi.",
- "Invalid Content-Length.": "Ongeldige Content-Length."
+ "Invalid Content-Length.": "Ongeldige Content-Length.",
+ "Drag devices, use the buttons to zoom": "Sleep apparaten, zoom met de knoppen",
+ "Rule: block": "Regel: blokkeert",
+ "Rule: allow": "Regel: staat toe",
+ "Rules: mixed": "Regels: gemengd",
+ "Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules": "Allow All · Block All · Allow Return = UniFi-standaard van het zonepaar · – = geen standaard · gestippeld = bepaald door je eigen regels · (n) = aantal eigen regels"
 }
