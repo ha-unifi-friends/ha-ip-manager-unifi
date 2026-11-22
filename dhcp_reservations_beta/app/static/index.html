@@ -488,6 +488,9 @@ body:not(.rel-mode) .topo-icons{display:none!important}
 /* the icon switch moves into the Actions menu when the top bar has no room for it */
 .cnt-s{display:none}
 @container main (max-width:385px){.cnt-l{display:none}.cnt-s{display:inline}}
+.menu .mi.mi-ver{display:none}
+@container main (max-width:700px){.menu .mi.mi-ver{display:flex}}
+@container main (max-width:900px){body.plan-mode .menu .mi.mi-ver{display:flex}}
 .act-icons{display:none}
 @container main (max-width:1240px){body.rel-mode .topbar .topo-icons{display:none!important}body.rel-mode .act-icons{display:flex}}
 .act-icons{align-items:center;gap:8px;padding:6px 10px;color:var(--muted)}
@@ -1048,16 +1051,18 @@ window.I18N = (() => {
     return r == null ? s : lead + r + trail;
   }
   const mine = new WeakMap(), mineAttr = new WeakMap(); // text nodes / attributes we wrote – not translated again
+  const missing = new Set(); // texts without a translation (for checking the language files: I18N.missing in the console)
+  const miss = v => { if (missing.size < 3000 && /[A-Za-z]{2}/.test(v)) missing.add(v.trim()); };
   const SKIP = "script,style,code,textarea,.mono,[translate=no]";
   const ATTRS = ["title", "placeholder", "aria-label", "alt"];
   function el(e) {
     if (e.closest("[translate=no]")) return;
     const w = mineAttr.get(e) || {};
-    for (const a of ATTRS) { const v = e.getAttribute(a); if (!v || w[a] === v) continue; const n = tr(v); if (n !== v) { w[a] = n; e.setAttribute(a, n); } }
+    for (const a of ATTRS) { const v = e.getAttribute(a); if (!v || w[a] === v) continue; const n = tr(v); if (n !== v) { w[a] = n; e.setAttribute(a, n); } else miss(v); }
     mineAttr.set(e, w);
   }
   function node(n) {
-    if (n.nodeType === 3) { const p = n.parentElement; if (!p || p.closest(SKIP)) return; const v = n.nodeValue; if (mine.get(n) === v) return; const x = tr(v); if (x !== v) { n.nodeValue = x; mine.set(n, x); } return; }
+    if (n.nodeType === 3) { const p = n.parentElement; if (!p || p.closest(SKIP)) return; const v = n.nodeValue; if (mine.get(n) === v) return; const x = tr(v); if (x !== v) { n.nodeValue = x; mine.set(n, x); } else miss(v); return; }
     if (n.nodeType !== 1) return;
     el(n);
     const w = document.createTreeWalker(n, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, { acceptNode: x => x.nodeType === 1 && x.matches("[translate=no]") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
@@ -1080,7 +1085,7 @@ window.I18N = (() => {
   ready.then(() => { const go = () => { start(); document.documentElement.classList.remove("i18n-wait"); }; document.body ? go() : document.addEventListener("DOMContentLoaded", go); });
   setTimeout(() => document.documentElement.classList.remove("i18n-wait"), 1500);
   const locale = lang === "en" ? "en-GB" : lang;
-  return { LANGS, lang, pref, tr, locale, set(l) { try { localStorage.setItem("dhcpres.lang", JSON.stringify(l)); } catch {} location.reload(); } };
+  return { LANGS, lang, pref, tr, locale, missing, set(l) { try { localStorage.setItem("dhcpres.lang", JSON.stringify(l)); } catch {} location.reload(); } };
 })();
 </script>
 </head>
@@ -1131,6 +1136,7 @@ window.I18N = (() => {
           <button class="mi" role="menuitem" id="btnExp" type="button" title="Export CSV"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Export CSV</span></button>
           <button class="mi" role="menuitem" id="btnHosts" type="button" title="Export fixed IPs and local DNS records as a hosts file"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg><span>Export hosts file</span></button>
           <button class="mi" role="menuitem" id="btnRules" type="button" title="Which devices belong in which network"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg><span>Network rules…</span></button>
+          <button class="mi mi-ver" role="menuitem" id="mnVer" type="button" title="Versions"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span>Versions…</span></button>
           <div class="act-icons"><span>Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none" title="No icons">Off</button><button type="button" data-topoicon="unifi" title="UniFi icons">UniFi</button><button type="button" data-topoicon="ha" title="Home Assistant integration logos">HA</button></span></div>
           <label class="mi mi-chk" role="menuitemcheckbox"><input type="checkbox" id="mnSusp"><span>Notify me in Home Assistant about suspicious traffic</span></label>
           </div>
@@ -2788,7 +2794,7 @@ function renderFw() {
   const body = zs.map(s => `<tr><th scope="row"><button type="button" class="fwh ${FW.src === s.id && !FW.dst ? "on" : ""}" data-fws="${esc(s.id)}" title="Policies from ${esc(s.name)}" translate="no">${esc(s.name)}</button></th>${zs.map(d => {
     const r = fwPair(s.id, d.id), on = FW.src === s.id && FW.dst === d.id, dim = (FW.src || FW.dst) && !on && !(FW.src === s.id && !FW.dst) && !(FW.dst === d.id && !FW.src);
     const risk = fwAnalysis()?.mxRisk[s.id + ">" + d.id];
-    const tip = `${s.name} → ${d.name}: ${FW_DEF[r.def]}${r.custom.length ? ` · ${r.custom.length} custom` : ""}${r.all.length - r.custom.length ? ` · ${r.all.length - r.custom.length} built-in` : ""}${risk ? " · ⚠ " + risk.replace(/<[^>]+>/g, "") : ""}`;
+    const tip = `${s.name} → ${d.name}: ${I18N.tr(FW_DEF[r.def])}${r.custom.length ? ` · ${I18N.tr(`${r.custom.length} custom`)}` : ""}${r.all.length - r.custom.length ? ` · ${I18N.tr(`${r.all.length - r.custom.length} built-in`)}` : ""}${risk ? " · ⚠ " + risk.replace(/<[^>]+>/g, "") : ""}`;
     const live = r.custom.filter(p => p.enabled !== false && fwCst(p) === "ALL"), opens = r.def !== "allow" ? live.filter(fwIsAllow) : [], closes = r.def === "allow" ? live.filter(p => !fwIsAllow(p)) : [];
     const ports = opens.length ? `<span class="fwc-p ok" title="${esc("Opened by custom rules:\n" + opens.map(p => `${p.name}: ${fwPortLabel(p)}`).join("\n"))}">✓ ${esc(fwPortsSum(opens, 2))}</span>` : closes.length ? `<span class="fwc-p no" title="${esc("Closed by custom rules:\n" + closes.map(p => `${p.name}: ${fwPortLabel(p)}`).join("\n"))}">✕ ${esc(fwPortsSum(closes, 2))}</span>` : "";
     return `<td><button type="button" class="fwc ${r.def}${on ? " on" : ""}${dim ? " dim" : ""}${risk ? " risky" : ""}" data-fws="${esc(s.id)}" data-fwd="${esc(d.id)}" title="${esc(tip)}"><span class="l">${risk ? `<span class="fw-risk" aria-label="Risky">⚠</span> ` : ""}${FW_DEF[r.def]}${r.custom.length ? ` <span class="n">(${r.custom.length})</span>` : ""}</span>${ports}</button></td>`;
@@ -2946,7 +2952,7 @@ function fwInfoHtml(c) {
   const cell = r => !r ? `<span class="muted">–</span>` : `${fwLvlTag(r.lvl)}${portLine(r)}<div class="fw-why">${r.by ? polBtn(r.by) : r.ret ? polBtn(r.ret) : ""}${r.extra.length ? ` <span class="muted" title="${esc(r.extra.map(x => (x.allow ? "Allow: " : "Block: ") + x.p.name).join("\n"))}">+${r.extra.length} <span>${r.extra.length === 1 ? "rule before it" : "rules before it"}</span></span>` : ""}</div>`;
   const eff = z ? fwEffective(c) : [];
   const LC = { full: "allow", partial: "part", ret: "ret", none: "block", "": "none" };
-  const strip = (dir, label) => `<div class="fw-strip"><span class="fw-strip-l">${label}</span>${eff.filter(x => dir === "out" ? x.out : x.inc).map(x => { const r = dir === "out" ? x.out : x.inc; return `<button type="button" class="fwc ${LC[r.lvl]}" data-fwpair="${esc(dir === "out" ? z.id : x.z.id)}|${esc(dir === "out" ? x.z.id : z.id)}" title="${esc(`${dir === "out" ? `${devName(c)} → ${x.z.name}` : `${x.z.name} → ${devName(c)}`}: ${FW_LVL[r.lvl][0]}${r.by ? ` (${r.by.name})` : ""}`)}"><span translate="no">${esc(x.z.name)}</span> <span class="fw-strip-i">${{ full: "✓", partial: "◐", ret: "↩", none: "✕", "": "?" }[r.lvl]}</span>${r.lvl === "partial" ? ` <span class="fw-strip-p" translate="no">${esc(fwPortsSum(r.extra.filter(y => y.allow).map(y => y.p), 2))}</span>` : ""}</button>`; }).join("")}</div>`;
+  const strip = (dir, label) => `<div class="fw-strip"><span class="fw-strip-l">${label}</span>${eff.filter(x => dir === "out" ? x.out : x.inc).map(x => { const r = dir === "out" ? x.out : x.inc; return `<button type="button" class="fwc ${LC[r.lvl]}" data-fwpair="${esc(dir === "out" ? z.id : x.z.id)}|${esc(dir === "out" ? x.z.id : z.id)}" title="${esc(`${dir === "out" ? `${devName(c)} → ${x.z.name}` : `${x.z.name} → ${devName(c)}`}: ${I18N.tr(FW_LVL[r.lvl][0])}${r.by ? ` (${r.by.name})` : ""}`)}"><span translate="no">${esc(x.z.name)}</span> <span class="fw-strip-i">${{ full: "✓", partial: "◐", ret: "↩", none: "✕", "": "?" }[r.lvl]}</span>${r.lvl === "partial" ? ` <span class="fw-strip-p" translate="no">${esc(fwPortsSum(r.extra.filter(y => y.allow).map(y => y.p), 2))}</span>` : ""}</button>`; }).join("")}</div>`;
   const paused = fwPausedEffects(c), changing = paused.filter(x => x.now.lvl !== x.then.lvl), still = paused.filter(x => x.now.lvl === x.then.lvl && x.named);
   return `<details class="fw-info" id="fwInfo"${store.get("fwInfoOpen", false) ? " open" : ""}><summary class="sec-title fi-sum"><span>Firewall</span><span class="fm-chev" aria-hidden="true">▾</span></summary><div class="card fw-card">
     <dl class="kv" style="margin:0"><dt>Zone</dt><dd>${z ? `<button type="button" class="link" data-fwzone="${esc(z.id)}" translate="no" title="Open the zone in the firewall view">${esc(z.name)}</button>` : `<span class="muted">unknown</span>`}</dd>
@@ -3661,7 +3667,7 @@ function fwPortLabel(p) {
   return w;
 }
 const fwPortsSum = (ps, max = 3) => { const l = [...new Set(ps.map(fwPortLabel))]; return l.slice(0, max).join(" · ") + (l.length > max ? ` · +${l.length - max}` : ""); };
-const fwShort = e => { const t = fwEpText(e); return t.txt; };
+const fwShort = e => { const t = fwEpText(e); return t.txt === "Any" ? I18N.tr("Any") : t.txt; }; // shown text only – compare with fwEpText
 function renderChain() {
   const box = $("#fwChain");
   if (!FW.src || !FW.dst || !FW.data) { box.hidden = true; box.innerHTML = ""; return; }
@@ -3674,7 +3680,7 @@ function renderChain() {
   let reached = true;
   const lane = seq.map((p, i) => {
     const fl = flags.get(p.id), dead = fl.f.some(x => x[0] === "dead");
-    const html = `<button type="button" class="lb ${cls(p)}${p.predefined ? " pre" : ""}${dead || !reached ? " dead" : ""}${fl.f.some(x => ["redund", "dflt"].includes(x[0])) ? " odd" : ""}${FW.open === p.id ? " sel" : ""}" data-fwlb="${esc(p.id)}" title="${esc([p.name, `${fwShort(p.source)} → ${fwShort(p.destination)} · ${fwProto(p)}${fwPortText(p.destination) !== "Any" ? " " + fwPortText(p.destination) : ""}`, ...fl.f.map(x => x[1])].join("\n"))}">
+    const html = `<button type="button" class="lb ${cls(p)}${p.predefined ? " pre" : ""}${dead || !reached ? " dead" : ""}${fl.f.some(x => ["redund", "dflt"].includes(x[0])) ? " odd" : ""}${FW.open === p.id ? " sel" : ""}" data-fwlb="${esc(p.id)}" title="${esc([p.name, `${fwShort(p.source)} → ${fwShort(p.destination)} · ${I18N.tr(fwProto(p))}${fwPortText(p.destination) !== "Any" ? " " + fwPortText(p.destination) : ""}`, ...fl.f.map(x => x[1])].join("\n"))}">
       <span class="lb-top"><span class="lb-id">${p.predefined ? "🔒" : "#" + fl.num}</span><span class="lb-ic">${icon(p)}</span>${fl.f.some(x => x[2] !== "info") ? `<span class="lb-w">⚠</span>` : ""}</span>
       <span class="lb-n" translate="no">${esc(p.name || "?")}</span><span class="lb-s" translate="no">${esc(fwShort(p.source))} → ${esc(fwShort(p.destination))}</span>${typeof p.hits === "number" ? `<span class="lb-h">${p.hits.toLocaleString(I18N.locale)} <span>hits</span></span>` : ""}</button>`;
     if (p.enabled !== false && fwTarget(p.source) === "ANY" && fwTarget(p.destination) === "ANY" && fwPortAny(p.source) && fwPortAny(p.destination) && fwProto(p) === "All" && fwCst(p) === "ALL" && !fwSched(p)) reached = false;
@@ -3999,7 +4005,9 @@ function topoGraph(M) {
 function renderTopo() {
   if (!state.clients.length) { $("#topoTree").innerHTML = `<p class="muted"><span class="spin"></span> Loading …</p>`; return; }
   const M = topoModel();
-  if (REL.tab === "tree") { if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; $("#topoTree").innerHTML = topoTreeHtml(M); $("#topoTree .hit")?.scrollIntoView({ block: "nearest", inline: "center" }); }
+  if (REL.tab === "tree") { if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; $("#topoTree").innerHTML = topoTreeHtml(M);
+    // scroll to the first hit only when the filter changed – not on every refresh while the user looks around
+    const fk = JSON.stringify([state.q, state.facets, state.colFilters]); if (fk !== REL.hitKey) { REL.hitKey = fk; $("#topoTree .hit")?.scrollIntoView({ block: "nearest", inline: "center" }); } }
   else {
     topoGraph(M);
     $("#relLegend").innerHTML = [["inet", "Internet"], ["unifi", "UniFi device"], ["ha", "Home Assistant"], ["dev", "Client"], ["hit", "Filter hit"]].map(([k, l]) => `<span><i class="nk nk-${k}"></i>${l}</span>`).join("") + `<span class="lsep"></span><span><i style="background:#94a3b8"></i>Cable</span><span><i class="dash"></i>WiFi / mesh</span><span class="muted">Drag devices, Ctrl + wheel or the buttons to zoom</span>`;
@@ -5252,7 +5260,7 @@ $("#verRows").addEventListener("click", async e => {
   try {
     if (act === "cmp") return compareVersions(id, null);
     if (act === "restore") return openRestore(id);
-    if (act === "csv") return downloadVersionCsv(id);
+    if (act === "csv") return await downloadVersionCsv(id); // await: a failure must reach the catch below
     if (act === "rename") { $("#dlgVer").close(); const name = await askName("Rename version", m.label || ""); $("#dlgVer").showModal(); if (name == null) return; await api(`api/versions/${id}/update`, { label: name }); }
     if (act === "pin") await api(`api/versions/${id}/update`, { pinned: !m.pinned });
     if (act === "base") { VER.settings = await api("api/version_settings", { baseline: VER.settings.baseline === id ? null : id }); await loadBaseline(); toast(VER.settings.baseline ? "Baseline set – use the “Baseline” filter in the sidebar" : "Baseline cleared"); }
@@ -5435,6 +5443,7 @@ $("#rstPreview").addEventListener("click", async () => {
   renderImport(); $("#dlgImport").showModal();
 });
 $("#btnVer").addEventListener("click", openVersions);
+$("#mnVer").addEventListener("click", openVersions); // phones: the header button has no room
 
 // ---------- wiring ----------
 $("#tbody").addEventListener("click", e => { if (e.target.closest("input.ie")) return; const tr = e.target.closest("tr[data-k]"); if (!tr) return; const c = state.clients.find(x => keyOf(x) === tr.dataset.k); if (c) openPanel(c); });
