@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.6
+
+- **Selection matrix:** next to each number the device icon – the Home Assistant logo, the UniFi icon as fallback. Columns show number and icon side by side and stack them (number on top) when the cells get narrow; rows show the number on the left and the icon on the right.
+
 ## 1.52.5
 
 - **List:** the extra information of a card – DHCP / Fix, connection type, access point or switch port, network – are pills right of the name (they wrap when needed); below only the IP (and the fixed IP when it differs) and the issues. The cards are shorter.

@@ -536,10 +536,13 @@ body.sel-split .tablewrap{padding-bottom:50vh;padding-bottom:50dvh}}
 #paneSel{min-height:0;grid-auto-rows:max-content}
 .sel-acts{display:grid;gap:6px}.sel-act{justify-content:flex-start;width:100%}
 .sel-mx-card{overflow-x:auto}
-.sel-mx{border-collapse:separate;border-spacing:3px;font-size:11.5px;width:100%;table-layout:fixed;min-width:calc((var(--cols) + 1) * 25px)}
+.sel-mx{border-collapse:separate;border-spacing:3px;font-size:11.5px;width:100%;table-layout:fixed;min-width:calc(var(--cols) * 25px + 50px)}
 .sel-mx th{font-weight:600;color:var(--muted);text-align:center;padding:2px 4px;white-space:nowrap}
 .sel-mx th.sm-row{text-align:right;color:var(--muted)}
-.sel-mx .sm-corner,.sel-mx th.sm-row{width:22px}
+.sel-mx .sm-corner,.sel-mx th.sm-row{width:44px}
+.sm-hd{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:1px 4px}
+.sm-rh{display:flex;align-items:center;justify-content:space-between;gap:4px;padding-right:2px}
+.sm-hic{display:inline-grid;place-items:center;width:16px;height:16px;overflow:hidden;color:var(--muted)}.sm-hic img,.sm-hic svg{max-width:16px;max-height:16px}
 td.sm-c.on{outline:2px solid var(--accent);outline-offset:1px}
 .sm-scroll{overflow-x:auto}
 .sm-lp{padding:2px 3px 2px 3px;font-size:12px;gap:5px}.sm-lp>span{padding-left:4px}
@@ -1996,6 +1999,8 @@ function selPaneHtml(cs) {
 }
 // who may reach whom among the selected devices (and the internet) – ping and the common services, like the device test
 const SELMX = { max: 30, pairs: [] };
+// matrix headers: the Home Assistant logo of the device, its UniFi icon as fallback
+const smIcon = c => devIconHtml(c, "ha") || iconHtml(c);
 const selMxDevs = cs => cs.filter(c => c.mac && zoneOf(c)).slice(0, SELMX.max); // the devices of the matrix, numbered 1 …
 function selMatrixHtml(cs) {
   if (!FW.data) return "";
@@ -2010,8 +2015,8 @@ function selMatrixHtml(cs) {
     return `<td class="sm-c sm-${v[0]}" data-smx="${idx}" title="${esc(`${devName(a)} → ${b ? devName(b) : "Internet"}: ${ok}/${r.length} ${I18N.tr("allowed")}`)}">${v[1]}</td>`;
   };
   const keyLeg = `<div class="sm-key">${[["allow", "✓", "all allowed"], ["part", "◐", "partly"], ["block", "✕", "all blocked"], ["unknown", "?", "not decided"]].map(([k, i, l]) => `<span class="sm-kp"><span class="sm-c sm-${k}">${i}</span><span>${l}</span></span>`).join("")}</div>`;
-  const head = `<tr><th class="sm-corner"></th>${ds.map((d, i) => `<th class="sm-n" title="${esc(devName(d))}" translate="no">${i + 1}</th>`).join("")}${ext ? `<th title="Internet">🌐</th>` : ""}</tr>`;
-  const rows = ds.map((a, i) => `<tr><th class="sm-row sm-n" title="${esc(devName(a))}" translate="no">${i + 1}</th>${ds.map(b => b === a ? `<td class="sm-c sm-self">–</td>` : cell(a, zoneOf(b).id, b)).join("")}${ext ? cell(a, ext.id, null) : ""}</tr>`).join("");
+  const head = `<tr><th class="sm-corner"></th>${ds.map((d, i) => `<th class="sm-n" title="${esc(devName(d))}" translate="no"><span class="sm-hd"><span>${i + 1}</span><span class="sm-hic">${smIcon(d)}</span></span></th>`).join("")}${ext ? `<th title="Internet">🌐</th>` : ""}</tr>`;
+  const rows = ds.map((a, i) => `<tr><th class="sm-row sm-n" title="${esc(devName(a))}" translate="no"><span class="sm-rh"><span>${i + 1}</span><span class="sm-hic">${smIcon(a)}</span></span></th>${ds.map(b => b === a ? `<td class="sm-c sm-self">–</td>` : cell(a, zoneOf(b).id, b)).join("")}${ext ? cell(a, ext.id, null) : ""}</tr>`).join("");
   const ncol = ds.length + (ext ? 1 : 0);
   return `<div class="sec-title">Firewall between the selected devices</div><div class="card sel-mx-card"><div id="smxRes" class="smx-res" hidden></div><div class="sm-scroll"><table class="sel-mx" style="--cols:${ncol}">${head}${rows}</table></div>${keyLeg}
     <p class="hint" style="margin:6px 0 0">Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.${cs.length > ds.length ? ` <span>Only the first ${SELMX.max} devices.</span>` : ""}</p></div>`;
