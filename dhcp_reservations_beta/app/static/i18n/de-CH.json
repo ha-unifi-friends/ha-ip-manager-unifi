@@ -1492,5 +1492,16 @@
  "Can this device reach …? Test a connection": "Chan das Grät … erreiche? Verbindig teste",
  "Recently changed": "Churzlich gänderet",
  "Changed in the last 7 days": "I de letschte 7 Täg gänderet",
- "Multi-select": "Mehrfachuswahl"
+ "Multi-select": "Mehrfachuswahl",
+ "Firewall: may this device reach": "Firewall: törf das Grät erreiche",
+ "All ports open": "Alli Ports offe",
+ "All ports blocked": "Alli Ports blockiert",
+ "No rule and no default between these zones": "Kei Regle und kein Standard zwüsche dene Zone",
+ "Not decided": "Nöd entschide",
+ "{0} of {1} allowed": "{0} vo {1} erlaubt",
+ "decided by": "entschide vo",
+ "Zone default: {0}": "Zone-Standard: {0}",
+ "Search devices and zones": "Grät und Zone sueche",
+ "all devices": "alli Grät",
+ "No match.": "Kei Träffer."
 }

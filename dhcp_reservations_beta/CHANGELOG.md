@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.51.0
+
+- **Firewall test moved into the device details** (*Network check & link*, below *Ping*): "Firewall: may this device reach [target] – Check". The target picker has a search at the top and lists *Internet*, then every zone with its devices below (icon, name, IP); a zone stands for all its devices.
+- No protocol and port to choose any more: the check covers ping and common services (web, HTTPS, DNS, NTP, SSH, SMB, RTSP, MQTT, Home Assistant) and shows the result like the port check – one chip *All ports open* / *All ports blocked* when everything is the same, otherwise one chip per service (hover for the deciding rule). Without a rule the zone default counts.
+- The test card on the firewall page and the extra button in the firewall section are removed.
+
 ## 1.50.2
 
 - **Multi-select switch** in the top bar of the table and the list (next to the device count): on – click devices to select them; off – back to normal (the selection is cleared). *Escape* and *Done* also end it; *Actions › Select devices…* still works.
