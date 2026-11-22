@@ -1,5 +1,5 @@
 name: "IP Manager for UniFi Beta"
-version: "1.50.0"
+version: "1.50.1"
 slug: dhcp_reservations_beta
 stage: experimental
 description: "BETA – UniFi clients, fixed IPs and DHCP reservations – IP plan, cleanup, firewall analysis and rules, network topology, views, bulk changes, versions (unofficial)"

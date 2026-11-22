@@ -1489,5 +1489,7 @@
  "Only at certain times": "Alleen op bepaalde tijden",
  "Special case only (built-in)": "Alleen bijzonder geval (ingebouwd)",
  "names this device under another MAC": "noemt dit apparaat onder een ander MAC",
- "Can this device reach …? Test a connection": "Kan dit apparaat … bereiken? Verbinding testen"
+ "Can this device reach …? Test a connection": "Kan dit apparaat … bereiken? Verbinding testen",
+ "Recently changed": "Recent gewijzigd",
+ "Changed in the last 7 days": "Gewijzigd in de laatste 7 dagen"
 }

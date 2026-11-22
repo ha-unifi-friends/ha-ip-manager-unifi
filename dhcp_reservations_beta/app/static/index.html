@@ -471,7 +471,7 @@ body:not(.plan-mode):not(.fw-mode) .topbar{border-bottom:2px solid var(--accent)
 .topo-icons{display:inline-flex;align-items:center;gap:8px;flex:none}
 .topo-ic-lbl{font-size:12.5px}
 .topo-icons .seg button{padding:4px 10px;font-size:12.5px}
-body:not(.rel-mode) .topo-icons{display:none!important}
+body:not(.rel-mode):not(.cards-mode) .topo-icons{display:none!important}
 /* the view selector of the list and the icon switch of tree / graph sit low, next to the tabs, just above the line */
 .topbar>.viewsel,.topbar .topo-icons{align-self:flex-end;margin-bottom:-5px}
 #count{align-self:flex-end;margin-bottom:2px}
@@ -532,7 +532,7 @@ body.plan-mode .chg-box,body.fw-mode .chg-box,body.rel-mode .chg-box{display:non
 .lc-empty{padding:24px;text-align:center;grid-column:1/-1}
 body.cards-mode #lnkCols,body.cards-mode #btnInline{display:none}
 .act-icons{display:none;align-items:center;gap:8px;padding:6px 10px;color:var(--muted)}
-@container main (max-width:1240px){body.rel-mode .topbar .topo-icons{display:none!important}body.rel-mode .act-icons{display:flex}}
+@container main (max-width:1240px){body.rel-mode .topbar .topo-icons,body.cards-mode .topbar .topo-icons{display:none!important}body.rel-mode .act-icons,body.cards-mode .act-icons{display:flex}}
 .act-icons .seg button{padding:4px 10px;font-size:12.5px}
 .tt-unk{margin-top:18px;display:grid;justify-items:center}
 .rs-c{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--fg);white-space:nowrap}
@@ -1156,7 +1156,7 @@ window.I18N = (() => {
       <div class="cl-tabs plan-tabs plan-only" role="tablist"><button type="button" role="tab" data-pt="cur" aria-selected="true">Current</button><button type="button" role="tab" data-pt="clean" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M14 3 9.5 11.5"/><path d="M5 13.5h9l1.5 7.5H3.5z"/><path d="M8 17v4M11 17v4"/><path d="M18 3v3M16.5 4.5h3M20 9v2M19 10h2"/></svg>CleanUp Proposal</button></div>
       <div class="cl-tabs plan-tabs fw-only" role="tablist"><button type="button" role="tab" data-ft="mx" aria-selected="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Matrix</button><button type="button" role="tab" data-ft="an" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6M11 8v6"/></svg>Analysis</button></div>
       
-      <span class="topo-icons rel-only"><span class="topo-ic-lbl muted">Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none" title="No icons">None</button><button type="button" data-topoicon="unifi" title="UniFi icons">UniFi</button><button type="button" data-topoicon="ha" title="Home Assistant integration logos">Home Assistant</button></span></span>
+      <span class="topo-icons"><span class="topo-ic-lbl muted">Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none" title="No icons">None</button><button type="button" data-topoicon="unifi" title="UniFi icons">UniFi</button><button type="button" data-topoicon="ha" title="Home Assistant integration logos">Home Assistant</button></span></span>
       <span class="sp"></span>
       <span class="plan-icons-slot plan-only"></span>
       <div class="grp">
@@ -1689,8 +1689,8 @@ const FACETS = [
   { id: "fwa", title: "Firewall analysis", ready: () => !!FW.data, multi: c => c.mac ? fwDevCodes(c) : [], opts: () => FW.data ? [["find", "With findings"], ["zone", "Wrong zone"], ["grp", "Unlike similar devices"], ["access", "Access problems"], ["unk", "Device type not recognised"]] : [] },
   // "Changed since <version>" (new or changed devices) for the baseline + latest versions, max 5
   { id: "base", title: "Baseline", emptyText: "Save a version to see which devices are new or changed since then.", ready: () => !!state.baseReady,
-    multi: c => !c.mac ? [] : (state.baseSets || []).filter(b => b.cats.has(c.mac)).map(b => "chg:" + b.id),
-    opts: () => (state.baseSets || []).map(b => ["chg:" + b.id, `Changed since ${b.isBaseline ? "★ " : ""}${isoDateTime(b.created)}${b.label ? " · " + b.label : ""}`]) },
+    multi: c => !c.mac ? [] : [...(state.recentSet?.has(c.mac) || (c.first_seen && c.first_seen >= Date.now() / 1000 - 7 * 86400) ? ["recent"] : []), ...(state.baseSets || []).filter(b => b.cats.has(c.mac)).map(b => "chg:" + b.id)],
+    opts: () => [["recent", "Changed in the last 7 days"], ...(state.baseSets || []).map(b => ["chg:" + b.id, `Changed since ${b.isBaseline ? "★ " : ""}${isoDateTime(b.created)}${b.label ? " · " + b.label : ""}`])] },
   { id: "ha", title: "Home Assistant", ready: () => state.haOk !== undefined, multi: c => { if (!c.mac) return []; const ds = haOf(c); if (!ds.length) return ["no"]; const w = haWorst(ds); return ["yes", ...(["error", "unavailable"].includes(w) ? ["bad"] : []), ...ds.flatMap(d => haDoms(c, d)).map(x => "d:" + x)]; },
     opts: () => [["yes", "Known to Home Assistant"], ["no", "Not in Home Assistant"], ["bad", "Unavailable in HA"], ...uniq(state.clients.flatMap(c => haOf(c).flatMap(d => haDoms(c, d)))).map(x => ["d:" + x, "Integration: " + x])] },
 ];
@@ -2009,8 +2009,10 @@ const LIST = { mode: store.get("listMode", "") };
 const listMode = () => LIST.mode || (LIST.mode = window.innerWidth < 700 ? "cards" : "list"); // first visit: decided once by the screen
 const colTd = (k, c) => COLS.find(x => x.key === k).td(c);
 function renderCards(list) {
+  const icMode = store.get("topoIcon", "ha"); // same choice as tree and graph (REL is defined further down)
   const cards = listMode() === "cards";
-  document.body.classList.toggle("cards-mode", cards);
+  document.body.classList.toggle("cards-mode", cards && !isPlan() && !isFw() && !isRel());
+  for (const b of document.querySelectorAll("[data-topoicon]")) b.setAttribute("aria-pressed", String(b.dataset.topoicon === icMode));
   if (!isRel()) for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(b.dataset.rt === listMode()));
   $("#cardList").hidden = !cards; $(".tablewrap table").hidden = cards;
   if (!cards) { $("#cardList").innerHTML = ""; return; }
@@ -2020,7 +2022,7 @@ function renderCards(list) {
   $("#cardList").innerHTML = list.map(c => {
     const fixedOther = c.use_fixedip && c.fixed_ip && c.fixed_ip !== c.ip;
     return `<button type="button" class="lc${keyOf(c) === sel ? " sel" : ""}${c.online ? "" : " off"}${BULK.keys.has(keyOf(c)) ? " picked" : ""}" data-k="${esc(keyOf(c))}">
-      <span class="lc-ic"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span></span>
+      ${icMode === "none" ? "" : `<span class="lc-ic">${icMode === "ha" && haDom(c) ? devIconHtml(c, "ha", true) : `<span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span>`}</span>`}
       <span class="lc-m">
         <span class="lc-n"><span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span><b translate="no">${esc(devName(c))}</b>${colTd("ipmode", c)}</span>
         <span class="lc-s"><span class="mono" translate="no">${esc(c.ip || "–")}</span>${fixedOther ? ` <span class="muted">→</span> <span class="mono lc-fix" translate="no" title="Fixed IP">${esc(c.fixed_ip)}</span>` : ""}${netLabel(c.network_id) ? ` · <span translate="no">${esc(netLabel(c.network_id))}</span>` : ""}</span>
@@ -4338,7 +4340,7 @@ $("#relView").addEventListener("click", e => {
   const ed = e.target.closest("[data-rele]");
   if (ed && !e.target.closest("button")) { const [a, b] = ed.dataset.rele.split("|"), c = relDev(b) || relDev(a); if (c) openPanel(c); }
 });
-document.querySelectorAll("[data-topoicon]").forEach(b => b.addEventListener("click", () => { REL.topoIcon = b.dataset.topoicon; store.set("topoIcon", REL.topoIcon); renderRel(); }));
+document.querySelectorAll("[data-topoicon]").forEach(b => b.addEventListener("click", () => { REL.topoIcon = b.dataset.topoicon; store.set("topoIcon", REL.topoIcon); isRel() ? renderRel() : renderTable(); }));
 function openRel() { REL.topoKey = null; renderRel(); } // opening the view zooms the graph to fit again
 
 // ---------- detail panel ----------
@@ -5044,6 +5046,7 @@ const onlyCols = keep => COLS.map(c => c.key).filter(k => !keep.includes(k)); //
 const BUILTIN_VIEWS = [
   { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: {}, sort: { key: "ip", dir: 1 } } },
   { id: "online", name: "Online", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: { status: ["on"] }, sort: { key: "ip", dir: 1 } } },
+  { id: "recent", name: "Recently changed", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: { base: ["recent"] }, sort: { key: "ip", dir: 1 } } },
   { id: "problems", name: "Problems", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "fwblk", "mac", "oui"]), colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "mac", "oui"], colFilters: {}, facets: { hint: ["problem", "mismatch", "vno", "dup", "wrongnet"] }, sort: { key: "ip", dir: 1 } } },
   { id: "new", name: "New devices", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "name", "first_seen", "ip", "mac", "oui", "network_id", "conn", "uplink"]), colOrder: ["online", "ha", "name", "first_seen", "ip", "mac", "oui", "network_id", "conn", "uplink"], colFilters: {}, facets: { fresh: ["7"] }, sort: { key: "first_seen", dir: -1 } } },
   { id: "stale", name: "Offline with fixed IP", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "name", "fixed_ip", "last_seen", "mac", "oui", "network_id", "note"]), colOrder: ["online", "ha", "name", "fixed_ip", "last_seen", "mac", "oui", "network_id", "note"], colFilters: {}, facets: { status: ["off"], res: ["yes"] }, sort: { key: "last_seen", dir: -1 } } },
@@ -5501,8 +5504,14 @@ async function loadVersionsMeta() {
 }
 const BASE_CACHE = {};
 async function baseVersion(id) { if (!BASE_CACHE[id]) BASE_CACHE[id] = await api(`api/versions/${id}`); return BASE_CACHE[id]; }
+// "recently changed" compares with the newest version that is at least 7 days old (or the oldest one there is)
+function recentVersion() {
+  const week = Date.now() / 1000 - 7 * 86400, list = [...VER.list].sort((a, b) => b.created - a.created);
+  return list.find(m => m.created <= week) || list[list.length - 1] || null;
+}
 function baseChoices() {
   const ids = []; if (VER.settings.baseline) ids.push(VER.settings.baseline);
+  const rv = recentVersion(); if (rv && !ids.includes(rv.id)) ids.push(rv.id);
   for (const m of VER.list) { if (ids.length >= 5) break; if (!ids.includes(m.id)) ids.push(m.id); }
   return ids.map(id => VER.list.find(m => m.id === id)).filter(Boolean);
 }
@@ -5515,7 +5524,8 @@ function computeBaseCats() {
     const cats = new Set(diffVersions(BASE_CACHE[m.id], cur).filter(r => r.cats.has("new") || r.cats.has("changed")).map(r => r.mac));
     return { id: m.id, created: m.created, label: m.label, isBaseline: m.id === VER.settings.baseline, cats };
   });
-  const valid = new Set(state.baseSets.map(b => "chg:" + b.id));
+  const rv = recentVersion(); state.recentSet = rv ? state.baseSets.find(b => b.id === rv.id)?.cats || new Set() : new Set();
+  const valid = new Set(["recent", ...state.baseSets.map(b => "chg:" + b.id)]);
   if (state.facets.base) state.facets.base = state.facets.base.filter(v => valid.has(v));
   delete state.facets.baseVer;
   state.baseReady = true;
