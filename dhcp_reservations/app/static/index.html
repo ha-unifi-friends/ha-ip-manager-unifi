@@ -43,7 +43,7 @@ aside{background:var(--side);border-right:1px solid var(--line);display:flex;fle
 .brand svg{color:var(--accent)}
 .search{position:relative}
 .search svg{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--muted)}
-.search input{width:100%;padding-left:31px;background:var(--card);border-color:transparent}
+.search input{width:100%;padding-left:31px;background:var(--card);border-color:var(--line)}
 .search input:focus{border-color:var(--accent)}
 .side-scroll{overflow:auto;flex:1;padding:0 14px 14px max(14px,env(safe-area-inset-left))}
 details{border-bottom:1px solid var(--line);padding:6px 0}
@@ -125,7 +125,7 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 .topbar .sp{flex:1}
 .tb-break{display:none}
 /* phones: menu points and – on the right – the buttons in the first row, the tabs at the bottom on the left – the active tab sits right on the blue line */
-@container main (max-width:559px){.topbar{column-gap:8px}.topbar .grp{order:1;flex-wrap:nowrap;margin-left:auto;gap:6px}.topbar .tb-break{display:block;flex-basis:100%;height:0;order:4}.topbar .plan-tabs{order:5}.topbar .sp{display:none}.topbar .plan-icons-slot{order:6}.topbar>.viewsel{order:5}.cli-tabs .tl{display:none}.cli-tabs svg{margin-right:0!important}.cli-tabs button[role="tab"]{padding:8px 13px 10px}}
+@container main (max-width:559px){.topbar{column-gap:8px}.topbar .grp{order:1;flex-wrap:nowrap;margin-left:auto;gap:6px}.topbar .tb-break{display:block;flex-basis:100%;height:0;order:4}.topbar .plan-tabs{order:5}.topbar .sp{display:none}.topbar .plan-icons-slot{order:6}.cli-tabs button[role="tab"]{padding:8px 13px 10px}}
 .topbar .grp{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .btn.icon-btn{display:inline-flex;align-items:center;gap:6px}
 /* the toolbar stays on one line: labels collapse to icons depending on the width of the table area (detail panel open or not) */
@@ -187,6 +187,7 @@ body.inline-mode tbody tr{cursor:default}
 .menu .mi .tag{margin-left:auto}
 .menu.right{left:auto;right:0}
 .menu{max-width:calc(100vw - 24px)}
+@container main (max-width:559px){.topbar{position:relative}.topbar .viewsel{position:static}#viewMenu{left:12px;right:12px}#viewMenu .mi{white-space:normal}}
 .menu .mi.mi-chk{white-space:normal}
 .menu .mi svg{color:var(--muted);flex:none}
 .menu .sep{height:1px;background:var(--line);margin:5px 4px}
@@ -228,7 +229,6 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 .sub-form input::placeholder{color:var(--faint);font-style:italic}
 @media (max-width:760px){.sub-form{grid-template-columns:1fr}.sub-form .arrow{display:none}}
 .colpanel .opt{padding:7px 0;flex:1}
-.facet-select{width:100%;margin:2px 0 6px;font-size:12px;padding:4px 6px}
 .colrow{display:flex;align-items:center;gap:8px;border-radius:6px}
 .colrow.dragging{background:var(--card);box-shadow:0 2px 10px rgba(0,0,0,.25)}
 .grip{background:none;border:0;color:var(--muted);cursor:grab;padding:6px 8px;border-radius:4px;touch-action:none}
@@ -344,8 +344,7 @@ dialog#dlgSub{border:1px solid var(--line-strong);border-radius:10px;padding:0;b
 /* ---------- CSV-Import ---------- */
 dialog#dlgImport{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1100px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgImport::backdrop{background:rgba(8,10,14,.55)}
-dialog#dlgRules{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(1180px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
-dialog#dlgRules{width:min(820px,calc(100vw - 32px))}
+dialog#dlgRules{border:1px solid var(--line-strong);border-radius:10px;padding:0;background:var(--panel);color:var(--fg);width:min(820px,calc(100vw - 32px));max-height:calc(100vh - 48px)}
 dialog#dlgRules::backdrop{background:rgba(8,10,14,.55)}
 .plan-view{flex:1;min-height:0;display:flex;flex-direction:column}
 .plan-scroll{flex:1;min-height:0;overflow:auto;padding:14px max(16px,env(safe-area-inset-right)) 18px 16px}
@@ -361,8 +360,6 @@ body.fw-mode .topbar{border-bottom:2px solid var(--accent)}
 body:not(.fw-mode) .fw-only{display:none!important}
 body.rel-mode #lnkCols,body.rel-mode #btnInline,body.rel-mode #btnNew{display:none}
 body.rel-mode .topbar{border-bottom:2px solid var(--accent)}
-.rel-ctrl{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:2px 0 10px}
-.rel-ctrl .sp{flex:1}
 body:not(.rel-mode) .rel-only{display:none!important}
 body.plan-mode .cli-tabs,body.fw-mode .cli-tabs{display:none!important}
 body:not(.plan-mode):not(.fw-mode) .topbar{border-bottom:2px solid var(--accent)}
@@ -372,23 +369,21 @@ body:not(.plan-mode):not(.fw-mode) .topbar{border-bottom:2px solid var(--accent)
 .rel-svg:active{cursor:grabbing}
 .rel-bg{fill:transparent}
 .rel-e{opacity:.5;cursor:pointer;transition:opacity .15s}
-.rel-e:hover,.rel-e.sel{opacity:1}
+.rel-e:hover{opacity:1}
 .rel-svg.hl .rel-e:not(.on),.rel-svg.hl .rel-n:not(.on){opacity:.12}
 .rel-svg.hl .rel-e.on{opacity:1}
-.rel-svg.has-sel .rel-e:not(.sel){opacity:.2}
-.rel-n{transition:opacity .15s;--nc:#26a69a}
+.rel-n{transition:opacity .15s;--nc:#26a69a;cursor:pointer}
 .rel-n .core{fill:color-mix(in srgb,#94a3b8 50%,var(--bg));stroke:var(--nc);stroke-width:2.5}
 .rel-n:hover .core{stroke:var(--fg)}
 .rel-svg.no-lbl .rel-l,.rel-svg.no-lbl .rel-s{display:none}
 .rel-zoom .btn[aria-pressed="true"]{color:var(--accent);border-color:var(--accent)}
-.nk-inet{--nc:#039be5}.nk-unifi{--nc:#18bcf2}.nk-ha{--nc:#41bdf5}.nk-hub{--nc:#00bcd4}.nk-dev{--nc:#26a69a}.nk-susp{--nc:#ef4444}.nk-hit{--nc:#a855f7}
-.rel-n.nk-susp .core,.rel-n.nk-hit .core{animation:relpulse 1.6s ease-in-out infinite}
+.nk-inet{--nc:#039be5}.nk-unifi{--nc:#18bcf2}.nk-ha{--nc:#41bdf5}.nk-dev{--nc:#26a69a}.nk-hit{--nc:#a855f7}
+.rel-n.nk-hit .core{animation:relpulse 1.6s ease-in-out infinite}
 .rel-l{font-size:12px;fill:var(--fg);paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
 .rel-s{font-size:10.5px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
 .rel-ic{font-size:12px;text-anchor:middle;dominant-baseline:central;fill:#fff;font-weight:700;pointer-events:none}
 .rel-zoom{position:absolute;top:8px;right:8px;display:flex;flex-direction:column;gap:4px}
 .rel-zoom .btn{width:30px;height:30px;padding:0;justify-content:center;font-size:15px}
-.rel-legend{padding:6px 12px 0!important}
 .rel-legend i.nk{width:10px;height:10px;border-radius:50%;background:var(--nc)}
 .rel-legend i.nk-inet{border-radius:2px}
 .rel-legend .lsep{width:1px;height:12px;background:var(--line)}
@@ -473,14 +468,10 @@ body:not(.plan-mode):not(.fw-mode) .topbar{border-bottom:2px solid var(--accent)
 .tt-link.wl{color:var(--accent)}
 .mi.mi-chk{display:flex;align-items:center;gap:8px;cursor:pointer}
 .mi.mi-chk input{margin:0}
-.tt-noic{display:block;width:8px;height:8px;border-radius:50%;background:var(--line-strong)}
 .topo-icons{display:inline-flex;align-items:center;gap:8px;flex:none}
 .topo-ic-lbl{font-size:12.5px}
 .topo-icons .seg button{padding:4px 10px;font-size:12.5px}
-.topo-icons .sht{display:none}
 body:not(.rel-mode) .topo-icons{display:none!important}
-@container main (max-width:1180px){.topo-icons .lng{display:none}.topo-icons .sht{display:inline}}
-@container main (max-width:820px){.topo-ic-lbl{display:none}}
 /* the view selector of the list and the icon switch of tree / graph sit low, next to the tabs, just above the line */
 .topbar>.viewsel,.topbar .topo-icons{align-self:flex-end;margin-bottom:-5px}
 #count{align-self:flex-end;margin-bottom:2px}
@@ -488,25 +479,30 @@ body:not(.rel-mode) .topo-icons{display:none!important}
 /* the icon switch moves into the Actions menu when the top bar has no room for it */
 .cnt-s{display:none}
 @container main (max-width:385px){.cnt-l{display:none}.cnt-s{display:inline}}
-.act-icons{display:none}
+.menu .mi.mi-ver{display:none}
+@container main (max-width:700px){.menu .mi.mi-ver{display:flex}}
+@container main (max-width:900px){body.plan-mode .menu .mi.mi-ver{display:flex}}
+/* safety net: when the top bar still does not fit (long translations, odd widths), fitTopbar() shortens it step by step */
+.topbar.tb-s1 .btn.icon-btn .lbl{display:none}.topbar.tb-s1 .btn.icon-btn{padding:6px 9px}
+.topbar.tb-s2 .view-switch button svg + *{display:none}.topbar.tb-s2 .view-switch button{padding:5px 9px}.topbar.tb-s2 .plan-icons .lng,.topbar.tb-s2 .plan-size .lng{display:none}.topbar.tb-s2 .plan-icons .sht,.topbar.tb-s2 .plan-size .sht{display:inline}
+.topbar.tb-s3 #stand{display:none}.topbar.tb-s3 .topo-ic-lbl{display:none}
+.topbar.tb-s4 .cli-tabs .tl{display:none}.topbar.tb-s4 .cli-tabs svg{margin-right:0!important}.topbar.tb-s4 .plan-tabs button[role="tab"]{padding:8px 9px 10px}
+.topbar.tb-s5 #count{display:none}.topbar.tb-s5 .plan-size{display:none}
+.topbar.tb-s6{flex-wrap:wrap;row-gap:8px}.topbar.tb-s6 .grp{margin-left:auto}
+.act-icons{display:none;align-items:center;gap:8px;padding:6px 10px;color:var(--muted)}
 @container main (max-width:1240px){body.rel-mode .topbar .topo-icons{display:none!important}body.rel-mode .act-icons{display:flex}}
-.act-icons{align-items:center;gap:8px;padding:6px 10px;color:var(--muted)}
 .act-icons .seg button{padding:4px 10px;font-size:12.5px}
 .tt-unk{margin-top:18px;display:grid;justify-items:center}
 .rs-c{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--fg);white-space:nowrap}
 .rs-c.bad{background:color-mix(in srgb,var(--bad) 16%,transparent)}
 
-.rel-e.bad{stroke-dasharray:none;animation:relpulse 1.6s ease-in-out infinite}
 .rel-e.blk{stroke-dasharray:5 4}
-.rel-e.unexp{filter:drop-shadow(0 0 3px var(--warn));animation:relpulse 2.2s ease-in-out infinite}
-.rel-legend i.unexp{background:var(--warn);box-shadow:0 0 4px var(--warn)}
 @keyframes relpulse{50%{opacity:.45}}
-.rel-n{cursor:pointer}
-.rel-legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);padding:4px 4px 0}
+.rel-legend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--muted);padding:6px 12px 0}
 .rel-legend span{display:inline-flex;align-items:center;gap:5px}
 .rel-legend i{display:inline-block;width:16px;height:4px;border-radius:2px}
 .rel-legend i.dash{background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 7px)}
-@container main (max-width:1060px){body.rel-mode .view-switch button svg + *,body.fw-mode .view-switch button svg + *{display:none}}
+@container main (max-width:1060px){body.fw-mode .view-switch button svg + *{display:none}}
 /* the client list has the most in its top bar: shorten step by step instead of overflowing */
 @container main (max-width:1640px){body:not(.plan-mode):not(.fw-mode) .topbar .btn.icon-btn .lbl{display:none}body:not(.plan-mode):not(.fw-mode) .topbar .btn.icon-btn{padding:6px 9px}}
 @container main (max-width:1200px){body:not(.plan-mode):not(.fw-mode) .view-switch button svg + *{display:none}}
@@ -710,6 +706,10 @@ dialog#dlgFwRoles::backdrop,dialog#dlgFwWiz::backdrop{background:rgba(8,10,14,.5
 .fwc.block{background:color-mix(in srgb,var(--bad) 16%,var(--card));border-color:color-mix(in srgb,var(--bad) 45%,transparent)}
 .fwc.ret{background:color-mix(in srgb,var(--accent) 14%,var(--card));border-color:color-mix(in srgb,var(--accent) 40%,transparent)}
 .fwc.none{background:var(--bg);color:var(--muted)}
+.fwc.cust{border-style:dashed}.fwc.mixed{background:color-mix(in srgb,var(--warn) 12%,var(--card));border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
+.fw-mx-leg{margin:6px 0 0}
+/* phones: the source zones stay visible while the matrix scrolls sideways */
+@container main (max-width:559px){.fw-mx th[scope="row"],.fw-mx thead th:first-child{position:sticky;left:0;z-index:2;background:var(--panel)}}
 .fwc .n{color:var(--muted);margin-left:4px}
 .fwc.allow .n{color:var(--ok)}.fwc.block .n{color:var(--bad)}.fwc.ret .n{color:var(--accent)}
 .fw-mx td .fwc:hover{outline:2px solid var(--accent);outline-offset:-1px}
@@ -752,11 +752,10 @@ dialog#dlgFwRoles::backdrop,dialog#dlgFwWiz::backdrop{background:rgba(8,10,14,.5
 .fw-info{color:var(--info)}
 .fw-ban{margin:0}
 #ipHint .fw-warn,#ipHint .fw-info{display:block;margin-top:4px}
-@container main (max-width:760px){.view-switch button svg + *{display:none}}
 body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,body.plan-mode #btnInline{display:none}
 
 .plan-nets{display:grid;gap:6px}
-.pn{display:grid;gap:3px;text-align:left;width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);cursor:pointer;font-size:12px}
+.pn{display:grid;gap:2px;text-align:left;width:100%;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--fg);cursor:pointer;font-size:12px}
 .pn:hover{border-color:var(--line-strong)}
 .pn.on{border-color:var(--accent);background:var(--sel)}
 .pn .l1{display:flex;align-items:center;gap:6px;font-size:13.5px}
@@ -766,7 +765,6 @@ body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,bo
 .pn .l2 .mono{font-size:11.5px}
 .pn .l3 .w{color:var(--warn)}
 .pn .l3 .ubar{width:34px;height:5px;margin:0 6px 0 0}
-.pn{padding:7px 10px;gap:2px}
 #planNets{margin-bottom:6px}
 .pc.dim{opacity:.22}
 .plan-legend-bar{position:sticky;top:-14px;z-index:5;background:var(--bg);padding:8px 0 6px;margin:-8px 0 2px}
@@ -782,8 +780,6 @@ body.plan-mode #lnkCols,body.plan-mode .topbar>.viewsel,body.plan-mode #count,bo
 .pn-all.on{border-style:solid}
 .plan-tabs button[role="tab"]:disabled{opacity:.4;cursor:not-allowed}
 .pc.dim:hover{opacity:.6}
-.pn .l4{display:flex;align-items:center;gap:6px;color:var(--muted)}
-.pn .l4 .ubar{flex:1;width:auto;margin:0}
 .tidy{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:1px 7px;border-radius:999px;white-space:nowrap}
 .tidy.good{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
 .tidy.mid{background:var(--warn-bg);color:var(--warn)}
@@ -863,7 +859,6 @@ body.plan-mode .topbar{border-bottom:2px solid var(--accent)}
 .seg.plan-icons{background:var(--chip);border:1px solid var(--line-strong);border-radius:999px;padding:2px}
 .seg.plan-icons button{border-radius:999px;padding:4px 12px}
 .seg.plan-icons button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
-.clean-slot{display:inline-flex}
 .plan-icons-slot{margin-left:auto;display:inline-flex;align-items:center}
 /* cell size: same height with or without icons; the icon sits on the right and uses the inner height */
 :root{--pch:22px}
@@ -944,6 +939,9 @@ a.pchip:hover{background:color-mix(in srgb,var(--accent) 28%,transparent)}
 .drop{border:1.5px dashed var(--line-strong);border-radius:8px;padding:26px;text-align:center;color:var(--muted);cursor:pointer;background:var(--card)}
 .drop.over{border-color:var(--accent);color:var(--accent)}
 .drop b{color:var(--fg)}
+/* versions on phones: one card per version – date, name, type in a row, the actions below (counts hidden) */
+@media (max-width:640px){.ver-tbl,.ver-tbl tbody{display:block}.ver-tbl thead{display:none}.ver-tbl tr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:8px 6px;border-bottom:1px solid var(--line)}
+.ver-tbl td{display:block;height:auto;border:0!important;padding:0!important}.ver-tbl td:nth-child(n+5):nth-child(-n+8){display:none}.ver-tbl td:last-child{flex-basis:100%}.ver-tbl .vact{justify-content:flex-start;flex-wrap:wrap}}
 .imp-help{font-size:12px;color:var(--muted);display:grid;gap:4px}
 #impCols{display:block;line-height:1.9}
 .imp-help code{font-family:var(--mono);background:var(--chip);padding:0 4px;border-radius:3px;color:var(--fg)}
@@ -1048,16 +1046,18 @@ window.I18N = (() => {
     return r == null ? s : lead + r + trail;
   }
   const mine = new WeakMap(), mineAttr = new WeakMap(); // text nodes / attributes we wrote – not translated again
+  const missing = new Set(); // texts without a translation (for checking the language files: I18N.missing in the console)
+  const miss = v => { if (missing.size < 3000 && /[A-Za-z]{2}/.test(v)) missing.add(v.trim()); };
   const SKIP = "script,style,code,textarea,.mono,[translate=no]";
   const ATTRS = ["title", "placeholder", "aria-label", "alt"];
   function el(e) {
     if (e.closest("[translate=no]")) return;
     const w = mineAttr.get(e) || {};
-    for (const a of ATTRS) { const v = e.getAttribute(a); if (!v || w[a] === v) continue; const n = tr(v); if (n !== v) { w[a] = n; e.setAttribute(a, n); } }
+    for (const a of ATTRS) { const v = e.getAttribute(a); if (!v || w[a] === v) continue; const n = tr(v); if (n !== v) { w[a] = n; e.setAttribute(a, n); } else miss(v); }
     mineAttr.set(e, w);
   }
   function node(n) {
-    if (n.nodeType === 3) { const p = n.parentElement; if (!p || p.closest(SKIP)) return; const v = n.nodeValue; if (mine.get(n) === v) return; const x = tr(v); if (x !== v) { n.nodeValue = x; mine.set(n, x); } return; }
+    if (n.nodeType === 3) { const p = n.parentElement; if (!p || p.closest(SKIP)) return; const v = n.nodeValue; if (mine.get(n) === v) return; const x = tr(v); if (x !== v) { n.nodeValue = x; mine.set(n, x); } else miss(v); return; }
     if (n.nodeType !== 1) return;
     el(n);
     const w = document.createTreeWalker(n, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, { acceptNode: x => x.nodeType === 1 && x.matches("[translate=no]") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT });
@@ -1080,7 +1080,7 @@ window.I18N = (() => {
   ready.then(() => { const go = () => { start(); document.documentElement.classList.remove("i18n-wait"); }; document.body ? go() : document.addEventListener("DOMContentLoaded", go); });
   setTimeout(() => document.documentElement.classList.remove("i18n-wait"), 1500);
   const locale = lang === "en" ? "en-GB" : lang;
-  return { LANGS, lang, pref, tr, locale, set(l) { try { localStorage.setItem("dhcpres.lang", JSON.stringify(l)); } catch {} location.reload(); } };
+  return { LANGS, lang, pref, tr, locale, missing, set(l) { try { localStorage.setItem("dhcpres.lang", JSON.stringify(l)); } catch {} location.reload(); } };
 })();
 </script>
 </head>
@@ -1103,7 +1103,7 @@ window.I18N = (() => {
   <main>
     <div class="topbar">
       <button class="btn menu-btn" id="btnMenu" type="button" title="Show filters" aria-label="Show filters"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></button>
-      <div class="seg view-switch" role="group" aria-label="View"><button type="button" data-vw="clients" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg><span>Clients</span></button><button type="button" data-vw="plan" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>IP Plan</span></button><button type="button" data-vw="fw" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="M4 12h16M12 3v18"/></svg><span>Firewall</span></button></div>
+      <div class="seg view-switch" role="group" aria-label="View"><button type="button" data-vw="clients" title="Clients" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg><span>Clients</span></button><button type="button" data-vw="plan" title="IP Plan" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>IP Plan</span></button><button type="button" data-vw="fw" title="Firewall" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="M4 12h16M12 3v18"/></svg><span>Firewall</span></button></div>
       <div class="cl-tabs plan-tabs cli-tabs" role="tablist"><button type="button" role="tab" data-rt="list" aria-selected="true" title="List"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg><span class="tl">List</span></button><button type="button" role="tab" data-rt="tree" aria-selected="false" title="Tree"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="9" y="2.5" width="6" height="5" rx="1"/><rect x="2.5" y="16.5" width="6" height="5" rx="1"/><rect x="15.5" y="16.5" width="6" height="5" rx="1"/><path d="M12 7.5V12M5.5 16.5V12h13v4.5"/></svg><span class="tl">Tree</span></button><button type="button" role="tab" data-rt="topo" aria-selected="false" title="Graph"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><circle cx="12" cy="13" r="1.8"/><path d="M12 7.5v3.7M10.6 14.3 6.8 16.4M13.4 14.3l3.8 2.1"/></svg><span class="tl">Graph</span></button></div>
       <div class="viewsel">
         <button class="btn view-btn" id="btnView" type="button" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="viewName">All</span><span class="mod" id="viewMod" hidden title="Unsaved changes">•</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -1114,7 +1114,7 @@ window.I18N = (() => {
       <div class="cl-tabs plan-tabs plan-only" role="tablist"><button type="button" role="tab" data-pt="cur" aria-selected="true">Current</button><button type="button" role="tab" data-pt="clean" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M14 3 9.5 11.5"/><path d="M5 13.5h9l1.5 7.5H3.5z"/><path d="M8 17v4M11 17v4"/><path d="M18 3v3M16.5 4.5h3M20 9v2M19 10h2"/></svg>CleanUp Proposal</button></div>
       <div class="cl-tabs plan-tabs fw-only" role="tablist"><button type="button" role="tab" data-ft="mx" aria-selected="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Matrix</button><button type="button" role="tab" data-ft="an" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6M11 8v6"/></svg>Analysis</button></div>
       
-      <span class="topo-icons rel-only"><span class="topo-ic-lbl muted">Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none" title="No icons"><span class="lng">None</span><span class="sht" translate="no">Off</span></button><button type="button" data-topoicon="unifi" title="UniFi icons">UniFi</button><button type="button" data-topoicon="ha" title="Home Assistant integration logos"><span class="lng">Home Assistant</span><span class="sht" translate="no">HA</span></button></span></span>
+      <span class="topo-icons rel-only"><span class="topo-ic-lbl muted">Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none" title="No icons">None</button><button type="button" data-topoicon="unifi" title="UniFi icons">UniFi</button><button type="button" data-topoicon="ha" title="Home Assistant integration logos">Home Assistant</button></span></span>
       <span class="sp"></span>
       <span class="plan-icons-slot plan-only"></span>
       <div class="grp">
@@ -1131,6 +1131,7 @@ window.I18N = (() => {
           <button class="mi" role="menuitem" id="btnExp" type="button" title="Export CSV"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Export CSV</span></button>
           <button class="mi" role="menuitem" id="btnHosts" type="button" title="Export fixed IPs and local DNS records as a hosts file"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg><span>Export hosts file</span></button>
           <button class="mi" role="menuitem" id="btnRules" type="button" title="Which devices belong in which network"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg><span>Network rules…</span></button>
+          <button class="mi mi-ver" role="menuitem" id="mnVer" type="button" title="Versions"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg><span>Versions…</span></button>
           <div class="act-icons"><span>Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none" title="No icons">Off</button><button type="button" data-topoicon="unifi" title="UniFi icons">UniFi</button><button type="button" data-topoicon="ha" title="Home Assistant integration logos">HA</button></span></div>
           <label class="mi mi-chk" role="menuitemcheckbox"><input type="checkbox" id="mnSusp"><span>Notify me in Home Assistant about suspicious traffic</span></label>
           </div>
@@ -1214,7 +1215,7 @@ window.I18N = (() => {
     </section>
     <section class="plan-view rel-view" id="relView" hidden aria-label="Network">
       <div class="plan-scroll">
-        <div class="topo-tree topo-only" id="topoTree" hidden></div>
+        <div class="topo-tree" id="topoTree" hidden></div>
         <div class="rel-box" id="relGraphBox"><div id="relGraph"></div><div class="rel-legend" id="relLegend"></div></div>
       </div>
     </section>
@@ -1401,8 +1402,8 @@ window.I18N = (() => {
           <button class="btn primary" type="button" id="verSave">Save version</button>
           <span class="hint" id="verDaily"></span>
         </div>
-        <div class="imp-help">A version freezes the table: names, notes, fixed IPs, AP locks, DNS records and – for information – current IP, network and first/last seen. A version is also saved automatically before every bulk action (CSV import, replace subnet, names from HA, restore). Automatic versions (daily, before bulk actions) are kept <b id="verKeep">30</b> days; daily versions and the retention are set in the app configuration; manual and pinned versions and the baseline are kept until you delete them.</div>
-        <div class="imp-table"><table><thead><tr><th style="width:34px"></th><th>Saved</th><th>Name</th><th>Type</th><th>By</th><th>Devices</th><th>Fixed IPs</th><th title="Custom firewall policies in the version">Policies</th><th></th></tr></thead><tbody id="verRows"></tbody></table></div>
+        <div class="imp-help"><p style="margin:0">A version freezes the table: names, notes, fixed IPs, AP locks, DNS records and – for information – current IP, network and first/last seen. A version is also saved automatically before every bulk action (CSV import, replace subnet, names from HA, restore). Automatic versions (daily, before bulk actions) are kept <b id="verKeep">30</b> days; daily versions and the retention are set in the app configuration; manual and pinned versions and the baseline are kept until you delete them.</p></div>
+        <div class="imp-table"><table class="ver-tbl"><thead><tr><th style="width:34px"></th><th>Saved</th><th>Name</th><th>Type</th><th>By</th><th>Devices</th><th>Fixed IPs</th><th title="Custom firewall policies in the version">Policies</th><th></th></tr></thead><tbody id="verRows"></tbody></table></div>
       </div>
       <div class="imp-foot"><span class="hint">Tick two versions to compare them with each other.</span><span class="sp"></span><button class="btn" type="button" id="verCmp2" disabled>Select two versions to compare</button><button class="btn" type="button" id="verClose2">Close</button></div>
     </div>
@@ -1647,8 +1648,7 @@ function renderFacets() {
     const opts = f.opts();
     if (!opts.length) return f.emptyText ? `<details open><summary>${f.title}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary><div class="hint" style="padding:4px 0 6px">${esc(f.emptyText)}</div></details>` : "";
     const sel = state.facets[f.id] || [];
-    const extra = "";
-    return `<details open><summary>${f.title}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary>${extra}${opts.map(([v, l]) => {
+    return `<details open><summary>${f.title}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 15 6-6 6 6"/></svg></summary>${opts.map(([v, l]) => {
       const n = others.filter(c => facetVals(f, c).includes(v)).length;
       return `<label class="opt ${n ? "" : "zero"}"><input type="checkbox" data-f="${f.id}" value="${esc(v)}" ${sel.includes(v) ? "checked" : ""}><span>${esc(l)} <span class="n">(${n})</span></span></label>`;
     }).join("")}</details>`;
@@ -1826,7 +1826,7 @@ function renderTable() {
   $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" }) : "";
 }
 function renderAll() { renderFacets(); renderTable(); if (isPlan() && !CL.running) renderPlan(); if (isFw()) renderFw(); if (isRel()) renderRel(); }
-function persist() { store.set("view2", { sort: state.sort, colFilters: state.colFilters, facets: state.facets, hiddenCols: state.hiddenCols, colOrder: state.colOrder }); if (typeof renderViewBtn === "function") renderViewBtn(); }
+function persist() { store.set("view2", { sort: state.sort, colFilters: state.colFilters, facets: state.facets, hiddenCols: state.hiddenCols, colOrder: state.colOrder }); renderViewBtn(); }
 
 // ---------- customize columns ----------
 const colName = c => c.label || "Status";
@@ -1968,6 +1968,18 @@ const ALL_NETS = "__all";
 const PLAN = { sel: null, tab: "cur" }; // tab: cur = current plan, clean = CleanUp Proposal
 // ---------- view: Clients (table) or IP Plan (full page, networks in the sidebar) ----------
 const isPlan = () => document.body.classList.contains("plan-mode");
+// no button may end up outside the window: shorten the top bar until its last element is visible
+const TB_STEPS = ["tb-s1", "tb-s2", "tb-s3", "tb-s4", "tb-s5", "tb-s6"]; // the last one wraps into a second row
+function fitTopbar() {
+  const t = document.querySelector(".topbar"); if (!t) return;
+  t.classList.remove(...TB_STEPS);
+  const over = () => { const right = Math.min(t.getBoundingClientRect().right, document.documentElement.clientWidth) - 2;
+    return [...t.querySelectorAll("button, .seg, #count, #stand")].some(e => e.offsetWidth && e.getBoundingClientRect().right > right); };
+  for (const c of TB_STEPS) { if (!over()) break; t.classList.add(c); }
+}
+let tbRaf = 0;
+const fitTopbarSoon = () => { if (!tbRaf) tbRaf = requestAnimationFrame(() => { tbRaf = 0; fitTopbar(); }); };
+window.addEventListener("resize", fitTopbarSoon);
 function setView(v) {
   if (CL.running) return;
   if (!["clients", "plan", "fw", "rel"].includes(v)) v = "clients";
@@ -1978,18 +1990,24 @@ function setView(v) {
   for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(rel ? b.dataset.rt === REL.tab : b.dataset.rt === "list"));
   $("#planNets").hidden = !plan; $("#fwSide").hidden = !fw; $(".tablewrap").hidden = plan || fw || rel; $("#planView").hidden = !plan; $("#fwView").hidden = !fw;
   if (rel) { closeCols(); PLAN.tab = "cur"; openRel(); } else if (plan) { closeCols(); openPlan(); } else if (fw) { closeCols(); PLAN.tab = "cur"; renderFw(); } else { PLAN.tab = "cur"; renderTable(); }
+  fitTopbarSoon();
 }
+// texts of the top bar change (count, time, translation, plan tabs): fit again
+new MutationObserver(fitTopbarSoon).observe(document.querySelector(".topbar"), { subtree: true, childList: true, characterData: true });
 document.querySelectorAll("[data-vw]").forEach(b => b.addEventListener("click", () => setView(b.dataset.vw)));
-function openPlan() { if (PLAN.sel !== ALL_NETS && (!PLAN.sel || !net(PLAN.sel))) PLAN.sel = state.networks.find(n => subnetRange(n.subnet))?.id || null; PLAN.tab = "cur"; renderPlan(); }
+function openPlan() { if (PLAN.sel !== ALL_NETS && (!PLAN.sel || !net(PLAN.sel))) PLAN.sel = ALL_NETS; /* start with the overview of all networks */ PLAN.tab = "cur"; renderPlan(); }
 // icons in the IP plan cells: none, the UniFi device icon, or the logo of the Home Assistant integration
 const PLAN_ICONS = { mode: store.get("planIconMode", store.get("planIcons", false) ? "unifi" : "off") };
 const iconSeg = () => `<span class="seg plan-icons" role="group" aria-label="Icons in the cells">${[["off", "No icons", "None"], ["unifi", "UniFi", "UniFi"], ["ha", "Home Assistant", "HA"]].map(([k, t, sh]) => `<button type="button" data-pim="${k}" aria-pressed="${PLAN_ICONS.mode === k}" title="${k === "off" ? "Only the address" : k === "unifi" ? "Device icon from UniFi" : "Logo of the Home Assistant integration (UniFi icon when the device is not in HA)"}"><span class="lng">${t}</span><span class="sht">${sh}</span></button>`).join("")}</span>`;
-function planIcon(c) {
-  if (!c || PLAN_ICONS.mode === "off") return "";
-  if (PLAN_ICONS.mode === "unifi") return `<span class="pi">${iconHtml(c)}</span>`;
-  const dom = [...new Set(haOf(c).flatMap(d => haDoms(c, d)))][0];
-  return `<span class="pi">${dom ? brandImg(dom, 16) : iconHtml(c)}</span>`; // no HA device → UniFi icon
+// the logo of the device's Home Assistant integration ("homeassistant" for the HA host itself)
+function haDom(c) { const ds = haOf(c); return ds.length ? haDoms(c, ds[0])[0] || "" : isHaHost(c) ? "homeassistant" : ""; }
+// device icon for the IP plan, the tree and the detail views: none, UniFi's icon, or the HA logo (UniFi icon as fallback)
+function devIconHtml(c, mode, big) {
+  if (!c || mode === "off" || mode === "none") return "";
+  const d = mode === "ha" && haDom(c);
+  return d ? brandImg(d, big ? 26 : 16) : iconHtml(c, big);
 }
+const planIcon = c => { const ic = devIconHtml(c, PLAN_ICONS.mode); return ic ? `<span class="pi">${ic}</span>` : ""; };
 // one grid cell; c = device shown in it (for the icon)
 function cellHtml(p, x, cls, tip, c, extra = "") {
   const lbl = p.r.size > 256 ? ipStr(x).split(".").slice(2).join(".") : x - p.r.start;
@@ -2082,7 +2100,7 @@ function renderPlan() {
     $("#planStats").insertAdjacentHTML("afterbegin", `<button type="button" class="pn pn-all ${PLAN.sel === ALL_NETS ? "on" : ""}" data-net="${ALL_NETS}" aria-pressed="${PLAN.sel === ALL_NETS}">
       <span class="l1"><b>All networks</b><span class="muted">(${ps.length})</span><span class="sp"></span><span title="Average tidiness, weighted by the fixed IPs per network">${tidyBadge(tAll, "Tidiness ")}</span></span>
       <span class="l3"><span class="ubar ${pct >= 80 ? "hi" : ""}" title="Utilization ${pct} % (${used}/${usable})"><i style="width:${pct}%"></i></span>${pct} % · <span>${sum("fixed")} fixed</span>${sum("inPool") ? ` · <span class="w">${sum("inPool")} in pool</span>` : ""} · ${sum("dyn")} dyn</span></button>`); }
-  if (PLAN.sel !== ALL_NETS && !ps.some(x => x.n.id === PLAN.sel)) PLAN.sel = ps[0]?.n.id || null;
+  if (PLAN.sel !== ALL_NETS && !ps.some(x => x.n.id === PLAN.sel)) PLAN.sel = ALL_NETS;
   const all = PLAN.sel === ALL_NETS;
   const ct = document.querySelector('[data-pt="clean"]'); ct.title = all ? "CleanUp Proposal for all networks at once" : "";
   const vis = rows(); PLAN.vis = vis.length === state.clients.length ? null : new Set(vis.map(c => c.mac));
@@ -2582,7 +2600,7 @@ async function load() {
     try { const v = (await api("api/vendors")).vendors || {}; for (const c of d.clients) if (!c.oui && c.mac && v[c.mac.slice(0, 8)]) { c.oui = v[c.mac.slice(0, 8)]; c.oui_src = "lookup"; } } catch {}
     await fwP;
     state.aps = d.aps || []; state.switches = d.switches || {}; state.clients = d.clients; state.fetchedAt = d.fetched_at;
-    computeWarnings(); if (typeof computeBaseCats === "function") computeBaseCats(); buildHead(); $("#banner").hidden = true;
+    computeWarnings(); computeBaseCats(); buildHead(); $("#banner").hidden = true;
     fetchDevSusp().then(() => { if (!isRel() && !isFw()) renderAll(); });
     if (state.sel) { const again = state.clients.find(c => keyOf(c) === keyOf(state.sel)); again ? (state.sel = again, renderInfo()) : closePanel(); }
   } catch (e) {
@@ -2788,14 +2806,17 @@ function renderFw() {
   const body = zs.map(s => `<tr><th scope="row"><button type="button" class="fwh ${FW.src === s.id && !FW.dst ? "on" : ""}" data-fws="${esc(s.id)}" title="Policies from ${esc(s.name)}" translate="no">${esc(s.name)}</button></th>${zs.map(d => {
     const r = fwPair(s.id, d.id), on = FW.src === s.id && FW.dst === d.id, dim = (FW.src || FW.dst) && !on && !(FW.src === s.id && !FW.dst) && !(FW.dst === d.id && !FW.src);
     const risk = fwAnalysis()?.mxRisk[s.id + ">" + d.id];
-    const tip = `${s.name} → ${d.name}: ${FW_DEF[r.def]}${r.custom.length ? ` · ${r.custom.length} custom` : ""}${r.all.length - r.custom.length ? ` · ${r.all.length - r.custom.length} built-in` : ""}${risk ? " · ⚠ " + risk.replace(/<[^>]+>/g, "") : ""}`;
+    const tip = `${s.name} → ${d.name}: ${I18N.tr(FW_DEF[r.def])}${r.custom.length ? ` · ${I18N.tr(`${r.custom.length} custom`)}` : ""}${r.all.length - r.custom.length ? ` · ${I18N.tr(`${r.all.length - r.custom.length} built-in`)}` : ""}${risk ? " · ⚠ " + risk.replace(/<[^>]+>/g, "") : ""}`;
     const live = r.custom.filter(p => p.enabled !== false && fwCst(p) === "ALL"), opens = r.def !== "allow" ? live.filter(fwIsAllow) : [], closes = r.def === "allow" ? live.filter(p => !fwIsAllow(p)) : [];
     const ports = opens.length ? `<span class="fwc-p ok" title="${esc("Opened by custom rules:\n" + opens.map(p => `${p.name}: ${fwPortLabel(p)}`).join("\n"))}">✓ ${esc(fwPortsSum(opens, 2))}</span>` : closes.length ? `<span class="fwc-p no" title="${esc("Closed by custom rules:\n" + closes.map(p => `${p.name}: ${fwPortLabel(p)}`).join("\n"))}">✕ ${esc(fwPortsSum(closes, 2))}</span>` : "";
-    return `<td><button type="button" class="fwc ${r.def}${on ? " on" : ""}${dim ? " dim" : ""}${risk ? " risky" : ""}" data-fws="${esc(s.id)}" data-fwd="${esc(d.id)}" title="${esc(tip)}"><span class="l">${risk ? `<span class="fw-risk" aria-label="Risky">⚠</span> ` : ""}${FW_DEF[r.def]}${r.custom.length ? ` <span class="n">(${r.custom.length})</span>` : ""}</span>${ports}</button></td>`;
+    // no zone default between these zones: show what the custom rules do (before: only "– (1)")
+    const allows = live.filter(fwIsAllow), blocks = live.filter(p => !fwIsAllow(p));
+    const cust = r.def !== "none" || !live.length ? null : !allows.length ? ["block", "Rule: block"] : !blocks.length ? ["allow", "Rule: allow"] : ["mixed", "Rules: mixed"];
+    return `<td><button type="button" class="fwc ${cust ? cust[0] + " cust" : r.def}${on ? " on" : ""}${dim ? " dim" : ""}${risk ? " risky" : ""}" data-fws="${esc(s.id)}" data-fwd="${esc(d.id)}" title="${esc(tip)}"><span class="l">${risk ? `<span class="fw-risk" aria-label="Risky">⚠</span> ` : ""}${cust ? cust[1] : FW_DEF[r.def]}${r.custom.length ? ` <span class="n">(${r.custom.length})</span>` : ""}</span>${cust ? "" : ports}</button></td>`;
   }).join("")}</tr>`).join("");
   const fit = FW.mxFit !== false;
   $("#fwMatrix").classList.toggle("fixed", !fit);
-  $("#fwMatrix").innerHTML = `<div class="fw-mx-top"><div class="fw-axis-d">Destination</div><span class="seg" role="group" aria-label="Matrix width"><button type="button" data-mxfit="1" aria-pressed="${fit}" title="All zones fit into the width of the window">Autofit</button><button type="button" data-mxfit="0" aria-pressed="${!fit}" title="Every column 150 px wide – scroll for more zones">Fixed width</button></span></div><div class="fw-mx-row"><div class="fw-axis-s"><span>Source</span></div><table class="fw-mx" style="--mxn:${zs.length + 1}"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
+  $("#fwMatrix").innerHTML = `<div class="fw-mx-top"><div class="fw-axis-d">Destination</div><span class="seg" role="group" aria-label="Matrix width"><button type="button" data-mxfit="1" aria-pressed="${fit}" title="All zones fit into the width of the window">Autofit</button><button type="button" data-mxfit="0" aria-pressed="${!fit}" title="Every column 150 px wide – scroll for more zones">Fixed width</button></span></div><div class="fw-mx-row"><div class="fw-axis-s"><span>Source</span></div><table class="fw-mx" style="--mxn:${zs.length + 1}"><thead>${head}</thead><tbody>${body}</tbody></table></div><p class="hint fw-mx-leg">Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules</p>`;
   $("#fwSum").innerHTML = `<span class="pill">Zones <b>${zs.length}</b></span><span class="pill">Policies <b>${all}</b></span><span class="pill">Custom <b>${nCustom}</b></span><span class="pill" title="Read from UniFi">Updated <b>${new Date(FW.data.fetched_at * 1000).toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" })}</b></span><button type="button" class="link" data-fwexport title="Download zones, policies and groups as the app read them from UniFi">Export JSON</button>`;
   for (const [k, id] of [["v4", "#fwV4"], ["v6", "#fwV6"], ["builtin", "#fwBuiltin"], ["custom", "#fwCustom"], ["paused", "#fwPaused"]]) $(id).checked = !!FW.show[k];
   const vs = (VER.list || []).filter(m => m.policies != null);
@@ -2899,8 +2920,7 @@ function fwMiniChainHtml(c) {
     if (all && reached) reached = false;
   }
   if (!items.some(x => !x.sp)) return "";
-  const icon = x => x.off ? "Ⅱ" : fwCst(x.p) === "RESPOND_ONLY" ? "↩" : fwIsAllow(x.p) ? "✓" : "✕";
-  const cls = x => x.off ? "off" : fwCst(x.p) === "RESPOND_ONLY" ? "ret" : fwIsAllow(x.p) ? "allow" : "block";
+  const icon = x => fwPolIcon(x.p, x.off), cls = x => fwPolCls(x.p, x.off);
   const tip = x => `${x.p.name || "?"} · ${fwShort(x.p.source)} → ${fwShort(x.p.destination)}${x.off ? " · paused" : ""}${x.alt ? ` · names a client with the same name and another MAC (${x.alt}) – a private WiFi address?` : ""}${x.sp ? " · special case only – not for normal traffic" : x.decides ? " · decides for this device" : x.dead ? " · never reached for this device" : ""}`;
   const lane = items.map((x, i) => `<button type="button" class="lb ${cls(x)}${x.p.predefined ? " pre" : ""}${x.dead ? " dead" : ""}${x.decides ? " dec" : ""}${x.sp ? " sp" : ""}" data-fwpol="${esc(x.p.id)}" title="${esc(tip(x))}">
       <span class="lb-top"><span class="lb-id">${i + 1}${x.p.predefined ? " 🔒" : ""}</span><span class="lb-ic">${icon(x)}</span>${x.alt ? `<span class="lb-w">⚠</span>` : ""}</span>
@@ -2923,8 +2943,7 @@ function fwNamedHtml(c, inner, skip) {
   // inside the internet chain: only the rules that are not already in it (other zone pairs, or the client as destination)
   const hits = fwDevicePolicies(c).filter(h => !skip || !(h.side === "source" && h.p.source?.zone_id === skip.src && h.p.destination?.zone_id === skip.dst));
   if (inner && !hits.length) return "";
-  const cls = p => p.enabled === false ? "off" : fwCst(p) === "RESPOND_ONLY" ? "ret" : fwIsAllow(p) ? "allow" : "block";
-  const icon = p => p.enabled === false ? "Ⅱ" : fwCst(p) === "RESPOND_ONLY" ? "↩" : fwIsAllow(p) ? "✓" : "✕";
+  const cls = p => fwPolCls(p), icon = p => fwPolIcon(p);
   const box = h => `<button type="button" class="lb ${cls(h.p)}${h.p.predefined ? " pre" : ""}" data-fwpol="${esc(h.p.id)}" title="${esc(`${h.p.name || "?"}${h.p.enabled === false ? " · paused" : ""} · ${fwZoneName(h.p.source?.zone_id)} → ${fwZoneName(h.p.destination?.zone_id)} · ${h.side === "source" ? "as source" : "as destination"} · via ${h.via.join(", ")}`)}">
       <span class="lb-top">${h.p.predefined ? `<span class="lb-id">🔒</span>` : ""}<span class="lb-ic">${icon(h.p)}</span></span>
       <span class="lb-n" translate="no">${esc(h.p.name || "?")}</span><span class="lb-s" translate="no">${esc(fwZoneName(h.p.source?.zone_id))} → ${esc(fwZoneName(h.p.destination?.zone_id))}</span>
@@ -2946,7 +2965,7 @@ function fwInfoHtml(c) {
   const cell = r => !r ? `<span class="muted">–</span>` : `${fwLvlTag(r.lvl)}${portLine(r)}<div class="fw-why">${r.by ? polBtn(r.by) : r.ret ? polBtn(r.ret) : ""}${r.extra.length ? ` <span class="muted" title="${esc(r.extra.map(x => (x.allow ? "Allow: " : "Block: ") + x.p.name).join("\n"))}">+${r.extra.length} <span>${r.extra.length === 1 ? "rule before it" : "rules before it"}</span></span>` : ""}</div>`;
   const eff = z ? fwEffective(c) : [];
   const LC = { full: "allow", partial: "part", ret: "ret", none: "block", "": "none" };
-  const strip = (dir, label) => `<div class="fw-strip"><span class="fw-strip-l">${label}</span>${eff.filter(x => dir === "out" ? x.out : x.inc).map(x => { const r = dir === "out" ? x.out : x.inc; return `<button type="button" class="fwc ${LC[r.lvl]}" data-fwpair="${esc(dir === "out" ? z.id : x.z.id)}|${esc(dir === "out" ? x.z.id : z.id)}" title="${esc(`${dir === "out" ? `${devName(c)} → ${x.z.name}` : `${x.z.name} → ${devName(c)}`}: ${FW_LVL[r.lvl][0]}${r.by ? ` (${r.by.name})` : ""}`)}"><span translate="no">${esc(x.z.name)}</span> <span class="fw-strip-i">${{ full: "✓", partial: "◐", ret: "↩", none: "✕", "": "?" }[r.lvl]}</span>${r.lvl === "partial" ? ` <span class="fw-strip-p" translate="no">${esc(fwPortsSum(r.extra.filter(y => y.allow).map(y => y.p), 2))}</span>` : ""}</button>`; }).join("")}</div>`;
+  const strip = (dir, label) => `<div class="fw-strip"><span class="fw-strip-l">${label}</span>${eff.filter(x => dir === "out" ? x.out : x.inc).map(x => { const r = dir === "out" ? x.out : x.inc; return `<button type="button" class="fwc ${LC[r.lvl]}" data-fwpair="${esc(dir === "out" ? z.id : x.z.id)}|${esc(dir === "out" ? x.z.id : z.id)}" title="${esc(`${dir === "out" ? `${devName(c)} → ${x.z.name}` : `${x.z.name} → ${devName(c)}`}: ${I18N.tr(FW_LVL[r.lvl][0])}${r.by ? ` (${r.by.name})` : ""}`)}"><span translate="no">${esc(x.z.name)}</span> <span class="fw-strip-i">${{ full: "✓", partial: "◐", ret: "↩", none: "✕", "": "?" }[r.lvl]}</span>${r.lvl === "partial" ? ` <span class="fw-strip-p" translate="no">${esc(fwPortsSum(r.extra.filter(y => y.allow).map(y => y.p), 2))}</span>` : ""}</button>`; }).join("")}</div>`;
   const paused = fwPausedEffects(c), changing = paused.filter(x => x.now.lvl !== x.then.lvl), still = paused.filter(x => x.now.lvl === x.then.lvl && x.named);
   return `<details class="fw-info" id="fwInfo"${store.get("fwInfoOpen", false) ? " open" : ""}><summary class="sec-title fi-sum"><span>Firewall</span><span class="fm-chev" aria-hidden="true">▾</span></summary><div class="card fw-card">
     <dl class="kv" style="margin:0"><dt>Zone</dt><dd>${z ? `<button type="button" class="link" data-fwzone="${esc(z.id)}" translate="no" title="Open the zone in the firewall view">${esc(z.name)}</button>` : `<span class="muted">unknown</span>`}</dd>
@@ -3144,7 +3163,6 @@ function fwAnalysis() {
   if (FA.key === key && FA.res) return FA.res;
   const res = fwAnalyze(); FA.key = key; FA.res = res; return res;
 }
-const nmTag = c => `<b translate="no">${esc(devName(c))}</b>`;
 const zTag = z => `<span class="zchip" translate="no">${esc(z?.name || "?")}</span>`;
 function fwAnalyze() {
   const ext = fwZoneByKey("external"), ha = haHostDev(), haZ = ha && zoneOf(ha), trustedZs = fwRoleZones("trusted");
@@ -3661,7 +3679,10 @@ function fwPortLabel(p) {
   return w;
 }
 const fwPortsSum = (ps, max = 3) => { const l = [...new Set(ps.map(fwPortLabel))]; return l.slice(0, max).join(" · ") + (l.length > max ? ` · +${l.length - max}` : ""); };
-const fwShort = e => { const t = fwEpText(e); return t.txt; };
+// symbol and colour class of a policy in the rule boxes: paused, allow return, allow, block
+const fwPolIcon = (p, off = p.enabled === false) => off ? "Ⅱ" : fwCst(p) === "RESPOND_ONLY" ? "↩" : fwIsAllow(p) ? "✓" : "✕";
+const fwPolCls = (p, off = p.enabled === false) => off ? "off" : fwCst(p) === "RESPOND_ONLY" ? "ret" : fwIsAllow(p) ? "allow" : "block";
+const fwShort = e => { const t = fwEpText(e); return t.txt === "Any" ? I18N.tr("Any") : t.txt; }; // shown text only – compare with fwEpText
 function renderChain() {
   const box = $("#fwChain");
   if (!FW.src || !FW.dst || !FW.data) { box.hidden = true; box.innerHTML = ""; return; }
@@ -3669,12 +3690,11 @@ function renderChain() {
   const { seq, cust, nb } = fwSeq(FW.src, FW.dst, order), flags = fwChainFlags(FW.src, FW.dst, order);
   if (!seq.length) { box.hidden = true; return; }
   box.hidden = false;
-  const icon = p => p.enabled === false ? "Ⅱ" : fwCst(p) === "RESPOND_ONLY" ? "↩" : fwIsAllow(p) ? "✓" : "✕";
-  const cls = p => p.enabled === false ? "off" : fwCst(p) === "RESPOND_ONLY" ? "ret" : fwIsAllow(p) ? "allow" : "block";
+  const icon = p => fwPolIcon(p), cls = p => fwPolCls(p);
   let reached = true;
   const lane = seq.map((p, i) => {
     const fl = flags.get(p.id), dead = fl.f.some(x => x[0] === "dead");
-    const html = `<button type="button" class="lb ${cls(p)}${p.predefined ? " pre" : ""}${dead || !reached ? " dead" : ""}${fl.f.some(x => ["redund", "dflt"].includes(x[0])) ? " odd" : ""}${FW.open === p.id ? " sel" : ""}" data-fwlb="${esc(p.id)}" title="${esc([p.name, `${fwShort(p.source)} → ${fwShort(p.destination)} · ${fwProto(p)}${fwPortText(p.destination) !== "Any" ? " " + fwPortText(p.destination) : ""}`, ...fl.f.map(x => x[1])].join("\n"))}">
+    const html = `<button type="button" class="lb ${cls(p)}${p.predefined ? " pre" : ""}${dead || !reached ? " dead" : ""}${fl.f.some(x => ["redund", "dflt"].includes(x[0])) ? " odd" : ""}${FW.open === p.id ? " sel" : ""}" data-fwlb="${esc(p.id)}" title="${esc([p.name, `${fwShort(p.source)} → ${fwShort(p.destination)} · ${I18N.tr(fwProto(p))}${fwPortText(p.destination) !== "Any" ? " " + fwPortText(p.destination) : ""}`, ...fl.f.map(x => x[1])].join("\n"))}">
       <span class="lb-top"><span class="lb-id">${p.predefined ? "🔒" : "#" + fl.num}</span><span class="lb-ic">${icon(p)}</span>${fl.f.some(x => x[2] !== "info") ? `<span class="lb-w">⚠</span>` : ""}</span>
       <span class="lb-n" translate="no">${esc(p.name || "?")}</span><span class="lb-s" translate="no">${esc(fwShort(p.source))} → ${esc(fwShort(p.destination))}</span>${typeof p.hits === "number" ? `<span class="lb-h">${p.hits.toLocaleString(I18N.locale)} <span>hits</span></span>` : ""}</button>`;
     if (p.enabled !== false && fwTarget(p.source) === "ANY" && fwTarget(p.destination) === "ANY" && fwPortAny(p.source) && fwPortAny(p.destination) && fwProto(p) === "All" && fwCst(p) === "ALL" && !fwSched(p)) reached = false;
@@ -3732,13 +3752,11 @@ $("#fwChain").addEventListener("dragend", () => { FW.drag = null; for (const x o
 
 // ---------- topology view: shared helpers, live force layout, drawing ----------
 // standard ports get a colour (the dominant port of a pair colours its arrows)
-const REL_PORTS = [["DNS", [53, 853], "#14b8a6"], ["Web", [80, 443, 8080, 8443], "#3b82f6"], ["NTP", [123], "#a3a3a3"], ["MQTT", [1883, 8883], "#f59e0b"], ["Camera / RTSP", [554], "#ec4899"], ["Home Assistant", [8123], "#0ea5e9"], ["ESPHome", [6053], "#22c55e"], ["SSH / remote", [22, 3389, 5900], "#ef4444"], ["Files / SMB", [139, 445, 2049], "#8b5cf6"], ["Discovery (mDNS / SSDP)", [5353, 1900], "#84cc16"], ["Streaming / casting", [8008, 8009, 7000, 1400, 32400], "#f97316"], ["Other", [], "#94a3b8"]];
-const REL = { tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoIcon: store.get("topoIcon", "ha"), labels: store.get("topoLabels", true), sel: null, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false };
+const REL = { tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoIcon: store.get("topoIcon", "ha"), labels: store.get("topoLabels", true), pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false };
 const isRel = () => document.body.classList.contains("rel-mode");
 // the device behind a node id (MAC, "ip:…", "internet")
 function relDev(id) { if (id === "internet") return null; if (id.startsWith("ip:")) { const ip = id.slice(3); return state.clients.find(c => c.ip === ip || (c.use_fixedip && c.fixed_ip === ip)) || null; } return devByMac(id); }
 function relLabel(id) { if (id === "internet") return "Internet"; const c = relDev(id); return c ? devName(c) : id.replace(/^ip:/, ""); }
-const relBytes = n => n >= 1e9 ? (n / 1e9).toFixed(1) + " GB" : n >= 1e6 ? (n / 1e6).toFixed(1) + " MB" : n >= 1e3 ? Math.round(n / 1e3) + " kB" : n + " B";
 const relByIp = ip => ip ? state.clients.find(c => c.ip === ip || (c.use_fixedip && c.fixed_ip === ip)) || null : null;
 const relIpName = ip => { const c = relByIp(ip); return c ? devName(c) : ip; };
 const REL_ICONS = { ha_host: "🏠", camera: "📷", printer: "🖨", nas: "🗄", tv: "📺", cast: "📺", airplay: "📺", console: "🎮", speaker: "🔊", sonos: "🔊", computer: "💻", hue: "💡", wled: "💡", shelly: "⚡", tasmota: "⚡", tuya: "⚡", esphome: "⚙", esp_generic: "⚙", zigbee: "📡" };
@@ -3818,7 +3836,6 @@ async function loadDevSusp(c) {
 function renderRel() {
   if (!isRel()) return;
   for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(b.dataset.rt === REL.tab));
-  document.body.classList.add("topo-mode");
   $("#topoTree").hidden = REL.tab !== "tree"; $("#relGraphBox").hidden = REL.tab !== "topo";
   if (REL.tab !== "topo" && REL.sim) { if (REL.sim.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; }
   for (const b of document.querySelectorAll("[data-topoicon]")) b.setAttribute("aria-pressed", String(b.dataset.topoicon === REL.topoIcon));
@@ -3826,31 +3843,24 @@ function renderRel() {
 }
 // draws the graph from REL.g and REL.pos once; the simulation then only moves the elements (relMove)
 function relGeo(e, from, to) {
-  const G = REL.g, P = REL.pos, p = P[from], q = P[to], dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy) || 1, nx = -dy / d, ny = dx / d, bend = e.ab && e.ba ? Math.min(14, d * 0.08) : 0;
+  const G = REL.g, P = REL.pos, p = P[from], q = P[to], dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy) || 1;
   const sx = p.x + dx / d * (G.rad(from) + 1), sy = p.y + dy / d * (G.rad(from) + 1), ex = q.x - dx / d * (G.rad(to) + 2), ey = q.y - dy / d * (G.rad(to) + 2);
-  return `M${sx.toFixed(1)},${sy.toFixed(1)} Q${((sx + ex) / 2 + nx * bend).toFixed(1)},${((sy + ey) / 2 + ny * bend).toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}`;
+  return `M${sx.toFixed(1)},${sy.toFixed(1)} L${ex.toFixed(1)},${ey.toFixed(1)}`;
 }
 function relDraw() {
-  const G = REL.g, box = $("#relGraph"); if (!G || !["graph", "topo"].includes(REL.tab)) return;
-  const { list, nodes, W, H, max, rad, lbl, sub, kind } = G, P = REL.pos, v = REL.view;
-  const wid = b => 0.8 + 3.6 * Math.sqrt((b || 0) / max);
-  const arrow = (e, from, to, bytes, back) => {
-    if (!bytes && (back || e.ab || e.ba)) return ""; // a pair without data (blocked attempts) still gets its line
-    const col = e.bad.length ? "var(--bad)" : e.cat[2];
-    return `<path d="${relGeo(e, from, to)}" stroke="${col}" stroke-width="${(e.w ?? wid(bytes)).toFixed(2)}" fill="none" ${e.nomark ? "" : `marker-end="url(#ra${e.bad.length ? "b" : REL_PORTS.indexOf(e.cat)})"`} class="rel-e${e.bad.length || e.susp.length ? " bad" : e.unexp.length ? " unexp" : ""}${e.blocked ? " blk" : ""}${REL.sel === e.a + "|" + e.b ? " sel" : ""}${back ? " back" : ""}" data-rele="${esc(e.a + "|" + e.b)}"><title>${esc(e.title || `${relLabel(from)} → ${relLabel(to)}: ${relBytes(bytes)} · ${e.ports.slice(0, 3).map(x => `${x.service || x.proto} ${x.port ?? ""}`).join(", ")}${e.bad.length ? " · against the rules" : ""}`)}</title></path>`;
-  };
-  const mk = (id, col) => `<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="${col}"/></marker>`;
-  const markers = REL_PORTS.map((c, i) => mk("ra" + i, c[2])).join("") + mk("rab", "var(--bad)");
+  const G = REL.g, box = $("#relGraph"); if (!G || REL.tab !== "topo") return;
+  const { list, nodes, W, H, rad, lbl, sub, kind } = G, P = REL.pos, v = REL.view;
+  const line = e => `<path d="${relGeo(e, e.a, e.b)}" stroke="#94a3b8" stroke-width="${e.w.toFixed(2)}" fill="none" class="rel-e${e.wifi ? " blk" : ""}" data-rele="${esc(e.a + "|" + e.b)}"><title>${esc(e.title)}</title></path>`;
   const node = n => {
-    const p = P[n], r = rad(n), k = kind(n), s = sub(n), ic = relIcon(n);
+    const p = P[n], r = rad(n), k = kind(n), s = sub(n);
     const shape = k === "inet" ? `<rect class="core" x="${-r}" y="${-r}" width="${2 * r}" height="${2 * r}" rx="4"/>` : `<circle class="core" r="${r.toFixed(1)}"/>`;
-    return `<g class="rel-n nk-${k}" data-reln="${esc(n)}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><title>${esc([relLabel(n), relIp(n), s].filter(Boolean).join(" · "))}</title>${shape}${G.icon ? G.icon(n, r) : ic && r >= 9 ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${ic}</text>` : ""}<text class="rel-l" x="${(r + 5).toFixed(1)}" y="${s ? -1 : 4}" translate="no">${esc(lbl(n))}</text>${s ? `<text class="rel-s" x="${(r + 5).toFixed(1)}" y="11" translate="no">${esc(s)}</text>` : ""}</g>`;
+    return `<g class="rel-n nk-${k}" data-reln="${esc(n)}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><title>${esc([relLabel(n), relIp(n), s].filter(Boolean).join(" · "))}</title>${shape}${G.icon(n, r)}<text class="rel-l" x="${(r + 5).toFixed(1)}" y="${s ? -1 : 4}" translate="no">${esc(lbl(n))}</text>${s ? `<text class="rel-s" x="${(r + 5).toFixed(1)}" y="11" translate="no">${esc(s)}</text>` : ""}</g>`;
   };
-  box.innerHTML = `<svg class="rel-svg${REL.labels ? "" : " no-lbl"}${list.some(e => REL.sel === e.a + "|" + e.b) ? " has-sel" : ""}" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Relations graph"><defs>${markers}</defs><rect class="rel-bg" width="${W}" height="${H}"/><g class="rel-vp" transform="translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})">
-    ${list.map(e => arrow(e, e.a, e.b, e.ab, false) + arrow(e, e.b, e.a, e.ba, true)).join("")}
+  box.innerHTML = `<svg class="rel-svg${REL.labels ? "" : " no-lbl"}" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Network topology"><rect class="rel-bg" width="${W}" height="${H}"/><g class="rel-vp" transform="translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})">
+    ${list.map(line).join("")}
     ${nodes.map(node).join("")}</g></svg><div class="rel-zoom"><button type="button" class="btn sm" data-relzoom="in" title="Zoom in">+</button><button type="button" class="btn sm" data-relzoom="out" title="Zoom out">−</button><button type="button" class="btn sm" data-relzoom="auto" title="Auto zoom – show everything"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg></button><button type="button" class="btn sm" data-relzoom="fit" title="Reset the view and the layout">⟲</button><button type="button" class="btn sm" data-relzoom="labels" aria-pressed="${REL.labels}" title="${REL.labels ? "Hide labels" : "Show labels"}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5h16v2M9 19h6M12 5v14"/></svg></button></div>`;
   const byKey = new Map(list.map(e => [e.a + "|" + e.b, e]));
-  G.els = { n: [...box.querySelectorAll("g[data-reln]")].map(el => [el, el.dataset.reln]), e: [...box.querySelectorAll("path[data-rele]")].map(el => { const e = byKey.get(el.dataset.rele), back = el.classList.contains("back"); return [el, e, back ? e.b : e.a, back ? e.a : e.b]; }) };
+  G.els = { n: [...box.querySelectorAll("g[data-reln]")].map(el => [el, el.dataset.reln]), e: [...box.querySelectorAll("path[data-rele]")].map(el => { const e = byKey.get(el.dataset.rele); return [el, e, e.a, e.b]; }) };
 }
 function relMove() {
   const G = REL.g, P = REL.pos; if (!G?.els) return;
@@ -3903,18 +3913,13 @@ $("#mnSusp").addEventListener("change", async e => {
 });
 // ---------- network topology: which device hangs on which (like UniFi's topology) ----------
 // icons of the topology: none, UniFi's device icons or the logo of the Home Assistant integration
-const topoHaDom = c => { const ds = haOf(c); return ds.length ? haDoms(c, ds[0])[0] || "" : isHaHost(c) ? "homeassistant" : ""; };
-function topoIconHtml(c, big) {
-  if (REL.topoIcon === "none") return "";
-  if (REL.topoIcon === "ha") { const d = topoHaDom(c); if (d) return brandImg(d, big ? 26 : 16); } // no Home Assistant logo: the UniFi icon as fallback
-  return iconHtml(c, big);
-}
+const topoIconHtml = (c, big) => devIconHtml(c, REL.topoIcon, big);
 function topoIconSvg(id, r) {
   const c = relDev(id), m = REL.topoIcon, s = r * 1.5, img = url => `<image href="${esc(url)}" x="${(-s / 2).toFixed(1)}" y="${(-s / 2).toFixed(1)}" width="${s.toFixed(1)}" height="${s.toFixed(1)}" preserveAspectRatio="xMidYMid meet" pointer-events="none"/>`;
   if (m === "none" || id === "?") return "";
   if (id === "internet") return `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">🌐</text>`;
   if (!c) return "";
-  if (m === "ha") { const d = topoHaDom(c); if (d) return img(`https://brands.home-assistant.io/_/${d}/icon.png`); } // else the UniFi icon
+  if (m === "ha") { const d = haDom(c); if (d) return img(`https://brands.home-assistant.io/_/${d}/icon.png`); } // else the UniFi icon
   if (c.icon_id) return img(`https://static.ubnt.com/fingerprint/0/${encodeURIComponent(c.icon_id)}_257x257.png`);
   const t = relIcon(id); return t ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${t}</text>` : "";
 }
@@ -3926,10 +3931,9 @@ function topoModel() {
   TOPO_HIT = hit;
   // everything – or, with a filter of the sidebar (status, type, search …), its hits and the devices on the way to them
   let devs = state.clients.filter(c => c.is_device);
-  const gw0 = devs.find(d => d.device_kind === "gateway");
   let clients = state.clients.filter(c => !c.is_device && c.mac && c.conn !== "teleport");
   // the device a node hangs on: UniFi devices by their uplink (wired or mesh), clients by switch / access point
-  const gw = gw0 || state.clients.find(d => d.is_device && d.device_kind === "gateway");
+  const gw = devs.find(d => d.device_kind === "gateway");
   const parent = c => {
     if (c.is_device) { if (c.device_kind === "gateway") return "internet"; const p = c.up_mac && byMac.get(c.up_mac); return p?.is_device && p.mac !== c.mac ? p.mac : gw && gw.mac !== c.mac ? gw.mac : "internet"; }
     const p = byMac.get(c.conn === "wifi" ? c.ap_mac : c.sw_mac);
@@ -3975,12 +3979,12 @@ function topoGraph(M) {
   const items = [...M.devs, ...M.clients], edges = [], nodes = ["internet"];
   const box = $("#relGraph"), W = Math.max(640, box.clientWidth || 900), H = Math.max(560, Math.min(860, Math.round(W * 0.62)));
   // clients with an unknown connection hang on one shared node, so they do not drift off and shrink the auto zoom
-  if (items.some(c => M.parent(c) === "?")) { nodes.push("?"); edges.push({ a: "internet", b: "?", len: 160, ab: 1, ba: 0, flows: 1, blocked: 1, ports: [], domains: [], bad: [], susp: [], unexp: [], cat: REL_PORTS[REL_PORTS.length - 1], w: 1, nomark: true, title: "Connection not known" }); }
+  if (items.some(c => M.parent(c) === "?")) { nodes.push("?"); edges.push({ a: "internet", b: "?", len: 160, wifi: true, w: 1, title: I18N.tr("Connection not known") }); }
   for (const c of items) {
     nodes.push(c.mac);
     const p = M.parent(c);
     const wl = c.is_device ? c.up_wireless : c.conn === "wifi", l = M.link(c);
-    edges.push({ a: p, b: c.mac, len: c.is_device ? 125 : 36 + 11 * Math.sqrt((M.kids.get(p) || []).length), ab: 1, ba: 0, flows: 1, blocked: wl ? 1 : 0, ports: [], domains: [], bad: [], susp: [], unexp: [], cat: REL_PORTS[REL_PORTS.length - 1], w: c.is_device ? 2.4 : 1.2, nomark: true,
+    edges.push({ a: p, b: c.mac, len: c.is_device ? 125 : 36 + 11 * Math.sqrt((M.kids.get(p) || []).length), wifi: wl, w: c.is_device ? 2.4 : 1.2,
       title: `${relLabel(p)} — ${devName(c)}${l ? " · " + l : ""}` });
   }
   const deg = {}; for (const e of edges) { deg[e.a] = (deg[e.a] || 0) + 1; deg[e.b] = (deg[e.b] || 0) + 1; }
@@ -3993,16 +3997,18 @@ function topoGraph(M) {
   // a new set of devices (other filter, clients on / off): zoom to fit again once it has settled
   const key = nodes.join(","); if (key !== REL.topoKey) { REL.topoKey = key; REL.autoFit = true; }
   relSimInit(nodes, edges, W, H, grp, mrg, mrgL, rad, { free: true, charge: -520, grav: 0.035 }); // compact: nodes close together
-  REL.g = { list: edges, nodes, W, H, max: 1, rad, lbl, sub, kind, icon: topoIconSvg };
+  REL.g = { list: edges, nodes, W, H, rad, lbl, sub, kind, icon: topoIconSvg };
   relDraw(); if (REL.autoFit && REL.sim.alpha < 0.03) { REL.autoFit = false; relFit(); } relRun();
 }
 function renderTopo() {
   if (!state.clients.length) { $("#topoTree").innerHTML = `<p class="muted"><span class="spin"></span> Loading …</p>`; return; }
   const M = topoModel();
-  if (REL.tab === "tree") { if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; $("#topoTree").innerHTML = topoTreeHtml(M); $("#topoTree .hit")?.scrollIntoView({ block: "nearest", inline: "center" }); }
+  if (REL.tab === "tree") { if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; $("#topoTree").innerHTML = topoTreeHtml(M);
+    // scroll to the first hit only when the filter changed – not on every refresh while the user looks around
+    const fk = JSON.stringify([state.q, state.facets, state.colFilters]); if (fk !== REL.hitKey) { REL.hitKey = fk; $("#topoTree .hit")?.scrollIntoView({ block: "nearest", inline: "center" }); } }
   else {
     topoGraph(M);
-    $("#relLegend").innerHTML = [["inet", "Internet"], ["unifi", "UniFi device"], ["ha", "Home Assistant"], ["dev", "Client"], ["hit", "Filter hit"]].map(([k, l]) => `<span><i class="nk nk-${k}"></i>${l}</span>`).join("") + `<span class="lsep"></span><span><i style="background:#94a3b8"></i>Cable</span><span><i class="dash"></i>WiFi / mesh</span><span class="muted">Drag devices, Ctrl + wheel or the buttons to zoom</span>`;
+    $("#relLegend").innerHTML = [["inet", "Internet"], ["unifi", "UniFi device"], ["ha", "Home Assistant"], ["dev", "Client"], ["hit", "Filter hit"]].map(([k, l]) => `<span><i class="nk nk-${k}"></i>${l}</span>`).join("") + `<span class="lsep"></span><span><i style="background:#94a3b8"></i>Cable</span><span><i class="dash"></i>WiFi / mesh</span><span class="muted">${matchMedia("(pointer: coarse)").matches ? "Drag devices, use the buttons to zoom" : "Drag devices, Ctrl + wheel or the buttons to zoom"}</span>`;
   }
 }
 $("#topoTree").addEventListener("click", e => { if (e.target.closest("summary")) return; const b = e.target.closest("[data-ttdev]"); if (!b) return; const c = devByMac(b.dataset.ttdev); if (c) { openPanel(c); $("#topoTree").querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); $("#topoTree").querySelectorAll(`[data-ttdev="${CSS.escape(c.mac)}"]`).forEach(x => x.classList.add("sel")); } });
@@ -4041,7 +4047,7 @@ function openPanel(c, tab) {
   if (state.returnTo && c?.mac !== state.returnMac) state.returnTo = null; // user moved on to another device
   closeCols(); state.sel = c; $("#detail").hidden = false; $("#side").classList.remove("open");
   $("#dTitle").textContent = c ? (c.name || c.hostname || c.mac || "Client") : "New reservation";
-  $("#tabInfo").hidden = !c; $("#tabs");
+  $("#tabInfo").hidden = !c;
   if (c) renderInfo();
   fillForm(c);
   $("#fwRuleCard").hidden = !(c?.mac && FW.data);
@@ -5252,7 +5258,7 @@ $("#verRows").addEventListener("click", async e => {
   try {
     if (act === "cmp") return compareVersions(id, null);
     if (act === "restore") return openRestore(id);
-    if (act === "csv") return downloadVersionCsv(id);
+    if (act === "csv") return await downloadVersionCsv(id); // await: a failure must reach the catch below
     if (act === "rename") { $("#dlgVer").close(); const name = await askName("Rename version", m.label || ""); $("#dlgVer").showModal(); if (name == null) return; await api(`api/versions/${id}/update`, { label: name }); }
     if (act === "pin") await api(`api/versions/${id}/update`, { pinned: !m.pinned });
     if (act === "base") { VER.settings = await api("api/version_settings", { baseline: VER.settings.baseline === id ? null : id }); await loadBaseline(); toast(VER.settings.baseline ? "Baseline set – use the “Baseline” filter in the sidebar" : "Baseline cleared"); }
@@ -5435,6 +5441,7 @@ $("#rstPreview").addEventListener("click", async () => {
   renderImport(); $("#dlgImport").showModal();
 });
 $("#btnVer").addEventListener("click", openVersions);
+$("#mnVer").addEventListener("click", openVersions); // phones: the header button has no room
 
 // ---------- wiring ----------
 $("#tbody").addEventListener("click", e => { if (e.target.closest("input.ie")) return; const tr = e.target.closest("tr[data-k]"); if (!tr) return; const c = state.clients.find(x => keyOf(x) === tr.dataset.k); if (c) openPanel(c); });
