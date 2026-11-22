@@ -526,8 +526,13 @@ dialog#dlgSimTo .imp-body{overflow:auto;padding:12px 18px 18px;display:grid;gap:
 @media (max-width:760px){body.sel-split .detail{inset:auto 0 0 0;width:100vw;height:50vh;height:50dvh;border-left:0;border-top:2px solid var(--accent);box-shadow:0 -8px 24px rgba(0,0,0,.3)}
 body.sel-split .tablewrap{padding-bottom:50vh;padding-bottom:50dvh}}
 .sel-top{display:flex;gap:14px;margin-bottom:2px}
-.sel-sum{display:grid;gap:2px}.sel-big{font-size:15px}.sel-big b{font-size:22px}
-.sel-kv{margin:0}
+.sel-sum{display:grid;gap:10px}.sel-big{font-size:14px}.sel-big b{font-size:22px}.sel-big .muted{font-size:12.5px}
+.sel-grp{display:grid;gap:4px}.sel-gt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.sel-pills{display:flex;flex-wrap:wrap;gap:5px}
+.sel-pill{display:inline-flex;align-items:center;gap:6px;padding:3px 4px 3px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line-strong);font-size:12.5px;max-width:100%}
+.sel-pill>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sel-pill b{min-width:20px;padding:0 6px;border-radius:999px;background:var(--bg);text-align:center;font-size:12px}
+#paneSel{min-height:0;grid-auto-rows:max-content}
 .sel-acts{display:grid;gap:6px}.sel-act{justify-content:flex-start;width:100%}
 .sel-mx-card{overflow-x:auto}
 .sel-mx{border-collapse:separate;border-spacing:3px;font-size:12px}
@@ -1953,7 +1958,8 @@ function selPane(on) {
   pane.innerHTML = selPaneHtml(cs);
 }
 const selCount = (list, key, label) => { const m = new Map(); for (const c of list) { const k = key(c); if (k == null) continue; m.set(k, (m.get(k) || 0) + 1); } return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => [label(k), n]); };
-const selKv = rows => `<dl class="kv sel-kv">${rows.map(([k, n]) => `<dt>${k}</dt><dd>${n}</dd>`).join("")}</dl>`;
+// one summary line: a small title and pills "label n" that wrap
+const selPills = (title, rows, cls = "") => rows.length ? `<div class="sel-grp"><div class="sel-gt">${title}</div><div class="sel-pills">${rows.map(([k, n]) => `<span class="sel-pill ${cls}"><span>${k}</span><b>${n}</b></span>`).join("")}</div></div>` : "";
 function selPaneHtml(cs) {
   const n = cs.length, cl = cs.filter(c => !c.is_device);
   const head = `<div class="sel-top"><button type="button" class="link" data-bulk="all">Select all shown</button><button type="button" class="link" data-bulk="none" ${n ? "" : "disabled"}>None</button></div>`;
@@ -1966,11 +1972,9 @@ function selPaneHtml(cs) {
   const rc = cs.filter(canReconnect).length, vnoN = cl.filter(c => c.vno_id).length;
   const btn = (act, label, cnt, title) => `<button type="button" class="btn sel-act" data-bulk="${act}" ${!cnt || BULK.busy ? "disabled" : ""} title="${esc(title)}"><span>${label}</span>${cnt != null ? ` <span class="muted">(${cnt})</span>` : ""}</button>`;
   return head + `
-    <div class="card sel-sum"><div class="sel-big"><b>${n}</b> <span>selected</span></div><div class="muted">${online} <span>online</span> · ${fixed} <span>with fixed IP</span></div></div>
-    <div class="sec-title">Connection</div><div class="card">${selKv(conn)}</div>
-    <div class="sec-title">Networks</div><div class="card">${selKv(nets)}</div>
-    ${vno.length ? `<div class="sec-title">Virtual network override</div><div class="card">${selKv(vno)}</div>` : ""}
-    ${inet.length ? `<div class="sec-title">Reaches the internet</div><div class="card">${selKv(inet)}</div>` : ""}
+    <div class="card sel-sum"><div class="sel-big"><b>${n}</b> <span>selected</span> <span class="muted">· ${online} <span>online</span> · ${fixed} <span>with fixed IP</span></span></div>
+      ${selPills(I18N.tr("Connection"), conn)}${selPills(I18N.tr("Networks"), nets)}${selPills(I18N.tr("Virtual network override"), vno)}${selPills(I18N.tr("Reaches the internet"), inet)}</div>
+    ${selMatrixHtml(cs)}
     <div class="sec-title">Actions</div><div class="sel-acts">
       ${btn("vno", "Override network…", cl.length, "Put the selected clients into a network (VLAN), regardless of WiFi or switch port")}
       ${btn("novno", "Remove override", vnoN, "Switch the virtual network override off")}
@@ -1978,8 +1982,7 @@ function selPaneHtml(cs) {
       ${btn("note", "Note…", cl.length, "Set the same note for the selected clients")}
       ${btn("rc", "Reconnect WiFi", rc, "Disconnect the selected WiFi clients for a moment so they ask for a new address")}
       ${FW.data ? btn("fw", "Firewall rule…", cl.filter(c => c.mac).length, "Create a firewall rule for the selected devices") : ""}
-    </div>
-    ${selMatrixHtml(cs)}`;
+    </div>`;
 }
 // who may reach whom among the selected devices (and the internet) – ping and the common services, like the device test
 function selMatrixHtml(cs) {
