@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.36.0 – 2026-11-22
+
+**Switch port VLAN of wired devices:**
+- The details of a wired device show its **switch and port** and the **port VLAN**: the native (untagged) network, which networks are tagged (all / none / custom / all except …) and whether it comes from a port override, a port profile or the UniFi default. Read from the switch's port overrides and the port profiles.
+- For wired devices the port's native VLAN decides the network – a *virtual network override* usually has no effect. When the override or the fixed IP points to another network than the port's native VLAN, the device gets the issue **Port VLAN is …** and a note explains how to move it (change the native VLAN of the port in UniFi; other devices on the port move too).
+- The same note appears live in the settings while choosing an override or a network, and after *Prepare move…* in the firewall analysis.
+- Network rules (“belongs in …”) mark wired devices with *(switch port)*.
+- New table column **Port VLAN** (filterable by network).
+
 ## 1.35.3 – 2026-11-16
 
 **Relations:**

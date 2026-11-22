@@ -389,6 +389,8 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .rel-legend .lsep{width:1px;height:12px;background:var(--line)}
 .rel-rec{display:grid;gap:6px;margin:12px 0 0;padding:9px 12px;border-radius:8px;font-size:12.5px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 .rel-rec>div>b{color:var(--warn)}
+.port-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin:6px 0 2px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
+.port-note>b:first-child{color:var(--warn)}
 .rel-focus{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px}
 .rs-list{display:grid;gap:4px;margin-top:6px}
 .rs-row{display:grid;grid-template-columns:minmax(170px,240px) 1fr auto;gap:4px 12px;align-items:center;padding:5px 8px;border-radius:6px;background:color-mix(in srgb,var(--fg) 3%,transparent)}
@@ -1141,6 +1143,7 @@ window.I18N = (() => {
         <div class="field" id="vnoField"><label for="fVno">Network</label><select id="fVno" form="formEdit"></select></div>
         <div class="hint" id="vnoHint">Puts the client into this network (VLAN) regardless of the Wi-Fi or switch port it uses. A fixed IP must then lie in this network.</div>
         <div class="hint" id="fwVno" hidden></div>
+        <div class="port-note" id="portHint" hidden></div>
       </div>
       <div class="form card">
         <label class="switch" for="fFixed"><span>Fixed IP address</span><input type="checkbox" id="fFixed" form="formEdit"></label>
@@ -1408,6 +1411,15 @@ function ruleNet(c) {
   }
   return "";
 }
+// "Services (20) untagged · tagged: all" – the VLAN setup of a switch port
+function portVlanText(pv) {
+  const nm = id => netLabel(id) || netName(id) || "?";
+  const tg = pv.tagged === "none" ? "Tagged: none" : pv.tagged === "disabled" ? "Port disabled"
+    : pv.tagged_ids.length ? `Tagged: ${pv.tagged_ids.map(nm).join(", ")}`
+    : pv.excluded_ids.length ? `Tagged: all except ${pv.excluded_ids.map(nm).join(", ")}` : pv.tagged === "custom" ? "Tagged: custom" : "Tagged: all";
+  const src = pv.source === "profile" ? `Port profile ${pv.profile}` : pv.source === "default" ? "UniFi default" : "";
+  return `<span translate="no">${esc(nm(pv.native))}</span> <span class="muted">(untagged)</span><div class="muted"><span>${esc(tg)}</span>${src ? ` · <span>${esc(src)}</span>` : ""}</div>`;
+}
 function computeWarnings() {
   state.rev = (state.rev || 0) + 1; // data revision: caches built from the clients (firewall analysis) follow it
   const byIp = {}, byName = {}, byDns = {};
@@ -1436,12 +1448,15 @@ function computeWarnings() {
     c._vnoMiss = !!(vn && ((c.network_id && c.network_id !== vn.id) || (c.ip && vn.subnet && !inSubnet(c.ip, vn.subnet))));
     if (c._vnoMiss) w.push([c.online ? "warn" : "info", (c.online ? "Not in " : "Last seen outside ") + vn.name + " (override)"]);
     else if (c.vno_id) w.push(["info", "VLAN override"]);
+    // wired: override / fixed IP in another network than the native VLAN of the switch port
+    c._portMiss = c.conn === "wired" ? portMismatch(c, c.vno_id || c._resNet) : null;
+    if (c._portMiss) w.push(["warn", "Port VLAN is " + (c._portMiss.have?.name || "?")]);
     if (c.mac && !c.is_device && c.name && byName[c.name.trim().toLowerCase()]?.length > 1) w.push(["warn", "Duplicate name"]);
     for (const o of state.scans?.[c.mac]?.open || []) if (o.port === 23 || o.port === 21) w.push(["warn", o.service + " open"]);
     if (c.local_dns_record_enabled && c.local_dns_record && byDns[c.local_dns_record.trim().toLowerCase()]?.length > 1) w.push(["bad", "Duplicate DNS name"]);
     if (c.mac && !c.is_device && c.conn !== "teleport") {
       const want = ruleNet(c), have = c._resNet || c.network_id;
-      if (want && have && want !== have && net(want)) w.push(["warn", "Expected in " + net(want).name]);
+      if (want && have && want !== have && net(want)) w.push(["warn", "Expected in " + net(want).name + (c.conn === "wired" && c.port_vlan ? " (switch port)" : "")]);
     }
     if (c.mac && !c.is_device && isRandomMac(c.mac)) w.push([c.use_fixedip ? "warn" : "info", "Random MAC"]);
     c._warn = w; c._serious = w.some(x => x[0] !== "info");
@@ -1552,6 +1567,8 @@ const COLS = [
     td: c => { const z = zoneOf(c); return z ? `<span class="zchip">${esc(z.name)}</span>` : `<span class="muted">-</span>`; } },
   { key: "vno", label: "Virtual network override", filter: "net", val: c => c.vno_id ? netLabel(c.vno_id) : "~", fval: c => c.vno_id || "",
     td: c => c.vno_id ? `<span class="${c._vnoMiss ? "vno-miss" : ""}" title="${c._vnoMiss ? `Override to ${esc(netName(c.vno_id))}, but the device ${c.online ? "is" : "was last"} in ${esc(netName(c.network_id) || c.ip)}` : "Virtual network override"}">${esc(netName(c.vno_id) || "?")}${net(c.vno_id)?.vlan ? `<span class="vl">(${net(c.vno_id).vlan})</span>` : ""}</span>` : `<span class="muted">-</span>` },
+  { key: "pvlan", label: "Port VLAN", filter: "net", val: c => c.port_vlan ? netLabel(c.port_vlan.native) : "~", fval: c => c.port_vlan?.native || "",
+    td: c => c.port_vlan ? `<span class="${c._portMiss ? "vno-miss" : ""}" title="${esc(`${c.port_vlan.switch} · Port ${c.port_vlan.port}`)}">${esc(netName(c.port_vlan.native) || "?")}${net(c.port_vlan.native)?.vlan ? `<span class="vl">(${net(c.port_vlan.native).vlan})</span>` : ""}</span>` : `<span class="muted">-</span>` },
   { key: "essid", label: "WiFi", val: c => (c.essid || "").toLowerCase(), td: c => c.essid ? esc(c.essid) : `<span class="muted">-</span>` },
   { key: "_warn", label: "Issues", val: c => c._warn.length ? (c._serious ? 0 : 1) : 2, fval: c => c._warn.map(w => w[1]).join(" "), td: c => c._warn.map(w => `<span class="tag ${w[0]}">${esc(w[1])}</span>`).join("") },
   { key: "_resNet", label: "Reservation VLAN", filter: "net", val: c => netLabel(c._resNet), fval: c => c._resNet,
@@ -3206,7 +3223,7 @@ function prepareMove(c, z) {
   const n = state.networks.find(x => z.network_ids.includes(x.id) && x.subnet);
   if (!n) { toast(`${z.name} has no network with a subnet – assign one in UniFi first.`); return; }
   openPanel(c, "edit"); $("#fVnoOn").checked = true; syncToggles(); $("#fVno").value = n.id; followVno(); updateHint();
-  toast(`Prepared: ${devName(c)} → ${n.name} (${z.name}). Check the fixed IP and click Apply.`);
+  toast(c.conn === "wired" && portMismatch(c, n.id) ? `Prepared: ${devName(c)} → ${n.name}. Wired – the switch port decides, see the note.` : `Prepared: ${devName(c)} → ${n.name} (${z.name}). Check the fixed IP and click Apply.`);
 }
 // zone roles dialog
 function openFwRoles() {
@@ -3906,8 +3923,11 @@ function renderInfo() {
       ${kv("Network", esc(n ? n.name : c.network_name))}
       ${kv("VLAN ID", n?.vlan ?? "")}
       ${kv("Virtual network override", c.vno_id ? esc(netLabel(c.vno_id) || "active") : "")}
+      ${c.port_vlan ? kv("Switch port", `<span translate="no">${esc(c.port_vlan.switch)}</span> · <span>Port</span> ${c.port_vlan.port}${c.port_vlan.port_name && c.port_vlan.port_name !== "Port " + c.port_vlan.port ? ` <span class="muted" translate="no">(${esc(c.port_vlan.port_name)})</span>` : ""}`) : ""}
+      ${c.port_vlan ? kv("Port VLAN", portVlanText(c.port_vlan)) : ""}
       ${kv("Hostname", esc(c.hostname))}
     </dl></div>
+    ${c._portMiss ? `<div class="port-note">${portNoteHtml(c._portMiss)}</div>` : ""}
     <div class="sec-title">DHCP reservation</div>
     <div class="card"><dl class="kv" style="margin:0">
       ${kv("Fixed IP", c.use_fixedip ? esc(c.fixed_ip) : "none", c.use_fixedip ? "mono" : "")}
@@ -3947,7 +3967,23 @@ function suggestIp(netId) {
   for (const allowPool of [false, true]) for (let x = start; x <= end; x++) { if (x === gw || (!allowPool && x >= ps && x <= pe)) continue; const ip = toIp(x); if (!used.has(ip)) return ip; }
   return "";
 }
+// wired devices: the native VLAN of their switch port decides the network – an override or a fixed IP elsewhere rarely works
+function portMismatch(c, target) {
+  const pv = c?.port_vlan; if (!pv?.native || !target || target === pv.native) return null;
+  return { pv, target, have: net(pv.native), want: net(target) };
+}
+function portNoteHtml(m) {
+  const pv = m.pv;
+  return `<b>The switch port decides here.</b> <span>${esc(`Wired to ${pv.switch}, port ${pv.port} – its native VLAN is ${m.have?.name || "?"}.`)}</span> <span>${esc(`A virtual network override usually has no effect on wired devices. To move the device to ${m.want?.name || "?"}, set the port's native VLAN in UniFi (Devices › switch › port › Native VLAN / Network).`)}</span>${pv.source === "profile" ? ` <span>${esc(`The port uses the profile ${pv.profile}.`)}</span>` : ""} <span class="muted">Other devices on this port get the new native VLAN too.</span>`;
+}
+function updatePortHint() {
+  const c = state.sel, el = $("#portHint"); if (!el) return;
+  const target = $("#fVnoOn").checked ? $("#fVno").value : $("#fFixed").checked ? $("#fNet").value : "";
+  const m = c?.conn === "wired" ? portMismatch(c, target) : null;
+  el.innerHTML = m ? portNoteHtml(m) : ""; el.hidden = !m;
+}
 function updateHint() {
+  updatePortHint();
   const n = net($("#fNet").value), ip = $("#fIp").value.trim(); let h = "";
   if (n) {
     h = `Subnet ${n.subnet}` + (n.dhcp_start ? `, DHCP pool ${n.dhcp_start} – ${n.dhcp_stop}` : "");
