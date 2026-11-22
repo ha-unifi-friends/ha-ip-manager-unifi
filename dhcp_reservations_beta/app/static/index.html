@@ -3883,7 +3883,7 @@ $("#mnSusp").addEventListener("change", async e => {
 const topoHaDom = c => { const ds = haOf(c); return ds.length ? haDoms(c, ds[0])[0] || "" : isHaHost(c) ? "homeassistant" : ""; };
 function topoIconHtml(c, big) {
   if (REL.topoIcon === "none") return "";
-  if (REL.topoIcon === "ha") { const d = topoHaDom(c); return d ? brandImg(d, big ? 26 : 16) : `<span class="tt-noic"></span>`; }
+  if (REL.topoIcon === "ha") { const d = topoHaDom(c); if (d) return brandImg(d, big ? 26 : 16); } // no Home Assistant logo: the UniFi icon as fallback
   return iconHtml(c, big);
 }
 function topoIconSvg(id, r) {
@@ -3891,7 +3891,7 @@ function topoIconSvg(id, r) {
   if (m === "none" || id === "?") return "";
   if (id === "internet") return `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">🌐</text>`;
   if (!c) return "";
-  if (m === "ha") { const d = topoHaDom(c); return d ? img(`https://brands.home-assistant.io/_/${d}/icon.png`) : ""; }
+  if (m === "ha") { const d = topoHaDom(c); if (d) return img(`https://brands.home-assistant.io/_/${d}/icon.png`); } // else the UniFi icon
   if (c.icon_id) return img(`https://static.ubnt.com/fingerprint/0/${encodeURIComponent(c.icon_id)}_257x257.png`);
   const t = relIcon(id); return t ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${t}</text>` : "";
 }

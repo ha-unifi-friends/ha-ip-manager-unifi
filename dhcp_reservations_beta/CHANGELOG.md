@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.42.7
+
+- Topology: with the icon switch on *HA*, devices without a Home Assistant logo show their UniFi icon instead of an empty spot – in the tree and in the graph.
+
 ## 1.42.6
 
 - Device detail: the *Firewall* section is collapsed by default (the open state is remembered), and the expand/collapse arrow of the internet access chain is larger.
