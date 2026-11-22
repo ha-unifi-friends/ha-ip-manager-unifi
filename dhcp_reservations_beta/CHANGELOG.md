@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.42.5
+
+- Internet access chain: all rules sit on one level again – the green line bypasses paused rules and UniFi's built-in special rules with an arc above the icon.
+
 ## 1.42.4
 
 - Internet access chain: UniFi's built-in special rules (Block Invalid Traffic, Block Non-Permitted Networks Out ULTE, …) no longer decide the chain – they stay at their place, dimmed and hanging below the line, and the green line passes over them. The chain judges normal traffic only.
