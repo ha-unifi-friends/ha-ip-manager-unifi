@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.37.2 – 2026-11-22
+
+- **Port VLAN warning** only when the override really does not work: a wired device that already is in the wanted network (some switches and gateways assign the VLAN by MAC) gets no “Port VLAN is …” issue and no note.
+
 ## 1.37.1 – 2026-11-22
 
 - **Reconnect** asks first in a small dialog (“Reconnect …? – Cancel / Confirm”). While it runs the button shows a spinner, and the WiFi card then says when it was sent (or why it failed) – no longer only a short message at the edge of the screen.

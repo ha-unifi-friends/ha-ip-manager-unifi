@@ -4044,6 +4044,8 @@ function suggestIp(netId) {
 // wired devices: the native VLAN of their switch port decides the network – an override or a fixed IP elsewhere rarely works
 function portMismatch(c, target) {
   const pv = c?.port_vlan; if (!pv?.native || !target || target === pv.native) return null;
+  // the device already is in the wanted network: the override works for it (some switches assign the VLAN by MAC)
+  if (c.online && c.network_id === target && (!c.ip || !net(target)?.subnet || inSubnet(c.ip, net(target).subnet))) return null;
   return { pv, target, have: net(pv.native), want: net(target) };
 }
 function portNoteHtml(m) {
