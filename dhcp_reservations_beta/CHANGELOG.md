@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.41.7 – 2026-11-22
+
+- **Topology:** the heading “Network topology” and its explanation are removed.
+- **Phones:** the tabs are the last row of the header, so the active tab sits right on the blue line; *Refresh* / *Actions* are in the row above on the right (IP plan, Firewall and Topology alike).
+
 ## 1.41.6 – 2026-11-22
 
 - **Filter pane:** *Baseline* and *Home Assistant* moved to the bottom.
