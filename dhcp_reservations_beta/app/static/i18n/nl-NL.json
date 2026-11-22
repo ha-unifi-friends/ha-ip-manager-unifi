@@ -1365,7 +1365,6 @@
  "In UniFi Network open Settings › CyberSecure › Traffic Logging and set Flow Logging to All Traffic.": "Open in UniFi Network Settings › CyberSecure › Traffic Logging en zet Flow Logging op All Traffic.",
  "The switch port decides here.": "Hier beslist de switchpoort.",
  "Wired to {0}, port {1} – its native VLAN is {2}.": "Bekabeld aan {0}, poort {1} – het native VLAN is {2}.",
- "A virtual network override usually has no effect on wired devices. To move the device to {0}, set the port's native VLAN in UniFi (Devices › switch › port › Native VLAN / Network).": "Een virtuele netwerkoverride werkt meestal niet bij bekabelde apparaten. Om het apparaat naar {0} te verplaatsen, wijzig het native VLAN van de poort in UniFi (Devices › switch › poort › Native VLAN / Network).",
  "The port uses the profile {0}.": "De poort gebruikt het profiel {0}.",
  "Other devices on this port get the new native VLAN too.": "Andere apparaten op deze poort krijgen ook het nieuwe native VLAN.",
  "Port VLAN is {0}": "Poort-VLAN is {0}",
@@ -1393,5 +1392,18 @@
  "Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP).": "Verbreekt de wifi-verbinding van het apparaat even. Het verbindt meteen opnieuw en vraagt een nieuw IP-adres aan (DHCP).",
  "Only possible while the device is connected to the WiFi.": "Alleen mogelijk zolang het apparaat met de wifi verbonden is.",
  "{0} is reconnecting – the status updates in a few seconds": "{0} verbindt opnieuw – de status wordt over enkele seconden bijgewerkt",
- "Reconnect failed: {0}": "Opnieuw verbinden mislukt: {0}"
+ "Reconnect failed: {0}": "Opnieuw verbinden mislukt: {0}",
+ "This port is the uplink of the switch.": "Deze poort is de uplink van de switch.",
+ "{0} (UniFi device) is on this port.": "{0} (UniFi-apparaat) zit op deze poort.",
+ "The port uses the profile {0} – change it in UniFi.": "De poort gebruikt het profiel {0} – wijzig het in UniFi.",
+ "Port VLAN can be changed in UniFi only:": "Het poort-VLAN kan alleen in UniFi worden gewijzigd:",
+ "Native VLAN of the port": "Native VLAN van de poort",
+ "Change…": "Wijzigen…",
+ "Port {0} on {1}: {2} → {3}": "Poort {0} op {1}: {2} → {3}",
+ "These devices move along:": "Deze apparaten gaan mee:",
+ "They get an address in the new network at their next DHCP renewal (unplug or restart helps). A fixed IP in the old network no longer fits. A version is saved first.": "Ze krijgen bij de volgende DHCP-vernieuwing een adres in het nieuwe netwerk (loskoppelen of herstarten helpt). Een vast IP in het oude netwerk past dan niet meer. Eerst wordt een versie opgeslagen.",
+ "Change port VLAN": "Poort-VLAN wijzigen",
+ "The port already has this VLAN": "De poort heeft dit VLAN al",
+ "Port VLAN changed to {0} – the switch applies it in a few seconds": "Poort-VLAN gewijzigd naar {0} – de switch past het binnen enkele seconden toe",
+ "A virtual network override usually has no effect on wired devices. To move the device to {0}, change the native VLAN of the port – in the Switch port card of the settings or in UniFi.": "Een virtuele netwerkoverride werkt meestal niet bij bekabelde apparaten. Om het apparaat naar {0} te verplaatsen, wijzig het native VLAN van de poort – in de kaart „Switchpoort” van de instellingen of in UniFi."
 }
