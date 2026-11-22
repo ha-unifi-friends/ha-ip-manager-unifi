@@ -489,6 +489,15 @@ body:not(.rel-mode) .topo-icons{display:none!important}
 .topbar.tb-s4 .cli-tabs .tl{display:none}.topbar.tb-s4 .cli-tabs svg{margin-right:0!important}.topbar.tb-s4 .plan-tabs button[role="tab"]{padding:8px 9px 10px}
 .topbar.tb-s5 #count{display:none}.topbar.tb-s5 .plan-size{display:none}
 .topbar.tb-s6{flex-wrap:wrap;row-gap:8px}.topbar.tb-s6 .grp{margin-left:auto}
+/* bulk changes */
+.bulk-bar{position:sticky;bottom:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0;padding:8px 12px;border-top:2px solid var(--accent);background:var(--panel);box-shadow:0 -6px 18px rgba(0,0,0,.25);order:9}
+.bulk-bar[hidden]{display:none}.bulk-bar .sp{flex:1}.bb-sep{width:1px;height:20px;background:var(--line)}
+body.sel-mode #tbody tr td:first-child{box-shadow:inset 3px 0 0 transparent}
+body.sel-mode #tbody tr.picked{background:color-mix(in srgb,var(--accent) 16%,transparent)}
+body.sel-mode #tbody tr.picked td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+.lc.picked{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--card))}
+body.sel-mode .lc::after{content:"";flex:none;width:18px;height:18px;border-radius:5px;border:2px solid var(--line-strong);align-self:center}
+body.sel-mode .lc.picked::after{background:var(--accent);border-color:var(--accent);box-shadow:inset 0 0 0 3px var(--card)}
 /* what changed since the last visit */
 .chg-box{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:8px 12px 0;padding:8px 12px;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:10px;background:color-mix(in srgb,var(--accent) 8%,var(--card));font-size:13px}
 .chg-box[hidden]{display:none}.chg-box .sp{flex:1}
@@ -1148,6 +1157,7 @@ window.I18N = (() => {
         <div class="viewsel actsel">
           <button class="btn icon-btn" id="btnActions" type="button" aria-haspopup="menu" aria-expanded="false" title="Actions"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span class="lbl">Actions</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
           <div class="menu right" id="actMenu" role="menu" hidden>
+          <button class="mi" role="menuitem" id="mnSelect" type="button" title="Select several devices and change them together"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><path d="m4.5 6.5 1.5 1.5 3-3"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 6.5h7M14 17.5h7"/></svg><span>Select devices…</span></button>
           <button class="mi" role="menuitem" id="btnHa" type="button" title="Take device names from Home Assistant"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11 12 3l9 8M5 9.5V21h14V9.5M10 21v-6h4v6"/></svg><span>Names from Home Assistant…</span></button>
           <button class="mi" role="menuitem" id="btnSub" type="button" title="Replace subnet"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h13l-3-3M20 17H7l3 3"/></svg><span>Replace subnet…</span></button>
           <button class="mi" role="menuitem" id="btnImp" type="button" title="Import CSV"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15V3M7 8l5-5 5 5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Import CSV…</span></button>
@@ -1165,6 +1175,7 @@ window.I18N = (() => {
     </div>
     <div id="banner" class="banner" hidden></div>
     <div class="chg-box" id="chgBox" hidden></div>
+    <div class="bulk-bar" id="bulkBar" hidden></div>
     <div class="tablewrap">
       <table>
         <thead><tr class="h" id="headRow"></tr><tr class="f" id="filterRow"></tr></thead>
@@ -1348,6 +1359,15 @@ window.I18N = (() => {
     <p class="ha-warn-txt" id="haWarnTxt"></p>
     <label class="ha-ack"><input type="checkbox" id="haAck"><span>I am aware that Home Assistant may become unreachable and that integrations, dashboards, automations and devices that talk to Home Assistant by its IP address can stop working until I update them.</span></label>
     <div class="actions"><button class="btn" type="button" id="haWarnCancel">Cancel</button><button class="btn danger" type="submit" id="haWarnOk" disabled>Change anyway</button></div>
+  </form>
+</dialog>
+<dialog id="dlgBulk" class="small" aria-labelledby="bulkTitle">
+  <form method="dialog" id="formBulk" novalidate>
+    <h2 id="bulkTitle">Change devices</h2>
+    <p class="hint" id="bulkText"></p>
+    <div class="field" id="bulkNetF"><label for="bulkNet">Network</label><select id="bulkNet"></select></div>
+    <div class="field" id="bulkNoteF"><label for="bulkNote">Note</label><input id="bulkNote" maxlength="200" autocomplete="off"></div>
+    <div class="actions"><button class="btn" type="button" id="bulkCancel">Cancel</button><button class="btn primary" type="submit" id="bulkOk">Apply</button></div>
   </form>
 </dialog>
 <dialog id="dlgName" class="small" aria-labelledby="nameTitle">
@@ -1836,6 +1856,94 @@ function rows() {
   return list.sort((a, b) => { const x = col.val(a), y = col.val(b); return (x < y ? -1 : x > y ? 1 : 0) * state.sort.dir || (a.name || a.hostname || "").localeCompare(b.name || b.hostname || "", "de"); });
 }
 
+// ---------- bulk changes: select several devices in the table or the list, then change them together ----------
+const BULK = { on: false, keys: new Set(), busy: false, act: "" };
+const bulkDevs = () => state.clients.filter(c => BULK.keys.has(keyOf(c)));
+function bulkMarks() { for (const tr of document.querySelectorAll("#tbody tr[data-k]")) tr.classList.toggle("picked", BULK.keys.has(tr.dataset.k)); document.body.classList.toggle("sel-mode", BULK.on); }
+function bulkToggle(k) { BULK.keys.has(k) ? BULK.keys.delete(k) : BULK.keys.add(k); bulkMarks(); for (const b of document.querySelectorAll("#cardList .lc[data-k]")) b.classList.toggle("picked", BULK.keys.has(b.dataset.k)); renderBulk(); }
+function setBulk(on) { BULK.on = on; if (!on) BULK.keys.clear(); renderAll(); }
+function renderBulk() {
+  const bar = $("#bulkBar"); if (!BULK.on || isPlan() || isFw() || isRel()) { bar.hidden = true; return; }
+  const cs = bulkDevs(), n = cs.length, cl = cs.filter(c => !c.is_device);
+  const rc = cs.filter(canReconnect).length, fixed = cl.filter(c => c.use_fixedip).length, vno = cl.filter(c => !!c.vno_id).length;
+  const btn = (act, label, cnt, title) => `<button type="button" class="btn sm" data-bulk="${act}" ${!cnt || BULK.busy ? "disabled" : ""} title="${esc(title)}"><span>${label}</span>${cnt != null ? ` <span class="muted">(${cnt})</span>` : ""}</button>`;
+  bar.innerHTML = `<span class="bb-n">${n ? `<b>${n}</b> <span>selected</span>` : `<span class="muted">Click devices to select them</span>`}</span>
+    <button type="button" class="link" data-bulk="all">Select all shown</button><button type="button" class="link" data-bulk="none" ${n ? "" : "disabled"}>None</button>
+    <span class="bb-sep"></span>
+    ${btn("vno", "Override network…", cl.length, "Put the selected clients into a network (VLAN), regardless of WiFi or switch port")}
+    ${btn("novno", "Remove override", vno, "Switch the virtual network override off")}
+    ${btn("unres", "Release fixed IP", fixed, "Remove the fixed IP – the devices get an address from the DHCP pool again")}
+    ${btn("note", "Note…", cl.length, "Set the same note for the selected clients")}
+    ${btn("rc", "Reconnect WiFi", rc, "Disconnect the selected WiFi clients for a moment so they ask for a new address")}
+    ${FW.data ? btn("fw", "Firewall rule…", cl.filter(c => c.mac).length, "Create a firewall rule for the selected devices") : ""}
+    <span class="sp"></span><button type="button" class="btn sm primary" data-bulk="done">Done</button>`;
+  bar.hidden = false;
+}
+function bulkAsk(act, cs) {
+  return new Promise(res => {
+    const d = $("#dlgBulk"), net = act === "vno";
+    $("#bulkTitle").textContent = I18N.tr(net ? "Override network" : "Set note");
+    $("#bulkText").textContent = I18N.tr(net ? `${cs.length} clients are put into this network. A client with a fixed IP in another network is skipped.` : `The note of ${cs.length} clients is replaced (empty = remove).`);
+    $("#bulkNetF").hidden = !net; $("#bulkNoteF").hidden = net;
+    if (net) $("#bulkNet").innerHTML = state.networks.filter(n => n.subnet).map(n => `<option value="${esc(n.id)}" translate="no">${esc(n.name)}${n.vlan ? ` (${n.vlan})` : ""}</option>`).join("");
+    else $("#bulkNote").value = "";
+    const done = v => { d.close(); $("#formBulk").onsubmit = null; $("#bulkCancel").onclick = null; res(v); };
+    $("#formBulk").onsubmit = e => { e.preventDefault(); done(net ? $("#bulkNet").value : $("#bulkNote").value.trim()); };
+    $("#bulkCancel").onclick = () => done(null);
+    d.showModal(); (net ? $("#bulkNet") : $("#bulkNote")).focus();
+  });
+}
+async function bulkRun(label, cs, fn) {
+  BULK.busy = true; renderBulk();
+  if (!(await autoVersion(`Before bulk change: ${label}`))) { BULK.busy = false; renderBulk(); return; }
+  let ok = 0; const fails = [];
+  for (const c of cs) { try { await fn(c); ok++; } catch (e) { fails.push(`${devName(c)}: ${e.message}`); } }
+  BULK.busy = false;
+  toast(fails.length ? `${ok} changed, ${fails.length} failed – ${fails[0]}` : `${ok} changed`);
+  await load();
+}
+async function bulkAct(act) {
+  if (act === "all") { for (const c of rows()) BULK.keys.add(keyOf(c)); renderAll(); return; }
+  if (act === "none") { BULK.keys.clear(); renderAll(); return; }
+  if (act === "done") { setBulk(false); return; }
+  const cs = bulkDevs(), cl = cs.filter(c => !c.is_device && c.mac);
+  if (act === "fw") { openWizFor(cl); return; }
+  if (act === "rc") {
+    const rc = cs.filter(canReconnect); if (!(await askConfirm(I18N.tr("Reconnect WiFi"), I18N.tr(`${rc.length} WiFi clients are disconnected for a moment, one per second.`)))) return;
+    BULK.busy = true; renderBulk(); let ok = 0;
+    for (const c of rc) { try { await api("api/reconnect", { mac: c.mac }); ok++; } catch {} await new Promise(r => setTimeout(r, 1000)); }
+    BULK.busy = false; renderBulk(); toast(`${ok} reconnected`); setTimeout(() => load(), 15000); return;
+  }
+  if (act === "vno") {
+    const nid = await bulkAsk("vno", cl); if (!nid) return;
+    const todo = cl.filter(c => !(c.use_fixedip && c._resNet && c._resNet !== nid));
+    await bulkRun("network override", todo, c => api("api/client", clientBody(c, { vno_enabled: true, vno_id: nid })));
+  } else if (act === "novno") {
+    const todo = cl.filter(c => !!c.vno_id);
+    if (!(await askConfirm(I18N.tr("Remove override"), I18N.tr(`The virtual network override of ${todo.length} clients is switched off.`)))) return;
+    await bulkRun("remove override", todo, c => api("api/client", clientBody(c, { vno_enabled: false, vno_id: "" })));
+  } else if (act === "unres") {
+    const todo = cl.filter(c => c.use_fixedip);
+    if (!(await askConfirm(I18N.tr("Release fixed IP"), I18N.tr(`${todo.length} fixed IPs are removed. Names and notes are kept; the devices get an address from the DHCP pool again.`)))) return;
+    await bulkRun("release fixed IPs", todo, c => api("api/unreserve", { mac: c.mac }));
+  } else if (act === "note") {
+    const note = await bulkAsk("note", cl); if (note == null) return;
+    await bulkRun("note", cl, c => api("api/client", clientBody(c, { note })));
+  }
+}
+$("#bulkBar").addEventListener("click", e => { const b = e.target.closest("[data-bulk]"); if (b && !b.disabled) bulkAct(b.dataset.bulk); });
+$("#mnSelect").addEventListener("click", () => { if (isPlan() || isFw()) setView("clients"); else if (isRel()) setView("clients"); setBulk(true); });
+// firewall wizard for several devices: "Selected devices" of the zone most of them are in
+function openWizFor(cs) {
+  openWiz(null);
+  const byZone = {}; for (const c of cs) { const z = zoneOf(c)?.id; if (z) (byZone[z] ||= []).push(c.mac); }
+  const [zone, macs] = Object.entries(byZone).sort((a, b) => b[1].length - a[1].length)[0] || ["", []];
+  Object.assign(WZ.src, { mode: "devs", zone, macs });
+  WZ.dst.mode = "inet"; WZ.dst.zone = fwZoneByKey("external")?.id || WZ.dst.zone;
+  if (Object.keys(byZone).length > 1) toast(`The devices are in ${Object.keys(byZone).length} zones – the rule uses the ${macs.length} in the zone most of them are in.`);
+  renderWiz();
+}
+
 // ---------- what changed since the last visit: a snapshot in the browser, compared on every render ----------
 const SEEN_KEY = "seenState";
 const fwSig = p => JSON.stringify([p.name, p.action, p.enabled !== false, p.index, p.source?.zone_id, p.destination?.zone_id]);
@@ -1900,12 +2008,12 @@ function renderCards(list) {
   const sel = state.sel && keyOf(state.sel);
   $("#cardList").innerHTML = list.map(c => {
     const fixedOther = c.use_fixedip && c.fixed_ip && c.fixed_ip !== c.ip;
-    return `<button type="button" class="lc${keyOf(c) === sel ? " sel" : ""}${c.online ? "" : " off"}" data-k="${esc(keyOf(c))}">
+    return `<button type="button" class="lc${keyOf(c) === sel ? " sel" : ""}${c.online ? "" : " off"}${BULK.keys.has(keyOf(c)) ? " picked" : ""}" data-k="${esc(keyOf(c))}">
       <span class="lc-ic"><span class="dev ${c.is_device ? "ud" : ""} ${c.icon_id ? "pic" : ""}">${iconHtml(c)}</span></span>
       <span class="lc-m">
         <span class="lc-n"><span class="dot ${c.online ? "on" : ""}" title="${c.online ? "Online" : "Offline"}"></span><b translate="no">${esc(devName(c))}</b>${colTd("ipmode", c)}</span>
         <span class="lc-s"><span class="mono" translate="no">${esc(c.ip || "–")}</span>${fixedOther ? ` <span class="muted">→</span> <span class="mono lc-fix" translate="no" title="Fixed IP">${esc(c.fixed_ip)}</span>` : ""}${netLabel(c.network_id) ? ` · <span translate="no">${esc(netLabel(c.network_id))}</span>` : ""}</span>
-        <span class="lc-s muted"><span>${CONN_LABEL[c.conn] || ""}</span>${colTd("uplink", c) && colTd("uplink", c) !== CONN_LABEL[c.conn] ? ` · <span translate="no">${colTd("uplink", c)}</span>` : ""}</span>
+        <span class="lc-s muted">${[CONN_LABEL[c.conn] ? `<span>${CONN_LABEL[c.conn]}</span>` : "", colTd("uplink", c) && colTd("uplink", c) !== CONN_LABEL[c.conn] ? `<span translate="no">${colTd("uplink", c)}</span>` : ""].filter(Boolean).join(" · ")}</span>
         ${c._warn.length ? `<span class="lc-w">${colTd("_warn", c)}</span>` : ""}
       </span></button>`;
   }).join("");
@@ -1922,7 +2030,7 @@ function renderTable() {
   else tb.innerHTML = list.map(c => `<tr data-k="${esc(keyOf(c))}" class="${state.sel && keyOf(state.sel) === keyOf(c) ? "sel" : ""}">${visCols().map(col => `<td${USER_COLS.has(col.key) ? ' translate="no"' : ""}>${col.td(c)}</td>`).join("")}</tr>`).join("");
   if (tw.scrollTop !== keep[0] || tw.scrollLeft !== keep[1]) { tw.scrollTop = keep[0]; tw.scrollLeft = keep[1]; } // never jump on a re-render
   // long text, and a short one for narrow phones
-  renderCards(list); renderChg();
+  renderCards(list); renderChg(); bulkMarks(); renderBulk();
   $("#count").innerHTML = `<span class="cnt-l">${list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`}</span><span class="cnt-s" translate="no">${list.length === state.clients.length ? list.length : `${list.length}/${state.clients.length}`}</span>`;
   $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" }) : "";
 }
@@ -5545,8 +5653,8 @@ $("#btnVer").addEventListener("click", openVersions);
 $("#mnVer").addEventListener("click", openVersions); // phones: the header button has no room
 
 // ---------- wiring ----------
-$("#cardList").addEventListener("click", e => { const b = e.target.closest(".lc[data-k]"); if (!b) return; const c = state.clients.find(x => keyOf(x) === b.dataset.k); if (c) openPanel(c); });
-$("#tbody").addEventListener("click", e => { if (e.target.closest("input.ie")) return; const tr = e.target.closest("tr[data-k]"); if (!tr) return; const c = state.clients.find(x => keyOf(x) === tr.dataset.k); if (c) openPanel(c); });
+$("#cardList").addEventListener("click", e => { const b = e.target.closest(".lc[data-k]"); if (!b) return; if (BULK.on) { bulkToggle(b.dataset.k); return; } const c = state.clients.find(x => keyOf(x) === b.dataset.k); if (c) openPanel(c); });
+$("#tbody").addEventListener("click", e => { if (e.target.closest("input.ie")) return; const tr = e.target.closest("tr[data-k]"); if (!tr) return; if (BULK.on) { bulkToggle(tr.dataset.k); return; } const c = state.clients.find(x => keyOf(x) === tr.dataset.k); if (c) openPanel(c); });
 $("#q").addEventListener("input", e => { state.q = e.target.value; renderAll(); });
 $("#btnReload").addEventListener("click", load);
 // filter pane: the blue icon hides / shows it (mobile: slide-in, desktop: collapse)
