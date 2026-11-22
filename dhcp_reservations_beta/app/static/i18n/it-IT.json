@@ -1525,5 +1525,10 @@
  "not decided": "non deciso",
  "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Righe: da · colonne: a. Ping e servizi comuni, come il test nei dettagli – fai clic su una cella per i dettagli.",
  "Only the first {0} devices.": "Solo i primi {0} dispositivi.",
- "Remove from the selection": "Rimuovi dalla selezione"
+ "Remove from the selection": "Rimuovi dalla selezione",
+ "The selected client is put into this network. If it has a fixed IP in another network, it is skipped.": "Il client selezionato viene messo in questa rete. Se ha un IP fisso in un’altra rete, viene saltato.",
+ "The note of the selected client is replaced (empty = remove).": "La nota del client selezionato viene sostituita (vuoto = rimuovi).",
+ "The selected WiFi client is disconnected for a moment.": "Il client Wi-Fi selezionato viene disconnesso brevemente.",
+ "The virtual network override of the selected client is switched off.": "La forzatura di rete del client selezionato viene disattivata.",
+ "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "L’IP fisso viene rimosso. Nome e nota restano; il dispositivo riceve di nuovo un indirizzo dal pool DHCP."
 }

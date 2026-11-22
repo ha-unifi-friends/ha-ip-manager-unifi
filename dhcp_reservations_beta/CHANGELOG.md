@@ -1,5 +1,23 @@
 # Changelog
 
+## 1.53.0
+
+Fixes and improvements from the full review of the new features.
+
+- **List:** the IP follows the name directly, then all pills (fixed IP, connection, switch / AP with port, network, issues) flow in one block. Connection and port are now translated in the list too.
+- **Selection pane:** it is only rebuilt when the selection or the data changes – an open matrix result, the scroll position and the column chooser are kept while you search or the data refreshes. The matrix is much faster with many devices.
+- **Views:** switching to IP plan or firewall hides the selection pane and leaves the list mode cleanly; coming back shows it again.
+- **Connection test / matrix:** IPv6-only rules no longer decide the (IPv4) test; custom rules that include new connections now count instead of being skipped.
+- **Escape** leaves multi-select only when you are not typing and no menu is open; closing the bulk dialog with Escape no longer leaves it hanging.
+- **Since your last visit:** a new rule on top no longer marks all other rules as changed; Teleport sessions no longer show up as new / removed devices. A click on «removed» lists the devices.
+- **Bulk actions:** the counts on the buttons match the devices that are changed; texts for a single device read naturally; repeated «Reconnect WiFi» no longer stacks reloads.
+- **Selection marks:** the highlight in the list follows the device; graph nodes known only by IP are marked too.
+- **Accessibility:** matrix cells and graph nodes work with the keyboard (Tab, Enter); visible focus rings; selection state for screen readers; readable names for «1 | n»; purple numbers with better contrast in the light theme.
+- **Medium-wide windows:** the selection pane takes at most half the window.
+- **Recently changed:** the filter names the version it compares with.
+- **Server:** Teleport sessions get a stable key.
+- Clean-up: shared dialog backdrop, merged CSS for phones, removed unused code, shared helpers for icons, verdicts and device clicks.
+
 ## 1.52.10
 
 - **Selection slider:** a mouse-pointer icon left of «1 | n» makes clear what the slider is for.

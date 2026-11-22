@@ -1525,5 +1525,10 @@
  "not decided": "inte avgjort",
  "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Rader: från · kolumner: till. Ping och vanliga tjänster, som testet i enhetsdetaljerna – klicka på en cell för detaljer.",
  "Only the first {0} devices.": "Bara de första {0} enheterna.",
- "Remove from the selection": "Ta bort från urvalet"
+ "Remove from the selection": "Ta bort från urvalet",
+ "The selected client is put into this network. If it has a fixed IP in another network, it is skipped.": "Den valda klienten placeras i detta nätverk. Om den har en fast IP i ett annat nätverk hoppas den över.",
+ "The note of the selected client is replaced (empty = remove).": "Anteckningen för den valda klienten ersätts (tomt = ta bort).",
+ "The selected WiFi client is disconnected for a moment.": "Den valda wifi-klienten kopplas från en stund.",
+ "The virtual network override of the selected client is switched off.": "Nätverkstvingningen för den valda klienten stängs av.",
+ "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "Den fasta IP:n tas bort. Namn och anteckning behålls; enheten får åter en adress från DHCP-poolen."
 }
