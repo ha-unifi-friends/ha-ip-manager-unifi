@@ -9,6 +9,10 @@
 - Network rules (“belongs in …”) mark wired devices with *(switch port)*.
 - New table column **Port VLAN** (filterable by network).
 
+**App:**
+- Marked as **experimental** in the Home Assistant add-on store.
+- Own **AppArmor profile**: the app may read and run what is in its container, but write only to its data folder and the runtime folders; only the capabilities it needs (incl. `net_raw` for ping), no mounting, no kernel settings. This raises the Home Assistant security rating from 7 to 8.
+
 ## 1.35.3 – 2026-11-16
 
 **Relations:**

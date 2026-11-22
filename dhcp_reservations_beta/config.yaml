@@ -1,6 +1,7 @@
 name: "IP Manager for UniFi Beta"
 version: "1.36.0"
 slug: dhcp_reservations_beta
+stage: experimental
 description: "BETA – UniFi clients, fixed IPs and DHCP reservations – IP plan, cleanup, firewall analysis and rules, relations graph, views, bulk changes, versions (unofficial)"
 url: https://github.com/ha-unifi-friends/ha-ip-manager-unifi
 arch:
@@ -12,6 +13,7 @@ boot: auto
 homeassistant_api: true
 hassio_api: true
 ingress: true
+apparmor: true
 ingress_port: 8099
 panel_icon: mdi:ip-network
 panel_title: "IP Manager Beta"
