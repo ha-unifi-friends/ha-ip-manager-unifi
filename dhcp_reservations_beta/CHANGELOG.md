@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.41.11 – 2026-11-22
+
+- **Phones, Topology:** the icon switch is right-aligned in the row of the tabs.
+
 ## 1.41.10 – 2026-11-22
 
 - **Phones, Clients:** the view selector (e.g. *All*) sits on the left below the menu points, the buttons on the right in the same row.
