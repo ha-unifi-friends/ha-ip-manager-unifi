@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.38.1 – 2026-11-22
+
+- **Device details** show the suspicious-traffic findings of the last 24 hours for the device as pills, like in *Relations* (e.g. “⛔ 1600 connection attempts blocked by the firewall”). The findings are read once and kept 5 minutes on the server, so opening devices stays quick.
+
 ## 1.38.0 – 2026-11-22
 
 - **Access points and switches** get a card at the bottom of their settings, like in UniFi: **Locate** (the LED blinks; click again to stop), **Restart** and – for access points – **Disable** / **Enable**. Restart and Disable ask first; the card then says what was sent. Not offered for the gateway (a restart would cut Home Assistant off too); switches cannot be disabled here.

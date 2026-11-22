@@ -1430,5 +1430,6 @@
  "✓ {0} stopped blinking ({1}).": "✓ {0} knippert niet meer ({1}).",
  "✓ Restart sent at {0} – {1} is back in about a minute.": "✓ Herstart verstuurd om {0} – {1} is over ongeveer een minuut terug.",
  "✓ {0} disabled ({1}).": "✓ {0} uitgeschakeld ({1}).",
- "✓ {0} enabled ({1}).": "✓ {0} ingeschakeld ({1})."
+ "✓ {0} enabled ({1}).": "✓ {0} ingeschakeld ({1}).",
+ "Last 24 hours:": "Laatste 24 uur:"
 }
