@@ -1524,5 +1524,6 @@
  "all blocked": "wszystko zablokowane",
  "not decided": "nierozstrzygnięte",
  "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Wiersze: z · kolumny: do. Ping i popularne usługi, jak test w szczegółach – kliknij komórkę, aby zobaczyć szczegóły.",
- "Only the first {0} devices.": "Tylko pierwszych {0} urządzeń."
+ "Only the first {0} devices.": "Tylko pierwszych {0} urządzeń.",
+ "Remove from the selection": "Usuń z zaznaczenia"
 }

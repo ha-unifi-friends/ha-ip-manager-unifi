@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.4
+
+- **Selection pane:** the numbered devices moved into the summary (*Devices*, below *Reaches the internet*); each has a ✕ to remove it from the selection. The numbers are purple on dark grey – the same purple as the row and column numbers of the matrix, so they are easy to match.
+
 ## 1.52.3
 
 - **Selection matrix:** the cells use the whole width of the pane – wide with few devices, narrower with more, down to the icon; only then the matrix scrolls sideways. The key (✓ ◐ ✕ ?) sits below the matrix; the arrows in the top left corner are gone.
