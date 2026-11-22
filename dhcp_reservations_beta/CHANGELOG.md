@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.44.3
+
+- Top bar: the view selector (List) and the icon switch (Tree, Graph) sit lower, next to the tabs just above the line. On phones they are right-aligned and the gap between the menu and the tabs is smaller – the header is about 20 px lower.
+
 ## 1.44.2
 
 - Phone: the icon switch is back for Tree and Graph – it takes the place of the view selector of the list and fits next to the tabs even on 320 px wide screens.
