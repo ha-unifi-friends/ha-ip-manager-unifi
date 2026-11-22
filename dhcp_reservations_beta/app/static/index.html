@@ -535,15 +535,17 @@ body.sel-split .tablewrap{padding-bottom:50vh;padding-bottom:50dvh}}
 #paneSel{min-height:0;grid-auto-rows:max-content}
 .sel-acts{display:grid;gap:6px}.sel-act{justify-content:flex-start;width:100%}
 .sel-mx-card{overflow-x:auto}
-.sel-mx{border-collapse:separate;border-spacing:2px;font-size:11.5px}
+.sel-mx{border-collapse:separate;border-spacing:3px;font-size:11.5px;width:100%;table-layout:fixed;min-width:calc((var(--cols) + 1) * 25px)}
 .sel-mx th{font-weight:600;color:var(--muted);text-align:center;padding:2px 4px;white-space:nowrap}
 .sel-mx th.sm-row{text-align:right;color:var(--muted)}
-.sel-mx .sm-corner{font-weight:400;font-size:11px}
+.sel-mx .sm-corner,.sel-mx th.sm-row{width:22px}
+td.sm-c.on{outline:2px solid var(--accent);outline-offset:1px}
 .sm-scroll{overflow-x:auto}
 .sm-leg{margin-bottom:8px}.sm-lp{padding:2px 9px 2px 3px;font-size:12px}.sm-lp b{order:-1;background:var(--accent);color:#fff;min-width:22px}
-.sm-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:11.5px;color:var(--muted);margin-bottom:6px}.sm-key .sm-c{display:inline-grid;place-items:center;width:20px;height:18px;margin-left:4px}
-.smx-f{min-width:min(420px,calc(100vw - 48px))}.smx-body{padding:10px 12px}
-.sm-c{width:22px;height:22px;text-align:center;border-radius:5px;font-weight:700;cursor:pointer}.sm-c.sm-self{cursor:default}td.sm-c:not(.sm-self):hover{outline:2px solid var(--accent)}
+.sm-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:11.5px;color:var(--muted);margin-top:8px}.sm-key .sm-c{display:inline-grid;place-items:center;width:20px;height:18px}.sm-kp{display:inline-flex;align-items:center;gap:5px;margin-right:8px;white-space:nowrap}
+.smx-res{display:grid;gap:6px;margin:0 0 10px;padding:8px 10px;border:1px solid var(--accent);border-radius:8px;background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+.smx-res[hidden]{display:none}.smx-h{display:flex;align-items:center;gap:8px;font-size:13px}.smx-h .x{margin-left:auto;color:var(--muted)}
+.sm-c{height:24px;padding:0;text-align:center;border-radius:5px;font-weight:700;cursor:pointer}.sm-c.sm-self{cursor:default}td.sm-c:not(.sm-self):hover{outline:2px solid var(--accent)}
 .sm-allow{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
 .sm-block{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
 .sm-part{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
@@ -1422,13 +1424,6 @@ window.I18N = (() => {
     <div class="actions"><button class="btn" type="button" id="haWarnCancel">Cancel</button><button class="btn danger" type="submit" id="haWarnOk" disabled>Change anyway</button></div>
   </form>
 </dialog>
-<dialog id="dlgSmx" class="small" aria-labelledby="smxTitle">
-  <form method="dialog" class="smx-f">
-    <h2 id="smxTitle"></h2>
-    <div class="ports smx-body" id="smxBody"></div>
-    <div class="actions"><button class="btn primary" type="submit">Close</button></div>
-  </form>
-</dialog>
 <dialog id="dlgBulk" class="small" aria-labelledby="bulkTitle">
   <form method="dialog" id="formBulk" novalidate>
     <h2 id="bulkTitle">Change devices</h2>
@@ -1993,7 +1988,7 @@ function selMatrixHtml(cs) {
   if (!FW.data) return "";
   const ds = cs.filter(c => c.mac && zoneOf(c)).slice(0, SELMX.max), ext = fwZoneByKey("external");
   if (!ds.length) return "";
-  SELMX.pairs = [];
+  SELMX.pairs = []; SELMX.open = null;
   const cell = (a, dz, b) => {
     const r = SIM_SVCS.map(([name, proto, port]) => ({ name, port, r: simService(zoneOf(a).id, dz, a, b, proto, port) }));
     const ok = r.filter(x => x.r.verdict === "allow").length, no = r.filter(x => x.r.verdict === "block").length;
@@ -2002,18 +1997,21 @@ function selMatrixHtml(cs) {
     return `<td class="sm-c sm-${v[0]}" data-smx="${idx}" title="${esc(`${devName(a)} → ${b ? devName(b) : "Internet"}: ${ok}/${r.length} ${I18N.tr("allowed")}`)}">${v[1]}</td>`;
   };
   const legend = `<div class="sel-pills sm-leg">${ds.map((d, i) => `<span class="sel-pill sm-lp"><b>${i + 1}</b><span translate="no">${esc(devName(d))}</span></span>`).join("")}</div>`;
-  const keyLeg = `<div class="sm-key"><span class="sm-c sm-allow">✓</span><span>all allowed</span><span class="sm-c sm-part">◐</span><span>partly</span><span class="sm-c sm-block">✕</span><span>all blocked</span><span class="sm-c sm-unknown">?</span><span>not decided</span></div>`;
-  const head = `<tr><th class="sm-corner" title="${esc(I18N.tr("From ↓ To →"))}">↓→</th>${ds.map((d, i) => `<th title="${esc(devName(d))}" translate="no">${i + 1}</th>`).join("")}${ext ? `<th title="Internet">🌐</th>` : ""}</tr>`;
+  const keyLeg = `<div class="sm-key">${[["allow", "✓", "all allowed"], ["part", "◐", "partly"], ["block", "✕", "all blocked"], ["unknown", "?", "not decided"]].map(([k, i, l]) => `<span class="sm-kp"><span class="sm-c sm-${k}">${i}</span><span>${l}</span></span>`).join("")}</div>`;
+  const head = `<tr><th class="sm-corner"></th>${ds.map((d, i) => `<th title="${esc(devName(d))}" translate="no">${i + 1}</th>`).join("")}${ext ? `<th title="Internet">🌐</th>` : ""}</tr>`;
   const rows = ds.map((a, i) => `<tr><th class="sm-row" title="${esc(devName(a))}" translate="no">${i + 1}</th>${ds.map(b => b === a ? `<td class="sm-c sm-self">–</td>` : cell(a, zoneOf(b).id, b)).join("")}${ext ? cell(a, ext.id, null) : ""}</tr>`).join("");
-  return `<div class="sec-title">Firewall between the selected devices</div><div class="card sel-mx-card">${legend}${keyLeg}<div class="sm-scroll"><table class="sel-mx">${head}${rows}</table></div>
+  const ncol = ds.length + (ext ? 1 : 0);
+  return `<div class="sec-title">Firewall between the selected devices</div><div class="card sel-mx-card">${legend}<div id="smxRes" class="smx-res" hidden></div><div class="sm-scroll"><table class="sel-mx" style="--cols:${ncol}">${head}${rows}</table></div>${keyLeg}
     <p class="hint" style="margin:6px 0 0">Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.${cs.length > ds.length ? ` <span>Only the first ${SELMX.max} devices.</span>` : ""}</p></div>`;
 }
-// a cell of the matrix: the same result as the device test, in a small dialog
+// a cell of the matrix: the same result as the device test, shown above the matrix (click again to hide)
 function selMxOpen(i) {
-  const x = SELMX.pairs[i]; if (!x) return;
-  $("#smxTitle").innerHTML = `<span translate="no">${esc(devName(x.a))}</span> → ${x.b ? `<span translate="no">${esc(devName(x.b))}</span>` : `🌐 <span>Internet</span>`}`;
-  $("#smxBody").innerHTML = simResultHtml(x.r);
-  $("#dlgSmx").showModal();
+  const x = SELMX.pairs[i], box = $("#smxRes"); if (!x || !box) return;
+  const was = $("#paneSel td.sm-c.on"); was?.classList.remove("on");
+  if (SELMX.open === i && !box.hidden) { box.hidden = true; SELMX.open = null; return; }
+  SELMX.open = i; $(`#paneSel td[data-smx="${i}"]`)?.classList.add("on");
+  box.innerHTML = `<div class="smx-h"><b><span translate="no">${esc(devName(x.a))}</span> → ${x.b ? `<span translate="no">${esc(devName(x.b))}</span>` : `🌐 <span>Internet</span>`}</b><button type="button" class="x link" data-smxclose aria-label="Close">✕</button></div>${simResultHtml(x.r)}`;
+  box.hidden = false;
 }
 function bulkAsk(act, cs) {
   return new Promise(res => {
@@ -2067,7 +2065,7 @@ async function bulkAct(act) {
     await bulkRun("note", cl, c => api("api/client", clientBody(c, { note })));
   }
 }
-$("#paneSel").addEventListener("click", e => { const m = e.target.closest("[data-smx]"); if (m) { selMxOpen(+m.dataset.smx); return; } const b = e.target.closest("[data-bulk]"); if (b && !b.disabled) bulkAct(b.dataset.bulk); });
+$("#paneSel").addEventListener("click", e => { if (e.target.closest("[data-smxclose]")) { $("#smxRes").hidden = true; $("#paneSel td.sm-c.on")?.classList.remove("on"); SELMX.open = null; return; } const m = e.target.closest("[data-smx]"); if (m) { selMxOpen(+m.dataset.smx); return; } const b = e.target.closest("[data-bulk]"); if (b && !b.disabled) bulkAct(b.dataset.bulk); });
 $("#mnSelect").addEventListener("click", () => { if (isPlan() || isFw()) setView("clients"); else if (isRel()) setView("clients"); setBulk(true); });
 // firewall wizard for several devices: "Selected devices" of the zone most of them are in
 function openWizFor(cs) {
