@@ -526,10 +526,11 @@ body.fw-mode #btnNew{display:none}
 .fm-i{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff}
 .fm-i.allow{background:var(--ok)}.fm-i.block{background:var(--bad)}.fm-i.ret{background:var(--accent)}.fm-i.off{background:var(--muted)}
 .fm-i.dead{opacity:.4}
-.fm-sp{flex:none;position:relative;width:18px;height:3px;background:var(--line-strong)}
-.fm-sp.on{background:var(--ok)}
-.fm-sp .fm-i{position:absolute;left:1px;top:7px;width:16px;height:16px;font-size:9px;opacity:.55}
-.fw-mini.has-sp .fm-sum{padding-bottom:12px!important}
+.fm-by{flex:none;position:relative;width:30px;height:22px;display:grid;place-items:center}
+.fm-by::before{content:"";position:absolute;left:0;right:0;top:-6px;height:18.5px;box-sizing:border-box;border:3px solid var(--line-strong);border-bottom:0;border-radius:12px 12px 0 0}
+.fm-by.on::before{border-color:var(--ok)}
+.fm-by .fm-i{position:relative;opacity:.55}
+.fw-mini.has-by .fm-sum{padding-top:8px!important}
 .fm-i.stop{box-shadow:0 0 0 3px color-mix(in srgb,var(--bad) 35%,transparent)}
 .fm-v{flex:none;margin-left:6px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:12px;font-weight:800;color:#fff}
 .fm-v.ok{background:var(--ok)}.fm-v.no{background:var(--bad)}
@@ -2882,12 +2883,12 @@ function fwMiniChainHtml(c) {
   // collapsed: device – rule icons – internet, the green line runs until a rule blocks all normal traffic of the device
   const stop = items.find(x => x.decides && !fwIsAllow(x.p) && fwCst(x.p) !== "RESPOND_ONLY");
   let flow = true;
-  const strip = items.map(x => { if (x.sp) return `<span class="fm-sp${flow ? " on" : ""}"><span class="fm-i ${cls(x)}" title="${esc(tip(x))}">${icon(x)}</span></span>`; const seg = `<span class="fm-l${flow ? " on" : ""}"></span><span class="fm-i ${cls(x)}${x.dead ? " dead" : ""}${x === stop ? " stop" : ""}" title="${esc(tip(x))}">${icon(x)}</span>`; if (x === stop) flow = false; return seg; }).join("")
+  const strip = items.map(x => { if (x.sp || x.off) return `<span class="fm-l${flow ? " on" : ""}"></span><span class="fm-by${flow ? " on" : ""}"><span class="fm-i ${cls(x)}${x.sp ? " sp" : ""}" title="${esc(tip(x))}">${icon(x)}</span></span>`; const seg = `<span class="fm-l${flow ? " on" : ""}"></span><span class="fm-i ${cls(x)}${x.dead ? " dead" : ""}${x === stop ? " stop" : ""}" title="${esc(tip(x))}">${icon(x)}</span>`; if (x === stop) flow = false; return seg; }).join("")
     + `<span class="fm-l${flow ? " on" : ""}"></span>`;
   const alts = [...new Set(items.filter(x => x.alt).map(x => x.alt))];
   const open = store.get("fwMiniOpen", false);
   return `<div class="sec-title"><span>Internet access</span> <span class="muted">Client → External</span></div>
-    <details class="card fw-mini${items.some(x => x.sp) ? " has-sp" : ""}" id="fwMini"${open ? " open" : ""}><summary class="fm-sum" title="${esc(flow ? "Normal traffic of this device reaches the internet" : `Normal traffic of this device is blocked by ${stop.p.name || "a rule"}`)}"><span class="fm-n dev">${iconHtml(c)}</span>${strip}<span class="fm-n net${flow ? " on" : ""}">🌐</span><span class="fm-v ${flow ? "ok" : "no"}" aria-label="${flow ? "Reaches the internet" : "Blocked"}">${flow ? "✓" : "✕"}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
+    <details class="card fw-mini${items.some(x => x.sp || x.off) ? " has-by" : ""}" id="fwMini"${open ? " open" : ""}><summary class="fm-sum" title="${esc(flow ? "Normal traffic of this device reaches the internet" : `Normal traffic of this device is blocked by ${stop.p.name || "a rule"}`)}"><span class="fm-n dev">${iconHtml(c)}</span>${strip}<span class="fm-n net${flow ? " on" : ""}">🌐</span><span class="fm-v ${flow ? "ok" : "no"}" aria-label="${flow ? "Reaches the internet" : "Blocked"}">${flow ? "✓" : "✕"}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
     <div class="fw-named">${lane}</div><p class="hint" style="margin:6px 0 0">Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.</p>${items.some(x => x.sp) ? `<p class="hint" style="margin:4px 0 0">Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.</p>` : ""}${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}${fwNamedHtml(c, true, { src: z.id, dst: ext.id })}</details>`;
 }
 document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); }, true);
