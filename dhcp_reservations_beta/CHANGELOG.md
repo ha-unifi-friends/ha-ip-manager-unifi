@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.45.2
+
+Clean-up from the review (no visible change intended):
+- The topology graph draws plain lines (cable solid, WiFi / mesh dashed); the leftovers of the former traffic graph are removed (arrow markers, port colours, data volume, selection state).
+- One helper for the device icons in the IP plan, tree and graph – the Home Assistant host now shows the HA logo in the IP plan too (as in the topology); one helper for the rule symbols (✓ ✕ Ⅱ ↩).
+- Dead and duplicated CSS removed, overlapping top-bar rules merged.
+- Server: the unused endpoint `api/check_new` is removed; shared helpers for port profiles, the controller host and Home Assistant API calls.
+- 90 translation keys that are no longer used removed from all languages.
+
 ## 1.45.1
 
 Fixes from a full review:
