@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.52.3
+
+- **Selection matrix:** the cells use the whole width of the pane – wide with few devices, narrower with more, down to the icon; only then the matrix scrolls sideways. The key (✓ ◐ ✕ ?) sits below the matrix; the arrows in the top left corner are gone.
+- A click on a cell shows its result right above the matrix (below the numbered devices) instead of a dialog; the cell is marked, a second click or ✕ hides it.
+
 ## 1.52.2
 
 - **Firewall matrix of the selection:** up to 30 devices (was 10). The devices are listed above as numbered pills; the matrix shows only the numbers, so it stays compact (scrolls sideways when needed). A small key explains ✓ ◐ ✕ ?.
