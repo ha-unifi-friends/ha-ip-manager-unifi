@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.41.1 – 2026-11-22
+
+- **Phones:** the header has the menu points in the first row; below them the tabs sit on the left on the blue line and *Refresh* / *Actions* are on the right. Menus are never wider than the screen; long entries wrap.
+
 ## 1.41.0 – 2026-11-22
 
 - **Topology:** new switch **Icons – None / UniFi / Home Assistant** for tree and graph: no icons (plain dots), UniFi's device icons, or the logo of the Home Assistant integration a device belongs to. With icons the clients in the graph are drawn a little bigger.
