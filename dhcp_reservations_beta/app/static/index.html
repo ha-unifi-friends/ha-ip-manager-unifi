@@ -132,7 +132,7 @@ td:first-child,th:first-child{padding-left:max(16px,env(safe-area-inset-left))}
 @container main (min-width:560px){.topbar,.topbar .grp{flex-wrap:nowrap}.topbar>*,.topbar .grp>*{flex:none}.topbar .sp{flex:1}#count,#stand{white-space:nowrap}}
 @container main (max-width:1060px){.topbar .btn.icon-btn:not(.primary) .lbl{display:none}.topbar .btn.icon-btn:not(.primary){padding:6px 9px}}
 @container main (max-width:820px){#stand{display:none}.topbar .btn.icon-btn.primary .lbl{display:none}.topbar .btn.icon-btn.primary{padding:6px 9px}}
-@container main (max-width:640px){#count{display:none}.topbar .plan-icons-slot{display:none}}
+@container main (max-width:640px){.topbar .plan-icons-slot{display:none}}
 @container main (max-width:760px){.topbar .plan-size{display:none}}
 @container main (max-width:1560px){:root:not([lang="en"]) body.plan-mode .topbar .btn.icon-btn.primary .lbl{display:none}:root:not([lang="en"]) body.plan-mode .topbar .btn.icon-btn.primary{padding:6px 9px}}
 @container main (max-width:1180px){:root:not([lang="en"]) .topbar .btn.icon-btn:not(.primary) .lbl{display:none}:root:not([lang="en"]) .topbar .btn.icon-btn:not(.primary){padding:6px 9px}}
@@ -359,7 +359,7 @@ body:not(.plan-mode) .plan-only{display:none!important}
 body.fw-mode #lnkCols,body.fw-mode #lnkClear,body.fw-mode .topbar>.viewsel,body.fw-mode #count,body.fw-mode #btnInline,body.fw-mode #facets,body.fw-mode .side-head .search{display:none}
 body.fw-mode .topbar{border-bottom:2px solid var(--accent)}
 body:not(.fw-mode) .fw-only{display:none!important}
-body.rel-mode #lnkCols,body.rel-mode .topbar>.viewsel,body.rel-mode #count,body.rel-mode #btnInline,body.rel-mode #btnNew{display:none}
+body.rel-mode #lnkCols,body.rel-mode #btnInline,body.rel-mode #btnNew{display:none}
 body.rel-mode .topbar{border-bottom:2px solid var(--accent)}
 .rel-ctrl{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--card);margin:2px 0 10px}
 .rel-ctrl .sp{flex:1}
@@ -484,7 +484,14 @@ body:not(.rel-mode) .topo-icons{display:none!important}
 /* the view selector of the list and the icon switch of tree / graph sit low, next to the tabs, just above the line */
 .topbar>.viewsel,.topbar .topo-icons{align-self:flex-end;margin-bottom:-5px}
 #count{align-self:flex-end;margin-bottom:2px}
-@container main (max-width:559px){.topbar{row-gap:2px}.topbar .topo-icons,.topbar>.viewsel{order:5;margin-left:auto}} /* phone: right-aligned, next to the tabs; less room between menu and tabs */
+@container main (max-width:559px){.topbar{row-gap:2px}.topbar>.viewsel,.topbar #count{order:5}#count{font-size:12px;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}} /* phone: view and count next to the tabs; less room between menu and tabs */
+/* the icon switch moves into the Actions menu when the top bar has no room for it */
+.cnt-s{display:none}
+@container main (max-width:385px){.cnt-l{display:none}.cnt-s{display:inline}}
+.act-icons{display:none}
+@container main (max-width:1240px){body.rel-mode .topbar .topo-icons{display:none!important}body.rel-mode .act-icons{display:flex}}
+.act-icons{align-items:center;gap:8px;padding:6px 10px;color:var(--muted)}
+.act-icons .seg button{padding:4px 10px;font-size:12.5px}
 .tt-unk{margin-top:18px;display:grid;justify-items:center}
 .rs-c{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:1px 8px;border-radius:999px;background:color-mix(in srgb,var(--warn) 14%,transparent);color:var(--fg);white-space:nowrap}
 .rs-c.bad{background:color-mix(in srgb,var(--bad) 16%,transparent)}
@@ -501,7 +508,7 @@ body:not(.rel-mode) .topo-icons{display:none!important}
 .rel-legend i.dash{background:repeating-linear-gradient(90deg,var(--muted) 0 4px,transparent 4px 7px)}
 @container main (max-width:1060px){body.rel-mode .view-switch button svg + *,body.fw-mode .view-switch button svg + *{display:none}}
 /* the client list has the most in its top bar: shorten step by step instead of overflowing */
-@container main (max-width:1640px){body:not(.plan-mode):not(.fw-mode):not(.rel-mode) .topbar .btn.icon-btn .lbl{display:none}body:not(.plan-mode):not(.fw-mode):not(.rel-mode) .topbar .btn.icon-btn{padding:6px 9px}}
+@container main (max-width:1640px){body:not(.plan-mode):not(.fw-mode) .topbar .btn.icon-btn .lbl{display:none}body:not(.plan-mode):not(.fw-mode) .topbar .btn.icon-btn{padding:6px 9px}}
 @container main (max-width:1200px){body:not(.plan-mode):not(.fw-mode) .view-switch button svg + *{display:none}}
 @container main (max-width:960px){.cli-tabs .tl{display:none}.cli-tabs svg{margin-right:0!important}}
 body.fw-mode #btnNew{display:none}
@@ -1124,6 +1131,7 @@ window.I18N = (() => {
           <button class="mi" role="menuitem" id="btnExp" type="button" title="Export CSV"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M7 10l5 5 5-5M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg><span>Export CSV</span></button>
           <button class="mi" role="menuitem" id="btnHosts" type="button" title="Export fixed IPs and local DNS records as a hosts file"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"/></svg><span>Export hosts file</span></button>
           <button class="mi" role="menuitem" id="btnRules" type="button" title="Which devices belong in which network"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3 8-8M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg><span>Network rules…</span></button>
+          <div class="act-icons"><span>Icons</span><span class="seg" role="group" aria-label="Icons"><button type="button" data-topoicon="none" title="No icons">Off</button><button type="button" data-topoicon="unifi" title="UniFi icons">UniFi</button><button type="button" data-topoicon="ha" title="Home Assistant integration logos">HA</button></span></div>
           <label class="mi mi-chk" role="menuitemcheckbox"><input type="checkbox" id="mnSusp"><span>Notify me in Home Assistant about suspicious traffic</span></label>
           </div>
         </div>
@@ -1813,7 +1821,8 @@ function renderTable() {
   else if (!list.length) tb.innerHTML = `<tr><td class="empty" colspan="${visCols().length}">No client matches the filters.</td></tr>`;
   else tb.innerHTML = list.map(c => `<tr data-k="${esc(keyOf(c))}" class="${state.sel && keyOf(state.sel) === keyOf(c) ? "sel" : ""}">${visCols().map(col => `<td${USER_COLS.has(col.key) ? ' translate="no"' : ""}>${col.td(c)}</td>`).join("")}</tr>`).join("");
   if (tw.scrollTop !== keep[0] || tw.scrollLeft !== keep[1]) { tw.scrollTop = keep[0]; tw.scrollLeft = keep[1]; } // never jump on a re-render
-  $("#count").textContent = list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`;
+  // long text, and a short one for narrow phones
+  $("#count").innerHTML = `<span class="cnt-l">${list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`}</span><span class="cnt-s" translate="no">${list.length === state.clients.length ? list.length : `${list.length}/${state.clients.length}`}</span>`;
   $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" }) : "";
 }
 function renderAll() { renderFacets(); renderTable(); if (isPlan() && !CL.running) renderPlan(); if (isFw()) renderFw(); if (isRel()) renderRel(); }
@@ -4725,6 +4734,7 @@ const clone = o => JSON.parse(JSON.stringify(o ?? null));
 const onlyCols = keep => COLS.map(c => c.key).filter(k => !keep.includes(k)); // hide every column that is not listed
 const BUILTIN_VIEWS = [
   { id: "all", name: "All", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: {}, sort: { key: "ip", dir: 1 } } },
+  { id: "online", name: "Online", builtin: true, state: { hiddenCols: [], colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "mac", "oui", "conn", "uplink", "fixed_ap_mac", "network_id", "vno", "essid", "_warn", "_resNet", "first_seen", "last_seen", "note"], colFilters: {}, facets: { status: ["on"] }, sort: { key: "ip", dir: 1 } } },
   { id: "problems", name: "Problems", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "fwblk", "mac", "oui"]), colOrder: ["online", "ha", "ipmode", "name", "ip", "fixed_ip", "network_id", "vno", "_warn", "mac", "oui"], colFilters: {}, facets: { hint: ["problem", "mismatch", "vno", "dup", "wrongnet"] }, sort: { key: "ip", dir: 1 } } },
   { id: "new", name: "New devices", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "name", "first_seen", "ip", "mac", "oui", "network_id", "conn", "uplink"]), colOrder: ["online", "ha", "name", "first_seen", "ip", "mac", "oui", "network_id", "conn", "uplink"], colFilters: {}, facets: { fresh: ["7"] }, sort: { key: "first_seen", dir: -1 } } },
   { id: "stale", name: "Offline with fixed IP", builtin: true, state: { hiddenCols: onlyCols(["online", "ha", "name", "fixed_ip", "last_seen", "mac", "oui", "network_id", "note"]), colOrder: ["online", "ha", "name", "fixed_ip", "last_seen", "mac", "oui", "network_id", "note"], colFilters: {}, facets: { status: ["off"], res: ["yes"] }, sort: { key: "last_seen", dir: -1 } } },
