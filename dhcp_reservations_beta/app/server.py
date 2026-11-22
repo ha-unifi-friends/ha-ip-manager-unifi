@@ -292,6 +292,14 @@ class Unifi:
             if status in (401, 403):
                 self.login()
                 status, payload = self._raw(method, full, body, timeout)
+            elif status >= 500:
+                # a server error can stick to a stale session (e.g. right after an app or console update): log in
+                # again and retry once instead of failing until the app is restarted
+                log(f"Controller returned HTTP {status} for {method} {path} – logging in again and retrying")
+                time.sleep(1)
+                self.logged_in = False
+                self.login()
+                status, payload = self._raw(method, full, body, timeout)
         if isinstance(payload, list):
             if status >= 400:
                 raise UnifiError(f"Controller returned HTTP {status}", 502)
