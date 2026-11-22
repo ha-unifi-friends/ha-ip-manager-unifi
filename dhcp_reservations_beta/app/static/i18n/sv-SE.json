@@ -1491,5 +1491,6 @@
  "names this device under another MAC": "anger enheten med en annan MAC",
  "Can this device reach …? Test a connection": "Kan enheten nå …? Testa en anslutning",
  "Recently changed": "Nyligen ändrade",
- "Changed in the last 7 days": "Ändrade de senaste 7 dagarna"
+ "Changed in the last 7 days": "Ändrade de senaste 7 dagarna",
+ "Multi-select": "Flerval"
 }
