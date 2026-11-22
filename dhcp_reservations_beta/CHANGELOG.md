@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.44.1
+
+- Phone: the icon switch of Tree and Graph is hidden – there is no room for it. The last choice (default *HA*) still applies.
+
 ## 1.44.0
 
 - Clients and Topology are merged: the menu item *Clients* now has three tabs – *List* (the client table), *Tree* and *Graph*. All three use the same filter pane; the icon switch appears only for Tree and Graph.
