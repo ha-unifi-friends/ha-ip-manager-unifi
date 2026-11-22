@@ -1438,5 +1438,18 @@
  "Scans or other suspicious traffic": "Scans of ander verdacht verkeer",
  "No findings": "Geen bevindingen",
  "Blocked (24 h)": "Geblokkeerd (24 u)",
- "Connection attempts blocked by the firewall in the last 24 hours": "Door de firewall geblokkeerde verbindingspogingen van de laatste 24 uur"
+ "Connection attempts blocked by the firewall in the last 24 hours": "Door de firewall geblokkeerde verbindingspogingen van de laatste 24 uur",
+ "Topology": "Topologie",
+ "Topology graph": "Topologiegraaf",
+ "Network topology": "Netwerktopologie",
+ "How the devices are connected – click a device for its details.": "Hoe de apparaten verbonden zijn – klik op een apparaat voor de details.",
+ "Offline devices": "Offline apparaten",
+ "Search devices": "Apparaten zoeken",
+ "Connection not known": "Verbinding niet bekend",
+ "Search hit": "Zoekresultaat",
+ "Cable": "Kabel",
+ "WiFi / mesh": "Wifi / mesh",
+ "Drag devices, Ctrl + wheel or the buttons to zoom": "Sleep apparaten, zoom met Ctrl + scrollwiel of de knoppen",
+ "Mesh": "Mesh",
+ "Internet": "Internet"
 }

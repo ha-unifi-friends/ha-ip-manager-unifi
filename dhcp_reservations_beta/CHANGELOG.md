@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.39.0 – 2026-11-22
+
+**Relations becomes Network** – with the topology as the new start:
+- **Topology** (tree, like UniFi's topology): Internet → gateway → switches → access points, the port (or *Mesh* for wireless uplinks) on each connection, the clients of each device in a list that folds away (open up to 6). Clients without a known connection are listed separately. Clients and offline devices can be switched on and off; a search marks the hits. A click opens the device's details.
+- **Topology graph**: the same connections as a live force graph like the traffic graph – levels from top to bottom, cable solid, WiFi / mesh dashed, drag, zoom, click for details.
+- **Traffic** and **List** are the former relations graph and list, unchanged (time range, filters, suspicious traffic, firewall comparison). Their flows are only read when one of these tabs is opened.
+
 ## 1.38.2 – 2026-11-22
 
 - **Clients:** new filter **Firewall blocks (24 h)** in the sidebar – *Many blocked attempts (50+)*, *Scans or other suspicious traffic*, *No findings* – and a sortable column **Blocked (24 h)** with the number of blocked connection attempts (also in the standard view *Problems*). Same data as the pills in the device details, loaded in the background.

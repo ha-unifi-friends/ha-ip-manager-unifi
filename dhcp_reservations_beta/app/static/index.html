@@ -434,6 +434,43 @@ body:not(.rel-mode) .rel-only{display:none!important}
 #devSusp:empty{display:none}
 .port-note{font-size:12.5px;line-height:1.45;padding:8px 10px;border-radius:8px;margin:6px 0 2px;border:1px solid color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--card))}
 .port-note>b:first-child{color:var(--warn)}
+/* network topology */
+body:not(.topo-mode) #relView .topo-only{display:none!important}
+body.topo-mode #relView .traffic-only,body.topo-mode #relView .rel-ctrl:not(.topo-only),body.topo-mode #relMsg,body.topo-mode #relRec,body.topo-mode #relSusp,body.topo-mode #relFocus,body.topo-mode.rel-mode #relSide{display:none!important}
+.topo-tree{overflow:auto;padding:18px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);margin:10px 0 14px}
+.tt-wrap{display:flex;justify-content:center;min-width:max-content}
+.tt-node{display:flex;flex-direction:column;align-items:center}
+.tt-card{all:unset;box-sizing:border-box;display:flex;align-items:center;gap:9px;width:190px;padding:8px 10px;border-radius:10px;background:var(--card);border:1px solid var(--line-strong);cursor:pointer}
+.tt-card:hover{border-color:var(--accent)}
+.tt-card.inet{cursor:default;width:auto;padding:7px 14px}
+.tt-card.off,.tt-c.off{opacity:.5}
+.tt-card.hit,.tt-c.hit{outline:2px solid var(--warn);outline-offset:1px}
+.tt-card.sel,.tt-c.sel{border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 40%,transparent)}
+.tt-ic{flex:none;width:34px;height:34px;border-radius:8px;background:var(--chip);display:grid;place-items:center;font-size:18px}
+.tt-ic img{width:30px;height:30px;object-fit:contain}
+.tt-tx{display:flex;flex-direction:column;min-width:0;line-height:1.25}
+.tt-tx b{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tt-tx .muted{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tt-cli{width:190px;margin-top:4px;font-size:12px}
+.tt-cli summary{justify-content:center;gap:6px;font-weight:500;font-size:11.5px;color:var(--muted);padding:3px 0}
+.tt-cl{display:grid;gap:2px;max-height:260px;overflow:auto}
+.tt-c{all:unset;box-sizing:border-box;display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:center;gap:6px;padding:3px 6px;border-radius:6px;cursor:pointer;border:1px solid transparent}
+.tt-c:hover{background:color-mix(in srgb,var(--fg) 6%,transparent)}
+.tt-ci{width:20px;height:20px;display:grid;place-items:center}
+.tt-ci img{width:18px;height:18px;object-fit:contain}
+.tt-cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tt-cp{font-size:10.5px;white-space:nowrap}
+.tt-kids{display:flex;justify-content:center;position:relative;padding-top:16px}
+.tt-kids::before{content:"";position:absolute;top:0;left:50%;height:16px;border-left:2px solid var(--line-strong)}
+.tt-kid{position:relative;display:flex;flex-direction:column;align-items:center;padding:16px 8px 0}
+.tt-kid::before,.tt-kid::after{content:"";position:absolute;top:0;width:50%;height:16px;border-top:2px solid var(--line-strong)}
+.tt-kid::before{right:50%}
+.tt-kid::after{left:50%;border-left:2px solid var(--line-strong)}
+.tt-kid:first-child::before,.tt-kid:last-child::after{border-top:0}
+.tt-kid:only-child::before{border-top:0}
+.tt-link{position:relative;z-index:1;font-size:10.5px;color:var(--muted);background:var(--panel);padding:0 5px;margin:-8px 0 4px;border-radius:4px;white-space:nowrap}
+.tt-link.wl{color:var(--accent)}
+.tt-unk{margin-top:18px;display:grid;justify-items:center}
 .rel-focus{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:12.5px}
 .rs-list{display:grid;gap:4px;margin-top:6px}
 .rs-row{display:grid;grid-template-columns:minmax(170px,240px) 1fr auto;gap:4px 12px;align-items:center;padding:5px 8px;border-radius:6px;background:color-mix(in srgb,var(--fg) 3%,transparent)}
@@ -1033,7 +1070,7 @@ window.I18N = (() => {
   <main>
     <div class="topbar">
       <button class="btn menu-btn" id="btnMenu" type="button" title="Show filters" aria-label="Show filters"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="6" rx="1.5"/><rect x="3" y="14" width="18" height="6" rx="1.5"/><path d="M7 7h.01M7 17h.01"/></svg></button>
-      <div class="seg view-switch" role="group" aria-label="View"><button type="button" data-vw="clients" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg><span>Clients</span></button><button type="button" data-vw="plan" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>IP Plan</span></button><button type="button" data-vw="fw" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="M4 12h16M12 3v18"/></svg><span>Firewall</span></button><button type="button" data-vw="rel" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 6h9M6.3 8.2l4.4 7.6M17.7 8.2l-4.4 7.6"/></svg><span>Relations</span></button></div>
+      <div class="seg view-switch" role="group" aria-label="View"><button type="button" data-vw="clients" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r="1" fill="currentColor"/><circle cx="4.5" cy="12" r="1" fill="currentColor"/><circle cx="4.5" cy="18" r="1" fill="currentColor"/></svg><span>Clients</span></button><button type="button" data-vw="plan" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg><span>IP Plan</span></button><button type="button" data-vw="fw" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6z"/><path d="M4 12h16M12 3v18"/></svg><span>Firewall</span></button><button type="button" data-vw="rel" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 6h9M6.3 8.2l4.4 7.6M17.7 8.2l-4.4 7.6"/></svg><span>Network</span></button></div>
       <div class="viewsel">
         <button class="btn view-btn" id="btnView" type="button" aria-haspopup="menu" aria-expanded="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg><span id="viewName">All</span><span class="mod" id="viewMod" hidden title="Unsaved changes">•</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="menu" id="viewMenu" role="menu" hidden></div>
@@ -1041,7 +1078,7 @@ window.I18N = (() => {
       <span id="count"></span>
       <div class="cl-tabs plan-tabs plan-only" role="tablist"><button type="button" role="tab" data-pt="cur" aria-selected="true">Current</button><button type="button" role="tab" data-pt="clean" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M14 3 9.5 11.5"/><path d="M5 13.5h9l1.5 7.5H3.5z"/><path d="M8 17v4M11 17v4"/><path d="M18 3v3M16.5 4.5h3M20 9v2M19 10h2"/></svg>CleanUp Proposal</button></div>
       <div class="cl-tabs plan-tabs fw-only" role="tablist"><button type="button" role="tab" data-ft="mx" aria-selected="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>Matrix</button><button type="button" role="tab" data-ft="an" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11h6M11 8v6"/></svg>Analysis</button></div>
-      <div class="cl-tabs plan-tabs rel-only" role="tablist"><button type="button" role="tab" data-rt="graph" aria-selected="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.4 6.2 16.5 6.8M6.3 8.2l4.4 7.6M17.7 9.2l-4.4 6.6"/></svg>Graph</button><button type="button" role="tab" data-rt="list" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>List <span class="fa-n" id="relListN"></span></button></div>
+      <div class="cl-tabs plan-tabs rel-only" role="tablist"><button type="button" role="tab" data-rt="tree" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><rect x="9" y="2.5" width="6" height="5" rx="1"/><rect x="2.5" y="16.5" width="6" height="5" rx="1"/><rect x="15.5" y="16.5" width="6" height="5" rx="1"/><path d="M12 7.5V12M5.5 16.5V12h13v4.5"/></svg>Topology</button><button type="button" role="tab" data-rt="topo" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="12" cy="5" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><circle cx="12" cy="13" r="1.8"/><path d="M12 7.5v3.7M10.6 14.3 6.8 16.4M13.4 14.3l3.8 2.1"/></svg>Topology graph</button><button type="button" role="tab" data-rt="graph" aria-selected="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="7" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.4 6.2 16.5 6.8M6.3 8.2l4.4 7.6M17.7 9.2l-4.4 6.6"/></svg>Traffic</button><button type="button" role="tab" data-rt="list" aria-selected="false"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>List <span class="fa-n" id="relListN"></span></button></div>
       <span class="sp"></span>
       <span class="plan-icons-slot plan-only"></span>
       <div class="grp">
@@ -1137,9 +1174,17 @@ window.I18N = (() => {
         </div>
       </div>
     </section>
-    <section class="plan-view rel-view" id="relView" hidden aria-label="Relations">
+    <section class="plan-view rel-view" id="relView" hidden aria-label="Network">
       <div class="plan-scroll">
-        <div class="plan-head"><h3>Relations</h3><span class="hint">Who talks to whom – one arrow per direction, the width is the data volume, the colour the port.</span></div>
+        <div class="plan-head topo-only"><h3>Network topology</h3><span class="hint">How the devices are connected – click a device for its details.</span></div>
+        <div class="plan-head traffic-only"><h3>Traffic</h3><span class="hint">Who talks to whom – one arrow per direction, the width is the data volume, the colour the port.</span></div>
+        <div class="cl-ctrl rel-ctrl topo-only">
+          <label class="opt"><input type="checkbox" id="topoCli"><span>Clients</span></label>
+          <label class="opt"><input type="checkbox" id="topoOff"><span>Offline devices</span></label>
+          <span class="sp"></span>
+          <div class="search fw-search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input type="search" id="topoQ" placeholder="Search devices" aria-label="Search devices"></div>
+        </div>
+        <div class="topo-tree topo-only" id="topoTree" hidden></div>
         <div class="cl-ctrl rel-ctrl">
           <span class="seg" role="group" aria-label="Time range"><button type="button" data-relp="1h">1 h</button><button type="button" data-relp="6h">6 h</button><button type="button" data-relp="24h">24 h</button><button type="button" data-relp="7d">7 days</button><button type="button" data-relp="custom">From – to</button></span>
           <span id="relCustom" hidden><label>From <input type="datetime-local" id="relFrom"></label> <label>to <input type="datetime-local" id="relTo"></label> <button class="btn primary" type="button" id="relLoad">Show</button></span>
@@ -3612,7 +3657,7 @@ $("#fwChain").addEventListener("dragend", () => { FW.drag = null; for (const x o
 // standard ports get a colour (the dominant port of a pair colours its arrows)
 const REL_PORTS = [["DNS", [53, 853], "#14b8a6"], ["Web", [80, 443, 8080, 8443], "#3b82f6"], ["NTP", [123], "#a3a3a3"], ["MQTT", [1883, 8883], "#f59e0b"], ["Camera / RTSP", [554], "#ec4899"], ["Home Assistant", [8123], "#0ea5e9"], ["ESPHome", [6053], "#22c55e"], ["SSH / remote", [22, 3389, 5900], "#ef4444"], ["Files / SMB", [139, 445, 2049], "#8b5cf6"], ["Discovery (mDNS / SSDP)", [5353, 1900], "#84cc16"], ["Streaming / casting", [8008, 8009, 7000, 1400, 32400], "#f97316"], ["Other", [], "#94a3b8"]];
 const relPortCat = port => REL_PORTS.find(c => c[1].includes(+port)) || REL_PORTS[REL_PORTS.length - 1];
-const REL = { data: null, err: null, busy: false, preset: store.get("relPreset", "24h"), from: null, to: null, inet: store.get("relInet", true), ha: store.get("relHa", true), unifi: store.get("relUnifi", true), nas: store.get("relNas", true), printer: store.get("relPrinter", true), blk: store.get("relBlk", false), scope: store.get("relScope", "all"), tab: store.get("relTab", "graph"), q: "", sel: null, focus: null, suspAll: false, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false, max: 120 };
+const REL = { data: null, err: null, busy: false, preset: store.get("relPreset", "24h"), from: null, to: null, inet: store.get("relInet", true), ha: store.get("relHa", true), unifi: store.get("relUnifi", true), nas: store.get("relNas", true), printer: store.get("relPrinter", true), blk: store.get("relBlk", false), scope: store.get("relScope", "all"), tab: store.get("relTab", "tree"), topoCli: store.get("topoCli", true), topoOff: store.get("topoOff", false), topoQ: "", q: "", sel: null, focus: null, suspAll: false, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false, max: 120 };
 const REL_SCOPES = [["all", "All relations"], ["zone", "Within a firewall zone"], ["vlan", "Within a VLAN"], ["xvlan", "Across VLANs"], ["inet", "To the internet"], ["vendor", "Same vendor"], ["integ", "Same HA integration"], ["ha", "With Home Assistant"], ["susp", "Suspicious"], ["unexp", "Unexpected"], ["rules", "Against the firewall rules"], ["blocked", "Blocked by UniFi"]];
 const isRel = () => document.body.classList.contains("rel-mode");
 function relRange() {
@@ -3726,14 +3771,15 @@ const relSrcMatch = (id, src) => {
 };
 // live force layout in the manner of d3-force (as in Home Assistant's Zigbee map): devices repel each other, relations
 // pull like springs, devices of a firewall zone gather; dragging a device makes its neighbours follow and wobble
-function relSimInit(nodes, links, W, H, grp, mrg, mrgL, rad) {
+function relSimInit(nodes, links, W, H, grp, mrg, mrgL, rad, inet, cenOv) {
   if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf);
   const P = REL.pos, keys = [...new Set(nodes.filter(n => n !== "internet").map(n => grp[n]))], hasI = nodes.includes("internet");
-  const cx = hasI ? W * 0.44 : W / 2, cen = {};
+  const cx = hasI && !inet ? W * 0.44 : W / 2, cen = {};
   keys.forEach((g, i) => { const a = i / keys.length * Math.PI * 2 - Math.PI / 2, r = keys.length > 1 ? 1 : 0; cen[g] = { x: cx + Math.cos(a) * W * 0.26 * r, y: H / 2 + Math.sin(a) * H * 0.28 * r }; });
+  if (cenOv) Object.assign(cen, cenOv); // e.g. the levels of the topology
   let fresh = 0;
   nodes.forEach((n, i) => { if (!P[n]) { fresh++; const c = cen[grp[n]] || { x: cx, y: H / 2 }, a = i * 2.39996, r = 10 * Math.sqrt(0.5 + i); P[n] = { x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r, vx: 0, vy: 0 }; } });
-  if (hasI && P.internet.fx == null) Object.assign(P.internet, { fx: W - Math.max(70, mrg.internet || 0), fy: H / 2 });
+  if (hasI && P.internet.fx == null) Object.assign(P.internet, inet || { fx: W - Math.max(70, mrg.internet || 0), fy: H / 2 });
   const cnt = {}; for (const l of links) { cnt[l.a] = (cnt[l.a] || 0) + 1; cnt[l.b] = (cnt[l.b] || 0) + 1; }
   const L = links.map(l => ({ a: l.a, b: l.b, s: 1 / Math.min(cnt[l.a], cnt[l.b]), bias: cnt[l.a] / (cnt[l.a] + cnt[l.b]), len: 105 + (grp[l.a] === grp[l.b] ? 0 : 60) }));
   REL.sim = { nodes, links: L, W, H, grp, cen, mrg, mrgL, rad, alpha: fresh ? 1 : 0, alphaTarget: 0, raf: 0, charge: -Math.max(300, Math.min(1400, W * H / Math.max(1, nodes.length) / 10)) };
@@ -3815,6 +3861,10 @@ function renderRel() {
   const D = REL.data;
   for (const b of document.querySelectorAll("[data-relp]")) b.setAttribute("aria-pressed", String(b.dataset.relp === REL.preset));
   for (const b of document.querySelectorAll("[data-rt]")) b.setAttribute("aria-selected", String(b.dataset.rt === REL.tab));
+  // topology (tree or graph): the devices and how they are plugged together – no traffic flows needed
+  const topo = isTopo(); document.body.classList.toggle("topo-mode", topo);
+  $("#topoTree").hidden = REL.tab !== "tree";
+  if (topo) { $("#relGraphBox").hidden = REL.tab !== "topo"; $("#relListBox").hidden = true; $("#topoCli").checked = REL.topoCli; $("#topoOff").checked = REL.topoOff; renderTopo(); return; }
   $("#relCustom").hidden = REL.preset !== "custom"; $("#relInet").checked = REL.inet; $("#relHa").checked = REL.ha; $("#relUnifi").checked = REL.unifi; $("#relNas").checked = REL.nas; $("#relPrinter").checked = REL.printer; $("#relBlk").checked = REL.blk; $("#relLoad").disabled = REL.busy;
   $("#relScopes").innerHTML = REL_SCOPES.map(([k, l]) => { return `<button type="button" class="pn rel-sc ${REL.scope === k ? "on" : ""}" data-relsc="${k}" aria-pressed="${REL.scope === k}"><span class="l1"><b>${l}</b><span class="sp"></span><span class="muted" data-relcnt="${k}"></span></span></button>`; }).join("");
   const sp = D?.suspicious || [], on = !!FWS.alerts?.suspicious, nSrc = new Set(sp.map(x => x.src)).size;
@@ -3873,13 +3923,13 @@ function relGeo(e, from, to) {
   return `M${sx.toFixed(1)},${sy.toFixed(1)} Q${((sx + ex) / 2 + nx * bend).toFixed(1)},${((sy + ey) / 2 + ny * bend).toFixed(1)} ${ex.toFixed(1)},${ey.toFixed(1)}`;
 }
 function relDraw() {
-  const G = REL.g, box = $("#relGraph"); if (!G || REL.tab !== "graph") return;
+  const G = REL.g, box = $("#relGraph"); if (!G || !["graph", "topo"].includes(REL.tab)) return;
   const { list, nodes, W, H, max, rad, lbl, sub, kind } = G, P = REL.pos, v = REL.view;
   const wid = b => 0.8 + 3.6 * Math.sqrt((b || 0) / max);
   const arrow = (e, from, to, bytes, back) => {
     if (!bytes && (back || e.ab || e.ba)) return ""; // a pair without data (blocked attempts) still gets its line
     const col = e.bad.length ? "var(--bad)" : e.cat[2];
-    return `<path d="${relGeo(e, from, to)}" stroke="${col}" stroke-width="${wid(bytes).toFixed(2)}" fill="none" marker-end="url(#ra${e.bad.length ? "b" : REL_PORTS.indexOf(e.cat)})" class="rel-e${e.bad.length || e.susp.length ? " bad" : e.unexp.length ? " unexp" : ""}${e.blocked ? " blk" : ""}${REL.sel === e.a + "|" + e.b ? " sel" : ""}${back ? " back" : ""}" data-rele="${esc(e.a + "|" + e.b)}"><title>${esc(`${relLabel(from)} → ${relLabel(to)}: ${relBytes(bytes)} · ${e.ports.slice(0, 3).map(x => `${x.service || x.proto} ${x.port ?? ""}`).join(", ")}${e.bad.length ? " · against the rules" : ""}`)}</title></path>`;
+    return `<path d="${relGeo(e, from, to)}" stroke="${col}" stroke-width="${(e.w ?? wid(bytes)).toFixed(2)}" fill="none" ${e.nomark ? "" : `marker-end="url(#ra${e.bad.length ? "b" : REL_PORTS.indexOf(e.cat)})"`} class="rel-e${e.bad.length || e.susp.length ? " bad" : e.unexp.length ? " unexp" : ""}${e.blocked ? " blk" : ""}${REL.sel === e.a + "|" + e.b ? " sel" : ""}${back ? " back" : ""}" data-rele="${esc(e.a + "|" + e.b)}"><title>${esc(e.title || `${relLabel(from)} → ${relLabel(to)}: ${relBytes(bytes)} · ${e.ports.slice(0, 3).map(x => `${x.service || x.proto} ${x.port ?? ""}`).join(", ")}${e.bad.length ? " · against the rules" : ""}`)}</title></path>`;
   };
   const mk = (id, col) => `<marker id="${id}" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,1 L10,5 L0,9 z" fill="${col}"/></marker>`;
   const markers = REL_PORTS.map((c, i) => mk("ra" + i, c[2])).join("") + mk("rab", "var(--bad)");
@@ -3934,6 +3984,84 @@ function relRecHtml(D) {
     : `<div class="rel-rec"><div><b>No allowed traffic in this time range</b> – <span>UniFi recorded only blocked connections.</span></div>
       <div><b>How to record allowed traffic:</b> <span>In UniFi Network open Settings › CyberSecure › Traffic Logging and set Flow Logging to All Traffic.</span> <span class="muted">The names can differ between UniFi versions. Some consoles need internal storage (SSD) for it, and some gateways (e.g. UDM, UDR, Express) only log blocked traffic.</span></div></div>`;
 }
+// ---------- network topology: which device hangs on which (like UniFi's topology) ----------
+const isTopo = () => REL.tab === "tree" || REL.tab === "topo";
+function topoModel() {
+  const byMac = new Map(state.clients.filter(c => c.mac).map(c => [c.mac, c]));
+  const shown = c => REL.topoOff || c.online;
+  const devs = state.clients.filter(c => c.is_device && shown(c));
+  const gw = devs.find(d => d.device_kind === "gateway");
+  const clients = REL.topoCli ? state.clients.filter(c => !c.is_device && c.mac && c.conn !== "teleport" && shown(c)) : [];
+  // the device a node hangs on: UniFi devices by their uplink (wired or mesh), clients by switch / access point
+  const parent = c => {
+    if (c.is_device) { if (c.device_kind === "gateway") return "internet"; const p = c.up_mac && byMac.get(c.up_mac); return p?.is_device && p.mac !== c.mac ? p.mac : gw && gw.mac !== c.mac ? gw.mac : "internet"; }
+    const p = byMac.get(c.conn === "wifi" ? c.ap_mac : c.sw_mac);
+    return p?.is_device ? p.mac : "?";
+  };
+  const link = c => c.is_device ? (c.up_wireless ? "Mesh" : c.port ? `Port ${c.port}` : "") : c.conn === "wifi" ? (c.essid || "WiFi") : c.port ? `Port ${c.port}` : "";
+  const kids = new Map();
+  for (const c of [...devs, ...clients]) { const p = parent(c); (kids.get(p) || kids.set(p, []).get(p)).push(c); }
+  const order = { gateway: 0, switch: 1, ap: 2, device: 3 };
+  for (const a of kids.values()) a.sort((x, y) => (x.is_device ? order[x.device_kind] ?? 3 : 9) - (y.is_device ? order[y.device_kind] ?? 3 : 9) || (+x.port || 999) - (+y.port || 999) || devName(x).localeCompare(devName(y)));
+  return { byMac, kids, link, parent, devs, clients };
+}
+const topoMatch = c => { const q = REL.topoQ.trim().toLowerCase(); return !!q && !!c && [devName(c), c.ip, c.mac, c.oui, c.hostname, c.device_model].join(" ").toLowerCase().includes(q); };
+function topoSub(c) { return c.is_device ? [c.device_model, c.ip].filter(Boolean).join(" · ") : [c.ip, c.oui].filter(Boolean).join(" · "); }
+function topoTreeHtml(M) {
+  const seen = new Set();
+  const card = c => `<button type="button" class="tt-card${c.online ? "" : " off"}${topoMatch(c) ? " hit" : ""}${state.sel?.mac === c.mac ? " sel" : ""}" data-ttdev="${esc(c.mac)}" title="${esc([devName(c), topoSub(c), c.online ? "" : "offline"].filter(Boolean).join(" · "))}"><span class="tt-ic">${iconHtml(c, true)}</span><span class="tt-tx"><b translate="no">${esc(devName(c))}</b><span class="muted" translate="no">${esc(topoSub(c))}</span></span></button>`;
+  const clientsHtml = cl => {
+    if (!cl.length) return "";
+    const hit = cl.some(topoMatch), open = hit || cl.length <= 6;
+    return `<details class="tt-cli"${open ? " open" : ""}><summary>${cl.length} ${cl.length === 1 ? "client" : "clients"}</summary><div class="tt-cl">${cl.map(k => `<button type="button" class="tt-c${k.online ? "" : " off"}${topoMatch(k) ? " hit" : ""}${state.sel?.mac === k.mac ? " sel" : ""}" data-ttdev="${esc(k.mac)}" title="${esc([devName(k), topoSub(k)].filter(Boolean).join(" · "))}"><span class="tt-ci">${iconHtml(k)}</span><span class="tt-cn" translate="no">${esc(devName(k))}</span><span class="tt-cp muted" translate="no">${esc(M.link(k))}</span></button>`).join("")}</div></details>`;
+  };
+  const node = id => {
+    if (seen.has(id)) return ""; seen.add(id);
+    const c = M.byMac.get(id), ks = M.kids.get(id) || [], infra = ks.filter(k => k.is_device), cl = ks.filter(k => !k.is_device);
+    const head = c ? card(c) : `<div class="tt-card inet"><span class="tt-ic">🌐</span><span class="tt-tx"><b>Internet</b></span></div>`;
+    return `<div class="tt-node">${head}${clientsHtml(cl)}${infra.length ? `<div class="tt-kids">${infra.map(k => `<div class="tt-kid"><span class="tt-link${k.up_wireless ? " wl" : ""}" translate="no">${esc(M.link(k) || " ")}</span>${node(k.mac)}</div>`).join("")}</div>` : ""}</div>`;
+  };
+  const unknown = M.kids.get("?") || [];
+  return `<div class="tt-wrap">${node("internet")}</div>${unknown.length ? `<div class="tt-unk"><div class="sec-title">Connection not known</div>${clientsHtml(unknown)}</div>` : ""}`;
+}
+function topoGraph(M) {
+  const items = [...M.devs, ...M.clients], edges = [], nodes = ["internet"];
+  // levels: internet, gateway, switches / access points below each other, clients one level under their device
+  const depth = { internet: 0 }, dOf = (c, seen = new Set()) => { if (depth[c.mac] != null) return depth[c.mac]; const p = M.parent(c); if (seen.has(c.mac)) return 1; seen.add(c.mac); const pc = M.byMac.get(p); return depth[c.mac] = p === "internet" ? 1 : p === "?" || !pc ? 2 : dOf(pc, seen) + 1; };
+  for (const c of items) dOf(c);
+  const maxD = Math.max(1, ...Object.values(depth));
+  const box = $("#relGraph"), W = Math.max(640, box.clientWidth || 900), H = Math.max(560, Math.min(1400, 120 + maxD * 150));
+  for (const c of items) {
+    nodes.push(c.mac);
+    const p = M.parent(c); if (p === "?") continue;
+    const wl = c.is_device ? c.up_wireless : c.conn === "wifi", l = M.link(c);
+    edges.push({ a: p, b: c.mac, ab: 1, ba: 0, flows: 1, blocked: wl ? 1 : 0, ports: [], domains: [], bad: [], susp: [], unexp: [], cat: REL_PORTS[REL_PORTS.length - 1], w: c.is_device ? 2.4 : 1.2, nomark: true,
+      title: `${relLabel(p)} — ${devName(c)}${l ? " · " + l : ""}` });
+  }
+  const deg = {}; for (const e of edges) { deg[e.a] = (deg[e.a] || 0) + 1; deg[e.b] = (deg[e.b] || 0) + 1; }
+  const kind = id => id === "internet" ? "inet" : topoMatch(M.byMac.get(id)) ? "susp" : M.byMac.get(id)?.is_device ? "unifi" : isHaHost(M.byMac.get(id)) ? "ha" : "dev";
+  const rad = id => { const c = M.byMac.get(id); return id === "internet" ? 13 : !c?.is_device ? 6 : c.device_kind === "gateway" ? 15 : c.device_kind === "switch" ? 12 : 10; };
+  const lbl = id => { const s = relLabel(id); return s.length > 26 ? s.slice(0, 25) + "…" : s; };
+  const sub = id => { const c = M.byMac.get(id); return c ? topoSub(c) : ""; };
+  const grp = {}, mrg = {}, mrgL = {}, cen = {}; for (const n of nodes) { grp[n] = "d" + (depth[n] ?? 2); mrg[n] = Math.max(lbl(n).length * 6.4, sub(n).length * 5.6) + rad(n) + 10; mrgL[n] = rad(n) + 8; }
+  for (let d = 0; d <= maxD; d++) cen["d" + d] = { x: W / 2, y: 34 + d * (H - 80) / maxD };
+  relSimInit(nodes, edges, W, H, grp, mrg, mrgL, rad, { fx: W / 2, fy: 34 }, cen);
+  REL.g = { list: edges, nodes, W, H, max: 1, rad, lbl, sub, kind };
+  relDraw(); relRun();
+}
+function renderTopo() {
+  if (!state.clients.length) { $("#topoTree").innerHTML = `<p class="muted"><span class="spin"></span> Loading …</p>`; return; }
+  const M = topoModel();
+  if (REL.tab === "tree") { if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; $("#topoTree").innerHTML = topoTreeHtml(M); $("#topoTree .hit")?.scrollIntoView({ block: "nearest", inline: "center" }); }
+  else {
+    topoGraph(M);
+    $("#relLegend").innerHTML = [["inet", "Internet"], ["unifi", "UniFi device"], ["ha", "Home Assistant"], ["dev", "Client"], ["susp", "Search hit"]].map(([k, l]) => `<span><i class="nk nk-${k}"></i>${l}</span>`).join("") + `<span class="lsep"></span><span><i style="background:#94a3b8"></i>Cable</span><span><i class="dash"></i>WiFi / mesh</span><span class="muted">Drag devices, Ctrl + wheel or the buttons to zoom</span>`;
+  }
+}
+$("#topoTree").addEventListener("click", e => { if (e.target.closest("summary")) return; const b = e.target.closest("[data-ttdev]"); if (!b) return; const c = devByMac(b.dataset.ttdev); if (c) { openPanel(c); $("#topoTree").querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); $("#topoTree").querySelectorAll(`[data-ttdev="${CSS.escape(c.mac)}"]`).forEach(x => x.classList.add("sel")); } });
+$("#topoCli").addEventListener("change", e => { REL.topoCli = e.target.checked; store.set("topoCli", REL.topoCli); REL.pos = {}; renderRel(); });
+$("#topoOff").addEventListener("change", e => { REL.topoOff = e.target.checked; store.set("topoOff", REL.topoOff); REL.pos = {}; renderRel(); });
+$("#topoQ").addEventListener("input", e => { REL.topoQ = e.target.value; renderRel(); });
 // hovering a device lights up its relations and neighbours
 $("#relGraph").addEventListener("mouseover", e => {
   const svg = $("#relGraph svg"); if (!svg) return;
@@ -3945,7 +4073,10 @@ $("#relGraph").addEventListener("mouseover", e => {
   for (const p of svg.querySelectorAll("path[data-rele]")) { const [a, b] = p.dataset.rele.split("|"); if (a !== id && b !== id) continue; p.classList.add("on"); svg.querySelector(`[data-reln="${CSS.escape(a === id ? b : a)}"]`)?.classList.add("on"); }
 });
 $("#relGraph").addEventListener("mouseleave", () => { const svg = $("#relGraph svg"); if (svg) { svg.classList.remove("hl"); svg.dataset.hl = ""; } });
-document.querySelectorAll("[data-rt]").forEach(t => t.addEventListener("click", () => { REL.tab = t.dataset.rt; store.set("relTab", REL.tab); renderRel(); }));
+document.querySelectorAll("[data-rt]").forEach(t => t.addEventListener("click", () => {
+  REL.tab = t.dataset.rt; store.set("relTab", REL.tab); REL.pos = {}; REL.view = { k: 1, x: 0, y: 0 };
+  if (!isTopo() && !REL.data && !REL.busy) loadRel(); else renderRel();
+}));
 $("#relFocus").addEventListener("click", e => { if (e.target.closest("[data-relunfocus]")) { REL.focus = null; REL.view = { k: 1, x: 0, y: 0 }; REL.pos = {}; renderRel(); } });
 $("#relView").addEventListener("click", e => {
   const p = e.target.closest("[data-relp]"); if (p) { REL.preset = p.dataset.relp; store.set("relPreset", REL.preset); if (REL.preset !== "custom") loadRel(); else renderRel(); return; }
@@ -3974,7 +4105,7 @@ $("#relSusp").addEventListener("click", e => {
 $("#relHa").addEventListener("change", e => { REL.ha = e.target.checked; store.set("relHa", REL.ha); REL.pos = {}; renderRel(); });
 $("#relQ").addEventListener("input", e => { REL.q = e.target.value; renderRel(); });
 $("#relScopes").addEventListener("click", e => { const b = e.target.closest("[data-relsc]"); if (!b) return; REL.scope = b.dataset.relsc; store.set("relScope", REL.scope); REL.pos = {}; $("#side").classList.remove("open"); renderRel(); });
-function openRel() { const now = new Date(), iso = d => new Date(d - d.getTimezoneOffset() * 60e3).toISOString().slice(0, 16); if (!$("#relTo").value) { $("#relTo").value = iso(now); $("#relFrom").value = iso(new Date(now - 24 * 3600e3)); } if (!REL.data && !REL.busy) loadRel(); else renderRel(); }
+function openRel() { const now = new Date(), iso = d => new Date(d - d.getTimezoneOffset() * 60e3).toISOString().slice(0, 16); if (!$("#relTo").value) { $("#relTo").value = iso(now); $("#relFrom").value = iso(new Date(now - 24 * 3600e3)); } if (!REL.data && !REL.busy && !isTopo()) loadRel(); else renderRel(); }
 
 // ---------- detail panel ----------
 function setTab(t) {

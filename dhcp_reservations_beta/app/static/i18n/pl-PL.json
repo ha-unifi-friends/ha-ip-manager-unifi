@@ -1438,5 +1438,18 @@
  "Scans or other suspicious traffic": "Skanowania lub inny podejrzany ruch",
  "No findings": "Brak wyników",
  "Blocked (24 h)": "Zablokowane (24 h)",
- "Connection attempts blocked by the firewall in the last 24 hours": "Próby połączeń zablokowane przez zaporę w ostatnich 24 godzinach"
+ "Connection attempts blocked by the firewall in the last 24 hours": "Próby połączeń zablokowane przez zaporę w ostatnich 24 godzinach",
+ "Topology": "Topologia",
+ "Topology graph": "Graf topologii",
+ "Network topology": "Topologia sieci",
+ "How the devices are connected – click a device for its details.": "Jak połączone są urządzenia – kliknij urządzenie, aby zobaczyć szczegóły.",
+ "Offline devices": "Urządzenia offline",
+ "Search devices": "Szukaj urządzeń",
+ "Connection not known": "Połączenie nieznane",
+ "Search hit": "Wynik wyszukiwania",
+ "Cable": "Kabel",
+ "WiFi / mesh": "Wi-Fi / mesh",
+ "Drag devices, Ctrl + wheel or the buttons to zoom": "Przeciągaj urządzenia, powiększaj Ctrl + kółko lub przyciskami",
+ "Mesh": "Mesh",
+ "Internet": "Internet"
 }
