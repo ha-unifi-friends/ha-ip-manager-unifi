@@ -1458,5 +1458,9 @@
  "Notify me in Home Assistant about suspicious traffic": "Meddela mig i Home Assistant om misstänkt trafik",
  "Icons": "Ikoner",
  "UniFi icons": "UniFi-ikoner",
- "Home Assistant integration logos": "Logotyper för Home Assistant-integrationer"
+ "Home Assistant integration logos": "Logotyper för Home Assistant-integrationer",
+ "Internet access": "Internetåtkomst",
+ "The rules that concern this device, in their order – the first matching rule decides.": "Reglerna som rör den här enheten, i sin ordning – den första matchande regeln avgör.",
+ "decides for this device": "avgör för den här enheten",
+ "never reached for this device": "nås aldrig för den här enheten"
 }

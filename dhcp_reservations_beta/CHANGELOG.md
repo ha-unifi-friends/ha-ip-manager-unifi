@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.42.0 – 2026-11-22
+
+- **Device details:** above *Firewall* a small **rule chain for the internet access** of the device – the rules from its zone to *External* that concern it (source *Any*, the device itself, its IP or network), in their order, paused rules left out. The first rule that decides all its internet traffic is outlined, the rules after it are greyed out (never reached for this device). A click opens the rule in the firewall view.
+
 ## 1.41.11 – 2026-11-22
 
 - **Phones, Topology:** the icon switch is right-aligned in the row of the tabs.

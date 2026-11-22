@@ -1458,5 +1458,9 @@
  "Notify me in Home Assistant about suspicious traffic": "Powiadamiaj w Home Assistant o podejrzanym ruchu",
  "Icons": "Ikony",
  "UniFi icons": "Ikony UniFi",
- "Home Assistant integration logos": "Logo integracji Home Assistant"
+ "Home Assistant integration logos": "Logo integracji Home Assistant",
+ "Internet access": "Dostęp do internetu",
+ "The rules that concern this device, in their order – the first matching rule decides.": "Reguły dotyczące tego urządzenia, w ich kolejności – decyduje pierwsza pasująca reguła.",
+ "decides for this device": "decyduje dla tego urządzenia",
+ "never reached for this device": "nigdy nieosiągana dla tego urządzenia"
 }
