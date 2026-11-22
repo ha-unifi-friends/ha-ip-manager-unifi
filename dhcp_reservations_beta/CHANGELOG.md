@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.46.2
+
+- Device details: the *Switch* section (the ports of the switch) is collapsed by default like *Firewall*; the open state is remembered.
+- *Lookup vendor* and *random MAC* below the MAC address are translated.
+
 ## 1.46.1
 
 - **IP plan** opens with *All networks* selected.

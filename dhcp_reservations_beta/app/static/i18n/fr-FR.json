@@ -1428,5 +1428,6 @@
  "Rule: block": "Règle : bloque",
  "Rule: allow": "Règle : autorise",
  "Rules: mixed": "Règles : mixtes",
- "Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules": "Tout autoriser · Tout bloquer · Autoriser le retour = défaut UniFi de la paire de zones · – = pas de défaut · pointillés = décidé par vos propres règles · (n) = nombre de vos règles"
+ "Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules": "Tout autoriser · Tout bloquer · Autoriser le retour = défaut UniFi de la paire de zones · – = pas de défaut · pointillés = décidé par vos propres règles · (n) = nombre de vos règles",
+ "random MAC": "MAC aléatoire"
 }
