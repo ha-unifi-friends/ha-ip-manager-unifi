@@ -1477,5 +1477,7 @@
  "More rules that name this client": "Autres règles qui désignent ce client",
  "Network · {0}": "Réseau · {0}",
  "Special case": "Cas particulier",
- "Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.": "Atténuées : règles spéciales intégrées d’UniFi – uniquement pour des cas particuliers (connexions invalides, bascule LTE, authentification invité …), pas pour le trafic normal."
+ "Dimmed: built-in special rules of UniFi – only for special cases (invalid connections, LTE failover, guest authorisation …), not for normal traffic.": "Atténuées : règles spéciales intégrées d’UniFi – uniquement pour des cas particuliers (connexions invalides, bascule LTE, authentification invité …), pas pour le trafic normal.",
+ "Hide labels": "Masquer les libellés",
+ "Show labels": "Afficher les libellés"
 }

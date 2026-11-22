@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.42.9
+
+- Topology graph: the nodes are filled in the colour of the lines; the type colour (UniFi, Home Assistant, client …) is now the ring around the node.
+- Topology graph: new button in the zoom controls to show or hide the labels (shown by default, the choice is remembered). Without labels the layout is more compact.
+
 ## 1.42.8
 
 - When the controller answers with a server error (HTTP 5xx), the app logs in again and retries once. Before, a stale session (e.g. right after an update) showed *Controller error: HTTP 500* until the app was restarted manually.
