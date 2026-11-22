@@ -1489,5 +1489,7 @@
  "Only at certain times": "Tylko w określonych godzinach",
  "Special case only (built-in)": "Tylko przypadek szczególny (wbudowana)",
  "names this device under another MAC": "wskazuje to urządzenie pod innym MAC",
- "Can this device reach …? Test a connection": "Czy to urządzenie dotrze do …? Testuj połączenie"
+ "Can this device reach …? Test a connection": "Czy to urządzenie dotrze do …? Testuj połączenie",
+ "Recently changed": "Ostatnio zmienione",
+ "Changed in the last 7 days": "Zmienione w ostatnich 7 dniach"
 }

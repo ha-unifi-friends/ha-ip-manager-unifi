@@ -1489,5 +1489,7 @@
  "Only at certain times": "Bara vid vissa tider",
  "Special case only (built-in)": "Bara specialfall (inbyggd)",
  "names this device under another MAC": "anger enheten med en annan MAC",
- "Can this device reach …? Test a connection": "Kan enheten nå …? Testa en anslutning"
+ "Can this device reach …? Test a connection": "Kan enheten nå …? Testa en anslutning",
+ "Recently changed": "Nyligen ändrade",
+ "Changed in the last 7 days": "Ändrade de senaste 7 dagarna"
 }

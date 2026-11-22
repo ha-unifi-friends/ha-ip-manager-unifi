@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.50.1
+
+- **List:** the icon switch (None / UniFi / Home Assistant) is offered for the list too – the same choice as for the tree and the graph (in the Actions menu when the top bar has no room).
+- New built-in view **Recently changed**, right below *Online*: devices that are new or were changed in the last 7 days (compared with the newest version that is at least a week old, plus devices first seen in the last 7 days). The sidebar filter *Baseline* has the matching option *Changed in the last 7 days*.
+
 ## 1.50.0
 
 - **Test a connection** (Firewall page, below the matrix): choose *From* (a device or a zone), *To* (Internet, a zone or a device), protocol and port, and the app shows whether a new connection is **allowed or blocked**, which rule decides, and every rule on the way in UniFi's order with the reason it does not apply (other port, other devices, paused, special case …). Rules with a schedule are named as "only at certain times".
