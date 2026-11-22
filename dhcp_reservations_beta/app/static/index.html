@@ -3744,7 +3744,7 @@ function relSimInit(nodes, links, W, H, grp, mrg, mrgL, rad, inet, cenOv) {
   const cnt = {}; for (const l of links) { cnt[l.a] = (cnt[l.a] || 0) + 1; cnt[l.b] = (cnt[l.b] || 0) + 1; }
   const L = links.map(l => ({ a: l.a, b: l.b, s: 1 / Math.min(cnt[l.a], cnt[l.b]), bias: cnt[l.a] / (cnt[l.a] + cnt[l.b]), len: l.len ?? 105 + (grp[l.a] === grp[l.b] ? 0 : 60) }));
   // free: no border – the graph spreads as it likes and the view zooms to fit it (like Home Assistant's Zigbee map)
-  REL.sim = { free: !!inet?.free, nodes, links: L, W, H, grp, cen, mrg, mrgL, rad, alpha: fresh ? 1 : 0, alphaTarget: 0, raf: 0, charge: -Math.max(300, Math.min(1400, W * H / Math.max(1, nodes.length) / 10)) };
+  REL.sim = { free: !!inet?.free, nodes, links: L, W, H, grp, cen, mrg, mrgL, rad, alpha: fresh ? 1 : 0, alphaTarget: 0, raf: 0, charge: inet?.charge ?? -Math.max(300, Math.min(1400, W * H / Math.max(1, nodes.length) / 10)), grav: inet?.grav ?? 0.03 };
   // settle most of the way at once, the rest is animated
   while (REL.sim.alpha > 0.12) relTick();
 }
@@ -3759,13 +3759,13 @@ function relTick() {
     const p = P[nodes[i]], q = P[nodes[j]]; let dx = q.x - p.x, dy = q.y - p.y, d2 = dx * dx + dy * dy;
     if (d2 < 1) { dx = (i - j) * 0.1 || 0.1; dy = 0.1; d2 = 1; }
     const f = S.charge * al / d2; p.vx += dx * f; p.vy += dy * f; q.vx -= dx * f; q.vy -= dy * f;
-    const min = rad(nodes[i]) + rad(nodes[j]) + (S.free ? 44 : 30), d = Math.sqrt(d2);
+    const min = rad(nodes[i]) + rad(nodes[j]) + (S.free ? 38 : 30), d = Math.sqrt(d2);
     if (d < min) { const c = (min - d) / d * 0.35; p.vx -= dx * c; p.vy -= dy * c; q.vx += dx * c; q.vy += dy * c; }
   }
   for (const n of nodes) {
     const p = P[n], c = cen[grp[n]] || { x: W / 2, y: H / 2 };
     if (p.fx != null) { p.x = p.fx; p.y = p.fy; p.vx = p.vy = 0; continue; }
-    p.vx += (c.x - p.x) * 0.03 * al; p.vy += (c.y - p.y) * 0.03 * al;
+    p.vx += (c.x - p.x) * S.grav * al; p.vy += (c.y - p.y) * S.grav * al;
     p.vx *= 0.6; p.vy *= 0.6; p.x += p.vx; p.y += p.vy;
     if (!S.free) { p.x = Math.max(mrgL[n] ?? 30, Math.min(W - (mrg[n] || 40), p.x)); p.y = Math.max(rad(n) + 14, Math.min(H - 24, p.y)); }
   }
@@ -3960,7 +3960,7 @@ function topoGraph(M) {
     nodes.push(c.mac);
     const p = M.parent(c);
     const wl = c.is_device ? c.up_wireless : c.conn === "wifi", l = M.link(c);
-    edges.push({ a: p, b: c.mac, len: c.is_device ? 170 : 40 + 12 * Math.sqrt((M.kids.get(p) || []).length), ab: 1, ba: 0, flows: 1, blocked: wl ? 1 : 0, ports: [], domains: [], bad: [], susp: [], unexp: [], cat: REL_PORTS[REL_PORTS.length - 1], w: c.is_device ? 2.4 : 1.2, nomark: true,
+    edges.push({ a: p, b: c.mac, len: c.is_device ? 125 : 36 + 11 * Math.sqrt((M.kids.get(p) || []).length), ab: 1, ba: 0, flows: 1, blocked: wl ? 1 : 0, ports: [], domains: [], bad: [], susp: [], unexp: [], cat: REL_PORTS[REL_PORTS.length - 1], w: c.is_device ? 2.4 : 1.2, nomark: true,
       title: `${relLabel(p)} — ${devName(c)}${l ? " · " + l : ""}` });
   }
   const deg = {}; for (const e of edges) { deg[e.a] = (deg[e.a] || 0) + 1; deg[e.b] = (deg[e.b] || 0) + 1; }
@@ -3972,7 +3972,7 @@ function topoGraph(M) {
   const grp = {}, mrg = {}, mrgL = {}; for (const n of nodes) { grp[n] = "t"; mrg[n] = (REL.labels ? Math.max(lbl(n).length * 6.4, sub(n).length * 5.6) : 0) + rad(n) + 10; mrgL[n] = rad(n) + 8; }
   // a new set of devices (other filter, clients on / off): zoom to fit again once it has settled
   const key = nodes.join(","); if (key !== REL.topoKey) { REL.topoKey = key; REL.autoFit = true; }
-  relSimInit(nodes, edges, W, H, grp, mrg, mrgL, rad, { free: true });
+  relSimInit(nodes, edges, W, H, grp, mrg, mrgL, rad, { free: true, charge: -520, grav: 0.035 }); // compact: nodes close together
   REL.g = { list: edges, nodes, W, H, max: 1, rad, lbl, sub, kind, icon: topoIconSvg };
   relDraw(); if (REL.autoFit && REL.sim.alpha < 0.03) { REL.autoFit = false; relFit(); } relRun();
 }
@@ -3982,7 +3982,7 @@ function renderTopo() {
   if (REL.tab === "tree") { if (REL.sim?.raf) cancelAnimationFrame(REL.sim.raf); REL.sim = null; REL.g = null; $("#topoTree").innerHTML = topoTreeHtml(M); $("#topoTree .hit")?.scrollIntoView({ block: "nearest", inline: "center" }); }
   else {
     topoGraph(M);
-    $("#relLegend").innerHTML = [["inet", "Internet"], ["unifi", "UniFi device"], ["ha", "Home Assistant"], ["dev", "Client"], ["susp", "Filter hit"]].map(([k, l]) => `<span><i class="nk nk-${k}"></i>${l}</span>`).join("") + `<span class="lsep"></span><span><i style="background:#94a3b8"></i>Cable</span><span><i class="dash"></i>WiFi / mesh</span><span class="muted">Drag devices, Ctrl + wheel or the buttons to zoom</span>`;
+    $("#relLegend").innerHTML = [["inet", "Internet"], ["unifi", "UniFi device"], ["ha", "Home Assistant"], ["dev", "Client"], ["hit", "Filter hit"]].map(([k, l]) => `<span><i class="nk nk-${k}"></i>${l}</span>`).join("") + `<span class="lsep"></span><span><i style="background:#94a3b8"></i>Cable</span><span><i class="dash"></i>WiFi / mesh</span><span class="muted">Drag devices, Ctrl + wheel or the buttons to zoom</span>`;
   }
 }
 $("#topoTree").addEventListener("click", e => { if (e.target.closest("summary")) return; const b = e.target.closest("[data-ttdev]"); if (!b) return; const c = devByMac(b.dataset.ttdev); if (c) { openPanel(c); $("#topoTree").querySelectorAll(".sel").forEach(x => x.classList.remove("sel")); $("#topoTree").querySelectorAll(`[data-ttdev="${CSS.escape(c.mac)}"]`).forEach(x => x.classList.add("sel")); } });

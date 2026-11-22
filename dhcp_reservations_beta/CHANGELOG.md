@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.43.2
+
+- Topology graph: more compact layout – weaker repulsion, shorter links and a little more pull to the centre, so the nodes sit closer together.
+- Topology graph: the legend shows *Filter hit* in purple, like the nodes.
+
 ## 1.43.1
 
 - Topology graph: devices that match the filter are marked purple instead of red.
