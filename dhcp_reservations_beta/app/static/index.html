@@ -3779,10 +3779,11 @@ function relSimInit(nodes, links, W, H, grp, mrg, mrgL, rad, inet, cenOv) {
   if (cenOv) Object.assign(cen, cenOv); // e.g. the levels of the topology
   let fresh = 0;
   nodes.forEach((n, i) => { if (!P[n]) { fresh++; const c = cen[grp[n]] || { x: cx, y: H / 2 }, a = i * 2.39996, r = 10 * Math.sqrt(0.5 + i); P[n] = { x: c.x + Math.cos(a) * r, y: c.y + Math.sin(a) * r, vx: 0, vy: 0 }; } });
-  if (hasI && P.internet.fx == null) Object.assign(P.internet, inet || { fx: W - Math.max(70, mrg.internet || 0), fy: H / 2 });
+  if (hasI && P.internet.fx == null && !inet?.free) Object.assign(P.internet, inet || { fx: W - Math.max(70, mrg.internet || 0), fy: H / 2 });
   const cnt = {}; for (const l of links) { cnt[l.a] = (cnt[l.a] || 0) + 1; cnt[l.b] = (cnt[l.b] || 0) + 1; }
-  const L = links.map(l => ({ a: l.a, b: l.b, s: 1 / Math.min(cnt[l.a], cnt[l.b]), bias: cnt[l.a] / (cnt[l.a] + cnt[l.b]), len: 105 + (grp[l.a] === grp[l.b] ? 0 : 60) }));
-  REL.sim = { nodes, links: L, W, H, grp, cen, mrg, mrgL, rad, alpha: fresh ? 1 : 0, alphaTarget: 0, raf: 0, charge: -Math.max(300, Math.min(1400, W * H / Math.max(1, nodes.length) / 10)) };
+  const L = links.map(l => ({ a: l.a, b: l.b, s: 1 / Math.min(cnt[l.a], cnt[l.b]), bias: cnt[l.a] / (cnt[l.a] + cnt[l.b]), len: l.len ?? 105 + (grp[l.a] === grp[l.b] ? 0 : 60) }));
+  // free: no border – the graph spreads as it likes and the view zooms to fit it (like Home Assistant's Zigbee map)
+  REL.sim = { free: !!inet?.free, nodes, links: L, W, H, grp, cen, mrg, mrgL, rad, alpha: fresh ? 1 : 0, alphaTarget: 0, raf: 0, charge: -Math.max(300, Math.min(1400, W * H / Math.max(1, nodes.length) / 10)) };
   // settle most of the way at once, the rest is animated
   while (REL.sim.alpha > 0.12) relTick();
 }
@@ -3797,7 +3798,7 @@ function relTick() {
     const p = P[nodes[i]], q = P[nodes[j]]; let dx = q.x - p.x, dy = q.y - p.y, d2 = dx * dx + dy * dy;
     if (d2 < 1) { dx = (i - j) * 0.1 || 0.1; dy = 0.1; d2 = 1; }
     const f = S.charge * al / d2; p.vx += dx * f; p.vy += dy * f; q.vx -= dx * f; q.vy -= dy * f;
-    const min = rad(nodes[i]) + rad(nodes[j]) + 30, d = Math.sqrt(d2);
+    const min = rad(nodes[i]) + rad(nodes[j]) + (S.free ? 44 : 30), d = Math.sqrt(d2);
     if (d < min) { const c = (min - d) / d * 0.35; p.vx -= dx * c; p.vy -= dy * c; q.vx += dx * c; q.vy += dy * c; }
   }
   for (const n of nodes) {
@@ -3805,12 +3806,12 @@ function relTick() {
     if (p.fx != null) { p.x = p.fx; p.y = p.fy; p.vx = p.vy = 0; continue; }
     p.vx += (c.x - p.x) * 0.03 * al; p.vy += (c.y - p.y) * 0.03 * al;
     p.vx *= 0.6; p.vy *= 0.6; p.x += p.vx; p.y += p.vy;
-    p.x = Math.max(mrgL[n] ?? 30, Math.min(W - (mrg[n] || 40), p.x)); p.y = Math.max(rad(n) + 14, Math.min(H - 24, p.y));
+    if (!S.free) { p.x = Math.max(mrgL[n] ?? 30, Math.min(W - (mrg[n] || 40), p.x)); p.y = Math.max(rad(n) + 14, Math.min(H - 24, p.y)); }
   }
 }
 function relRun() {
   const S = REL.sim; if (!S || S.raf) return;
-  const step = () => { S.raf = 0; if (REL.sim !== S || !$("#relGraph svg")) return; relTick(); relMove(); if (S.alpha > 0.004 || S.alphaTarget) S.raf = requestAnimationFrame(step); };
+  const step = () => { S.raf = 0; if (REL.sim !== S || !$("#relGraph svg")) return; relTick(); relMove(); if (REL.autoFit && S.alpha < 0.03 && !S.alphaTarget) { REL.autoFit = false; relFit(); } if (S.alpha > 0.004 || S.alphaTarget) S.raf = requestAnimationFrame(step); };
   S.raf = requestAnimationFrame(step);
 }
 // one finding of the suspicious-traffic check as a pill (relations and device details)
@@ -3940,7 +3941,7 @@ function relDraw() {
   };
   box.innerHTML = `<svg class="rel-svg${list.some(e => REL.sel === e.a + "|" + e.b) ? " has-sel" : ""}" viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img" aria-label="Relations graph"><defs>${markers}</defs><rect class="rel-bg" width="${W}" height="${H}"/><g class="rel-vp" transform="translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})">
     ${list.map(e => arrow(e, e.a, e.b, e.ab, false) + arrow(e, e.b, e.a, e.ba, true)).join("")}
-    ${nodes.map(node).join("")}</g></svg><div class="rel-zoom"><button type="button" class="btn sm" data-relzoom="in" title="Zoom in">+</button><button type="button" class="btn sm" data-relzoom="out" title="Zoom out">−</button><button type="button" class="btn sm" data-relzoom="fit" title="Reset the view and the layout">⟲</button></div>`;
+    ${nodes.map(node).join("")}</g></svg><div class="rel-zoom"><button type="button" class="btn sm" data-relzoom="in" title="Zoom in">+</button><button type="button" class="btn sm" data-relzoom="out" title="Zoom out">−</button><button type="button" class="btn sm" data-relzoom="auto" title="Auto zoom – show everything"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><circle cx="12" cy="12" r="2.5"/></svg></button><button type="button" class="btn sm" data-relzoom="fit" title="Reset the view and the layout">⟲</button></div>`;
   const byKey = new Map(list.map(e => [e.a + "|" + e.b, e]));
   G.els = { n: [...box.querySelectorAll("g[data-reln]")].map(el => [el, el.dataset.reln]), e: [...box.querySelectorAll("path[data-rele]")].map(el => { const e = byKey.get(el.dataset.rele), back = el.classList.contains("back"); return [el, e, back ? e.b : e.a, back ? e.a : e.b]; }) };
 }
@@ -3951,7 +3952,17 @@ function relMove() {
 }
 // zoom, pan and drag (no library)
 function relPt(ev) { const svg = $("#relGraph svg"), r = svg.getBoundingClientRect(), s = REL.g.W / r.width, v = REL.view; const sx = (ev.clientX - r.left) * s, sy = (ev.clientY - r.top) * s; return { sx, sy, x: (sx - v.x) / v.k, y: (sy - v.y) / v.k }; }
-function relZoom(f, cx, cy) { const v = REL.view, k = Math.max(0.3, Math.min(4, v.k * f)); cx ??= REL.g.W / 2; cy ??= REL.g.H / 2; v.x = cx - (cx - v.x) * k / v.k; v.y = cy - (cy - v.y) * k / v.k; v.k = k; $("#relGraph .rel-vp")?.setAttribute("transform", `translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})`); }
+// zoom and move the view so the whole graph fits, labels included
+function relFit() {
+  const G = REL.g, P = REL.pos; if (!G?.nodes.length) return;
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const n of G.nodes) { const p = P[n]; if (!p) continue; const r = G.rad(n), lw = Math.max(G.lbl(n).length * 6.4, G.sub(n).length * 5.6) + r + 8; x0 = Math.min(x0, p.x - r - 4); x1 = Math.max(x1, p.x + lw); y0 = Math.min(y0, p.y - r - 6); y1 = Math.max(y1, p.y + r + 16); }
+  if (!isFinite(x0)) return;
+  const pad = 24, k = Math.max(0.25, Math.min(1.6, (G.W - 2 * pad) / Math.max(1, x1 - x0), (G.H - 2 * pad) / Math.max(1, y1 - y0)));
+  REL.view = { k, x: G.W / 2 - k * (x0 + x1) / 2, y: G.H / 2 - k * (y0 + y1) / 2 };
+  $("#relGraph .rel-vp")?.setAttribute("transform", `translate(${REL.view.x.toFixed(1)},${REL.view.y.toFixed(1)}) scale(${k.toFixed(3)})`);
+}
+function relZoom(f, cx, cy) { if (f !== 1 || cx != null) REL.autoFit = false; const v = REL.view, k = Math.max(0.3, Math.min(4, v.k * f)); cx ??= REL.g.W / 2; cy ??= REL.g.H / 2; v.x = cx - (cx - v.x) * k / v.k; v.y = cy - (cy - v.y) * k / v.k; v.k = k; $("#relGraph .rel-vp")?.setAttribute("transform", `translate(${v.x.toFixed(1)},${v.y.toFixed(1)}) scale(${v.k.toFixed(3)})`); }
 $("#relGraph").addEventListener("wheel", e => { if (!REL.g || !(e.ctrlKey || e.metaKey)) return; e.preventDefault(); const p = relPt(e); relZoom(Math.exp(-e.deltaY * 0.0025), p.sx, p.sy); }, { passive: false });
 $("#relGraph").addEventListener("pointerdown", e => {
   if (!REL.g || e.button !== 0 || e.target.closest(".rel-zoom") || e.target.closest("[data-rele]")) return;
@@ -3964,7 +3975,7 @@ $("#relGraph").addEventListener("pointermove", e => {
   if (!D.moved) { try { $("#relGraph").setPointerCapture(D.pid); } catch {} if (D.id && REL.sim) { REL.sim.alphaTarget = 0.3; relRun(); } }
   D.moved = true;
   if (D.id) { const q = REL.pos[D.id]; q.fx = p.x; q.fy = p.y; }
-  else { REL.view.x = D.v0.x + p.sx - D.p0.sx; REL.view.y = D.v0.y + p.sy - D.p0.sy; relZoom(1); }
+  else { REL.autoFit = false; REL.view.x = D.v0.x + p.sx - D.p0.sx; REL.view.y = D.v0.y + p.sy - D.p0.sy; relZoom(1); }
 });
 $("#relGraph").addEventListener("pointerup", () => {
   const D = REL.drag; REL.drag = null; if (!D) return;
@@ -3974,7 +3985,9 @@ $("#relGraph").addEventListener("pointerup", () => {
 });
 $("#relGraph").addEventListener("click", e => {
   const z = e.target.closest("[data-relzoom]"); if (!z) return; e.stopPropagation();
-  if (z.dataset.relzoom === "fit") { REL.view = { k: 1, x: 0, y: 0 }; REL.pos = {}; renderRel(); } else relZoom(z.dataset.relzoom === "in" ? 1.25 : 0.8);
+  if (z.dataset.relzoom === "fit") { REL.view = { k: 1, x: 0, y: 0 }; REL.pos = {}; REL.autoFit = true; renderRel(); }
+  else if (z.dataset.relzoom === "auto") { REL.autoFit = false; relFit(); }
+  else { REL.autoFit = false; relZoom(z.dataset.relzoom === "in" ? 1.25 : 0.8); }
 }, true);
 // the flows read hold no allowed connection: say why and what helps (no UniFi switch is touched)
 function relRecHtml(D) {
@@ -4026,28 +4039,27 @@ function topoTreeHtml(M) {
 }
 function topoGraph(M) {
   const items = [...M.devs, ...M.clients], edges = [], nodes = ["internet"];
-  // levels: internet, gateway, switches / access points below each other, clients one level under their device
-  const depth = { internet: 0 }, dOf = (c, seen = new Set()) => { if (depth[c.mac] != null) return depth[c.mac]; const p = M.parent(c); if (seen.has(c.mac)) return 1; seen.add(c.mac); const pc = M.byMac.get(p); return depth[c.mac] = p === "internet" ? 1 : p === "?" || !pc ? 2 : dOf(pc, seen) + 1; };
-  for (const c of items) dOf(c);
-  const maxD = Math.max(1, ...Object.values(depth));
-  const box = $("#relGraph"), W = Math.max(640, box.clientWidth || 900), H = Math.max(560, Math.min(1400, 120 + maxD * 150));
+  const box = $("#relGraph"), W = Math.max(640, box.clientWidth || 900), H = Math.max(560, Math.min(860, Math.round(W * 0.62)));
+  // clients with an unknown connection hang on one shared node, so they do not drift off and shrink the auto zoom
+  if (items.some(c => M.parent(c) === "?")) { nodes.push("?"); edges.push({ a: "internet", b: "?", len: 160, ab: 1, ba: 0, flows: 1, blocked: 1, ports: [], domains: [], bad: [], susp: [], unexp: [], cat: REL_PORTS[REL_PORTS.length - 1], w: 1, nomark: true, title: "Connection not known" }); }
   for (const c of items) {
     nodes.push(c.mac);
-    const p = M.parent(c); if (p === "?") continue;
+    const p = M.parent(c);
     const wl = c.is_device ? c.up_wireless : c.conn === "wifi", l = M.link(c);
-    edges.push({ a: p, b: c.mac, ab: 1, ba: 0, flows: 1, blocked: wl ? 1 : 0, ports: [], domains: [], bad: [], susp: [], unexp: [], cat: REL_PORTS[REL_PORTS.length - 1], w: c.is_device ? 2.4 : 1.2, nomark: true,
+    edges.push({ a: p, b: c.mac, len: c.is_device ? 170 : 40 + 12 * Math.sqrt((M.kids.get(p) || []).length), ab: 1, ba: 0, flows: 1, blocked: wl ? 1 : 0, ports: [], domains: [], bad: [], susp: [], unexp: [], cat: REL_PORTS[REL_PORTS.length - 1], w: c.is_device ? 2.4 : 1.2, nomark: true,
       title: `${relLabel(p)} — ${devName(c)}${l ? " · " + l : ""}` });
   }
   const deg = {}; for (const e of edges) { deg[e.a] = (deg[e.a] || 0) + 1; deg[e.b] = (deg[e.b] || 0) + 1; }
-  const kind = id => id === "internet" ? "inet" : topoMatch(M.byMac.get(id)) ? "susp" : M.byMac.get(id)?.is_device ? "unifi" : isHaHost(M.byMac.get(id)) ? "ha" : "dev";
-  const rad = id => { const c = M.byMac.get(id); return id === "internet" ? 13 : !c?.is_device ? 6 : c.device_kind === "gateway" ? 15 : c.device_kind === "switch" ? 12 : 10; };
-  const lbl = id => { const s = relLabel(id); return s.length > 26 ? s.slice(0, 25) + "…" : s; };
+  const kind = id => id === "internet" ? "inet" : id === "?" ? "dev" : topoMatch(M.byMac.get(id)) ? "susp" : M.byMac.get(id)?.is_device ? "unifi" : isHaHost(M.byMac.get(id)) ? "ha" : "dev";
+  const rad = id => { const c = M.byMac.get(id); return id === "internet" ? 13 : id === "?" ? 9 : !c?.is_device ? 6 : c.device_kind === "gateway" ? 15 : c.device_kind === "switch" ? 12 : 10; };
+  const lbl = id => { const s = id === "?" ? I18N.tr("Connection not known") : relLabel(id); return s.length > 26 ? s.slice(0, 25) + "…" : s; };
   const sub = id => { const c = M.byMac.get(id); return c ? topoSub(c) : ""; };
-  const grp = {}, mrg = {}, mrgL = {}, cen = {}; for (const n of nodes) { grp[n] = "d" + (depth[n] ?? 2); mrg[n] = Math.max(lbl(n).length * 6.4, sub(n).length * 5.6) + rad(n) + 10; mrgL[n] = rad(n) + 8; }
-  for (let d = 0; d <= maxD; d++) cen["d" + d] = { x: W / 2, y: 34 + d * (H - 80) / maxD };
-  relSimInit(nodes, edges, W, H, grp, mrg, mrgL, rad, { fx: W / 2, fy: 34 }, cen);
+  const grp = {}, mrg = {}, mrgL = {}; for (const n of nodes) { grp[n] = "t"; mrg[n] = Math.max(lbl(n).length * 6.4, sub(n).length * 5.6) + rad(n) + 10; mrgL[n] = rad(n) + 8; }
+  const fresh = nodes.some(n => !REL.pos[n]);
+  relSimInit(nodes, edges, W, H, grp, mrg, mrgL, rad, { free: true });
+  if (fresh) REL.autoFit = true;
   REL.g = { list: edges, nodes, W, H, max: 1, rad, lbl, sub, kind };
-  relDraw(); relRun();
+  relDraw(); if (REL.autoFit && REL.sim.alpha < 0.03) { REL.autoFit = false; relFit(); } relRun();
 }
 function renderTopo() {
   if (!state.clients.length) { $("#topoTree").innerHTML = `<p class="muted"><span class="spin"></span> Loading …</p>`; return; }
