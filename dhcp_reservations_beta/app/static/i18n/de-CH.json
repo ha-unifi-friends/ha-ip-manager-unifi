@@ -1465,5 +1465,10 @@
  "never reached for this device": "wird für das Grät nie erreicht",
  "The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.": "D Regle, wo das Grät betreffed (sis Netzwerk und s Grät sälber), i ihrere Reihefolg – di erscht passend Regle entscheidet.",
  "Rules marked ⚠ name a client with the same name but another MAC address": "Mit ⚠ markierti Regle nänned en Client mit glichem Name, aber andererer MAC-Adrässe",
- "– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.": "– vermuetlich e privati WLAN-Adrässe, wo sich gänderet het. Wähl s Grät i UniFi i dene Regle neu uus oder schalt d privati Adrässe am Grät ab."
+ "– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.": "– vermuetlich e privati WLAN-Adrässe, wo sich gänderet het. Wähl s Grät i UniFi i dene Regle neu uus oder schalt d privati Adrässe am Grät ab.",
+ "Client → External": "Client → External",
+ "paused": "pausiert",
+ "Normal traffic of this device reaches the internet": "Normale Verkehr vo dem Grät erreicht s Internet",
+ "Normal traffic of this device is blocked by {0}": "Normale Verkehr vo dem Grät wird vo {0} blockiert",
+ "Reaches the internet": "Erreicht s Internet"
 }

@@ -1465,5 +1465,10 @@
  "never reached for this device": "nunca se alcanza para este dispositivo",
  "The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.": "Las reglas que afectan a este dispositivo (su red y el propio dispositivo), en su orden – decide la primera regla que coincide.",
  "Rules marked ⚠ name a client with the same name but another MAC address": "Las reglas marcadas con ⚠ nombran un cliente con el mismo nombre pero otra dirección MAC",
- "– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.": "– probablemente una dirección Wi-Fi privada que cambió. En UniFi, vuelve a seleccionar el dispositivo en estas reglas o desactiva la dirección privada en el dispositivo."
+ "– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.": "– probablemente una dirección Wi-Fi privada que cambió. En UniFi, vuelve a seleccionar el dispositivo en estas reglas o desactiva la dirección privada en el dispositivo.",
+ "Client → External": "Client → External",
+ "paused": "en pausa",
+ "Normal traffic of this device reaches the internet": "El tráfico normal de este dispositivo llega a Internet",
+ "Normal traffic of this device is blocked by {0}": "El tráfico normal de este dispositivo lo bloquea {0}",
+ "Reaches the internet": "Llega a Internet"
 }

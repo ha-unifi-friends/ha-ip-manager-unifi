@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.42.2 – 2026-11-22
+
+- **Internet access chain** (device details) is titled *Client → External* and folds away (closed by default, remembered). Closed it shows one line: the device on the left, the internet on the right, the rule icons in between (✓ allow, ✕ block, Ⅱ paused, ↩ replies only). A green line runs from the device through the rules and stops at the first rule that blocks all normal traffic of the device; behind the internet a green ✓ or a red ✕ says at a glance whether normal traffic gets out.
+- Paused rules are shown again (Ⅱ, grey) – they decide nothing.
+
 ## 1.42.1 – 2026-11-22
 
 - **Internet access chain** (device details) also finds rules that name the device under an older MAC address: when a rule names a client with the same name but another MAC – typically a private WiFi address that changed – the rule counts for the device, is marked ⚠ and a note says how to fix it in UniFi. Network (VLAN) rules and device rules stay together in one chain.
