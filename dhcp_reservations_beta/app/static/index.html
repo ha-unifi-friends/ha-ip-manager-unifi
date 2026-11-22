@@ -1550,17 +1550,11 @@ function computeWarnings() {
 // ---------- facets (sidebar) ----------
 const FACETS = [
   { id: "status", title: "Status", get: c => c.online ? "on" : "off", opts: () => [["on", "Online"], ["off", "Offline"]] },
-  // "Changed since <version>" (new or changed devices) for the baseline + latest versions, max 5
-  { id: "base", title: "Baseline", emptyText: "Save a version to see which devices are new or changed since then.", ready: () => !!state.baseReady,
-    multi: c => !c.mac ? [] : (state.baseSets || []).filter(b => b.cats.has(c.mac)).map(b => "chg:" + b.id),
-    opts: () => (state.baseSets || []).map(b => ["chg:" + b.id, `Changed since ${b.isBaseline ? "★ " : ""}${isoDateTime(b.created)}${b.label ? " · " + b.label : ""}`]) },
   { id: "kind", title: "Type", get: c => c.is_device ? "dev" : "client", opts: () => [["client", "Clients"], ["dev", "UniFi devices"]] },
   { id: "conn", title: "Connection", get: c => c.conn, opts: () => [["wifi", "WiFi"], ["wired", "Wired"], ["teleport", "Teleport"]] },
   { id: "res", title: "Reservation", get: c => c.use_fixedip ? "yes" : "no", opts: () => [["yes", "With fixed IP"], ["no", "Without fixed IP"]] },
   { id: "hint", title: "Issues", multi: c => [c._serious ? "problem" : "", ...c._warn.map(w => w[1] === "Random MAC" ? "random" : w[1] === "In DHCP pool" ? "pool" : w[1].startsWith("Expected in ") ? "wrongnet" : w[1].startsWith("Duplicate") ? "dup" : /^(Telnet|FTP) open$/.test(w[1]) ? "insecure" : ""), c._ipMismatch ? "mismatch" : "", c._vnoMiss ? "vno" : ""].filter(Boolean),
     opts: () => [["problem", "Problems"], ["pool", "In DHCP pool"], ["mismatch", "IP is not Fixed IP"], ["vno", "Not in override VLAN"], ["random", "Random MAC"], ["dup", "Duplicates (IP / name / DNS)"], ["wrongnet", "Wrong network (rules)"], ["insecure", "Insecure ports (Telnet / FTP)"]] },
-  { id: "ha", title: "Home Assistant", ready: () => state.haOk !== undefined, multi: c => { if (!c.mac) return []; const ds = haOf(c); if (!ds.length) return ["no"]; const w = haWorst(ds); return ["yes", ...(["error", "unavailable"].includes(w) ? ["bad"] : []), ...ds.flatMap(d => haDoms(c, d)).map(x => "d:" + x)]; },
-    opts: () => [["yes", "Known to Home Assistant"], ["no", "Not in Home Assistant"], ["bad", "Unavailable in HA"], ...uniq(state.clients.flatMap(c => haOf(c).flatMap(d => haDoms(c, d)))).map(x => ["d:" + x, "Integration: " + x])] },
   { id: "fresh", title: "New", multi: c => { if (!c.first_seen) return []; const d = (Date.now() / 1000 - c.first_seen) / 86400; return [d <= 1 ? "1" : "", d <= 7 ? "7" : "", d <= 30 ? "30" : ""].filter(Boolean); },
     opts: () => [["1", "First seen today"], ["7", "First seen in the last 7 days"], ["30", "First seen in the last 30 days"]] },
   { id: "seen", title: "Inactive", multi: c => { if (c.is_device || c.online || c.conn === "teleport") return []; if (!c.last_seen) return ["never"]; const d = (Date.now() / 1000 - c.last_seen) / 86400; return [d > 30 ? "30" : "", d > 90 ? "90" : "", d > 365 ? "365" : ""].filter(Boolean); },
@@ -1574,6 +1568,12 @@ const FACETS = [
     multi: c => { if (!c.mac || c.is_device || !DEVSUSP.data) return []; const f = devSuspOf(c); return f.length ? [...new Set(f.map(x => x.kind === "blocked" ? "blk" : "susp"))] : ["none"]; },
     opts: () => DEVSUSP.data ? [["blk", "Many blocked attempts (50+)"], ["susp", "Scans or other suspicious traffic"], ["none", "No findings"]] : [] },
   { id: "fwa", title: "Firewall analysis", ready: () => !!FW.data, multi: c => c.mac ? fwDevCodes(c) : [], opts: () => FW.data ? [["find", "With findings"], ["zone", "Wrong zone"], ["grp", "Unlike similar devices"], ["access", "Access problems"], ["unk", "Device type not recognised"]] : [] },
+  // "Changed since <version>" (new or changed devices) for the baseline + latest versions, max 5
+  { id: "base", title: "Baseline", emptyText: "Save a version to see which devices are new or changed since then.", ready: () => !!state.baseReady,
+    multi: c => !c.mac ? [] : (state.baseSets || []).filter(b => b.cats.has(c.mac)).map(b => "chg:" + b.id),
+    opts: () => (state.baseSets || []).map(b => ["chg:" + b.id, `Changed since ${b.isBaseline ? "★ " : ""}${isoDateTime(b.created)}${b.label ? " · " + b.label : ""}`]) },
+  { id: "ha", title: "Home Assistant", ready: () => state.haOk !== undefined, multi: c => { if (!c.mac) return []; const ds = haOf(c); if (!ds.length) return ["no"]; const w = haWorst(ds); return ["yes", ...(["error", "unavailable"].includes(w) ? ["bad"] : []), ...ds.flatMap(d => haDoms(c, d)).map(x => "d:" + x)]; },
+    opts: () => [["yes", "Known to Home Assistant"], ["no", "Not in Home Assistant"], ["bad", "Unavailable in HA"], ...uniq(state.clients.flatMap(c => haOf(c).flatMap(d => haDoms(c, d)))).map(x => ["d:" + x, "Integration: " + x])] },
 ];
 const uniq = a => [...new Set(a.filter(Boolean))].sort((x, y) => x.localeCompare(y, "de"));
 const facetVals = (f, c) => f.multi ? f.multi(c) : [f.get(c)];
