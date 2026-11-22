@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.40.0 – 2026-11-22
+
+**Network becomes Topology:**
+- The menu item is called **Topology** with the tabs **Tree** and **Graph**. The traffic graph and the traffic list are removed; the suspicious-traffic findings stay in the device details and in the client filter *Firewall blocks (24 h)*.
+- The **sidebar has the same filters and search as Clients**. When a filter is active, the topology shows the matching clients and devices plus every device on the way from them to the internet; the graph zooms to fit the new set.
+- *Notify me in Home Assistant about suspicious traffic* moved to the **Actions** menu.
+
 ## 1.39.1 – 2026-11-22
 
 - **Topology graph** laid out like Home Assistant's Zigbee map: no fixed levels and no border any more – the devices spread freely, each access point or switch forms a cloud with its clients (the more clients, the longer their lines), clients with an unknown connection hang on one shared node.

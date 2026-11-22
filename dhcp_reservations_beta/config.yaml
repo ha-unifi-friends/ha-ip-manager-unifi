@@ -1,8 +1,8 @@
 name: "IP Manager for UniFi Beta"
-version: "1.39.1"
+version: "1.40.0"
 slug: dhcp_reservations_beta
 stage: experimental
-description: "BETA – UniFi clients, fixed IPs and DHCP reservations – IP plan, cleanup, firewall analysis and rules, network topology, traffic graph, views, bulk changes, versions (unofficial)"
+description: "BETA – UniFi clients, fixed IPs and DHCP reservations – IP plan, cleanup, firewall analysis and rules, network topology, views, bulk changes, versions (unofficial)"
 url: https://github.com/ha-unifi-friends/ha-ip-manager-unifi
 arch:
   - aarch64

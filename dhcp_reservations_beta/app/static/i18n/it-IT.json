@@ -1452,5 +1452,8 @@
  "Drag devices, Ctrl + wheel or the buttons to zoom": "Trascina i dispositivi, zoom con Ctrl + rotella o i pulsanti",
  "Mesh": "Mesh",
  "Internet": "Internet",
- "Auto zoom – show everything": "Zoom automatico – mostra tutto"
+ "Auto zoom – show everything": "Zoom automatico – mostra tutto",
+ "Tree": "Albero",
+ "Filter hit": "Risultato del filtro",
+ "Notify me in Home Assistant about suspicious traffic": "Avvisami in Home Assistant in caso di traffico sospetto"
 }
