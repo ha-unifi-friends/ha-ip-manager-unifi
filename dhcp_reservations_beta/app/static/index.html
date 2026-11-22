@@ -379,8 +379,8 @@ body:not(.rel-mode) .rel-only{display:none!important}
 .rel-n:hover .core{stroke:var(--fg)}
 .rel-svg.no-lbl .rel-l,.rel-svg.no-lbl .rel-s{display:none}
 .rel-zoom .btn[aria-pressed="true"]{color:var(--accent);border-color:var(--accent)}
-.nk-inet{--nc:#039be5}.nk-unifi{--nc:#18bcf2}.nk-ha{--nc:#41bdf5}.nk-hub{--nc:#00bcd4}.nk-dev{--nc:#26a69a}.nk-susp{--nc:#ef4444}
-.rel-n.nk-susp .core{animation:relpulse 1.6s ease-in-out infinite}
+.nk-inet{--nc:#039be5}.nk-unifi{--nc:#18bcf2}.nk-ha{--nc:#41bdf5}.nk-hub{--nc:#00bcd4}.nk-dev{--nc:#26a69a}.nk-susp{--nc:#ef4444}.nk-hit{--nc:#a855f7}
+.rel-n.nk-susp .core,.rel-n.nk-hit .core{animation:relpulse 1.6s ease-in-out infinite}
 .rel-l{font-size:12px;fill:var(--fg);paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
 .rel-s{font-size:10.5px;fill:var(--muted);paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
 .rel-ic{font-size:12px;text-anchor:middle;dominant-baseline:central;fill:#fff;font-weight:700;pointer-events:none}
@@ -3964,7 +3964,7 @@ function topoGraph(M) {
       title: `${relLabel(p)} — ${devName(c)}${l ? " · " + l : ""}` });
   }
   const deg = {}; for (const e of edges) { deg[e.a] = (deg[e.a] || 0) + 1; deg[e.b] = (deg[e.b] || 0) + 1; }
-  const kind = id => id === "internet" ? "inet" : id === "?" ? "dev" : topoMatch(M.byMac.get(id)) ? "susp" : M.byMac.get(id)?.is_device ? "unifi" : isHaHost(M.byMac.get(id)) ? "ha" : "dev";
+  const kind = id => id === "internet" ? "inet" : id === "?" ? "dev" : topoMatch(M.byMac.get(id)) ? "hit" : M.byMac.get(id)?.is_device ? "unifi" : isHaHost(M.byMac.get(id)) ? "ha" : "dev";
   const ico = REL.topoIcon !== "none";
   const rad = id => { const c = M.byMac.get(id); return id === "internet" ? 13 : id === "?" ? 9 : !c?.is_device ? (ico ? 9 : 6) : c.device_kind === "gateway" ? 15 : c.device_kind === "switch" ? 12 : 10; };
   const lbl = id => { const s = id === "?" ? I18N.tr("Connection not known") : relLabel(id); return s.length > 26 ? s.slice(0, 25) + "…" : s; };
