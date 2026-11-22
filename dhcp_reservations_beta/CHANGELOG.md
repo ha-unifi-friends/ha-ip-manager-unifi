@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.42.8
+
+- When the controller answers with a server error (HTTP 5xx), the app logs in again and retries once. Before, a stale session (e.g. right after an update) showed *Controller error: HTTP 500* until the app was restarted manually.
+
 ## 1.42.7
 
 - Topology: with the icon switch on *HA*, devices without a Home Assistant logo show their UniFi icon instead of an empty spot – in the tree and in the graph. *HA* is now the default icon setting.
