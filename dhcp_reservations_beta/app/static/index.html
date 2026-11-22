@@ -1198,6 +1198,11 @@ window.I18N = (() => {
         <button class="btn danger" type="button" id="btnForget">Forget client</button>
         <p id="forgetText">Removes name, note, reservation and history from the controller. This cannot be undone.</p>
       </div>
+      <div class="card" id="rcCard" hidden>
+        <div class="sec-title">WiFi</div>
+        <button class="btn" type="button" id="btnReconnect" style="width:100%"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="vertical-align:-2px;margin-right:6px"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>Reconnect</button>
+        <p class="hint" id="rcText" style="margin:8px 0 0">Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP).</p>
+      </div>
     </div>
   </section>
 </div>
@@ -4084,6 +4089,8 @@ function fillForm(c) {
   $("#fAp").value = c?.fixed_ap_mac || c?.ap_mac || state.aps[0]?.mac || "";
   $("#fDnsOn").checked = !!c?.local_dns_record_enabled; $("#fDns").value = c?.local_dns_record || "";
   $("#editErr").hidden = true; $("#dangerZone").hidden = !c?.known;
+  $("#rcCard").hidden = !(c?.mac && !c.is_device && c.conn === "wifi"); $("#btnReconnect").disabled = !canReconnect(c);
+  $("#rcText").textContent = canReconnect(c) ? "Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP)." : "Only possible while the device is connected to the WiFi.";
   $("#btnUnres").hidden = $("#unresText").hidden = !c?.use_fixedip;
   disarm(); lockIpFields(c); syncToggles(); updateHint();
 }
@@ -4402,6 +4409,13 @@ function bindSort(id, render) {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const needsNewIp = (c, ip) => !!c && !!ip && !!c.online && !!c.ip && c.ip !== ip;
 const canReconnect = c => !!c && !!c.mac && !c.is_device && c.conn === "wifi" && !!c.online;
+$("#btnReconnect").addEventListener("click", async () => {
+  const c = state.sel, b = $("#btnReconnect"); if (!canReconnect(c)) return;
+  b.disabled = true;
+  try { await api("api/reconnect", { mac: c.mac }); toast(`${devName(c)} is reconnecting – the status updates in a few seconds`); setTimeout(() => load(), 15000); }
+  catch (e) { toast("Reconnect failed: " + e.message); }
+  finally { setTimeout(() => { if (state.sel === c) b.disabled = !canReconnect(c); }, 5000); }
+});
 const renewNote = c => canReconnect(c) ? "" : c.conn === "wired" ? "Wired – takes the new IP at its next DHCP renewal" : "Takes the new IP at its next DHCP renewal";
 async function reconnectAll(cs) {
   let ok = 0, fail = 0;

@@ -1388,5 +1388,10 @@
  "UniFi reports no switch for this device (e.g. behind an unmanaged switch or the connection is not known yet).": "UniFi meldt geen switch voor dit apparaat (bijv. achter een onbeheerde switch, of de verbinding is nog niet bekend).",
  "The switch this device is on is not adopted in this UniFi site.": "De switch van dit apparaat is niet geadopteerd in deze UniFi-site.",
  "UniFi reports the switch but no port number.": "UniFi meldt de switch maar geen poortnummer.",
- "The switch port of this device is not known.": "De switchpoort van dit apparaat is niet bekend."
+ "The switch port of this device is not known.": "De switchpoort van dit apparaat is niet bekend.",
+ "Reconnect": "Opnieuw verbinden",
+ "Disconnects the device from the WiFi for a moment. It connects again right away and asks for a new IP address (DHCP).": "Verbreekt de wifi-verbinding van het apparaat even. Het verbindt meteen opnieuw en vraagt een nieuw IP-adres aan (DHCP).",
+ "Only possible while the device is connected to the WiFi.": "Alleen mogelijk zolang het apparaat met de wifi verbonden is.",
+ "{0} is reconnecting – the status updates in a few seconds": "{0} verbindt opnieuw – de status wordt over enkele seconden bijgewerkt",
+ "Reconnect failed: {0}": "Opnieuw verbinden mislukt: {0}"
 }
