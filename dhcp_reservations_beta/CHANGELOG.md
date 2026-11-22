@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.42.3 – 2026-11-22
+
+- **Device details:** *Rules that name this client* moved from the firewall card into the opened internet access chain, below the chain – as boxes in the look of the rule chain (✓ / ✕ / ↩ / Ⅱ, name, zones, as source or destination, by MAC / IP / network, hits); paused rules are grey. A click opens the rule in the firewall view. Without an internet chain (e.g. no zone) the list stands on its own.
+
 ## 1.42.2 – 2026-11-22
 
 - **Internet access chain** (device details) is titled *Client → External* and folds away (closed by default, remembered). Closed it shows one line: the device on the left, the internet on the right, the rule icons in between (✓ allow, ✕ block, Ⅱ paused, ↩ replies only). A green line runs from the device through the rules and stops at the first rule that blocks all normal traffic of the device; behind the internet a green ✓ or a red ✕ says at a glance whether normal traffic gets out.

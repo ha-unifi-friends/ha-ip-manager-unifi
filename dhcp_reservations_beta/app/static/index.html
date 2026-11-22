@@ -532,6 +532,12 @@ body.fw-mode #btnNew{display:none}
 .fm-chev{flex:none;margin-left:8px;color:var(--muted);transition:transform .15s}
 .fw-mini:not([open]) .fm-chev{transform:rotate(-90deg)}
 .fw-mini[open] .fm-sum{margin-bottom:8px}
+.fw-named .lb.off,.fw-lane.mini .lb.off{background:var(--chip);border-color:var(--line-strong);opacity:.75}
+.fw-named .lb.off .lb-ic,.fw-lane.mini .lb.off .lb-ic{background:var(--muted)}
+.fw-mini .sec-sub{margin-top:12px}
+.fw-named{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:6px}
+.fw-named .lb{width:auto;min-width:0;padding:6px 8px;font-size:11.5px}
+.fw-named .lb-s,.fw-named .lb-h{font-size:10.5px}
 .fw-lane.mini{padding:2px 0 6px}
 .fw-lane.mini .lb{width:118px;padding:5px 7px;font-size:11.5px}
 .fw-lane.mini .lb-h,.fw-lane.mini .lb-s{font-size:10.5px}
@@ -2869,9 +2875,22 @@ function fwMiniChainHtml(c) {
   const open = store.get("fwMiniOpen", false);
   return `<div class="sec-title"><span>Internet access</span> <span class="muted">Client → External</span></div>
     <details class="card fw-mini" id="fwMini"${open ? " open" : ""}><summary class="fm-sum" title="${esc(flow ? "Normal traffic of this device reaches the internet" : `Normal traffic of this device is blocked by ${stop.p.name || "a rule"}`)}"><span class="fm-n dev">${iconHtml(c)}</span>${strip}<span class="fm-n net${flow ? " on" : ""}">🌐</span><span class="fm-v ${flow ? "ok" : "no"}" aria-label="${flow ? "Reaches the internet" : "Blocked"}">${flow ? "✓" : "✕"}</span><span class="fm-chev" aria-hidden="true">▾</span></summary>
-    <div class="fw-lane mini">${lane}</div><p class="hint" style="margin:4px 0 0">The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.</p>${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}</details>`;
+    <div class="fw-lane mini">${lane}</div><p class="hint" style="margin:4px 0 0">The rules that concern this device (its network and the device itself), in their order – the first matching rule decides.</p>${alts.length ? `<p class="hint fw-alt" style="margin:4px 0 0">⚠ <span>Rules marked ⚠ name a client with the same name but another MAC address</span> (<span translate="no">${esc(alts.join(", "))}</span>) <span>– probably a private WiFi address that changed. In UniFi, select the device again in these rules, or turn off the private address on the device.</span></p>` : ""}${fwNamedHtml(c, true)}</details>`;
 }
 document.addEventListener("toggle", e => { if (e.target.id === "fwMini") store.set("fwMiniOpen", e.target.open); }, true);
+// the rules that name this client (by MAC, IP or network) – boxes like in the rule chain, paused ones grey
+function fwNamedHtml(c, inner) {
+  if (!FW.data || !c?.mac) return "";
+  const hits = fwDevicePolicies(c);
+  const cls = p => p.enabled === false ? "off" : fwCst(p) === "RESPOND_ONLY" ? "ret" : fwIsAllow(p) ? "allow" : "block";
+  const icon = p => p.enabled === false ? "Ⅱ" : fwCst(p) === "RESPOND_ONLY" ? "↩" : fwIsAllow(p) ? "✓" : "✕";
+  const box = h => `<button type="button" class="lb ${cls(h.p)}${h.p.predefined ? " pre" : ""}" data-fwpol="${esc(h.p.id)}" title="${esc(`${h.p.name || "?"}${h.p.enabled === false ? " · paused" : ""} · ${fwZoneName(h.p.source?.zone_id)} → ${fwZoneName(h.p.destination?.zone_id)} · ${h.side === "source" ? "as source" : "as destination"} · via ${h.via.join(", ")}`)}">
+      <span class="lb-top">${h.p.predefined ? `<span class="lb-id">🔒</span>` : ""}<span class="lb-ic">${icon(h.p)}</span></span>
+      <span class="lb-n" translate="no">${esc(h.p.name || "?")}</span><span class="lb-s" translate="no">${esc(fwZoneName(h.p.source?.zone_id))} → ${esc(fwZoneName(h.p.destination?.zone_id))}</span>
+      <span class="lb-s"><span>${h.side === "source" ? "as source" : "as destination"}</span> · <span translate="no">${esc(h.via.join(", "))}</span></span>${fwHits(h.p) != null ? `<span class="lb-h">${fwHits(h.p).toLocaleString(I18N.locale)} <span>hits</span></span>` : ""}</button>`;
+  const body = hits.length ? `<div class="fw-named">${hits.map(box).join("")}</div>` : `<p class="hint" style="margin:0">No rule names this client directly – only the zone rules apply.</p>`;
+  return inner ? `<div class="sec-sub">Rules that name this client</div>${body}` : `<div class="sec-title">Rules that name this client</div>${body}`;
+}
 // a rule names a client with the same name as this device but another MAC: the device's private WiFi address changed
 function fwSameNameMac(e, c) {
   const nm = (c.name || "").trim().toLowerCase(); if (!nm) return "";
@@ -2895,8 +2914,6 @@ function fwInfoHtml(c) {
     ${d?.f.length ? `<div class="fw-finds">${d.f.map(f => `<span class="fa-f ${f.sev}">${f.html}</span>`).join("")}</div>` : ""}
     ${eff.length ? `<div class="sec-sub">What applies to this client</div><div class="imp-table fw-eff"><table><thead><tr><th>Zone</th><th>Client → zone</th><th>Zone → client</th></tr></thead><tbody>${eff.map(x => `<tr${x.z.id === z.id ? ' class="own"' : ""}><td><span class="zchip" translate="no">${esc(x.z.name)}</span>${x.z.id === z.id ? ` <span class="muted">(own)</span>` : ""}</td><td>${cell(x.out)}</td><td>${cell(x.inc)}</td></tr>`).join("")}</tbody></table></div><p class="hint" style="margin:6px 0 0">The first matching rule decides (UniFi's order). The zone defaults are the built-in rules at the end.</p>` : ""}
     ${changing.length || still.length ? `<div class="sec-sub">Paused rules</div><div class="fw-hits">${[...changing, ...still].map(x => `<button type="button" class="fw-hit paused" data-fwpol="${esc(x.p.id)}">${fwActTag(x.p)}<span class="fw-hn"><b translate="no">${esc(x.p.name || "?")}</b> <span class="st err">Paused</span><span class="muted"><span>${x.dir === "out" ? "Client →" : "→ client from"}</span> <span translate="no">${esc(x.z?.name || "?")}</span>: ${x.now.lvl !== x.then.lvl ? `<span>now</span> ${fwLvlTag(x.now.lvl)}, <span>if active</span> ${fwLvlTag(x.then.lvl)}` : `<span>if active: no change – another rule decides first</span>`}</span></span></button>`).join("")}</div>` : ""}
-    ${hits.length ? `<div class="sec-sub">Rules that name this client</div><div class="fw-hits">${hits.map(h => `<button type="button" class="fw-hit${h.p.enabled === false ? " paused" : ""}" data-fwpol="${esc(h.p.id)}" title="Show this policy in the firewall view">${fwActTag(h.p)}<span class="fw-hn"><b translate="no">${esc(h.p.name || "?")}</b>${h.p.enabled === false ? ' <span class="st err">Paused</span>' : ""}<span class="muted"><span>${h.side === "source" ? "as source" : "as destination"}</span> · <span translate="no">${esc(fwZoneName(h.p.source?.zone_id))} → ${esc(fwZoneName(h.p.destination?.zone_id))}</span> · <span>via</span> <span translate="no">${esc(h.via.join(", "))}</span>${fwHits(h.p) != null ? ` · ${fwHits(h.p).toLocaleString(I18N.locale)} <span>hits</span>` : ""}</span></span></button>`).join("")}</div>`
-      : `<p class="hint" style="margin:8px 0 0">No rule names this client directly – only the zone rules apply.</p>`}
     <button class="btn" type="button" data-fwwiz="${esc(c.mac)}" style="width:100%;margin-top:10px">${ICON_SHIELD}<span>Create firewall rule for this client…</span></button>
   </div>`;
 }
@@ -4046,7 +4063,7 @@ function renderInfo() {
         <div class="ha-info"><b>${esc(d.name_by_user || d.name)}</b><span class="muted">${esc(haDoms(c, d).join(", "))}${d.area ? " · " + esc(d.area) : ""}</span><span>${haDot(d.status)} ${esc(HA_ST[d.status]?.[0] || d.status)}</span>${d.status === "partial" && d.unavailable?.length ? `<details class="ha-unav"><summary>${d.unavailable.length} unavailable ${d.unavailable.length === 1 ? "entity" : "entities"}</summary>${d.unavailable.map(e => `<code>${esc(e)}</code>`).join("")}</details>` : ""}</div>
         <a class="btn" href="/config/devices/device/${encodeURIComponent(d.id)}" target="_blank" rel="noopener" title="Open this device in Home Assistant (new tab)">Open in HA ↗</a></div>`).join("")}</div>` : ""}
     ${c.mac && webIp(c) ? `<div class="sec-title">Network check &amp; link</div><div class="card ports" id="portBox">${portsHtml(c)}</div>` : ""}
-    <div id="devSusp"></div>${fwMiniChainHtml(c)}${fwInfoHtml(c)}
+    <div id="devSusp"></div>${fwMiniChainHtml(c) || fwNamedHtml(c)}${fwInfoHtml(c)}
     ${!c.mac ? `<p class="hint">Teleport clients get their address from the VPN and cannot have a DHCP reservation.</p>` : ""}
     ${c.mac ? `<div class="sec-title">History</div><div class="card hist" id="histBox"><span class="muted"><span class="spin"></span> Loading …</span></div>` : ""}`;
   if (c.mac) loadHistory(c);
