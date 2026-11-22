@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.52.1
+
+- **Selection pane:** the summaries (connection, networks, virtual network override, internet access) are pills side by side in one card – much shorter. Order: summary, firewall matrix, actions at the bottom. The pane scrolls as a whole; the matrix keeps its full height on low windows.
+- The multi-select switch is now a slider **1 | n**: *1* – click a device for its details; *n* – select several and change them together.
+
 ## 1.52.0
 
 - **Multi-select uses the detail pane:** with the switch on, the pane on the right shows the selection instead of the bar at the bottom –

@@ -1515,5 +1515,9 @@
  "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ tudo permitido · ✕ tudo bloqueado · ◐ em parte · ? não decidido – ping e serviços comuns, como o teste nos detalhes. Passe sobre uma célula para ver as regras.",
  "Only the first 10 devices.": "Só os 10 primeiros dispositivos.",
  "Zone default": "Padrão da zona",
- "allowed": "permitidos"
+ "allowed": "permitidos",
+ "Selection": "Seleção",
+ "Select one device (details) or several (summary and changes for all)": "Selecionar um dispositivo (detalhes) ou vários (resumo e alterações para todos)",
+ "One device – its details": "Um dispositivo – os detalhes",
+ "Several devices – select them and change them together": "Vários dispositivos – selecione-os e altere-os juntos"
 }
