@@ -535,12 +535,15 @@ body.sel-split .tablewrap{padding-bottom:50vh;padding-bottom:50dvh}}
 #paneSel{min-height:0;grid-auto-rows:max-content}
 .sel-acts{display:grid;gap:6px}.sel-act{justify-content:flex-start;width:100%}
 .sel-mx-card{overflow-x:auto}
-.sel-mx{border-collapse:separate;border-spacing:3px;font-size:12px}
+.sel-mx{border-collapse:separate;border-spacing:2px;font-size:11.5px}
 .sel-mx th{font-weight:600;color:var(--muted);text-align:center;padding:2px 4px;white-space:nowrap}
-.sel-mx th.sm-row{text-align:left;color:var(--fg);font-weight:500;max-width:150px;overflow:hidden;text-overflow:ellipsis}
-.sel-mx .sm-i{display:inline-block;min-width:16px;color:var(--muted);margin-right:4px}
-.sel-mx .sm-corner{font-weight:400;font-size:11px;text-align:left}
-.sm-c{width:26px;height:24px;text-align:center;border-radius:5px;font-weight:700;cursor:default}
+.sel-mx th.sm-row{text-align:right;color:var(--muted)}
+.sel-mx .sm-corner{font-weight:400;font-size:11px}
+.sm-scroll{overflow-x:auto}
+.sm-leg{margin-bottom:8px}.sm-lp{padding:2px 9px 2px 3px;font-size:12px}.sm-lp b{order:-1;background:var(--accent);color:#fff;min-width:22px}
+.sm-key{display:flex;flex-wrap:wrap;align-items:center;gap:4px 6px;font-size:11.5px;color:var(--muted);margin-bottom:6px}.sm-key .sm-c{display:inline-grid;place-items:center;width:20px;height:18px;margin-left:4px}
+.smx-f{min-width:min(420px,calc(100vw - 48px))}.smx-body{padding:10px 12px}
+.sm-c{width:22px;height:22px;text-align:center;border-radius:5px;font-weight:700;cursor:pointer}.sm-c.sm-self{cursor:default}td.sm-c:not(.sm-self):hover{outline:2px solid var(--accent)}
 .sm-allow{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
 .sm-block{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
 .sm-part{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
@@ -1419,6 +1422,13 @@ window.I18N = (() => {
     <div class="actions"><button class="btn" type="button" id="haWarnCancel">Cancel</button><button class="btn danger" type="submit" id="haWarnOk" disabled>Change anyway</button></div>
   </form>
 </dialog>
+<dialog id="dlgSmx" class="small" aria-labelledby="smxTitle">
+  <form method="dialog" class="smx-f">
+    <h2 id="smxTitle"></h2>
+    <div class="ports smx-body" id="smxBody"></div>
+    <div class="actions"><button class="btn primary" type="submit">Close</button></div>
+  </form>
+</dialog>
 <dialog id="dlgBulk" class="small" aria-labelledby="bulkTitle">
   <form method="dialog" id="formBulk" novalidate>
     <h2 id="bulkTitle">Change devices</h2>
@@ -1978,20 +1988,32 @@ function selPaneHtml(cs) {
     </div>`;
 }
 // who may reach whom among the selected devices (and the internet) – ping and the common services, like the device test
+const SELMX = { max: 30, pairs: [] };
 function selMatrixHtml(cs) {
   if (!FW.data) return "";
-  const ds = cs.filter(c => c.mac && zoneOf(c)).slice(0, 10), ext = fwZoneByKey("external");
+  const ds = cs.filter(c => c.mac && zoneOf(c)).slice(0, SELMX.max), ext = fwZoneByKey("external");
   if (!ds.length) return "";
+  SELMX.pairs = [];
   const cell = (a, dz, b) => {
-    const r = SIM_SVCS.map(([, proto, port]) => simService(zoneOf(a).id, dz, a, b, proto, port)), ok = r.filter(x => x.verdict === "allow").length, no = r.filter(x => x.verdict === "block").length;
+    const r = SIM_SVCS.map(([name, proto, port]) => ({ name, port, r: simService(zoneOf(a).id, dz, a, b, proto, port) }));
+    const ok = r.filter(x => x.r.verdict === "allow").length, no = r.filter(x => x.r.verdict === "block").length;
     const v = ok === r.length ? ["allow", "✓"] : no === r.length ? ["block", "✕"] : ok ? ["part", "◐"] : ["unknown", "?"];
-    const by = [...new Set(r.map(x => x.by?.name || (x.dflt ? `${I18N.tr("Zone default")}: ${I18N.tr(FW_DEF[x.dflt])}` : "")).filter(Boolean))].join(", ");
-    return `<td class="sm-c sm-${v[0]}" title="${esc(`${devName(a)} → ${b ? devName(b) : "Internet"}: ${ok}/${r.length} ${I18N.tr("allowed")}${by ? " · " + by : ""}`)}">${v[1]}</td>`;
+    const idx = SELMX.pairs.push({ a, b, r }) - 1;
+    return `<td class="sm-c sm-${v[0]}" data-smx="${idx}" title="${esc(`${devName(a)} → ${b ? devName(b) : "Internet"}: ${ok}/${r.length} ${I18N.tr("allowed")}`)}">${v[1]}</td>`;
   };
-  const head = `<tr><th class="sm-corner"><span>From</span> ↓ <span>To</span> →</th>${ds.map((d, i) => `<th title="${esc(devName(d))}" translate="no">${i + 1}</th>`).join("")}${ext ? `<th title="Internet">🌐</th>` : ""}</tr>`;
-  const rows = ds.map((a, i) => `<tr><th class="sm-row" translate="no"><span class="sm-i">${i + 1}</span>${esc(devName(a))}</th>${ds.map(b => b === a ? `<td class="sm-c sm-self">–</td>` : cell(a, zoneOf(b).id, b)).join("")}${ext ? cell(a, ext.id, null) : ""}</tr>`).join("");
-  return `<div class="sec-title">Firewall between the selected devices</div><div class="card sel-mx-card"><table class="sel-mx">${head}${rows}</table>
-    <p class="hint" style="margin:6px 0 0">✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.${cs.length > ds.length ? ` <span>Only the first 10 devices.</span>` : ""}</p></div>`;
+  const legend = `<div class="sel-pills sm-leg">${ds.map((d, i) => `<span class="sel-pill sm-lp"><b>${i + 1}</b><span translate="no">${esc(devName(d))}</span></span>`).join("")}</div>`;
+  const keyLeg = `<div class="sm-key"><span class="sm-c sm-allow">✓</span><span>all allowed</span><span class="sm-c sm-part">◐</span><span>partly</span><span class="sm-c sm-block">✕</span><span>all blocked</span><span class="sm-c sm-unknown">?</span><span>not decided</span></div>`;
+  const head = `<tr><th class="sm-corner" title="${esc(I18N.tr("From ↓ To →"))}">↓→</th>${ds.map((d, i) => `<th title="${esc(devName(d))}" translate="no">${i + 1}</th>`).join("")}${ext ? `<th title="Internet">🌐</th>` : ""}</tr>`;
+  const rows = ds.map((a, i) => `<tr><th class="sm-row" title="${esc(devName(a))}" translate="no">${i + 1}</th>${ds.map(b => b === a ? `<td class="sm-c sm-self">–</td>` : cell(a, zoneOf(b).id, b)).join("")}${ext ? cell(a, ext.id, null) : ""}</tr>`).join("");
+  return `<div class="sec-title">Firewall between the selected devices</div><div class="card sel-mx-card">${legend}${keyLeg}<div class="sm-scroll"><table class="sel-mx">${head}${rows}</table></div>
+    <p class="hint" style="margin:6px 0 0">Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.${cs.length > ds.length ? ` <span>Only the first ${SELMX.max} devices.</span>` : ""}</p></div>`;
+}
+// a cell of the matrix: the same result as the device test, in a small dialog
+function selMxOpen(i) {
+  const x = SELMX.pairs[i]; if (!x) return;
+  $("#smxTitle").innerHTML = `<span translate="no">${esc(devName(x.a))}</span> → ${x.b ? `<span translate="no">${esc(devName(x.b))}</span>` : `🌐 <span>Internet</span>`}`;
+  $("#smxBody").innerHTML = simResultHtml(x.r);
+  $("#dlgSmx").showModal();
 }
 function bulkAsk(act, cs) {
   return new Promise(res => {
@@ -2045,7 +2067,7 @@ async function bulkAct(act) {
     await bulkRun("note", cl, c => api("api/client", clientBody(c, { note })));
   }
 }
-$("#paneSel").addEventListener("click", e => { const b = e.target.closest("[data-bulk]"); if (b && !b.disabled) bulkAct(b.dataset.bulk); });
+$("#paneSel").addEventListener("click", e => { const m = e.target.closest("[data-smx]"); if (m) { selMxOpen(+m.dataset.smx); return; } const b = e.target.closest("[data-bulk]"); if (b && !b.disabled) bulkAct(b.dataset.bulk); });
 $("#mnSelect").addEventListener("click", () => { if (isPlan() || isFw()) setView("clients"); else if (isRel()) setView("clients"); setBulk(true); });
 // firewall wizard for several devices: "Selected devices" of the zone most of them are in
 function openWizFor(cs) {
@@ -3530,6 +3552,10 @@ function simDevHtml(c) {
   const btn = `<button class="btn" type="button" id="simGo">${SIM.res ? "Check again" : "Check"}</button>`;
   const r = SIM.res;
   if (!r) return `<div class="foot sim-dev"><span>Firewall: may this device reach</span>${picker}${btn}</div>`;
+  return `<div class="foot sim-dev"><span>Firewall: may this device reach</span>${picker}${btn}</div>${simResultHtml(r)}`;
+}
+// summary line and chips of a check (list of { name, port, r }), like the port check
+function simResultHtml(r) {
   const ok = r.filter(x => x.r.verdict === "allow").length, no = r.filter(x => x.r.verdict === "block").length, unk = r.length - ok - no;
   const sum = ok === r.length ? `<b style="color:var(--ok)">✓ <span>Allowed</span></b>` : no === r.length ? `<b style="color:var(--bad)">✕ <span>Blocked</span></b>` : unk === r.length ? `<b class="muted">? <span>Not decided</span></b>` : `<b style="color:var(--warn)">◐ ${ok} of ${r.length} allowed</b>`;
   const why = x => x.r.by ? `${x.r.by.name || "?"}${x.r.by.predefined ? " (built-in)" : ""}` : x.r.dflt ? `Zone default: ${FW_DEF[x.r.dflt]}` : "No rule decides for exactly this – it depends on the device or address";
@@ -3537,8 +3563,7 @@ function simDevHtml(c) {
   const same = ok === r.length ? ["allow", "All ports open", "✓"] : no === r.length ? ["block", "All ports blocked", "✕"] : unk === r.length ? ["unknown", "No rule and no default between these zones", "?"] : null;
   const chips = same ? `<span class="pchip sim-${same[0]}" title="${esc(why(r[0]))}"><span>${same[1]}</span><span class="sim-m" aria-hidden="true">${same[2]}</span></span>` : r.map(x => `<span class="pchip sim-${x.r.verdict}" title="${esc(why(x))}${x.r.notes.length ? esc(" · at certain times: " + x.r.notes.map(p => p.name).join(", ")) : ""}">${x.port != null ? `<b>${x.port}</b>` : ""}<span>${esc(x.name)}</span><span class="sim-m" aria-hidden="true">${x.r.verdict === "allow" ? "✓" : x.r.verdict === "block" ? "✕" : "?"}</span></span>`).join("");
   const rules = [...new Map(r.filter(x => x.r.by).map(x => [x.r.by.id, x.r.by])).values()];
-  return `<div class="foot sim-dev"><span>Firewall: may this device reach</span>${picker}${btn}</div>
-    <div class="sim-res"><span>${sum}</span>${rules.length ? ` <span class="muted">· <span>decided by</span></span> ${rules.map(p => `<button type="button" class="link" data-fwpol="${esc(p.id)}" translate="no">${esc(p.name || "?")}</button>`).join(", ")}` : ""}</div>
+  return `<div class="sim-res"><span>${sum}</span>${rules.length ? ` <span class="muted">· <span>decided by</span></span> ${rules.map(p => `<button type="button" class="link" data-fwpol="${esc(p.id)}" translate="no">${esc(p.name || "?")}</button>`).join(", ")}` : ""}</div>
     <div class="port-list">${chips}</div>`;
 }
 const simRefresh = () => { const b = $("#simDev"); if (b && state.sel) b.innerHTML = simDevHtml(state.sel); };

@@ -1512,12 +1512,17 @@
  "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Klik op apparaten in de tabel of lijst om ze te selecteren. Hier verschijnen dan de samenvatting, de acties en een kleine firewallmatrix.",
  "with fixed IP": "met vast IP",
  "Firewall between the selected devices": "Firewall tussen de geselecteerde apparaten",
- "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ alles toegestaan · ✕ alles geblokkeerd · ◐ deels · ? niet beslist – ping en gangbare diensten, zoals de test in de details. Beweeg over een cel voor de beslissende regels.",
- "Only the first 10 devices.": "Alleen de eerste 10 apparaten.",
  "Zone default": "Zonestandaard",
  "allowed": "toegestaan",
  "Selection": "Selectie",
  "Select one device (details) or several (summary and changes for all)": "Eén apparaat kiezen (details) of meerdere (samenvatting en wijzigingen voor alle)",
  "One device – its details": "Eén apparaat – de details",
- "Several devices – select them and change them together": "Meerdere apparaten – selecteren en samen wijzigen"
+ "Several devices – select them and change them together": "Meerdere apparaten – selecteren en samen wijzigen",
+ "From ↓ To →": "Van ↓ Naar →",
+ "all allowed": "alles toegestaan",
+ "partly": "deels",
+ "all blocked": "alles geblokkeerd",
+ "not decided": "niet beslist",
+ "Rows: from · columns: to. Ping and common services, like the test in the device details – click a cell for the details.": "Rijen: van · kolommen: naar. Ping en gangbare diensten, zoals de test in de details – klik op een cel voor de details.",
+ "Only the first {0} devices.": "Alleen de eerste {0} apparaten."
 }
