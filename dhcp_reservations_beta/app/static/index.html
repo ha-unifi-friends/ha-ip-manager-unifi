@@ -489,6 +489,15 @@ body:not(.rel-mode) .topo-icons{display:none!important}
 .topbar.tb-s4 .cli-tabs .tl{display:none}.topbar.tb-s4 .cli-tabs svg{margin-right:0!important}.topbar.tb-s4 .plan-tabs button[role="tab"]{padding:8px 9px 10px}
 .topbar.tb-s5 #count{display:none}.topbar.tb-s5 .plan-size{display:none}
 .topbar.tb-s6{flex-wrap:wrap;row-gap:8px}.topbar.tb-s6 .grp{margin-left:auto}
+/* what changed since the last visit */
+.chg-box{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:8px 12px 0;padding:8px 12px;border:1px solid color-mix(in srgb,var(--accent) 40%,transparent);border-radius:10px;background:color-mix(in srgb,var(--accent) 8%,var(--card));font-size:13px}
+.chg-box[hidden]{display:none}.chg-box .sp{flex:1}
+.chg-t{font-weight:600}.chg-d{font-size:12px}
+.chg-c{all:unset;cursor:pointer;padding:3px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--line-strong);font-size:12.5px}
+.chg-c:hover{border-color:var(--accent)}.chg-c[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chg-c.probs b{color:var(--warn)}.chg-c.newDev b{color:var(--ok)}.chg-c.gone b{color:var(--bad)}
+.chg-c[aria-pressed="true"] b{color:#fff}
+body.plan-mode .chg-box,body.fw-mode .chg-box,body.rel-mode .chg-box{display:none}
 /* clients as cards */
 .cardlist{display:grid;gap:8px;padding:10px 12px 16px;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));align-content:start}
 .lc{all:unset;box-sizing:border-box;display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--fg);cursor:pointer;min-width:0}
@@ -1155,6 +1164,7 @@ window.I18N = (() => {
       </div>
     </div>
     <div id="banner" class="banner" hidden></div>
+    <div class="chg-box" id="chgBox" hidden></div>
     <div class="tablewrap">
       <table>
         <thead><tr class="h" id="headRow"></tr><tr class="f" id="filterRow"></tr></thead>
@@ -1821,10 +1831,59 @@ function baseFiltered() {
   });
 }
 function rows() {
-  const list = baseFiltered().filter(c => FACETS.every(f => passFacet(f, c, state.facets[f.id])));
+  const list = baseFiltered().filter(c => FACETS.every(f => passFacet(f, c, state.facets[f.id])) && (!state.pick || state.pick.keys.has(keyOf(c))));
   const col = COLS.find(c => c.key === state.sort.key) || COLS[1];
   return list.sort((a, b) => { const x = col.val(a), y = col.val(b); return (x < y ? -1 : x > y ? 1 : 0) * state.sort.dir || (a.name || a.hostname || "").localeCompare(b.name || b.hostname || "", "de"); });
 }
+
+// ---------- what changed since the last visit: a snapshot in the browser, compared on every render ----------
+const SEEN_KEY = "seenState";
+const fwSig = p => JSON.stringify([p.name, p.action, p.enabled !== false, p.index, p.source?.zone_id, p.destination?.zone_id]);
+function seenSnapshot() {
+  const dev = {};
+  for (const c of state.clients) dev[keyOf(c)] = [devName(c), c.use_fixedip ? c.fixed_ip || "" : "", c._warn.map(w => w[1]).sort().join("|")];
+  const fw = FW.data ? Object.fromEntries(FW.data.policies.filter(p => !p.predefined).map(p => [p.id, fwSig(p)])) : null;
+  return { t: Date.now(), dev, fw };
+}
+function seenDiff() {
+  const old = store.get(SEEN_KEY, null); if (!old?.dev) return null;
+  const cur = seenSnapshot(), d = { since: old.t, newDev: [], gone: [], probs: [], fixed: [], fw: 0 };
+  for (const c of state.clients) {
+    const k = keyOf(c), o = old.dev[k], n = cur.dev[k];
+    if (!o) { d.newDev.push(k); continue; }
+    if (o[1] !== n[1]) d.fixed.push(k);
+    const before = new Set(o[2] ? o[2].split("|") : []);
+    if (n[2] && n[2].split("|").some(w => !before.has(w))) d.probs.push(k);
+  }
+  for (const k of Object.keys(old.dev)) if (!cur.dev[k]) d.gone.push(old.dev[k][0]);
+  if (old.fw && cur.fw) { const ids = new Set([...Object.keys(old.fw), ...Object.keys(cur.fw)]); for (const id of ids) if (old.fw[id] !== cur.fw[id]) d.fw++; }
+  d.any = d.newDev.length + d.gone.length + d.probs.length + d.fixed.length + d.fw > 0;
+  return d;
+}
+function markSeen() { store.set(SEEN_KEY, seenSnapshot()); state.pick = null; renderAll(); }
+function renderChg() {
+  const box = $("#chgBox");
+  if (!state.clients.length || state.loading) { box.hidden = true; return; }
+  if (!store.get(SEEN_KEY, null)) store.set(SEEN_KEY, seenSnapshot()); // first visit: nothing to compare yet
+  const d = seenDiff();
+  if (!d?.any) { box.hidden = true; return; }
+  const chip = (id, n, one, many, keys, title = "") => n ? `<button type="button" class="chg-c ${id}" data-chg="${id}" aria-pressed="${state.pick?.id === id}"${title ? ` title="${esc(title)}"` : ""}><b>${n}</b> <span>${n === 1 ? one : many}</span></button>` : "";
+  CHG.keys = { newDev: d.newDev, probs: d.probs, fixed: d.fixed };
+  box.innerHTML = `<span class="chg-t">Since your last visit</span> <span class="muted chg-d">${isoDateTime(d.since / 1000)}</span>
+    ${chip("newDev", d.newDev.length, "new device", "new devices")}${chip("probs", d.probs.length, "device with new issues", "devices with new issues")}${chip("fixed", d.fixed.length, "fixed IP changed", "fixed IPs changed")}${chip("gone", d.gone.length, "device removed", "devices removed", null, d.gone.join(", "))}${chip("fw", d.fw, "firewall rule changed", "firewall rules changed")}
+    <span class="sp"></span><button type="button" class="link" id="chgSeen">Mark as seen</button>`;
+  box.hidden = false;
+}
+const CHG = { keys: {} };
+$("#chgBox").addEventListener("click", e => {
+  if (e.target.closest("#chgSeen")) { markSeen(); return; }
+  const b = e.target.closest("[data-chg]"); if (!b) return;
+  const id = b.dataset.chg;
+  if (id === "fw") { setView("fw"); return; }
+  if (id === "gone") return; // only the tooltip – they are no longer in UniFi
+  state.pick = state.pick?.id === id ? null : { id, keys: new Set(CHG.keys[id] || []) };
+  renderAll();
+});
 
 // Table or List (cards) for the clients: phones start with the list, wider screens with the table – the choice is kept
 const LIST = { mode: store.get("listMode", "") };
@@ -1863,7 +1922,7 @@ function renderTable() {
   else tb.innerHTML = list.map(c => `<tr data-k="${esc(keyOf(c))}" class="${state.sel && keyOf(state.sel) === keyOf(c) ? "sel" : ""}">${visCols().map(col => `<td${USER_COLS.has(col.key) ? ' translate="no"' : ""}>${col.td(c)}</td>`).join("")}</tr>`).join("");
   if (tw.scrollTop !== keep[0] || tw.scrollLeft !== keep[1]) { tw.scrollTop = keep[0]; tw.scrollLeft = keep[1]; } // never jump on a re-render
   // long text, and a short one for narrow phones
-  renderCards(list);
+  renderCards(list); renderChg();
   $("#count").innerHTML = `<span class="cnt-l">${list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`}</span><span class="cnt-s" translate="no">${list.length === state.clients.length ? list.length : `${list.length}/${state.clients.length}`}</span>`;
   $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" }) : "";
 }
@@ -3965,7 +4024,7 @@ function topoIconSvg(id, r) {
   if (c.icon_id) return img(`https://static.ubnt.com/fingerprint/0/${encodeURIComponent(c.icon_id)}_257x257.png`);
   const t = relIcon(id); return t ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${t}</text>` : "";
 }
-const topoFiltered = () => !!(state.q.trim() || Object.values(state.facets).some(a => a?.length) || Object.values(state.colFilters).some(Boolean));
+const topoFiltered = () => !!(state.pick || state.q.trim() || Object.values(state.facets).some(a => a?.length) || Object.values(state.colFilters).some(Boolean));
 let TOPO_HIT = new Set();
 function topoModel() {
   const byMac = new Map(state.clients.filter(c => c.mac).map(c => [c.mac, c]));
@@ -5537,7 +5596,7 @@ $("#btnSide").addEventListener("click", () => { if (mobile()) $("#side").classLi
 document.addEventListener("click", e => { if (mobile() && $("#side").classList.contains("open") && !e.target.closest("#side") && !e.target.closest("#btnMenu")) $("#side").classList.remove("open"); });
 if (store.get("sideOff", false)) document.body.classList.add("side-off");
 $("#lnkCols").addEventListener("click", () => $("#colPanel").hidden ? openCols() : closeCols());
-$("#lnkClear").addEventListener("click", () => { state.facets = {}; state.colFilters = {}; state.q = ""; $("#q").value = ""; persist(); buildHead(); renderAll(); });
+$("#lnkClear").addEventListener("click", () => { state.facets = {}; state.colFilters = {}; state.q = ""; state.pick = null; $("#q").value = ""; persist(); buildHead(); renderAll(); });
 $("#btnImp").addEventListener("click", openImport);
 $("#btnExp").addEventListener("click", exportCsv);
 $("#btnNew").addEventListener("click", () => openPanel(null));

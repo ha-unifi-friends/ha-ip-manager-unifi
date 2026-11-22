@@ -1430,5 +1430,17 @@
  "Rules: mixed": "Regler: blandade",
  "Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules": "Allow All · Block All · Allow Return = UniFis standard för zonparet · – = ingen standard · streckad = avgörs av dina egna regler · (n) = antal egna regler",
  "random MAC": "slumpmässig MAC",
- "Table": "Tabell"
+ "Table": "Tabell",
+ "Since your last visit": "Sedan ditt senaste besök",
+ "new device": "ny enhet",
+ "new devices": "nya enheter",
+ "device with new issues": "enhet med nya problem",
+ "devices with new issues": "enheter med nya problem",
+ "fixed IP changed": "fast IP ändrad",
+ "fixed IPs changed": "fasta IP ändrade",
+ "device removed": "enhet borttagen",
+ "devices removed": "enheter borttagna",
+ "firewall rule changed": "brandväggsregel ändrad",
+ "firewall rules changed": "brandväggsregler ändrade",
+ "Mark as seen": "Markera som sett"
 }

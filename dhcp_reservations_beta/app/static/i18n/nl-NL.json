@@ -1430,5 +1430,17 @@
  "Rules: mixed": "Regels: gemengd",
  "Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules": "Allow All · Block All · Allow Return = UniFi-standaard van het zonepaar · – = geen standaard · gestippeld = bepaald door je eigen regels · (n) = aantal eigen regels",
  "random MAC": "willekeurig MAC",
- "Table": "Tabel"
+ "Table": "Tabel",
+ "Since your last visit": "Sinds je laatste bezoek",
+ "new device": "nieuw apparaat",
+ "new devices": "nieuwe apparaten",
+ "device with new issues": "apparaat met nieuwe problemen",
+ "devices with new issues": "apparaten met nieuwe problemen",
+ "fixed IP changed": "vast IP gewijzigd",
+ "fixed IPs changed": "vaste IP's gewijzigd",
+ "device removed": "apparaat verwijderd",
+ "devices removed": "apparaten verwijderd",
+ "firewall rule changed": "firewallregel gewijzigd",
+ "firewall rules changed": "firewallregels gewijzigd",
+ "Mark as seen": "Markeren als gezien"
 }

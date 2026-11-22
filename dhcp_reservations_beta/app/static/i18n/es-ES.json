@@ -1430,5 +1430,17 @@
  "Rules: mixed": "Reglas: mixtas",
  "Allow All · Block All · Allow Return = UniFi's default for the zone pair · – = no default · dashed = decided by your own rules · (n) = number of your own rules": "Permitir todo · Bloquear todo · Permitir retorno = valor por defecto de UniFi del par de zonas · – = sin valor por defecto · discontinuo = decidido por tus reglas · (n) = número de tus reglas",
  "random MAC": "MAC aleatoria",
- "Table": "Tabla"
+ "Table": "Tabla",
+ "Since your last visit": "Desde tu última visita",
+ "new device": "dispositivo nuevo",
+ "new devices": "dispositivos nuevos",
+ "device with new issues": "dispositivo con problemas nuevos",
+ "devices with new issues": "dispositivos con problemas nuevos",
+ "fixed IP changed": "IP fija cambiada",
+ "fixed IPs changed": "IP fijas cambiadas",
+ "device removed": "dispositivo eliminado",
+ "devices removed": "dispositivos eliminados",
+ "firewall rule changed": "regla de firewall cambiada",
+ "firewall rules changed": "reglas de firewall cambiadas",
+ "Mark as seen": "Marcar como visto"
 }
