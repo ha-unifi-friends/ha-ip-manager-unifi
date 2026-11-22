@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.52.8
+
+- **Selection pane (desktop):** the pane grows with the firewall matrix – up to twice its normal width (800 px) – before the matrix starts to scroll sideways. With one device or on phones nothing changes.
+
 ## 1.52.7
 
 - **Selection matrix:** the result of a clicked cell shows the device icon in front of both names in its title (Home Assistant logo, UniFi icon as fallback; 🌐 for the internet).

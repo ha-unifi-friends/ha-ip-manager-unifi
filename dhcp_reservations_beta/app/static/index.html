@@ -1958,12 +1958,20 @@ function renderBulk() {
 function selPane(on) {
   const pane = $("#paneSel"), d = $("#detail");
   document.body.classList.toggle("sel-split", !!on);
+  d.style.width = "";
   if (!on) { if (!pane.hidden) { pane.hidden = true; pane.innerHTML = ""; d.querySelector(".tabs").hidden = false; if (!state.sel) d.hidden = true; } return; }
   state.sel = null; markSel(); closeCols();
   d.hidden = false; d.querySelector(".tabs").hidden = true; $("#paneInfo").hidden = true; $("#paneEdit").hidden = true; pane.hidden = false;
   const cs = bulkDevs();
   $("#dTitle").textContent = cs.length ? I18N.tr(`${cs.length} selected`) : I18N.tr("Multi-select");
   pane.innerHTML = selPaneHtml(cs);
+  // desktop: the pane grows with the matrix (up to twice its normal width) before the matrix scrolls
+  const t = pane.querySelector(".sel-mx");
+  if (t && window.innerWidth > 760) {
+    const extra = d.getBoundingClientRect().width - pane.querySelector(".sm-scroll").clientWidth; // paddings of pane and card
+    const need = Math.ceil(parseFloat(getComputedStyle(t).minWidth) + extra);
+    d.style.width = `${Math.min(800, Math.max(400, need))}px`; fitTopbarSoon();
+  }
 }
 const selCount = (list, key, label) => { const m = new Map(); for (const c of list) { const k = key(c); if (k == null) continue; m.set(k, (m.get(k) || 0) + 1); } return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => [label(k), n]); };
 // one summary line: a small title and pills "label n" that wrap
