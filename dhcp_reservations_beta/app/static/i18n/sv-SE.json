@@ -1384,5 +1384,9 @@
  "UniFi default": "UniFi-standard",
  "Prepared: {0} → {1}. Wired – the switch port decides, see the note.": "Förberett: {0} → {1}. Trådbunden – switchporten avgör, se anmärkningen.",
  "Disconnected": "Frånkopplad",
- "Connected": "Ansluten"
+ "Connected": "Ansluten",
+ "UniFi reports no switch for this device (e.g. behind an unmanaged switch or the connection is not known yet).": "UniFi anger ingen switch för den här enheten (t.ex. bakom en ohanterad switch, eller anslutningen är inte känd än).",
+ "The switch this device is on is not adopted in this UniFi site.": "Switchen som enheten sitter på är inte adopterad i den här UniFi-platsen.",
+ "UniFi reports the switch but no port number.": "UniFi anger switchen men inget portnummer.",
+ "The switch port of this device is not known.": "Switchporten för den här enheten är inte känd."
 }

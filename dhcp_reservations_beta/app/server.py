@@ -384,10 +384,17 @@ def build_snapshot(api):
     by_mac = {(d.get("mac") or "").lower(): d for d in devs if d.get("mac")}
     default_net = next((n["id"] for n in nets if n.get("purpose") == "corporate" and n.get("vlan") is None), "")
     for r in rows.values():
-        if r.get("conn") == "wired" and not r.get("is_device") and r.get("sw_mac") and r.get("port"):
-            d = by_mac.get(r["sw_mac"])
-            if d:
-                r["port_vlan"] = port_vlan(d, r["port"], profiles, default_net)
+        if r.get("conn") != "wired" or r.get("is_device"):
+            continue
+        # why the port is unknown, shown in the details: no switch reported, a switch that is not adopted here, no port number
+        if not r.get("sw_mac"):
+            r["port_why"] = "no_switch"
+        elif r["sw_mac"] not in by_mac:
+            r["port_why"] = "unknown_switch"
+        elif not r.get("port"):
+            r["port_why"] = "no_port"
+        else:
+            r["port_vlan"] = port_vlan(by_mac[r["sw_mac"]], r["port"], profiles, default_net)
     switches = {}
     for d in devs:
         pt = [p for p in d.get("port_table") or [] if isinstance(p, dict) and p.get("port_idx") is not None]

@@ -1384,5 +1384,9 @@
  "UniFi default": "UniFi-Standard",
  "Prepared: {0} → {1}. Wired – the switch port decides, see the note.": "Vorbereitet: {0} → {1}. Kabelgebunden – der Switch-Port entscheidet, siehe Hinweis.",
  "Disconnected": "Getrennt",
- "Connected": "Verbunden"
+ "Connected": "Verbunden",
+ "UniFi reports no switch for this device (e.g. behind an unmanaged switch or the connection is not known yet).": "UniFi meldet für dieses Gerät keinen Switch (z. B. hinter einem nicht verwalteten Switch, oder die Verbindung ist noch nicht bekannt).",
+ "The switch this device is on is not adopted in this UniFi site.": "Der Switch, an dem das Gerät hängt, ist in dieser UniFi-Site nicht übernommen.",
+ "UniFi reports the switch but no port number.": "UniFi meldet den Switch, aber keine Portnummer.",
+ "The switch port of this device is not known.": "Der Switch-Port dieses Geräts ist nicht bekannt."
 }
