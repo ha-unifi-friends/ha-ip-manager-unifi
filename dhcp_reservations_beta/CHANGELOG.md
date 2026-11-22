@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.36.1 – 2026-11-22
+
+- **Switch view** turned by 90° so it fits the details pane: one row per port pair (odd left, even right), the devices beside their port with the full name; switches with up to 8 ports in one column.
+
 ## 1.36.0 – 2026-11-22
 
 **Switch port VLAN of wired devices:**
