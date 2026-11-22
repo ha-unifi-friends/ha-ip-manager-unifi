@@ -3711,7 +3711,7 @@ $("#fwChain").addEventListener("dragend", () => { FW.drag = null; for (const x o
 // ---------- topology view: shared helpers, live force layout, drawing ----------
 // standard ports get a colour (the dominant port of a pair colours its arrows)
 const REL_PORTS = [["DNS", [53, 853], "#14b8a6"], ["Web", [80, 443, 8080, 8443], "#3b82f6"], ["NTP", [123], "#a3a3a3"], ["MQTT", [1883, 8883], "#f59e0b"], ["Camera / RTSP", [554], "#ec4899"], ["Home Assistant", [8123], "#0ea5e9"], ["ESPHome", [6053], "#22c55e"], ["SSH / remote", [22, 3389, 5900], "#ef4444"], ["Files / SMB", [139, 445, 2049], "#8b5cf6"], ["Discovery (mDNS / SSDP)", [5353, 1900], "#84cc16"], ["Streaming / casting", [8008, 8009, 7000, 1400, 32400], "#f97316"], ["Other", [], "#94a3b8"]];
-const REL = { tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoIcon: store.get("topoIcon", "unifi"), sel: null, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false };
+const REL = { tab: ["tree", "topo"].includes(store.get("relTab", "tree")) ? store.get("relTab", "tree") : "tree", topoIcon: store.get("topoIcon", "ha"), sel: null, pos: {}, sim: null, view: { k: 1, x: 0, y: 0 }, g: null, drag: null, noClick: false };
 const isRel = () => document.body.classList.contains("rel-mode");
 // the device behind a node id (MAC, "ip:…", "internet")
 function relDev(id) { if (id === "internet") return null; if (id.startsWith("ip:")) { const ip = id.slice(3); return state.clients.find(c => c.ip === ip || (c.use_fixedip && c.fixed_ip === ip)) || null; } return devByMac(id); }
@@ -3883,7 +3883,7 @@ $("#mnSusp").addEventListener("change", async e => {
 const topoHaDom = c => { const ds = haOf(c); return ds.length ? haDoms(c, ds[0])[0] || "" : isHaHost(c) ? "homeassistant" : ""; };
 function topoIconHtml(c, big) {
   if (REL.topoIcon === "none") return "";
-  if (REL.topoIcon === "ha") { const d = topoHaDom(c); return d ? brandImg(d, big ? 26 : 16) : `<span class="tt-noic"></span>`; }
+  if (REL.topoIcon === "ha") { const d = topoHaDom(c); if (d) return brandImg(d, big ? 26 : 16); } // no Home Assistant logo: the UniFi icon as fallback
   return iconHtml(c, big);
 }
 function topoIconSvg(id, r) {
@@ -3891,7 +3891,7 @@ function topoIconSvg(id, r) {
   if (m === "none" || id === "?") return "";
   if (id === "internet") return `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">🌐</text>`;
   if (!c) return "";
-  if (m === "ha") { const d = topoHaDom(c); return d ? img(`https://brands.home-assistant.io/_/${d}/icon.png`) : ""; }
+  if (m === "ha") { const d = topoHaDom(c); if (d) return img(`https://brands.home-assistant.io/_/${d}/icon.png`); } // else the UniFi icon
   if (c.icon_id) return img(`https://static.ubnt.com/fingerprint/0/${encodeURIComponent(c.icon_id)}_257x257.png`);
   const t = relIcon(id); return t ? `<text class="rel-ic" style="font-size:${Math.round(r * 1.05)}px">${t}</text>` : "";
 }
