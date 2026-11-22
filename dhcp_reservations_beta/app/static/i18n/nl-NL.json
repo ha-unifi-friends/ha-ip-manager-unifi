@@ -1380,7 +1380,7 @@
  "paused": "gepauzeerd",
  "Normal traffic of this device reaches the internet": "Normaal verkeer van dit apparaat bereikt internet",
  "Normal traffic of this device is blocked by {0}": "Normaal verkeer van dit apparaat wordt geblokkeerd door {0}",
- "Reaches the internet": "Bereikt internet",
+ "Reaches the internet": "Bereikt het internet",
  "Client · other MAC": "Client · ander MAC",
  "Client · {0}": "Client · {0}",
  "Zone rules and the rules for this client, in the order UniFi checks them – the first matching rule decides.": "Zoneregels en de regels voor deze client, in de volgorde waarin UniFi ze controleert – de eerste passende regel beslist.",
@@ -1507,5 +1507,13 @@
  "Choose the target": "Doel kiezen",
  "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Klik op een apparaat of een hele zone (dubbelklik neemt het direct over). Klik op een zonenaam om die in te klappen.",
  "All devices of the zone": "Alle apparaten van de zone",
- "No devices": "Geen apparaten"
+ "No devices": "Geen apparaten",
+ "{0} selected": "{0} geselecteerd",
+ "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Klik op apparaten in de tabel of lijst om ze te selecteren. Hier verschijnen dan de samenvatting, de acties en een kleine firewallmatrix.",
+ "with fixed IP": "met vast IP",
+ "Firewall between the selected devices": "Firewall tussen de geselecteerde apparaten",
+ "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ alles toegestaan · ✕ alles geblokkeerd · ◐ deels · ? niet beslist – ping en gangbare diensten, zoals de test in de details. Beweeg over een cel voor de beslissende regels.",
+ "Only the first 10 devices.": "Alleen de eerste 10 apparaten.",
+ "Zone default": "Zonestandaard",
+ "allowed": "toegestaan"
 }

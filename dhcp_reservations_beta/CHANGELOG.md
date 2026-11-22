@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.52.0
+
+- **Multi-select uses the detail pane:** with the switch on, the pane on the right shows the selection instead of the bar at the bottom –
+  - a summary: number selected, online, with fixed IP, and counts by connection type, network, virtual network override and internet access;
+  - the actions (override network, remove override, release fixed IP, note, reconnect WiFi, firewall rule) as buttons;
+  - **Firewall between the selected devices:** a small matrix like the zone matrix – each selected device as source (rows) and destination (columns) plus the internet; ✓ all allowed, ✕ all blocked, ◐ partly, ? not decided (ping and common services; hover a cell for the deciding rules). Up to 10 devices.
+- Closing the pane ends the selection. On phones the pane takes the lower half of the screen (split screen) – select in the list above, summary and actions below. The bar at the bottom is gone.
+- **Phones, top bar:** the count moves up next to the main menu as *X/Y* (e.g. 86/154); the multi-select switch takes its place on the right of the second row. The pencil for inline editing and the arrow of *Actions* are hidden on phones, so the menu row keeps to one line.
+
 ## 1.51.1
 
 - **Target picker of the firewall test** opens as a dialog in the style of the IP picker: search at the top, *Internet*, then one box per zone with its devices (icon, name, IP) – side by side when there is room, below each other on narrow screens. Zones with devices come first. Every zone can be folded (open by default, remembered while the app is open); *All devices of the zone* selects the whole zone. Click selects, *OK* or a double-click takes it.

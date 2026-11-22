@@ -1507,5 +1507,13 @@
  "Choose the target": "Scegli la destinazione",
  "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Fai clic su un dispositivo o un’intera zona (doppio clic la conferma subito). Clic sul nome della zona per comprimerla.",
  "All devices of the zone": "Tutti i dispositivi della zona",
- "No devices": "Nessun dispositivo"
+ "No devices": "Nessun dispositivo",
+ "{0} selected": "{0} selezionati",
+ "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Fai clic sui dispositivi nella tabella o nell’elenco per selezionarli. Qui compaiono il riepilogo, le azioni e una piccola matrice firewall.",
+ "with fixed IP": "con IP fisso",
+ "Firewall between the selected devices": "Firewall tra i dispositivi selezionati",
+ "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ tutto consentito · ✕ tutto bloccato · ◐ in parte · ? non deciso – ping e servizi comuni, come il test nei dettagli. Passa sopra una cella per le regole decisive.",
+ "Only the first 10 devices.": "Solo i primi 10 dispositivi.",
+ "Zone default": "Predefinito di zona",
+ "allowed": "consentiti"
 }

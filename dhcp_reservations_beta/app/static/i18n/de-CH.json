@@ -203,7 +203,7 @@
  "Baseline": "Baseline",
  "Save a version to see which devices are new or changed since then.": "Speicher e Version, denn gsehsch, weli Gerät sit denn neu oder gänderet sind.",
  "Changed since {0}{1}{2}": "Gänderet sit {0}{1}{2}",
- "UniFi devices": "UniFi-Gerät",
+ "UniFi devices": "UniFi-Grät",
  "Connection": "Verbindig",
  "Reservation": "Reservierig",
  "With fixed IP": "Mit fixer IP",
@@ -1507,5 +1507,13 @@
  "Choose the target": "Ziel uswähle",
  "Click a device or a whole zone to select it (double-click takes it right away). Click a zone name to fold it.": "Klick es Grät oder e ganzi Zone aa (Doppelklick übernimmt grad). En Klick uf de Zonename klappt si ii.",
  "All devices of the zone": "Alli Grät vo de Zone",
- "No devices": "Kei Grät"
+ "No devices": "Kei Grät",
+ "{0} selected": "{0} usgwählt",
+ "Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.": "Klick Grät i de Tabälle oder Liste aa zum uswähle. Da erschiined denn d Zämefassig, d Aktione und e chliini Firewall-Matrix.",
+ "with fixed IP": "mit fixer IP",
+ "Firewall between the selected devices": "Firewall zwüsche de usgwählte Grät",
+ "✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.": "✓ alles erlaubt · ✕ alles blockiert · ◐ teilwiis · ? nöd entschide – Ping und gängigi Dienscht, wie de Test i de Grätdetails. Fahr über e Zälle für di entscheidende Regle.",
+ "Only the first 10 devices.": "Nume di erschte 10 Grät.",
+ "Zone default": "Zone-Standard",
+ "allowed": "erlaubt"
 }

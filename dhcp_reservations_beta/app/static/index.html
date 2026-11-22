@@ -475,7 +475,7 @@ body:not(.rel-mode):not(.cards-mode) .topo-icons{display:none!important}
 /* the view selector of the list and the icon switch of tree / graph sit low, next to the tabs, just above the line */
 .topbar>.viewsel,.topbar .topo-icons{align-self:flex-end;margin-bottom:-5px}
 #count{align-self:flex-end;margin-bottom:2px}
-@container main (max-width:559px){.topbar{row-gap:2px}.topbar>.viewsel,.topbar #count,.topbar .ms-tgl{order:5}.topbar .ms-l{display:none}#count{font-size:12px;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}} /* phone: view and count next to the tabs; less room between menu and tabs */
+@container main (max-width:559px){.topbar{row-gap:2px}.topbar>.viewsel,.topbar .ms-tgl{order:5}.topbar .ms-tgl{margin-left:auto}.topbar .ms-l{display:none}.topbar #count{order:1;margin-left:auto;font-size:12px;white-space:nowrap;align-self:center;margin-bottom:0}.topbar #count .cnt-l{display:none}.topbar #count .cnt-s{display:inline}body:not(.plan-mode):not(.fw-mode) .topbar .grp{margin-left:0}#btnInline{display:none}#btnActions svg + .lbl + svg,#btnActions svg:last-child:not(:first-child){display:none}} /* phone: view and count next to the tabs; less room between menu and tabs */
 /* the icon switch moves into the Actions menu when the top bar has no room for it */
 .cnt-s{display:none}
 @container main (max-width:385px){.cnt-l{display:none}.cnt-s{display:inline}}
@@ -522,11 +522,25 @@ dialog#dlgSimTo .imp-body{overflow:auto;padding:12px 18px 18px;display:grid;gap:
 .st-it.st-inet{width:auto;border:1px solid var(--line-strong);padding:7px 14px;font-weight:600}
 .st-none{padding:4px 8px;font-size:12px}
 #simToSel{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap}
+/* selection in the detail pane */
+@media (max-width:760px){body.sel-split .detail{inset:auto 0 0 0;width:100vw;height:50vh;height:50dvh;border-left:0;border-top:2px solid var(--accent);box-shadow:0 -8px 24px rgba(0,0,0,.3)}
+body.sel-split .tablewrap{padding-bottom:50vh;padding-bottom:50dvh}}
+.sel-top{display:flex;gap:14px;margin-bottom:2px}
+.sel-sum{display:grid;gap:2px}.sel-big{font-size:15px}.sel-big b{font-size:22px}
+.sel-kv{margin:0}
+.sel-acts{display:grid;gap:6px}.sel-act{justify-content:flex-start;width:100%}
+.sel-mx-card{overflow-x:auto}
+.sel-mx{border-collapse:separate;border-spacing:3px;font-size:12px}
+.sel-mx th{font-weight:600;color:var(--muted);text-align:center;padding:2px 4px;white-space:nowrap}
+.sel-mx th.sm-row{text-align:left;color:var(--fg);font-weight:500;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.sel-mx .sm-i{display:inline-block;min-width:16px;color:var(--muted);margin-right:4px}
+.sel-mx .sm-corner{font-weight:400;font-size:11px;text-align:left}
+.sm-c{width:26px;height:24px;text-align:center;border-radius:5px;font-weight:700;cursor:default}
+.sm-allow{background:color-mix(in srgb,var(--ok) 18%,transparent);color:var(--ok)}
+.sm-block{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+.sm-part{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.sm-unknown{background:var(--chip);color:var(--muted)}.sm-self{color:var(--faint)}
 /* bulk changes */
-.bulk-bar{position:sticky;bottom:0;z-index:20;display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;margin:0;padding:8px 12px;border-top:2px solid var(--accent);background:var(--panel);box-shadow:0 -6px 18px rgba(0,0,0,.25);order:9}
-.bulk-bar[hidden]{display:none}
-.bb-l{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
-.bb-a{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px;margin-left:auto}
 /* multi-select switch in the top bar (clients view only) */
 .ms-tgl{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:var(--muted);flex:none;user-select:none}
 .ms-tgl input{position:absolute;opacity:0;width:1px;height:1px}
@@ -1221,7 +1235,6 @@ window.I18N = (() => {
     </div>
     <div id="banner" class="banner" hidden></div>
     <div class="chg-box" id="chgBox" hidden></div>
-    <div class="bulk-bar" id="bulkBar" hidden></div>
     <div class="tablewrap">
       <table>
         <thead><tr class="h" id="headRow"></tr><tr class="f" id="filterRow"></tr></thead>
@@ -1316,6 +1329,7 @@ window.I18N = (() => {
       <button type="button" role="tab" id="tabEdit" aria-selected="false" title="Settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Settings</button>
     </div>
     <div class="d-body" id="paneInfo"></div>
+    <div class="d-body" id="paneSel" hidden></div>
     <div class="d-body" id="paneEdit" hidden>
       <form class="form card" id="formEdit" novalidate>
         <div class="field"><label for="fMac">MAC address</label><input id="fMac" class="mono" autocomplete="off" placeholder="aa:bb:cc:dd:ee:ff"></div>
@@ -1923,22 +1937,65 @@ function bulkToggle(k) { BULK.keys.has(k) ? BULK.keys.delete(k) : BULK.keys.add(
 function setBulk(on) { BULK.on = on; if (!on) BULK.keys.clear(); $("#msToggle").checked = on; renderAll(); }
 $("#msToggle").addEventListener("change", e => setBulk(e.target.checked));
 document.addEventListener("keydown", e => { if (e.key === "Escape" && BULK.on && !document.querySelector("dialog[open]")) setBulk(false); });
+// the selection always uses the detail pane – on phones as the lower half of the screen, the list stays above
 function renderBulk() {
-  const bar = $("#bulkBar"); if (!BULK.on || isPlan() || isFw() || isRel()) { bar.hidden = true; return; }
-  const cs = bulkDevs(), n = cs.length, cl = cs.filter(c => !c.is_device);
-  const rc = cs.filter(canReconnect).length, fixed = cl.filter(c => c.use_fixedip).length, vno = cl.filter(c => !!c.vno_id).length;
-  const btn = (act, label, cnt, title) => `<button type="button" class="btn sm" data-bulk="${act}" ${!cnt || BULK.busy ? "disabled" : ""} title="${esc(title)}"><span>${label}</span>${cnt != null ? ` <span class="muted">(${cnt})</span>` : ""}</button>`;
-  bar.innerHTML = `<span class="bb-l"><span class="bb-n">${n ? `<b>${n}</b> <span>selected</span>` : `<span class="muted">Click devices to select them</span>`}</span>
-    <button type="button" class="link" data-bulk="all">Select all shown</button><button type="button" class="link" data-bulk="none" ${n ? "" : "disabled"}>None</button></span>
-    <span class="bb-a">
-    ${btn("vno", "Override network…", cl.length, "Put the selected clients into a network (VLAN), regardless of WiFi or switch port")}
-    ${btn("novno", "Remove override", vno, "Switch the virtual network override off")}
-    ${btn("unres", "Release fixed IP", fixed, "Remove the fixed IP – the devices get an address from the DHCP pool again")}
-    ${btn("note", "Note…", cl.length, "Set the same note for the selected clients")}
-    ${btn("rc", "Reconnect WiFi", rc, "Disconnect the selected WiFi clients for a moment so they ask for a new address")}
-    ${FW.data ? btn("fw", "Firewall rule…", cl.filter(c => c.mac).length, "Create a firewall rule for the selected devices") : ""}
-    <button type="button" class="btn sm primary" data-bulk="done">Done</button></span>`;
-  bar.hidden = false;
+  selPane(BULK.on && !isPlan() && !isFw() && !isRel());
+}
+// ---------- selection in the detail pane: summary, actions and a small firewall matrix ----------
+function selPane(on) {
+  const pane = $("#paneSel"), d = $("#detail");
+  document.body.classList.toggle("sel-split", !!on);
+  if (!on) { if (!pane.hidden) { pane.hidden = true; pane.innerHTML = ""; d.querySelector(".tabs").hidden = false; if (!state.sel) d.hidden = true; } return; }
+  state.sel = null; markSel(); closeCols();
+  d.hidden = false; d.querySelector(".tabs").hidden = true; $("#paneInfo").hidden = true; $("#paneEdit").hidden = true; pane.hidden = false;
+  const cs = bulkDevs();
+  $("#dTitle").textContent = cs.length ? I18N.tr(`${cs.length} selected`) : I18N.tr("Multi-select");
+  pane.innerHTML = selPaneHtml(cs);
+}
+const selCount = (list, key, label) => { const m = new Map(); for (const c of list) { const k = key(c); if (k == null) continue; m.set(k, (m.get(k) || 0) + 1); } return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => [label(k), n]); };
+const selKv = rows => `<dl class="kv sel-kv">${rows.map(([k, n]) => `<dt>${k}</dt><dd>${n}</dd>`).join("")}</dl>`;
+function selPaneHtml(cs) {
+  const n = cs.length, cl = cs.filter(c => !c.is_device);
+  const head = `<div class="sel-top"><button type="button" class="link" data-bulk="all">Select all shown</button><button type="button" class="link" data-bulk="none" ${n ? "" : "disabled"}>None</button></div>`;
+  if (!n) return head + `<p class="hint">Click devices in the table or the list to select them. The summary, the actions and a small firewall matrix appear here.</p>`;
+  const conn = selCount(cs, c => c.is_device ? "dev" : c.conn || "", k => k === "dev" ? I18N.tr("UniFi devices") : I18N.tr(CONN_LABEL[k] || "Unknown"));
+  const nets = selCount(cs, c => c.network_id || "", k => `<span translate="no">${esc(netLabel(k) || "–")}</span>`);
+  const vno = selCount(cl.filter(c => c.vno_id), c => c.vno_id, k => `<span translate="no">${esc(netLabel(k) || "?")}</span>`);
+  const inet = FW.data ? selCount(cl.filter(c => c.mac), c => fwInternet(c).lvl, k => I18N.tr(FW_LVL[k]?.[0] || "Unknown")) : [];
+  const fixed = cl.filter(c => c.use_fixedip).length, online = cs.filter(c => c.online).length;
+  const rc = cs.filter(canReconnect).length, vnoN = cl.filter(c => c.vno_id).length;
+  const btn = (act, label, cnt, title) => `<button type="button" class="btn sel-act" data-bulk="${act}" ${!cnt || BULK.busy ? "disabled" : ""} title="${esc(title)}"><span>${label}</span>${cnt != null ? ` <span class="muted">(${cnt})</span>` : ""}</button>`;
+  return head + `
+    <div class="card sel-sum"><div class="sel-big"><b>${n}</b> <span>selected</span></div><div class="muted">${online} <span>online</span> · ${fixed} <span>with fixed IP</span></div></div>
+    <div class="sec-title">Connection</div><div class="card">${selKv(conn)}</div>
+    <div class="sec-title">Networks</div><div class="card">${selKv(nets)}</div>
+    ${vno.length ? `<div class="sec-title">Virtual network override</div><div class="card">${selKv(vno)}</div>` : ""}
+    ${inet.length ? `<div class="sec-title">Reaches the internet</div><div class="card">${selKv(inet)}</div>` : ""}
+    <div class="sec-title">Actions</div><div class="sel-acts">
+      ${btn("vno", "Override network…", cl.length, "Put the selected clients into a network (VLAN), regardless of WiFi or switch port")}
+      ${btn("novno", "Remove override", vnoN, "Switch the virtual network override off")}
+      ${btn("unres", "Release fixed IP", fixed, "Remove the fixed IP – the devices get an address from the DHCP pool again")}
+      ${btn("note", "Note…", cl.length, "Set the same note for the selected clients")}
+      ${btn("rc", "Reconnect WiFi", rc, "Disconnect the selected WiFi clients for a moment so they ask for a new address")}
+      ${FW.data ? btn("fw", "Firewall rule…", cl.filter(c => c.mac).length, "Create a firewall rule for the selected devices") : ""}
+    </div>
+    ${selMatrixHtml(cs)}`;
+}
+// who may reach whom among the selected devices (and the internet) – ping and the common services, like the device test
+function selMatrixHtml(cs) {
+  if (!FW.data) return "";
+  const ds = cs.filter(c => c.mac && zoneOf(c)).slice(0, 10), ext = fwZoneByKey("external");
+  if (!ds.length) return "";
+  const cell = (a, dz, b) => {
+    const r = SIM_SVCS.map(([, proto, port]) => simService(zoneOf(a).id, dz, a, b, proto, port)), ok = r.filter(x => x.verdict === "allow").length, no = r.filter(x => x.verdict === "block").length;
+    const v = ok === r.length ? ["allow", "✓"] : no === r.length ? ["block", "✕"] : ok ? ["part", "◐"] : ["unknown", "?"];
+    const by = [...new Set(r.map(x => x.by?.name || (x.dflt ? `${I18N.tr("Zone default")}: ${I18N.tr(FW_DEF[x.dflt])}` : "")).filter(Boolean))].join(", ");
+    return `<td class="sm-c sm-${v[0]}" title="${esc(`${devName(a)} → ${b ? devName(b) : "Internet"}: ${ok}/${r.length} ${I18N.tr("allowed")}${by ? " · " + by : ""}`)}">${v[1]}</td>`;
+  };
+  const head = `<tr><th class="sm-corner"><span>From</span> ↓ <span>To</span> →</th>${ds.map((d, i) => `<th title="${esc(devName(d))}" translate="no">${i + 1}</th>`).join("")}${ext ? `<th title="Internet">🌐</th>` : ""}</tr>`;
+  const rows = ds.map((a, i) => `<tr><th class="sm-row" translate="no"><span class="sm-i">${i + 1}</span>${esc(devName(a))}</th>${ds.map(b => b === a ? `<td class="sm-c sm-self">–</td>` : cell(a, zoneOf(b).id, b)).join("")}${ext ? cell(a, ext.id, null) : ""}</tr>`).join("");
+  return `<div class="sec-title">Firewall between the selected devices</div><div class="card sel-mx-card"><table class="sel-mx">${head}${rows}</table>
+    <p class="hint" style="margin:6px 0 0">✓ all allowed · ✕ all blocked · ◐ partly · ? not decided – ping and common services, like the test in the device details. Hover a cell for the deciding rules.${cs.length > ds.length ? ` <span>Only the first 10 devices.</span>` : ""}</p></div>`;
 }
 function bulkAsk(act, cs) {
   return new Promise(res => {
@@ -1992,7 +2049,7 @@ async function bulkAct(act) {
     await bulkRun("note", cl, c => api("api/client", clientBody(c, { note })));
   }
 }
-$("#bulkBar").addEventListener("click", e => { const b = e.target.closest("[data-bulk]"); if (b && !b.disabled) bulkAct(b.dataset.bulk); });
+$("#paneSel").addEventListener("click", e => { const b = e.target.closest("[data-bulk]"); if (b && !b.disabled) bulkAct(b.dataset.bulk); });
 $("#mnSelect").addEventListener("click", () => { if (isPlan() || isFw()) setView("clients"); else if (isRel()) setView("clients"); setBulk(true); });
 // firewall wizard for several devices: "Selected devices" of the zone most of them are in
 function openWizFor(cs) {
@@ -2094,7 +2151,7 @@ function renderTable() {
   if (tw.scrollTop !== keep[0] || tw.scrollLeft !== keep[1]) { tw.scrollTop = keep[0]; tw.scrollLeft = keep[1]; } // never jump on a re-render
   // long text, and a short one for narrow phones
   renderCards(list); renderChg(); bulkMarks(); renderBulk();
-  $("#count").innerHTML = `<span class="cnt-l">${list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`}</span><span class="cnt-s" translate="no">${list.length === state.clients.length ? list.length : `${list.length}/${state.clients.length}`}</span>`;
+  $("#count").innerHTML = `<span class="cnt-l">${list.length === state.clients.length ? `${list.length} Devices` : `${list.length} of ${state.clients.length} Devices`}</span><span class="cnt-s" translate="no">${list.length}/${state.clients.length}</span>`;
   $("#stand").textContent = state.fetchedAt ? "Updated " + new Date(state.fetchedAt * 1000).toLocaleTimeString(I18N.locale, { hour: "2-digit", minute: "2-digit" }) : "";
 }
 function renderAll() { renderFacets(); renderTable(); if (isPlan() && !CL.running) renderPlan(); if (isFw()) renderFw(); if (isRel()) renderRel(); }
@@ -4442,6 +4499,7 @@ function setTab(t) {
   $("#paneInfo").hidden = t !== "info"; $("#paneEdit").hidden = t !== "edit";
 }
 function openPanel(c, tab) {
+  if (!$("#paneSel").hidden) { $("#paneSel").hidden = true; $("#detail").querySelector(".tabs").hidden = false; }
   if (state.returnTo && c?.mac !== state.returnMac) state.returnTo = null; // user moved on to another device
   closeCols(); state.sel = c; $("#detail").hidden = false; $("#side").classList.remove("open");
   $("#dTitle").textContent = c ? (c.name || c.hostname || c.mac || "Client") : "New reservation";
@@ -4459,6 +4517,7 @@ function markSel() {
   for (const tr of $("#tbody").querySelectorAll("tr[data-k]")) tr.classList.toggle("sel", tr.dataset.k === k);
 }
 function closePanel() {
+  if (!$("#paneSel").hidden) { $("#paneSel").hidden = true; $("#detail").querySelector(".tabs").hidden = false; }
   state.sel = null; $("#detail").hidden = true; markSel();
   // came from a dialog via "Open …" → go back to it, with its state kept
   const back = state.returnTo; state.returnTo = null;
@@ -4794,7 +4853,7 @@ async function doForget(btn) {
 }
 $("#tabInfo").addEventListener("click", () => setTab("info"));
 $("#tabEdit").addEventListener("click", () => setTab("edit"));
-$("#dClose").addEventListener("click", closePanel);
+$("#dClose").addEventListener("click", () => { if (!$("#paneSel").hidden) setBulk(false); else closePanel(); });
 document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (document.querySelector("dialog[open]") || !$("#langMenu").hidden) return; if (!$("#detail").hidden) closePanel(); else if (!$("#colPanel").hidden) closeCols(); });
 
 // ---------- CSV ----------
