@@ -1530,5 +1530,6 @@
  "The note of the selected client is replaced (empty = remove).": "De notitie van de geselecteerde client wordt vervangen (leeg = verwijderen).",
  "The selected WiFi client is disconnected for a moment.": "De geselecteerde wificlient wordt even verbroken.",
  "The virtual network override of the selected client is switched off.": "De netwerkafdwinging van de geselecteerde client wordt uitgeschakeld.",
- "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "Het vaste IP wordt verwijderd. Naam en notitie blijven; het apparaat krijgt weer een adres uit de DHCP-pool."
+ "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "Het vaste IP wordt verwijderd. Naam en notitie blijven; het apparaat krijgt weer een adres uit de DHCP-pool.",
+ "No": "Nee"
 }

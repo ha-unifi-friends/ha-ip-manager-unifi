@@ -1530,5 +1530,6 @@
  "The note of the selected client is replaced (empty = remove).": "D Notiz vom usgwählte Client wird ersetzt (läär = entferne).",
  "The selected WiFi client is disconnected for a moment.": "De usgwählti WLAN-Client wird churz trennt.",
  "The virtual network override of the selected client is switched off.": "S erzwungnige Netzwerk vom usgwählte Client wird usgschaltet.",
- "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "D fixi IP wird entfernt. Name und Notiz bliibed; s Grät überchunnt wieder e Adrässe us em DHCP-Pool."
+ "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "D fixi IP wird entfernt. Name und Notiz bliibed; s Grät überchunnt wieder e Adrässe us em DHCP-Pool.",
+ "No": "Nei"
 }

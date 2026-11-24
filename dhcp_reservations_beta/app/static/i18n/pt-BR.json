@@ -1530,5 +1530,6 @@
  "The note of the selected client is replaced (empty = remove).": "A nota do cliente selecionado é substituída (vazio = remover).",
  "The selected WiFi client is disconnected for a moment.": "O cliente Wi-Fi selecionado é desconectado brevemente.",
  "The virtual network override of the selected client is switched off.": "O forçamento de rede do cliente selecionado é desativado.",
- "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "O IP fixo é removido. Nome e nota são mantidos; o dispositivo recebe de novo um endereço do pool DHCP."
+ "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "O IP fixo é removido. Nome e nota são mantidos; o dispositivo recebe de novo um endereço do pool DHCP.",
+ "No": "Não"
 }

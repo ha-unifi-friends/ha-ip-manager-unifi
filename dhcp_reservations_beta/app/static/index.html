@@ -4633,7 +4633,7 @@ function renderInfo() {
       ${kv("Connection type", `<span class="ctype ${c.conn}">${ICON[c.conn]}${CONN_LABEL[c.conn]}</span>`)}
       ${kv(c.conn === "wifi" ? "AP" : "Uplink", c.conn === "teleport" ? "" : esc(connText(c)), "acc")}
       ${kv("WiFi", esc(c.essid))}
-      ${c.conn === "wifi" ? kv("Locked to AP", c.fixed_ap_enabled ? `<span class="ctype lockap">${ICON.lock}${esc(apName(c.fixed_ap_mac))}</span>` : "Nein") : ""}
+      ${c.conn === "wifi" ? kv("Locked to AP", c.fixed_ap_enabled ? `<span class="ctype lockap">${ICON.lock}${esc(apName(c.fixed_ap_mac))}</span>` : "No") : ""}
       ${kv("Signal", c.signal ? c.signal + " dBm" : "")}
       ${kv("IP address", esc(c.ip) + (c.ip_is_last ? ' <span class="muted">(last known)</span>' : ""), "mono")}
       ${kv("Network", esc(n ? n.name : c.network_name))}
@@ -5878,7 +5878,7 @@ async function loadHistory(c) {
   const key = c.mac + "|" + VER.list.map(m => m.id).join(",");
   try {
     if (!HIST_CACHE[key]) HIST_CACHE[key] = await api(`api/history/${c.mac}`);
-    const el = box(); if (el) el.innerHTML = renderHistory(c, HIST_CACHE[key].versions);
+    const el = box(); if (el) el.innerHTML = renderHistory(c, HIST_CACHE[key].versions || []);
   } catch (e) { const el = box(); if (el) el.innerHTML = `<span class="err">${esc(e.message)}</span>`; }
 }
 function renderHistory(c, vs) {
