@@ -4,7 +4,7 @@
 
 <p align="center">
   <b>See and manage all UniFi clients and DHCP reservations in one table — right inside Home Assistant.</b><br>
-  MAC · name · fixed IP · VLAN · WiFi / wired / Teleport · issues · versions · bulk changes
+  MAC · name · fixed IP · VLAN · WiFi / wired / Teleport · issues · topology · firewall · multi-select · versions
 </p>
 
 <p align="center">
@@ -29,9 +29,11 @@ versions you can compare and restore.
 | | |
 |---|---|
 | **One table for everything** | Every client and UniFi device (APs, switches, gateway) with MAC, name, IP address, fixed IP, network/VLAN, connection type (WiFi, wired with switch port, Teleport), locked AP, first and last seen. Sort and filter every column, reorder columns by drag & drop. |
+| **Table · List · Tree · Graph** | The same devices four ways: the **Table**; the **List** with one card per device (name, IP, then pills for IP type, connection, switch port / access point, network and issues – phones start here); the **Tree** (Internet → gateway → switches → access points → clients) and the **Graph** (who talks to whom). The sidebar filters and views work in all four; icons can be *None*, *UniFi* or *Home Assistant*. |
+| **Since your last visit** | A box above the list shows what changed since you last looked: new devices, devices with new issues, changed fixed IPs, removed devices and changed firewall rules. Click a chip to filter, *Mark as seen* to start over. |
 | **Status at a glance** | Narrow icon columns for **UniFi Status** (online / offline) and **Home Assistant Status**, plus an **IP** pill: *Fix* (reservation or static IP) or *DHCP*. |
 | **Issue hints** | Duplicate IP, fixed IP outside its network or inside the DHCP pool, **IP is not Fixed IP** (the fixed IP is shown in yellow), **not in the override VLAN**, random/private MAC, not on its locked AP, wrong network by your own rules, Telnet/FTP open, duplicate names / DNS records, inactive devices. Every issue is a filter in the sidebar. |
-| **Views** | SharePoint-style views store columns, order, filters and sort. Built-in *All*, *Online*, *Problems*, *New devices*, *Offline with fixed IP*, *Home Assistant*, *WiFi* and *DHCP Reservations*; views are shared by every browser. |
+| **Views** | SharePoint-style views store columns, order, filters and sort. Built-in *All*, *Online*, *Recently changed*, *Problems*, *New devices*, *Offline with fixed IP*, *Home Assistant*, *WiFi* and *DHCP Reservations*; views are shared by every browser. |
 | **Inline edit** | Edit names and fixed IPs directly in the table (Enter / ↑ / ↓ move to the next row). |
 | **Light & dark** | *Auto* (follows the system) → *Light* → *Dark*, remembered per browser. |
 
@@ -50,15 +52,17 @@ versions you can compare and restore.
 
 | | |
 |---|---|
-| **Edit** | Name, note, fixed IP + network (with *Select*: pick a free address in a small IP plan with icons and see its neighbours), lock to an access point, local DNS record. Add reservations for MACs the controller has never seen. Remove a reservation or forget the client. |
+| **Edit** | Name, note, fixed IP + network (with ***Select***: pick a free address in the IP plan of the network – free addresses, the DHCP pool, fixed and dynamic IPs, gateway and Home Assistant host at a glance, with icons and the neighbours on hover), lock to an access point, local DNS record. Add reservations for MACs the controller has never seen. Remove a reservation or forget the client. |
 | **Virtual Network Override** | Put a client into a network (VLAN) regardless of its WiFi or switch port. **UniFi offers this only in its mobile app** – here it is in the browser, with its own column, and an issue when a device is not in its override network. |
 | **Reconnect** | After a fixed IP change, online WiFi clients can be reconnected right away so they pick up the new address – per device or for a whole subnet move. |
+| **Firewall test** | *May this device reach …?* – pick the internet, a zone or another device and see whether ping and common services (web, HTTPS, DNS, NTP, SSH, SMB, RTSP, MQTT, Home Assistant) are allowed or blocked, and which rule decides. |
 | **Open, ping & port check** | Open the device's web UI (HTTP / HTTPS), ping it, and check ~30 common TCP ports on demand; web UIs become links with their page title, Telnet/FTP are flagged. Vendor lookup for unknown MAC prefixes, Wake on LAN. |
 
 ### Bulk changes & IP planning
 
 | | |
 |---|---|
+| **Multi-select** | Switch **1 \| n** in the top bar to *n* and click devices in the table, list, tree or graph. The detail pane then shows a summary (connection, networks, override, internet access), a **firewall matrix between the selected devices** (up to 30, plus the internet – click a cell for the details) and the actions: override network, remove override, release fixed IP, note, reconnect WiFi, firewall rule. A version is saved before every change. |
 | **IP plan** | A full page next to the client list (switch *Clients / IP Plan*), filtered by the same sidebar filters (non-matching devices greyed out): networks as cards with utilization and a **Tidiness score** (0–100: fixed IPs outside the pool, close together, no conflicts), plus an address grid that shows conflicts at a glance, with *No icons / UniFi / Home Assistant* icons. Click an address to open the device – or a free one to reserve it – in the detail panel next to the plan. |
 | **CleanUp Proposal** | Suggests a tidy layout (fixed block + DHCP pool behind it) – *pool only* (no device changes its address), *minimal*, *grouped by HA integration* or *grouped by vendor* – for one network or **all networks at once** (overall tidiness before → after), right in the IP plan as a tab. *Preview changes* shows every move as an arrow, **conflicts in pink** (dynamic clients in the new fixed block), and a hover card shows the concrete change per address. The **Home Assistant host** (HA blue) and the **gateway** (violet) are never moved, and addresses in use (online devices, IPs set on the device) are never handed out. Afterwards it checks which devices already use their new IP, and *Undo everything* sets pools and fixed IPs back. After one confirmation it runs in a safe order: save a version → change the pools → reconnect conflicting Wi-Fi clients → move the fixed IPs → reconnect the moved clients. |
 | **Replace subnet** | Move all fixed IPs from e.g. `192.168.30.x` to `192.168.31.x`, keeping the host part. A preview catches collisions before anything changes. |
@@ -72,7 +76,7 @@ versions you can compare and restore.
 |---|---|
 | **Firewall** | UniFi's zone-based firewall (Network 9+): zone matrix, policy list with hits, the **rule chain** of a zone pair (which rule decides first, rules that never apply), **change the order** and a guided **Add firewall rule** wizard. IP changes warn when a policy uses the old IP or the device changes its zone. |
 | **Firewall analysis** | Device types, zone roles, checks per device, consistency of similar devices, zone and VLAN structure, recommendations and a segmentation score. |
-| **Topology** | *Clients* has the tabs **List**, **Tree** (Internet → gateway → switches → access points → clients, with ports) and **Graph** (a live map like Home Assistant's Zigbee map). The sidebar filters work in all three. |
+| **Topology** | *Clients* has the tabs **Table**, **List**, **Tree** (Internet → gateway → switches → access points → clients, with ports) and **Graph** (a live map like Home Assistant's Zigbee map, with the traffic between devices). The sidebar filters work in all four. |
 | **Device details** | Internet access chain (which rule lets the device out), blocked attempts of the last 24 h, switch and port with the **port VLAN** (changeable), *Reconnect* for WiFi clients, *Locate* / *Restart* / *Disable* for access points and switches. |
 
 ### Versions & history
@@ -98,6 +102,18 @@ versions you can compare and restore.
   </tr>
 </table>
 
+**Table · List · Tree · Graph**
+
+<table>
+  <tr>
+    <td colspan="2" valign="top"><img src="docs/screenshots/list.png" alt="List view with the change box"><br><b>List</b> – one card per device: name, IP and all pills in one block; above it <i>Since your last visit</i> with new devices, changed fixed IPs and removed devices.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/tree.png" alt="Tree"><br><b>Tree</b> – Internet → gateway → switches (with ports) → access points (with SSID) → clients; mesh links are marked.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/graph.png" alt="Graph"><br><b>Graph</b> – devices and who talks to whom; drag, zoom, labels on / off.</td>
+  </tr>
+</table>
+
 **Home Assistant**
 
 <table>
@@ -120,9 +136,22 @@ versions you can compare and restore.
   </tr>
 </table>
 
+<table>
+  <tr>
+    <td colspan="2" valign="top"><img src="docs/screenshots/ip-picker.png" alt="Pick a free IP"><br><b>Pick a free IP</b> – <i>Fixed IP address › Select</i> opens the IP plan of the network: free addresses (green), the DHCP pool, fixed IPs (blue), dynamic IPs in use (orange), gateway, Home Assistant host and the device itself. Hover an address to see who uses it, so the device lands next to similar ones.</td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/screenshots/firewall-test.png" alt="Firewall test in the device details"><br><b>Firewall test</b> – in <i>Network check & link</i>: may this device reach the target? Result per service and the deciding rule.</td>
+    <td width="50%" valign="top"><img src="docs/screenshots/firewall-test-target.png" alt="Target picker of the firewall test"><br><b>Choose the target</b> – the internet, a whole zone or one of its devices, with search.</td>
+  </tr>
+</table>
+
 **Bulk changes & IP planning**
 
 <table>
+  <tr>
+    <td colspan="2" valign="top"><img src="docs/screenshots/multi-select.png" alt="Multi-select with firewall matrix"><br><b>Multi-select</b> – slider <i>1 | n</i>: select devices in the table, list, tree or graph. The pane shows the summary as pills, the numbered devices, the <b>firewall matrix between them</b> (here: Home Assistant → Office PC, blocked by <i>Block Services → Internal</i>) and the bulk actions.</td>
+  </tr>
   <tr>
     <td width="50%" valign="top"><img src="docs/screenshots/ip-plan.png" alt="IP plan"><br><b>IP plan</b> – full page next to the client list: networks with utilization and Tidiness, large cells with Home Assistant logos.</td>
     <td width="50%" valign="top"><img src="docs/screenshots/ip-plan-all.png" alt="IP plan, all networks"><br><b>All networks</b> – compact view (32 addresses per row) with the overall tidiness; the sidebar filters grey out non-matching devices.</td>
@@ -134,6 +163,14 @@ versions you can compare and restore.
   <tr>
     <td valign="top"><img src="docs/screenshots/network-rules.png" alt="Network rules"><br><b>Network rules</b> – which devices belong in which network; violations show up as issues.</td>
     <td valign="top"></td>
+  </tr>
+</table>
+
+**Firewall**
+
+<table>
+  <tr>
+    <td colspan="2" valign="top"><img src="docs/screenshots/firewall.png" alt="Firewall zone matrix"><br><b>Zone matrix</b> – UniFi's defaults per zone pair and what your own rules do (dashed), with the policy list below; click a pair to filter.</td>
   </tr>
 </table>
 
@@ -150,7 +187,7 @@ versions you can compare and restore.
   </tr>
 </table>
 
-<sub>All screenshots and the video use a fictional demo network.</sub>
+<sub>All screenshots and the video use a fictional demo network. The newer screenshots show the UniFi icons; with *Icons › Home Assistant* the logos of the HA integrations appear instead.</sub>
 
 ## Requirements
 

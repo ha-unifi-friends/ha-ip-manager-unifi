@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.53.2
+
+- Device details: *Locked to AP* showed «Nein» in every language – now «No», translated.
+- The device history no longer shows an error when the server sends no version list.
+
 ## 1.53.1
 
 - **Top bar:** the «1 | n» switch sits at the same height as the view and icon selectors.

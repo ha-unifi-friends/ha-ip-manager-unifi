@@ -1530,5 +1530,6 @@
  "The note of the selected client is replaced (empty = remove).": "Anteckningen för den valda klienten ersätts (tomt = ta bort).",
  "The selected WiFi client is disconnected for a moment.": "Den valda wifi-klienten kopplas från en stund.",
  "The virtual network override of the selected client is switched off.": "Nätverkstvingningen för den valda klienten stängs av.",
- "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "Den fasta IP:n tas bort. Namn och anteckning behålls; enheten får åter en adress från DHCP-poolen."
+ "The fixed IP is removed. Name and note are kept; the device gets an address from the DHCP pool again.": "Den fasta IP:n tas bort. Namn och anteckning behålls; enheten får åter en adress från DHCP-poolen.",
+ "No": "Nej"
 }
